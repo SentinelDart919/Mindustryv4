@@ -20,6 +20,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
     protected static Translator vec = new Translator();
     protected static float wobblyness = 0.6f;
     protected boolean customTrail = false;
+    protected boolean itWobbles = true;
     protected Trail trail = new Trail(8);
     protected CarriableTrait carrying;
     protected final UnitState
@@ -199,13 +200,13 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
     protected void wobble(){
         if(Net.client()) return;
-
+        if(itWobbles){
         x += Mathf.sin(Timers.time() + id * 999, 25f, 0.08f)*Timers.delta();
         y += Mathf.cos(Timers.time() + id * 999, 25f, 0.08f)*Timers.delta();
 
         if(velocity.len() <= 0.05f){
             rotation += Mathf.sin(Timers.time() + id * 99, 10f, 2.5f)*Timers.delta();
-        }
+        }}
     }
 
     protected void updateRotation(){
