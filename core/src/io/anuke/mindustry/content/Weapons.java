@@ -8,7 +8,7 @@ import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze,
+    kamikaze, lichMissiles,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster;
 
     @Override
@@ -73,6 +73,17 @@ public class Weapons implements ContentList{
             velocityRnd = 0.2f;
             spacing = 1f;
             ammo = AmmoTypes.weaponMissile;
+        }};
+
+        lichMissiles = new Weapon("lich-missiles"){{
+        length = 4f;
+        reload = 160f;
+        shots = 16;
+        spacing = 1f;
+        velocityRnd = 0.2f;
+        roundrobin = true;
+        ejectEffect = Fx.none;
+        ammo = AmmoTypes.weaponMissileSwarm;
         }};
 
         swarmer = new Weapon("swarmer"){{

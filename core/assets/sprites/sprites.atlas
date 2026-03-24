@@ -7578,6 +7578,13 @@ heal-blaster-equip
   orig: 12, 12
   offset: 0, 0
   index: -1
+lich-missiles-equip
+  rotate: false
+  xy: 529, 400
+  size: 6, 8
+  orig: 6, 8
+  offset: 0, 0
+  index: -1
 scrap-blaster-equip
   rotate: false
   xy: 275, 7
