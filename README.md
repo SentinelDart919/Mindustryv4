@@ -4,7 +4,7 @@ This is a Fan made project not aproved by the main dev, non-profit, the only obj
 
 ### Building
 
-First, make sure you have Java 8 and JDK 8 installed. Open a terminal in the root directory, and run the following commands:
+First, make sure you have Java 11 and JDK 11 installed. Open a terminal in the root directory, and run the following commands:
 
 #### Windows
 
