@@ -203,11 +203,10 @@ public class Recipes implements ContentList{
 
         new Recipe(units, UnitBlocks.crawlerFactory, new ItemStack(Items.copper, 80), new ItemStack(Items.lead, 80), new ItemStack(Items.silicon, 150));
         new Recipe(units, UnitBlocks.bombdroneFactory, new ItemStack(Items.copper, 120),new ItemStack(Items.densealloy, 80) ,new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 200));
+        new Recipe(units, UnitBlocks.highTierFactory, new ItemStack(Items.chromium, 600), new ItemStack(Items.lead, 400), new ItemStack(Items.silicon, 1000), new ItemStack(Items.surgealloy, 100), new ItemStack(Items.densealloy, 800));
 
         new Recipe(units, UnitBlocks.repairPoint, new ItemStack(Items.lead, 30), new ItemStack(Items.copper, 30), new ItemStack(Items.silicon, 30));
         new Recipe(units, UnitBlocks.commandCenter, new ItemStack(Items.lead, 10), new ItemStack(Items.densealloy, 10), new ItemStack(Items.silicon, 20));
-        //new Recipe(units, UnitBlocks.commandCenter, new ItemStack(Items.lead, 10), new ItemStack(Items.scrap, 50), new ItemStack(Items.copper, 20));
-
         //LIQUIDS
         new Recipe(liquid, LiquidBlocks.conduit, new ItemStack(Items.lead, 1)).setDependencies(CraftingBlocks.smelter);
         new Recipe(liquid, LiquidBlocks.pulseConduit, new ItemStack(Items.titanium, 1), new ItemStack(Items.lead, 1));

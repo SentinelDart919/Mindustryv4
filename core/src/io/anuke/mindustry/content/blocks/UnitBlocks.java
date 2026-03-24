@@ -2,6 +2,7 @@ package io.anuke.mindustry.content.blocks;
 
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.UnitTypes;
+import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
@@ -14,7 +15,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         scrappeonFactory,
         daggerFactory, titanFactory, fortressFactory,
             crawlerFactory, bombdroneFactory,
-        reconstructor, repairPoint, commandCenter;
+        reconstructor, highTierFactory, repairPoint, commandCenter;
 
     @Override
     public void load(){
@@ -133,6 +134,41 @@ public class UnitBlocks extends BlockList implements ContentList{
             shadow = "shadow-round-3";
             consumes.items(new ItemStack(Items.silicon, 40), new ItemStack(Items.thorium, 50));
         }};
+        highTierFactory = new UnitFactoryAdvanced("high-tier-factory"){{
+            types = new UnitType[]{
+                    UnitTypes.lich,
+                    UnitTypes.revenant,
+                    UnitTypes.fortress,
+            };
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 500),
+                            new ItemStack(Items.lead, 650),
+                            new ItemStack(Items.thorium, 300),
+                            new ItemStack(Items.plastanium, 250),
+                            new ItemStack(Items.chromium, 400),
+                            new ItemStack(Items.surgealloy, 400),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 80),
+                            new ItemStack(Items.titanium, 80),
+                            new ItemStack(Items.plastanium, 50)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 40),
+                            new ItemStack(Items.thorium, 50)}
+
+            };
+            producerTimes = new float[]{
+                    17000f,
+                    7500f,
+                    11500f
+
+            };
+            size = 8;
+            consumes.power(0.12f);
+            totalUnits = types.length;
+        }};
+
 
         repairPoint = new RepairPoint("repair-point"){{
             shadow = "shadow-round-1";
