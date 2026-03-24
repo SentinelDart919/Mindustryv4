@@ -41,7 +41,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
     protected Queue<BuildRequest> placeQueue = new Queue<>();
     protected boolean isBreaking;
 
-    public final UnitState
+    public UnitState
 
     build = new UnitState(){
 
@@ -253,7 +253,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
         });
     }
 
-    private void notifyPlaced(BuildEntity entity, boolean isBreaking){
+    public void notifyPlaced(BuildEntity entity, boolean isBreaking){
         float dist = Math.min(entity.distanceTo(x, y) - placeDistance, 0);
 
         if(!state.is(build) && dist / type.maxVelocity < entity.buildCost * 0.9f){

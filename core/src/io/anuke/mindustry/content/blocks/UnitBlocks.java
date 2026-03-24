@@ -9,19 +9,37 @@ import io.anuke.mindustry.world.blocks.units.*;
 
 public class UnitBlocks extends BlockList implements ContentList{
     public static Block
-        spiritFactory, phantomFactory,
-        wraithFactory, ghoulFactory, revenantFactory,
+        scavengerFactory, spiritFactory, phantomFactory, ghostFactory,
+        scrapperFactory, wraithFactory, ghoulFactory, revenantFactory,
+        scrappeonFactory,
         daggerFactory, titanFactory, fortressFactory,
+            crawlerFactory, bombdroneFactory,
         reconstructor, repairPoint, commandCenter;
 
     @Override
     public void load(){
+        scavengerFactory = new UnitFactory("scavenger-factory"){{
+            type = UnitTypes.scavenger;
+            produceTime = 7600;
+            size = 2;
+            consumes.power(0.04f);
+            consumes.items(new ItemStack(Items.scrap, 10));
+        }};
+
         spiritFactory = new UnitFactory("spirit-factory"){{
             type = UnitTypes.spirit;
             produceTime = 5700;
             size = 2;
             consumes.power(0.08f);
             consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.lead, 30));
+        }};
+
+        ghostFactory = new UnitFactory("ghost-factory"){{
+            type = UnitTypes.ghost;
+            produceTime = 6300;
+            size = 2;
+            consumes.power(0.12f);
+            consumes.items(new ItemStack(Items.silicon, 50), new ItemStack(Items.lead, 50), new ItemStack(Items.densealloy, 60));
         }};
 
         phantomFactory = new UnitFactory("phantom-factory"){{
@@ -40,6 +58,14 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.titanium, 10));
         }};
 
+        scrapperFactory = new UnitFactory("scrapper-factory"){{
+            type = UnitTypes.scrapper;
+            produceTime = 900;
+            size = 2;
+            consumes.power(0.05f);
+            consumes.items(new ItemStack(Items.scrap, 10), new ItemStack(Items.lead, 10));
+        }};
+
         ghoulFactory = new UnitFactory("ghoul-factory"){{
             type = UnitTypes.ghoul;
             produceTime = 3600;
@@ -56,6 +82,30 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.power(0.3f);
             shadow = "shadow-round-4";
             consumes.items(new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 80), new ItemStack(Items.plastanium, 50));
+        }};
+
+        scrappeonFactory = new UnitFactory("scrappeon-factory"){{
+            type = UnitTypes.scrappeon;
+            produceTime = 1200;
+            size = 2;
+            consumes.power(0.02f);
+            consumes.items(new ItemStack(Items.scrap, 10));
+        }};
+
+        crawlerFactory = new UnitFactory("crawler-factory"){{
+            type = UnitTypes.crawler;
+            produceTime = 1000;
+            size = 2;
+            consumes.power(0.04f);
+            consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.coal, 10));
+        }};
+
+        bombdroneFactory = new UnitFactory("bomb_drone-factory"){{
+            type = UnitTypes.bombDrone;
+            produceTime = 1200;
+            size = 2;
+            consumes.power(0.04f);
+            consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.coal, 10), new ItemStack(Items.lead, 20));
         }};
 
         daggerFactory = new UnitFactory("dagger-factory"){{

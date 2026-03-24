@@ -3,19 +3,26 @@ package io.anuke.mindustry.content.blocks;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
+import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
+import io.anuke.mindustry.world.blocks.defense.ForceProjector;
+import io.anuke.mindustry.world.blocks.defense.OverdriveProjector;
 import io.anuke.mindustry.world.blocks.distribution.Sorter;
 import io.anuke.mindustry.world.blocks.power.PowerNode;
+import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.scene.ui.ButtonGroup;
@@ -28,7 +35,7 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class DebugBlocks extends BlockList implements ContentList{
-    public static Block powerVoid, powerInfinite, itemSource, liquidSource, itemVoid;
+    public static Block powerVoid, superBooster, powerInfinite, itemSource, liquidSource, itemVoid, debugFactory;
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
     public static void setLiquidSourceLiquid(Player player, Tile tile, Liquid liquid){
@@ -176,7 +183,49 @@ public class DebugBlocks extends BlockList implements ContentList{
                 return true;
             }
         };
+        superBooster = new OverdriveProjector("super_booster"){{
+            consumes.power(0.1f);
+            speedBoost = 8f;
+            size = 2;
+            consumes.item(Items.phasefabric).optional(true);
+        }};
+
+        debugFactory = new UnitFactoryAdvanced("debug-factory"){{
+            types = new UnitType[]{
+                    UnitTypes.dagger,
+                    UnitTypes.scrapper,
+                    UnitTypes.ghost,
+                    UnitTypes.lich
+            };
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 30),
+                            new ItemStack(Items.lead, 30)},
+                    new ItemStack[]{
+                            new ItemStack(Items.scrap, 5),
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 30),
+                            new ItemStack(Items.lead, 30),
+                            new ItemStack(Items.densealloy, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5),
+                    }
+
+            };
+            producerTimes = new float[]{
+                    2000f,
+                    1000f,
+                    3000f,
+                    1000f
+            };
+            size = 2;
+            consumes.power(0.04f);
+            totalUnits = types.length;
+        }};
     }
+
+
 
     class LiquidSourceEntity extends TileEntity{
         public Liquid source = Liquids.water;

@@ -30,6 +30,8 @@ public class PowerSmelter extends PowerBlock{
     protected final int timerCraft = timers++;
 
     protected Item result;
+    /** item output of this block*/
+    public int itemOutputAmount = 1;
 
     protected float minFlux = 0.2f;
     protected int fluxNeeded = 1;
@@ -153,7 +155,9 @@ public class PowerSmelter extends PowerBlock{
             }
         }
 
-        offloadNear(tile, result);
+        for(int i = 0; i < itemOutputAmount; i++){
+            offloadNear(tile, result);
+        }
         Effects.effect(craftEffect, flameColor, tile.drawx(), tile.drawy());
     }
 

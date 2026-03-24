@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Base64Coder;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.core.Platform;
+import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.ui.dialogs.FileChooser;
@@ -52,12 +53,13 @@ public class DesktopPlatform extends Platform{
         if(!state.is(State.menu)){
             presence.state = Strings.capitalize(state.mode.name());
             if(world.getMap() == null){
-                presence.details = "Unknown Map";
+                presence.details = "In Missigno Map";
             }else if(state.mode.disableWaves){
                 presence.details = Strings.capitalize(world.getMap().name);
             }else{
-                presence.details = Strings.capitalize(world.getMap().name) + " | Wave " + state.wave;
-                presence.largeImageText = "Wave " + state.wave;
+                presence.details = Strings.capitalize(world.getMap().name) + " | Wave " + state.wave + " | Difficulty: " + Strings.capitalize(state.difficulty.name());
+
+                presence.largeImageText = "Wave " + state.wave + " | Difficulty: " + state.difficulty;
             }
 
             if(state.mode != GameMode.noWaves){

@@ -39,58 +39,54 @@ import java.util.ArrayList;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class AndroidLauncher extends PatchedAndroidApplication{
+public class AndroidLauncher extends PatchedAndroidApplication {
     public static final int PERMISSION_REQUEST_CODE = 1;
     boolean doubleScaleTablets = true;
     FileChooser chooser;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useImmersiveMode = true;
-        Platform.instance = new Platform(){
+        Platform.instance = new Platform() {
+
 
             @Override
-            public void openDonations(){
-                showDonations();
-            }
-
-            @Override
-            public String getUUID(){
-                try{
+            public String getUUID() {
+                try {
                     String s = Secure.getString(getContext().getContentResolver(), Secure.ANDROID_ID);
                     int len = s.length();
                     byte[] data = new byte[len / 2];
-                    for(int i = 0; i < len; i += 2){
+                    for (int i = 0; i < len; i += 2) {
                         data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                        + Character.digit(s.charAt(i + 1), 16));
+                                + Character.digit(s.charAt(i + 1), 16));
                     }
                     String result = new String(Base64Coder.encode(data));
-                    if(result.equals("AAAAAAAAAOA=")) throw new RuntimeException("Bad UUID.");
+                    if (result.equals("AAAAAAAAAOA=")) throw new RuntimeException("Bad UUID.");
                     return result;
-                }catch(Exception e){
+                } catch (Exception e) {
                     return super.getUUID();
                 }
             }
 
             @Override
-            public void shareFile(FileHandle file){
+            public void shareFile(FileHandle file) {
             }
 
             @Override
-            public void showFileChooser(String text, String content, Consumer<FileHandle> cons, boolean open, String filetype){
+            public void showFileChooser(String text, String content, Consumer<FileHandle> cons, boolean open, String filetype) {
                 chooser = new FileChooser(text, file -> file.extension().equalsIgnoreCase(filetype), open, cons);
-                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)){
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                        checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
                     chooser.show();
                     chooser = null;
-                }else{
+                } else {
                     ArrayList<String> perms = new ArrayList<>();
-                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                         perms.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                     }
-                    if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                         perms.add(Manifest.permission.READ_EXTERNAL_STORAGE);
                     }
                     requestPermissions(perms.toArray(new String[perms.size()]), PERMISSION_REQUEST_CODE);
@@ -98,30 +94,30 @@ public class AndroidLauncher extends PatchedAndroidApplication{
             }
 
             @Override
-            public void beginForceLandscape(){
+            public void beginForceLandscape() {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
 
             @Override
-            public void endForceLandscape(){
+            public void endForceLandscape() {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
             }
 
             @Override
-            public boolean canDonate(){
+            public boolean canDonate() {
                 return true;
             }
         };
 
-        try{
+        try {
             ProviderInstaller.installIfNeeded(this);
-        }catch(GooglePlayServicesRepairableException e){
+        } catch (GooglePlayServicesRepairableException e) {
             GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
             apiAvailability.getErrorDialog(this, e.getConnectionStatusCode(), 0).show();
-        }catch(GooglePlayServicesNotAvailableException e){
+        } catch (GooglePlayServicesNotAvailableException e) {
             Log.e("SecurityException", "Google Play Services not available.");
         }
-        if(doubleScaleTablets && isTablet(this.getContext())){
+        if (doubleScaleTablets && isTablet(this.getContext())) {
             Unit.dp.addition = 0.5f;
         }
         config.hideStatusBar = true;
@@ -132,54 +128,54 @@ public class AndroidLauncher extends PatchedAndroidApplication{
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults){
-        if(requestCode == PERMISSION_REQUEST_CODE){
-            for(int i : grantResults){
-                if(i != PackageManager.PERMISSION_GRANTED) return;
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            for (int i : grantResults) {
+                if (i != PackageManager.PERMISSION_GRANTED) return;
             }
-            if(chooser != null){
+            if (chooser != null) {
                 chooser.show();
             }
         }
     }
 
-    private void checkFiles(Intent intent){
-        try{
+    private void checkFiles(Intent intent) {
+        try {
             Uri uri = intent.getData();
-            if(uri != null){
+            if (uri != null) {
                 File myFile = null;
                 String scheme = uri.getScheme();
-                if(scheme.equals("file")){
+                if (scheme.equals("file")) {
                     String fileName = uri.getEncodedPath();
                     myFile = new File(fileName);
-                }else if(!scheme.equals("content")){
+                } else if (!scheme.equals("content")) {
                     //error
                     return;
                 }
                 boolean save = uri.getPath().endsWith(saveExtension);
                 boolean map = uri.getPath().endsWith(mapExtension);
                 InputStream inStream;
-                if(myFile != null) inStream = new FileInputStream(myFile);
+                if (myFile != null) inStream = new FileInputStream(myFile);
                 else inStream = getContentResolver().openInputStream(uri);
                 Gdx.app.postRunnable(() -> {
-                    if(save){ //open save
+                    if (save) { //open save
                         System.out.println("Opening save.");
                         FileHandle file = Gdx.files.local("temp-save." + saveExtension);
                         file.write(inStream, false);
-                        if(SaveIO.isSaveValid(file)){
-                            try{
+                        if (SaveIO.isSaveValid(file)) {
+                            try {
                                 SaveSlot slot = control.saves.importSave(file);
                                 ui.load.runLoadSave(slot);
-                            }catch(IOException e){
+                            } catch (IOException e) {
                                 ui.showError(Bundles.format("text.save.import.fail", Strings.parseException(e, false)));
                             }
-                        }else{
+                        } else {
                             ui.showError("$text.save.import.invalid");
                         }
-                    }else if(map){ //open map
+                    } else if (map) { //open map
                         Gdx.app.postRunnable(() -> {
                             System.out.println("Opening map.");
-                            if(!ui.editor.isShown()){
+                            if (!ui.editor.isShown()) {
                                 ui.editor.show();
                             }
                             ui.editor.beginEditMap(inStream);
@@ -187,27 +183,23 @@ public class AndroidLauncher extends PatchedAndroidApplication{
                     }
                 });
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean isPackageInstalled(String packagename){
-        try{
+    private boolean isPackageInstalled(String packagename) {
+        try {
             getPackageManager().getPackageInfo(packagename, 0);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
 
-    private boolean isTablet(Context context){
+    private boolean isTablet(Context context) {
         TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE;
     }
-
-    private void showDonations(){
-        Intent intent = new Intent(this, DonationsActivity.class);
-        startActivity(intent);
-    }
 }
+

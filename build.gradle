@@ -20,8 +20,8 @@ allprojects {
 
     ext {
         versionNumber = '4'
-        versionModifier = 'alpha'
-        versionType = 'official'
+        versionModifier = 'Modded by B919'
+        versionType = 'unofficial'
         appName = 'Mindustry'
         gdxVersion = '1.9.9'
         roboVMVersion = '2.3.0'

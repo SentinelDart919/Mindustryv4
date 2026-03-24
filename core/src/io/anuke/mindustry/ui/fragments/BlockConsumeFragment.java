@@ -8,8 +8,11 @@ import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.graphics.Palette;
+import io.anuke.mindustry.ui.ItemImage;
+import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 import io.anuke.mindustry.world.consumers.Consume;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.scene.Element;
@@ -125,6 +128,19 @@ public class BlockConsumeFragment extends Fragment{
                     result.exited(() -> hovered[0] = false);
                 }
 
+                table.row();
+            }
+        }
+
+        if(block instanceof UnitFactoryAdvanced){
+            UnitFactoryAdvanced factory = (UnitFactoryAdvanced)block;
+
+            if(!factory.hasAllRequirements(entity.tile)){
+                table.table("inventory", t -> {
+                    for(ItemStack stack : factory.getRequirements(entity.tile)){
+                        t.add(new ItemImage(stack)).size(8 * 4).padRight(5);
+                    }
+                }).height(scale * 10 + 6).padBottom(-4).right();
                 table.row();
             }
         }

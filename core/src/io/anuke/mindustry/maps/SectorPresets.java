@@ -26,7 +26,7 @@ public class SectorPresets{
         //base tutorial mission
         add(new SectorPreset(0, 0,
             TutorialSector.getMissions(),
-            Array.with(Items.copper, Items.coal, Items.lead)));
+            Array.with(Items.copper, Items.scrap, Items.coal, Items.lead)));
 
         //command center mission
         add(new SectorPreset(0, 1,
@@ -38,7 +38,7 @@ public class SectorPresets{
                 new CommandMission(UnitCommand.attack),
                 new BattleMission()
             ),
-            Array.with(Items.copper, Items.lead, Items.coal)));
+            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal)));
 
         //pad mission
         add(new SectorPreset(0, -2,
@@ -47,7 +47,7 @@ public class SectorPresets{
                 new MechMission(mobile ? Mechs.alpha : Mechs.dart),
                 new WaveMission(15)
             ),
-            Array.with(Items.copper, Items.lead, Items.coal, Items.titanium)));
+            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
 
         //oil mission
         add(new SectorPreset(-2, 0,
@@ -59,7 +59,7 @@ public class SectorPresets{
                 new ContentMission(Liquids.oil),
                 new BattleMission()
             ),
-            Array.with(Items.copper, Items.lead, Items.coal, Items.titanium)));
+            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
     }
 
     public Array<Item> getOres(int x, int y){

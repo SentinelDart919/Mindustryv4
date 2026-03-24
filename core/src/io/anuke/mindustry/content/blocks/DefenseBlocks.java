@@ -7,7 +7,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.defense.*;
 
 public class DefenseBlocks extends BlockList implements ContentList{
-    public static Block copperWall, copperWallLarge, denseAlloyWall, denseAlloyWallLarge, thoriumWall, thoriumWallLarge, door, doorLarge,
+    public static Block copperWall, copperWallLarge, scrapWall, scrapWallLarge, denseAlloyWall, denseAlloyWallLarge, chromiumWall, chromiumWallLarge, thoriumWall, thoriumWallLarge, door, doorLarge,
             phaseWall, phaseWallLarge, surgeWall, surgeWallLarge, mendProjector, overdriveProjector, forceProjector, shockMine;
 
     @Override
@@ -20,6 +20,15 @@ public class DefenseBlocks extends BlockList implements ContentList{
 
         copperWallLarge = new Wall("copper-wall-large"){{
             health = 80 * 4 * wallHealthMultiplier;
+            size = 2;
+        }};
+
+        scrapWall = new Wall("scrap-wall"){{
+            health = 40 * wallHealthMultiplier;
+        }};
+
+        scrapWallLarge = new Wall("scrap-wall-large"){{
+            health = 40 * 4 * wallHealthMultiplier;
             size = 2;
         }};
 
@@ -41,6 +50,15 @@ public class DefenseBlocks extends BlockList implements ContentList{
             size = 2;
         }};
 
+        chromiumWall = new Wall("chromium-wall"){{
+            health = 250 * wallHealthMultiplier;
+        }};
+
+        chromiumWallLarge = new Wall("chromium-wall-large"){{
+            health = 250 * wallHealthMultiplier * 4;
+            size = 2;
+        }};
+
         phaseWall = new DeflectorWall("phase-wall"){{
             health = 150 * wallHealthMultiplier;
         }};
@@ -51,11 +69,11 @@ public class DefenseBlocks extends BlockList implements ContentList{
         }};
 
         surgeWall = new SurgeWall("surge-wall"){{
-            health = 230 * wallHealthMultiplier;
+            health = 350 * wallHealthMultiplier;
         }};
 
         surgeWallLarge = new SurgeWall("surge-wall-large"){{
-            health = 230 * 4 * wallHealthMultiplier;
+            health = 350 * 4 * wallHealthMultiplier;
             size = 2;
         }};
 
@@ -95,5 +113,10 @@ public class DefenseBlocks extends BlockList implements ContentList{
             length = 10;
             tendrils = 5;
         }};
+
+        /*thoriumWallEXTRALarge = new Wall("thorium-wall-extralarge"){{
+            health = 200 * wallHealthMultiplier * 5;
+            size = 6;
+        }};*/
     }
 }

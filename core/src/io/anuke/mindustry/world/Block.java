@@ -63,6 +63,8 @@ public class Block extends BaseBlock {
     public ItemStack drops = null;
     /** multiblock size */
     public int size = 1;
+    /** if true, this block does not accept input from the sides (used for armored conveyors) */
+    public boolean noSideBlend = false;
     /** Whether to draw this block in the expanded draw range. */
     public boolean expanded = false;
     /** Max of timers used. */

@@ -23,14 +23,14 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class Conveyor extends Block{
-    private static final float itemSpace = 0.135f * 2.2f;
-    private static final float offsetScl = 128f * 3f;
-    private static final float minmove = 1f / (Short.MAX_VALUE - 2);
-    private static ItemPos drawpos = new ItemPos();
-    private static ItemPos pos1 = new ItemPos();
-    private static ItemPos pos2 = new ItemPos();
-    private final Translator tr1 = new Translator();
-    private final Translator tr2 = new Translator();
+    public static final float itemSpace = 0.135f * 2.2f;
+    public static final float offsetScl = 128f * 3f;
+    public static final float minmove = 1f / (Short.MAX_VALUE - 2);
+    public static ItemPos drawpos = new ItemPos();
+    public static ItemPos pos1 = new ItemPos();
+    public static ItemPos pos2 = new ItemPos();
+    public final Translator tr1 = new Translator();
+    public final Translator tr2 = new Translator();
 
     private TextureRegion[][] regions = new TextureRegion[7][4];
 
@@ -46,6 +46,7 @@ public class Conveyor extends Block{
         hasItems = true;
         autoSleep = true;
         itemCapacity = 4;
+        noSideBlend = false;
     }
 
     private static int compareItems(long a, long b){
@@ -129,7 +130,7 @@ public class Conveyor extends Block{
         }
     }
 
-    private boolean blends(Tile tile, int direction){
+    public boolean blends(Tile tile, int direction){
         Tile other = tile.getNearby(Mathf.mod(tile.getRotation() - direction, 4));
         if(other != null) other = other.target();
 
@@ -406,12 +407,12 @@ public class Conveyor extends Block{
 
     //Container class. Do not instantiate.
     static class ItemPos{
-        private static short[] writeShort = new short[4];
-        private static byte[] writeByte = new byte[4];
+        public static short[] writeShort = new short[4];
+        public static byte[] writeByte = new byte[4];
 
-        private static short[] packShorts = new short[4];
-        private static short[] drawShorts = new short[4];
-        private static short[] updateShorts = new short[4];
+        public static short[] packShorts = new short[4];
+        public static short[] drawShorts = new short[4];
+        public static short[] updateShorts = new short[4];
 
         Item item;
         float x, y;

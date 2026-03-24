@@ -14,11 +14,11 @@ public class Version{
     /**Build modifier, e.g. 'alpha' or 'release'*/
     public static String modifier;
     /**Number specifying the major version, e.g. '4'*/
-    public static int number;
+    public static int number = 63;
     /**Build number, e.g. '43'. set to '-1' for custom builds.*/
-    public static int build = 0;
+    public static int build = 3;
     /**Revision number. Used for hotfixes. Does not affect server compatibility.*/
-    public static int revision = 0;
+    public static int revision = 4;
 
     public static void init(){
         try{

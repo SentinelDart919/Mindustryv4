@@ -75,12 +75,12 @@ public class ProductionBlocks extends BlockList implements ContentList{
 
         waterExtractor = new SolidPump("water-extractor"){{
             result = Liquids.water;
-            pumpAmount = 0.065f;
+            pumpAmount = 0.125f;
             size = 2;
             liquidCapacity = 30f;
             rotateSpeed = 1.4f;
 
-            consumes.power(0.09f);
+            consumes.power(0.05f);
         }};
 
         oilExtractor = new Fracker("oil-extractor"){{

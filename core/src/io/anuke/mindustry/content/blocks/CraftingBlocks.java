@@ -10,9 +10,9 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.production.*;
 
 public class CraftingBlocks extends BlockList implements ContentList{
-    public static Block smelter, arcsmelter, siliconsmelter, plastaniumCompressor, phaseWeaver, alloySmelter,
-            pyratiteMixer, blastMixer,
-            cryofluidmixer, melter, separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator;
+    public static Block smelter, arcsmelter, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter,
+            pyratiteMixer, blastMixer, coalcentrifuge,
+            cryofluidmixer, melter, scrapmelter, slag_centrifuge,separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator;
 
     @Override
     public void load(){
@@ -41,6 +41,20 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.1f);
         }};
 
+        arcscrapsmelter = new PowerSmelter("arc-scrap-smelter"){{
+            health = 90;
+            craftEffect = BlockFx.smeltsmoke;
+            result = Items.densealloy;
+            craftTime = 35f;
+            size = 2;
+
+            useFlux = true;
+            fluxNeeded = 2;
+
+            consumes.items(new ItemStack[]{new ItemStack(Items.scrap, 2), new ItemStack(Items.coal, 1)});
+            consumes.power(0.08f);
+        }};
+
         siliconsmelter = new PowerSmelter("silicon-smelter"){{
             health = 90;
             craftEffect = BlockFx.smeltsmoke;
@@ -53,6 +67,21 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 1), new ItemStack(Items.sand, 2)});
             consumes.power(0.05f);
+        }};
+
+        siliconcrucible = new PowerSmelter("silicon-crucible"){{
+            health = 90;
+            craftEffect = BlockFx.smeltsmoke;
+            result = Items.silicon;
+            itemOutputAmount = 6;
+            craftTime = 90f;
+            powerCapacity = 20f;
+            size = 4;
+            hasLiquids = false;
+            flameColor = Color.valueOf("ffef99");
+
+            consumes.items(new ItemStack[]{new ItemStack(Items.coal, 4), new ItemStack(Items.sand, 6), new ItemStack(Items.pyratite, 1)});
+            consumes.power(0.25f);
         }};
 
         plastaniumCompressor = new PlastaniumCompressor("plastanium-compressor"){{
@@ -148,6 +177,18 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.item(Items.stone, 1);
         }};
 
+        scrapmelter = new PowerCrafter("scrap-melter"){{
+            health = 100;
+            outputLiquid = Liquids.slag;
+            outputLiquidAmount = 2f;
+            itemCapacity = 20;
+            craftTime = 6f;
+            hasLiquids = hasPower = true;
+
+            consumes.power(0.1f);
+            consumes.item(Items.scrap, 2);
+        }};
+
         separator = new Separator("separator"){{
             results = new ItemStack[]{
                 new ItemStack(null, 10),
@@ -164,6 +205,29 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             consumes.item(Items.stone, 2);
             consumes.liquid(Liquids.water, 0.3f);
+        }};
+
+        slag_centrifuge = new Separator("slag-centrifuge"){{
+            results = new ItemStack[]{
+                new ItemStack(null, 5),
+                new ItemStack(Items.copper, 10),
+                new ItemStack(Items.lead, 9),
+                new ItemStack(Items.sand, 9),
+                new ItemStack(Items.densealloy, 4),
+                new ItemStack(Items.silicon, 2),
+                new ItemStack(Items.titanium, 1),
+            };
+            size = 2;
+            filterTime = 40f;
+            itemCapacity = 40;
+            health = 50;
+            spinnerLength = 1.5f;
+            spinnerRadius = 3.5f;
+            spinnerThickness = 1.5f;
+            spinnerSpeed = 3f;
+
+            consumes.item(Items.scrap, 1);
+            consumes.liquid(Liquids.slag, 0.4f);
         }};
 
         centrifuge = new Separator("centrifuge"){{
@@ -230,6 +294,20 @@ public class CraftingBlocks extends BlockList implements ContentList{
             hasLiquids = hasItems = true;
 
             consumes.liquid(Liquids.lava, 1f);
+
+        }};coalcentrifuge = new GenericCrafter("coal-centrifuge"){{
+            liquidCapacity = 10f;
+            hasPower = true;
+            craftTime = 30;
+            itemOutputAmount = 2;
+            output = Items.coal;
+            size = 2;
+            itemCapacity = 20;
+            health = 80;
+            craftEffect = BlockFx.smeltsmoke;
+            hasLiquids = hasItems = true;
+            consumes.liquid(Liquids.oil, 0.09f);
+            consumes.power(0.07f);
         }};
 
         incinerator = new Incinerator("incinerator"){{

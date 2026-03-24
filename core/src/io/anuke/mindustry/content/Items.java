@@ -7,7 +7,7 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 
 public class Items implements ContentList{
-    public static Item stone, copper, lead, densealloy, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy,
+    public static Item stone, obsidian, scrap, copper, lead, densealloy, chromium, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy,
             biomatter, sand, blastCompound, pyratite;
 
     @Override
@@ -20,6 +20,12 @@ public class Items implements ContentList{
             alwaysUnlocked = true;
         }};
 
+        scrap = new Item("scrap", Color.valueOf("#716359")){{
+            type = ItemType.material;
+            cost = 0.4f;
+            genOre = true;
+        }};
+
         lead = new Item("lead", Color.valueOf("8c7fa9")){{
             type = ItemType.material;
             hardness = 1;
@@ -30,6 +36,13 @@ public class Items implements ContentList{
         densealloy = new Item("dense-alloy", Color.valueOf("b2c6d2")){{
             type = ItemType.material;
             cost = 1.2f;
+        }};
+
+        chromium = new Item("chromium", Color.valueOf("919191")){{
+           type = ItemType.material;
+           hardness = 4;
+           cost = 1.2f;
+           genOre = true;
         }};
 
         coal = new Item("coal", Color.valueOf("272727")){{
@@ -57,6 +70,10 @@ public class Items implements ContentList{
 
         stone = new Item("stone", Color.valueOf("777777")){{
             hardness = 3;
+        }};
+
+        obsidian = new Item("obsidian", Color.valueOf("21002b")){{
+            cost = 2f;
         }};
 
         silicon = new Item("silicon", Color.valueOf("53565c")){{

@@ -11,7 +11,7 @@ import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.util.Mathf;
 
 public class StatusEffects implements ContentList{
-    public static StatusEffect none, burning, freezing, wet, melting, tarred, overdrive, shielded;
+    public static StatusEffect none, burning, freezing, wet, melting, tarred, overdrive, shielded, acid;
 
     @Override
     public void load(){
@@ -145,10 +145,24 @@ public class StatusEffects implements ContentList{
             }
         };
 
+        acid = new StatusEffect(4f){{
+            speedMultiplier = 0.6f;
+        }
+            @Override
+            public void update(Unit unit, float time){
+                unit.damagePeriodic(0.5f);
+
+                if(Mathf.chance(Timers.delta() * 0.2f)){
+                    Effects.effect(EnvironmentFx.smoke, unit.x + Mathf.range(unit.getSize() / 2f), unit.y + Mathf.range(unit.getSize() / 2f));
+                }
+            }
+        };
+
         melting.setOpposites(wet, freezing);
         wet.setOpposites(burning);
         freezing.setOpposites(burning, melting);
         burning.setOpposites(wet, freezing);
+        acid.setOpposites(wet, freezing, burning, melting);
     }
 
     @Override

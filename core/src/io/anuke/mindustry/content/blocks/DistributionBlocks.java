@@ -5,7 +5,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.distribution.*;
 
 public class DistributionBlocks extends BlockList implements ContentList{
-    public static Block conveyor, titaniumconveyor, distributor, junction,
+    public static Block conveyor, titaniumconveyor, thoriumconveyor, distributor, junction,
     itemBridge, phaseConveyor, sorter, router, overflowGate, massDriver;
 
     @Override
@@ -19,6 +19,13 @@ public class DistributionBlocks extends BlockList implements ContentList{
         titaniumconveyor = new Conveyor("titanium-conveyor"){{
             health = 65;
             speed = 0.07f;
+
+        }};
+
+        thoriumconveyor = new ArmoredConveyor("thorium-conveyor"){{
+            health = 230;
+            speed = 0.07f;
+            noSideBlend = true;
         }};
 
         junction = new Junction("junction"){{

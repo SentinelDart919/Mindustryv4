@@ -26,6 +26,8 @@ public class GenericCrafter extends Block{
     protected final int timerDump = timers++;
 
     protected Item output;
+    /** item output of this block*/
+    public int itemOutputAmount = 1;
     protected float craftTime = 80;
     protected Effect craftEffect = BlockFx.purify;
     protected Effect updateEffect = Fx.none;
@@ -99,7 +101,9 @@ public class GenericCrafter extends Block{
 
             useContent(tile, output);
 
-            offloadNear(tile, output);
+            for(int i = 0; i < itemOutputAmount; i++){
+                offloadNear(tile, output);
+            }
             Effects.effect(craftEffect, tile.drawx(), tile.drawy());
             entity.progress = 0f;
         }

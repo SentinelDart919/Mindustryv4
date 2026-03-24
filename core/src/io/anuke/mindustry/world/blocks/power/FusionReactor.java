@@ -2,20 +2,32 @@ package io.anuke.mindustry.world.blocks.power;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import io.anuke.mindustry.content.Items;
+import io.anuke.mindustry.content.Liquids;
+import io.anuke.mindustry.content.fx.BlockFx;
+import io.anuke.mindustry.content.fx.ExplosionFx;
+import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterEntity;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.util.Translator;
+
+import static io.anuke.mindustry.Vars.tilesize;
 
 public class FusionReactor extends PowerGenerator{
+    protected final Translator tr = new Translator();
     protected int plasmas = 4;
-    protected float maxPowerProduced = 2f;
+    protected float maxPowerProduced = 3f;
     protected float warmupSpeed = 0.001f;
+    protected int explosionRadius = 36;
+    protected int explosionDamage = 270;
 
     protected Color plasma1 = Color.valueOf("ffd06b"), plasma2 = Color.valueOf("ff361b");
     protected Color ind1 = Color.valueOf("858585"), ind2 = Color.valueOf("fea080");
@@ -24,9 +36,14 @@ public class FusionReactor extends PowerGenerator{
         super(name);
         hasPower = true;
         hasLiquids = true;
-        powerCapacity = 100f;
+        powerCapacity = 150f;
         liquidCapacity = 30f;
         hasItems = true;
+        itemCapacity = 20;
+
+        consumes.item(Items.blastCompound);
+        consumes.liquid(Liquids.cryofluid, 0.09f);
+        //consumes.power(0.6f);
     }
 
     @Override
@@ -120,7 +137,28 @@ public class FusionReactor extends PowerGenerator{
 
         if(entity.warmup < 0.4f) return;
 
-        //TODO catastrophic failure
+        Effects.shake(6f, 16f, tile.worldx(), tile.worldy());
+        Effects.effect(ExplosionFx.nuclearShockwave, tile.worldx(), tile.worldy());
+        for(int i = 0; i < 6; i++){
+            Timers.run(Mathf.random(40), () -> Effects.effect(BlockFx.nuclearcloud, tile.worldx(), tile.worldy()));
+        }
+
+        Damage.damage(tile.worldx(), tile.worldy(), explosionRadius * tilesize, explosionDamage * 4);
+
+
+        for(int i = 0; i < 20; i++){
+            Timers.run(Mathf.random(50), () -> {
+                tr.rnd(Mathf.random(40f));
+                Effects.effect(ExplosionFx.explosion, tr.x + tile.worldx(), tr.y + tile.worldy());
+            });
+        }
+
+        for(int i = 0; i < 70; i++){
+            Timers.run(Mathf.random(80), () -> {
+                tr.rnd(Mathf.random(120f));
+                Effects.effect(BlockFx.nuclearsmoke, tr.x + tile.worldx(), tr.y + tile.worldy());
+            });
+        }
     }
 
     public static class FusionReactorEntity extends GenericCrafterEntity{

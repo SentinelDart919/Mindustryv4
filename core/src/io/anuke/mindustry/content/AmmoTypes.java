@@ -14,6 +14,7 @@ public class AmmoTypes implements ContentList{
         bulletDenseBig, bulletPyratiteBig, bulletThoriumBig,
         shock, bombExplosive, bombIncendiary, bombOil, shellCarbide, flamerThermite, weaponMissile, weaponMissileSwarm, bulletMech,
         healBlaster, bulletGlaive,
+        explode,
         flakExplosive, flakPlastic, flakSurge,
         missileExplosive, missileIncindiary, missileSurge,
         artilleryDense, artilleryPlastic, artilleryHoming, artilleryIncindiary, artilleryExplosive, unitArtillery,
@@ -245,6 +246,11 @@ public class AmmoTypes implements ContentList{
 
         cryofluid = new AmmoType(Liquids.cryofluid, TurretBullets.cryoShot, 0.3f);
 
+        //special
+        explode = new AmmoType(WeaponBullets.explode){{
+           shootEffect = Fx.smoke;
+           smokeEffect = ShootFx.shootBigSmoke2;
+        }};
     }
 
     @Override

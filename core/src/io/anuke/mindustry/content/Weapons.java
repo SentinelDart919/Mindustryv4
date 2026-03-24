@@ -7,11 +7,19 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
-    public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, chainBlaster, shockgun,
-    sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2;
+    public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
+    kamikaze,
+    sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster;
 
     @Override
     public void load(){
+
+        kamikaze = new Weapon("kamikaze"){{
+            reload = 12f;
+            roundrobin = false;
+            ejectEffect = Fx.none;
+            ammo = AmmoTypes.explode;
+        }};
 
         blaster = new Weapon("blaster"){{
             length = 1.5f;
@@ -80,9 +88,25 @@ public class Weapons implements ContentList{
             ammo = AmmoTypes.weaponMissileSwarm;
         }};
 
+        scrapLockBlaster = new Weapon("scrap-lock-blaster"){{
+            length = 2.5f;
+            reload = 64f;
+            roundrobin = true;
+            ejectEffect = ShootFx.shellEjectSmall;
+            ammo = AmmoTypes.bulletCopper;
+        }};
+
         chainBlaster = new Weapon("chain-blaster"){{
             length = 1.5f;
             reload = 28f;
+            roundrobin = true;
+            ejectEffect = ShootFx.shellEjectSmall;
+            ammo = AmmoTypes.bulletCopper;
+        }};
+
+        scrapBlaster = new Weapon("scrap-blaster"){{
+            length = 1.5f;
+            reload = 48f;
             roundrobin = true;
             ejectEffect = ShootFx.shellEjectSmall;
             ammo = AmmoTypes.bulletCopper;
@@ -181,6 +205,26 @@ public class Weapons implements ContentList{
         }};
 
         healBlasterDrone2 = new Weapon("heal-blaster"){{
+            length = 1.5f;
+            reload = 5f;
+            width = 0.5f;
+            roundrobin = true;
+            ejectEffect = Fx.none;
+            recoil = 2f;
+            ammo = AmmoTypes.healBlaster;
+        }};
+
+        healBlasterDrone3 = new Weapon("heal-blaster"){{
+            length = 1.5f;
+            reload = 20f;
+            width = 0.5f;
+            roundrobin = true;
+            ejectEffect = Fx.none;
+            recoil = 2f;
+            ammo = AmmoTypes.healBlaster;
+        }};
+
+        mineBlaster = new Weapon("mine-blaster"){{
             length = 1.5f;
             reload = 20f;
             width = 0.5f;

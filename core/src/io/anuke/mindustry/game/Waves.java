@@ -15,11 +15,20 @@ public class Waves{
                 end = 8;
                 unitScaling = 3;
             }},
+                new SpawnGroup(UnitTypes.crawler){{
+                    end = 18;
+                    begin = 6;
+                    unitScaling = 2;
+                }},
 
             new SpawnGroup(UnitTypes.wraith){{
                 begin = 12;
                 end = 14;
             }},
+                new SpawnGroup(UnitTypes.bombDrone){{
+                   begin = 14;
+                   end = 16;
+                }},
 
             new SpawnGroup(UnitTypes.dagger){{
                 begin = 11;
@@ -27,6 +36,12 @@ public class Waves{
                 spacing = 2;
                 max = 4;
             }},
+                new SpawnGroup(UnitTypes.crawler){{
+                    begin = 13;
+                    unitScaling = 2;
+                    spacing = 2;
+                    max = 12;
+                }},
 
             new SpawnGroup(UnitTypes.titan){{
                 begin = 9;
@@ -43,6 +58,13 @@ public class Waves{
                 spacing = 2;
                 end = 30;
             }},
+                new SpawnGroup(UnitTypes.crawler){{
+                    begin = 9;
+                    unitScaling = 2;
+                    spacing = 2;
+                    unitAmount = 1;
+                    end = 30;
+                }},
 
             new SpawnGroup(UnitTypes.titan){{
                 begin = 28;
@@ -73,10 +95,16 @@ public class Waves{
                 begin = 16;
                 unitScaling = 2;
                 spacing = 2;
-
                 end = 39;
                 max = 7;
             }},
+                new SpawnGroup(UnitTypes.bombDrone){{
+                    begin = 18;
+                    unitScaling = 2;
+                    spacing = 2;
+                    end = 41;
+                    max = 11;
+                }},
 
             new SpawnGroup(UnitTypes.dagger){{
                 begin = 82;
@@ -86,6 +114,14 @@ public class Waves{
                 unitScaling = 3;
                 effect = StatusEffects.overdrive;
             }},
+                new SpawnGroup(UnitTypes.crawler){{
+                    begin = 82;
+                    spacing = 3;
+                    unitScaling = 2;
+                    groupAmount = 2;
+                    unitAmount = 4;
+                   effect = StatusEffects.overdrive;
+                }},
 
             new SpawnGroup(UnitTypes.dagger){{
                 begin = 41;
@@ -133,6 +169,25 @@ public class Waves{
                 effect = StatusEffects.overdrive;
                 max = 8;
             }},
+                new SpawnGroup(UnitTypes.bombDrone){{
+                begin = 60;
+                unitAmount = 4;
+                unitScaling = 3;
+                spacing = 5;
+                groupAmount = 2;
+                effect = StatusEffects.overdrive;
+                max = 20;
+            }},
+
+            new SpawnGroup(UnitTypes.bombDrone){{
+                begin = 120;
+                unitAmount = 4;
+                unitScaling = 3;
+                spacing = 5;
+                groupAmount = 4;
+                effect = StatusEffects.shielded;
+                max = 40;
+            }},
 
             new SpawnGroup(UnitTypes.ghoul){{
                 begin = 53;
@@ -150,7 +205,62 @@ public class Waves{
                 spacing = 4;
                 max = 8;
                 end = 74;
-            }}
+            }},
+                new SpawnGroup(UnitTypes.revenant){{
+                    begin = 35;
+                    unitAmount = 1;
+                    unitScaling = 0.5f;
+                    spacing = 5;
+                    groupAmount = 2;
+                    effect = StatusEffects.overdrive;
+                    max = 8;
+                    end = 65;
+                }},
+
+                new SpawnGroup(UnitTypes.revenant){{
+                    begin = 75;
+                    unitAmount = 1;
+                    unitScaling = 2;
+                    spacing = 5;
+                    groupAmount = 2;
+                    max = 20;
+                }},
+
+                new SpawnGroup(UnitTypes.revenant){{
+                    begin = 125;
+                    unitAmount = 1;
+                    unitScaling = 1f;
+                    spacing = 10;
+                    groupAmount = 2;
+                    max = 40;
+                    effect = StatusEffects.overdrive;
+                }},
+
+                new SpawnGroup(UnitTypes.ghoul){{
+                    begin = 82;
+                    unitAmount = 2;
+                    spacing = 2;
+                    unitScaling = 3;
+                    max = 80;
+                }},
+                new SpawnGroup(UnitTypes.fortress){{
+                    begin = 42;
+                    spacing = 3;
+                    unitAmount = 1;
+                    unitScaling = 1;
+                    groupAmount = 2;
+                    max = 40;
+                }},
+                new SpawnGroup(UnitTypes.fortress){{
+                    begin = 84;
+                    spacing = 3;
+                    unitAmount = 1;
+                    unitScaling = 2;
+                    groupAmount = 2;
+                    effect = StatusEffects.overdrive;
+                    max = 80;
+                }}
+
         );
     }
 

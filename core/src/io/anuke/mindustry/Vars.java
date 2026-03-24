@@ -30,7 +30,7 @@ import java.util.Locale;
 
 @SuppressWarnings("unchecked")
 public class Vars{
-    public static final String appName = "Mindustry";
+    public static final String appName = "MindustryV4";
     public static final String discordURL = "https://discord.gg/mindustry";
     public static final String releasesURL = "https://api.github.com/repos/Anuken/Mindustry/releases";
     public static final String contributorsURL = "https://api.github.com/repos/Anuken/Mindustry/contributors";

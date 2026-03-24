@@ -19,7 +19,7 @@ import static io.anuke.mindustry.Vars.world;
 public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
     protected static Translator vec = new Translator();
     protected static float wobblyness = 0.6f;
-
+    protected boolean customTrail = false;
     protected Trail trail = new Trail(8);
     protected CarriableTrait carrying;
     protected final UnitState
@@ -154,7 +154,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             wobble();
         }
 
-        trail.update(x + Angles.trnsx(rotation + 180f, 6f) + Mathf.range(wobblyness),
+        if(!customTrail)trail.update(x + Angles.trnsx(rotation + 180f, 6f) + Mathf.range(wobblyness),
         y + Angles.trnsy(rotation + 180f, 6f) + Mathf.range(wobblyness));
     }
 

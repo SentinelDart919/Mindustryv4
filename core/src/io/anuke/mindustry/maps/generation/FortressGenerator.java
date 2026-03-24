@@ -131,15 +131,27 @@ public class FortressGenerator{
 
             //turrets1
             seeder.get(turret1, tile -> tile.block() instanceof PowerBlock && gen.random.chance(0.22 - turret1.size*0.02)),
+            seeder.get(turret1, tile -> tile.block() instanceof UnitFactory && gen.random.chance(0.12 - turret1.size*0.02)),
+            seeder.get(turret1, tile -> (tile.block() instanceof ForceProjector| tile.block() instanceof CoreBlock) && gen.random.chance(0.20 - turret1.size*0.02)),
 
             //turrets2
             seeder.get(turret2, tile -> tile.block() instanceof PowerBlock && gen.random.chance(0.12 - turret2.size*0.02)),
+            seeder.get(turret2, tile -> (tile.block() instanceof ForceProjector || tile.block() instanceof CoreBlock) && gen.random.chance(0.10 - turret2.size*0.02)),
 
             //shields
             seeder.get(DefenseBlocks.forceProjector, tile -> (tile.block() instanceof CoreBlock || tile.block() instanceof UnitFactory) && gen.random.chance(0.2 * dscl2)),
 
             //unit pads (assorted)
             seeder.get(UnitBlocks.daggerFactory, tile -> (tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.3 * dscl2)),
+
+            seeder.get(UnitBlocks.revenantFactory, tile -> (tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.17 *dscl2)),
+
+            seeder.get(UnitBlocks.crawlerFactory, tile ->(tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.3 *dscl2)),
+            seeder.get(UnitBlocks.bombdroneFactory, tile ->(tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.3 *dscl2)),
+
+            seeder.get(UnitBlocks.scrappeonFactory, tile ->(tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.35 *dscl2)),
+
+            seeder.get(UnitBlocks.scrapperFactory, tile ->(tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.35 *dscl2)),
 
             //unit pads (assorted)
             seeder.get(UnitBlocks.wraithFactory, tile -> (tile.block() instanceof MendProjector || tile.block() instanceof ForceProjector) && gen.random.chance(0.3 * dscl2)),

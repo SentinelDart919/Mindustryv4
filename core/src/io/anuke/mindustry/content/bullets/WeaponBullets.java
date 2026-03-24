@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.BulletFx;
+import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.bullet.BasicBulletType;
 import io.anuke.mindustry.entities.bullet.BombBulletType;
 import io.anuke.mindustry.entities.bullet.Bullet;
@@ -17,7 +18,7 @@ import io.anuke.ucore.util.Mathf;
 import static io.anuke.mindustry.Vars.world;
 
 public class WeaponBullets extends BulletList{
-    public static BulletType tungstenShotgun, bombExplosive, bombIncendiary, bombOil, shellCarbide;
+    public static BulletType tungstenShotgun, explode ,bombExplosive, bombIncendiary, bombOil, shellCarbide;
 
     @Override
     public void load(){
@@ -36,6 +37,23 @@ public class WeaponBullets extends BulletList{
                 bulletWidth = 9f;
                 bulletHeight = 13f;
                 hiteffect = BulletFx.flakExplosion;
+            }
+        };
+
+        explode = new BombBulletType(2f, 3f, "clear"){
+            {
+                hiteffect = BlockFx.pulverize;
+                lifetime = (30f);
+                speed =1f;
+                splashDamageRadius = 50f;
+                splashDamage = 28f;
+            }
+            @Override
+            public void init(Bullet b){
+                if(b.getOwner() instanceof Unit){
+                    ((Unit)b.getOwner()).damage(10000f);
+                }
+                b.time(b.lifetime());
             }
         };
 

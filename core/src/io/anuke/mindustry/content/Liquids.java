@@ -6,7 +6,7 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Liquid;
 
 public class Liquids implements ContentList{
-    public static Liquid water, lava, oil, cryofluid;
+    public static Liquid water, lava, slag, oil, cryofluid, chromium_acid;
 
     @Override
     public void load(){
@@ -33,6 +33,15 @@ public class Liquids implements ContentList{
             }
         };
 
+        slag = new Liquid("slag", Color.valueOf("dd7f16")){
+            {
+                temperature = 1.0f;
+                viscosity = 0.8f;
+                tier = 2;
+                effect = StatusEffects.melting;
+            }
+        };
+
         oil = new Liquid("oil", Color.valueOf("313131")){
             {
                 viscosity = 0.7f;
@@ -50,6 +59,18 @@ public class Liquids implements ContentList{
                 temperature = 0.25f;
                 tier = 1;
                 effect = StatusEffects.freezing;
+            }
+        };
+
+        chromium_acid = new Liquid("chromium_acid", Color.valueOf("b11e1e")){
+            {
+                viscosity = 0.5f;
+                tier = 1;
+                effect = StatusEffects.acid;
+        }
+            @Override
+            public boolean alwaysUnlocked() {
+                return true;
             }
         };
     }
