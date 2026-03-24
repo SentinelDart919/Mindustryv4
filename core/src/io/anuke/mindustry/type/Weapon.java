@@ -43,7 +43,7 @@ public class Weapon extends Content{
     /**shoot barrel y offset*/
     protected float length = 3f;
     /**shoot barrel x offset.*/
-    protected float width = 4f;
+    public float width = 4f;
     /**fraction of velocity that is random*/
     protected float velocityRnd = 0f;
     /**whether to shoot the weapons in different arms one after another, rather than all at once*/
