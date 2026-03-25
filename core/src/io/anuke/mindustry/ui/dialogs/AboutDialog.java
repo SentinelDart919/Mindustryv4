@@ -22,13 +22,12 @@ import static io.anuke.mindustry.Vars.ios;
 import static io.anuke.mindustry.Vars.ui;
 
 public class AboutDialog extends FloatingDialog{
-    private Array<Contributor> contributors = new Array<>();
+    //private Array<Contributor> contributors = new Array<>();
     private static ObjectSet<String> bannedItems = ObjectSet.with("google-play", "itch.io", "dev-builds", "trello");
 
     public AboutDialog(){
         super("$text.about.button");
 
-        Contributors.getContributors(out -> contributors = out, Throwable::printStackTrace);
 
         shown(this::setup);
         onResize(this::setup);
@@ -103,22 +102,7 @@ public class AboutDialog extends FloatingDialog{
         dialog.addCloseButton();
         dialog.content().add("$text.credits.text");
         dialog.content().row();
-        if(!contributors.isEmpty()){
-            dialog.content().addImage("blank").color(Palette.accent).fillX().height(3f).pad(3f);
-            dialog.content().row();
-            dialog.content().add("$text.contributors");
-            dialog.content().row();
-            dialog.content().pane(new Table(){{
-                int i = 0;
-                left();
-                for(Contributor c : contributors){
-                    add("[lightgray]" + c.login).left().pad(3).padLeft(6).padRight(6);
-                    if(++i % 3 == 0){
-                        row();
-                    }
-                }
-            }});
-        }
+
         dialog.show();
     }
 }
