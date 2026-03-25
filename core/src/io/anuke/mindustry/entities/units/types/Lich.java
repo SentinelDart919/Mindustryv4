@@ -79,11 +79,10 @@ public class Lich extends FlyingUnit{
 
         for(int i : Mathf.signs){
             Draw.alpha(hitTime / hitDuration);
-            float tra = rotation - 90, trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
-            float w = i > 0 ? -12 : 12;
-            float wx = x + Angles.trnsx(tra, getWeapon().width * i * type.weaponOffsetX, trY -3),
-                    wy = y + Angles.trnsy(tra, getWeapon().width * i * type.weaponOffsetX, trY -3);
-            int wi = (i + 1) / 2;
+            float tra = rotation - 90,
+                    trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
+            float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
+                    wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
             Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
 
         }

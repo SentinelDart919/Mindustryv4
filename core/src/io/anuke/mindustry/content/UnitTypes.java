@@ -214,7 +214,8 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             rotatespeed = 0.01f;
             baseRotateSpeed = 0.04f;
-            weaponOffsetX = 3.38f;
+            weaponOffsetX = 14f;
+            weaponOffsetY = -3f;
             weapon = Weapons.lichMissiles;
         }};
 
