@@ -1,10 +1,12 @@
 package io.anuke.mindustry.entities.units.types;
 
 import com.badlogic.gdx.graphics.Color;
-import io.anuke.mindustry.entities.TileEntity;
+import com.badlogic.gdx.math.Vector2;
+import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Angles;
@@ -12,28 +14,37 @@ import io.anuke.ucore.util.Mathf;
 
 public class TankUnit extends GroundUnit {
     protected float weaponRotation;
+
     protected void updateWeaponRotation(){
         if(!Units.invalidateTarget(target, this)){
-            weaponRotation = Mathf.slerpDelta(rotation, angleTo(target), type.rotatespeed);
+            weaponRotation = Mathf.slerpDelta(weaponRotation, angleTo(target), type.rotatespeed);
         }else{
-            weaponRotation = Mathf.slerpDelta(rotation, velocity.angle(), type.baseRotateSpeed);
+            float targetRotation = velocity.isZero() ? baseRotation : velocity.angle();
+            weaponRotation = Mathf.slerpDelta(weaponRotation, targetRotation, type.baseRotateSpeed);
         }
     }
+
     @Override
     public void update(){
-        TileEntity core = getClosestEnemyCore();
-        float dst = core == null ? 0 : distanceTo(core);
-
-        if(core != null && dst < getWeapon().getAmmo().getRange() / 1.1f){
-            target = core;
-        }
-
-        if(dst > getWeapon().getAmmo().getRange() * 0.5f){
-            moveToCore();
-        }
+        super.update();
 
         if(!Net.client()){
             updateWeaponRotation();
+        }
+    }
+
+    @Override
+    public void behavior(){
+        if(health <= health * type.retreatPercent && !isCommanded()){
+            setState(retreat);
+        }
+
+        if(!Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(Mathf.angNear(angleTo(target), weaponRotation, 13f)){
+                AmmoType ammo = getWeapon().getAmmo();
+                Vector2 to = Predict.intercept(this, target, ammo.bullet.speed);
+                getWeapon().update(this, to.x, to.y);
+            }
         }
     }
 
@@ -53,7 +64,7 @@ public class TankUnit extends GroundUnit {
             Draw.rect(type.trackRegion,
                     x + Angles.trnsx(baseRotation, ft * i),
                     y + Angles.trnsy(baseRotation, ft * i),
-                    12f * i, 12f - Mathf.clamp(ft * i, 0, 2), baseRotation - 90);
+                    16 * i, 24f, baseRotation - 90);
         }
 
         if(floor.isLiquid){
@@ -62,7 +73,7 @@ public class TankUnit extends GroundUnit {
             Draw.tint(Color.WHITE);
         }
 
-        Draw.rect(type.baseRegion, x, y, baseRotation - 90);
+        //Draw.rect(type.baseRegion, x, y, baseRotation - 90);
 
         Draw.rect(type.region, x, y, rotation - 90);
 
