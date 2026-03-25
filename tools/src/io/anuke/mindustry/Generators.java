@@ -107,15 +107,17 @@ public class Generators {
 
                 if(!type.isFlying){
                     image.draw(type.baseRegion);
-                    image.draw(type.legRegion);
-                    image.draw(type.legRegion, true, false);
+                    if(!type.isTank) image.draw(type.legRegion);
+                    if(!type.isTank) image.draw(type.legRegion, true, false);
+                    if(type.isTank) image.draw(type.trackRegion);
+                    if(type.isTank) image.draw(type.trackRegion, true, false);
                     image.draw(type.region);
 
-                    image.draw(type.weapon.equipRegion,
+                    if(!type.isTank)image.draw(type.weapon.equipRegion,
                             -(int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
                             (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
                             false, false);
-                    image.draw(type.weapon.equipRegion,
+                    if(!type.isTank)image.draw(type.weapon.equipRegion,
                             (int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
                             (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
                             true, false);

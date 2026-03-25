@@ -33,6 +33,7 @@ public class UnitType extends UnlockableContent{
     public float baseRotateSpeed = 0.1f;
     public float mass = 1f;
     public boolean isFlying;
+    public boolean isTank;
     public boolean targetAir = true;
     public float drag = 0.1f;
     public float maxVelocity = 5f;
@@ -46,7 +47,7 @@ public class UnitType extends UnlockableContent{
     public float weaponOffsetX, weaponOffsetY;
     public Color trailColor = Color.valueOf("ffa665");
 
-    public TextureRegion iconRegion, legRegion, baseRegion, region;
+    public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;
 
     public <T extends BaseUnit> UnitType(String name, Class<T> type, Supplier<T> mainConstructor){
         this.name = name;
@@ -82,8 +83,9 @@ public class UnitType extends UnlockableContent{
         region = Draw.region(name);
 
         if(!isFlying){
-            legRegion = Draw.region(name + "-leg");
+            if(!isTank)legRegion = Draw.region(name + "-leg");
             baseRegion = Draw.region(name + "-base");
+            if(isTank)trackRegion = Draw.region(name + "-track");
         }
     }
 
