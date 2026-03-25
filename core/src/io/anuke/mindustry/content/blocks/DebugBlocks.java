@@ -195,7 +195,8 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.dagger,
                     UnitTypes.scrapper,
                     UnitTypes.ghost,
-                    UnitTypes.lich
+                    UnitTypes.lich,
+                    UnitTypes.spirit
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -209,14 +210,16 @@ public class DebugBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.lead, 30),
                             new ItemStack(Items.densealloy, 5)},
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 5),
-                    }
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)}
 
             };
             producerTimes = new float[]{
                     2000f,
                     1000f,
                     3000f,
+                    1000f,
                     1000f
             };
             size = 2;

@@ -13,7 +13,8 @@ public class UnitTypes implements ContentList{
         alphaDrone,
         scrapper , wraith, ghoul, revenant, lich,
         crawler, bombDrone,
-        scrappeon, dagger, titan, fortress;
+        scrappeon, dagger, titan, fortress,
+        debugtank;
 
 
     @Override
@@ -215,6 +216,12 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 3.38f;
             weapon = Weapons.lichMissiles;
 
+        }};
+
+        debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{
+            weaponOffsetX = 0;
+            weaponOffsetY = 0;
+            weapon = Weapons.artillery;
         }};
     }
 
