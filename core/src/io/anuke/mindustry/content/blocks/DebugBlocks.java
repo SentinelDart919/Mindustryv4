@@ -196,7 +196,7 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.scrapper,
                     UnitTypes.ghost,
                     UnitTypes.lich,
-                    UnitTypes.spirit
+                    UnitTypes.debugtank
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
