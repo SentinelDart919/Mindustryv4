@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.GroundUnit;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Angles;
@@ -29,6 +30,10 @@ public class TankUnit extends GroundUnit {
 
         if(dst > getWeapon().getAmmo().getRange() * 0.5f){
             moveToCore();
+        }
+
+        if(!Net.client()){
+            updateWeaponRotation();
         }
     }
 
