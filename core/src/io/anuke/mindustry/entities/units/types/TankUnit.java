@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
 import com.badlogic.gdx.graphics.Color;
+import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.world.blocks.Floor;
@@ -17,7 +18,19 @@ public class TankUnit extends GroundUnit {
             weaponRotation = Mathf.slerpDelta(rotation, velocity.angle(), type.baseRotateSpeed);
         }
     }
+    @Override
+    public void update(){
+        TileEntity core = getClosestEnemyCore();
+        float dst = core == null ? 0 : distanceTo(core);
 
+        if(core != null && dst < getWeapon().getAmmo().getRange() / 1.1f){
+            target = core;
+        }
+
+        if(dst > getWeapon().getAmmo().getRange() * 0.5f){
+            moveToCore();
+        }
+    }
 
     @Override
     public void draw(){
