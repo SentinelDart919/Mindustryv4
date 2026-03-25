@@ -48,8 +48,6 @@ public class UnitFactoryAdvanced extends Block{
 
     /** Array of the Units that the fabric can craft */
     public UnitType[] types;
-    /** Checks the amounts of units in the arrays and throws a number */
-    public int totalUnits;
     /** Array of arrays of Itemstacks made to define the amount of recipes that this fabric uses*/
     public ItemStack[][] consumerStacks;
     /** Array of the multiple Producing times for every Unit Type**/

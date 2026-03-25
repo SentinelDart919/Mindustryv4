@@ -166,7 +166,6 @@ public class UnitBlocks extends BlockList implements ContentList{
             };
             size = 8;
             consumes.power(0.12f);
-            totalUnits = types.length;
         }};
 
 

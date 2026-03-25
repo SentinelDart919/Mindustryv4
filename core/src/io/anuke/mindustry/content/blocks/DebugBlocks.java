@@ -224,7 +224,6 @@ public class DebugBlocks extends BlockList implements ContentList{
             };
             size = 2;
             consumes.power(0.04f);
-            totalUnits = types.length;
         }};
     }
 
