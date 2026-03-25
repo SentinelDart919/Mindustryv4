@@ -94,27 +94,32 @@ public class Image {
     public void draw(TextureRegion region, int x, int y, boolean flipx, boolean flipy){
         GenRegion.validate(region);
 
-        int ofx = 0, ofy = 0;
+        int width = region.getRegionWidth();
+        int height = region.getRegionHeight();
 
-        if(x < 0){
-            ofx = x;
-            x = 0;
+        int leftTrim = Math.max(0, -x);
+        int topTrim = Math.max(0, -y);
+        int rightTrim = Math.max(0, x + width - width());
+        int bottomTrim = Math.max(0, y + height - height());
+
+        int drawWidth = width - leftTrim - rightTrim;
+        int drawHeight = height - topTrim - bottomTrim;
+
+        if(drawWidth <= 0 || drawHeight <= 0){
+            return;
         }
 
-        if(y < 0){
-            ofy = y;
-            y = 0;
-        }
+        int dstX1 = x + leftTrim;
+        int dstY1 = y + topTrim;
+        int dstX2 = dstX1 + drawWidth;
+        int dstY2 = dstY1 + drawHeight;
 
-        graphics.drawImage(atlas,
-                x, y,
-                x + region.getRegionWidth(),
-                y + region.getRegionHeight(),
-                (flipx ? region.getRegionX() + region.getRegionWidth() : region.getRegionX()) + ofx,
-                (flipy ? region.getRegionY() + region.getRegionHeight() : region.getRegionY()) + ofy,
-                (flipx ? region.getRegionX() : region.getRegionX() + region.getRegionWidth()) + ofx,
-                (flipy ? region.getRegionY() : region.getRegionY() + region.getRegionHeight()) + ofy,
-                null);
+        int srcX1 = flipx ? region.getRegionX() + width - leftTrim : region.getRegionX() + leftTrim;
+        int srcX2 = flipx ? region.getRegionX() + rightTrim : region.getRegionX() + width - rightTrim;
+        int srcY1 = flipy ? region.getRegionY() + height - topTrim : region.getRegionY() + topTrim;
+        int srcY2 = flipy ? region.getRegionY() + bottomTrim : region.getRegionY() + height - bottomTrim;
+
+        graphics.drawImage(atlas, dstX1, dstY1, dstX2, dstY2, srcX1, srcY1, srcX2, srcY2, null);
     }
 
     /** @param name Name of texture file name to create, without any extensions.*/
