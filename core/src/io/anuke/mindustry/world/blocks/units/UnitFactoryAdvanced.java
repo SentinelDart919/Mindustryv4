@@ -47,12 +47,9 @@ public class UnitFactoryAdvanced extends Block{
     protected float maxSpeedup = 2f;
 
     /** Array of the Units that the fabric can craft */
-    static public UnitType[] types;
+    public UnitType[] types;
     /** Checks the amounts of units in the arrays and throws a number */
     public int totalUnits;
-    /** Number of the unit used to define which unit of the array of units this fabric will produce*/
-    public static int UnitNumber;
-    public static UnitType type;
     /** Array of arrays of Itemstacks made to define the amount of recipes that this fabric uses*/
     public ItemStack[][] consumerStacks;
     /** Array of the multiple Producing times for every Unit Type**/
@@ -83,8 +80,6 @@ public class UnitFactoryAdvanced extends Block{
         entity.unitSource = factory.types[UnitDataNumber];
         entity.buildTime = 0f;
 
-        UnitNumber = UnitDataNumber;
-        type = entity.unitSource;
     }
     @Remote(called = Loc.server)
     public static void onUnitFactoryAdvancedSpawn(Tile tile){
@@ -147,10 +142,10 @@ public class UnitFactoryAdvanced extends Block{
         UnitFactoryAdvancedEntity entity = tile.entity();
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         Table cont = new Table();
-        if(types == null || types.length == 0) return;
+        if(this.types == null || this.types.length == 0) return;
 
-        for (int i = 0; i < types.length; i++) {
-            UnitType type = types[i];
+        for (int i = 0; i < this.types.length; i++) {
+            UnitType type = this.types[i];
             final int f = i;
             ImageButton button = cont.addImageButton("white","clear-toggle", 24,
                     ()->Call.setUnitNumber(null, tile, f)).size(38).group(group).get();
@@ -211,10 +206,9 @@ public class UnitFactoryAdvanced extends Block{
     @Override
     public void update(Tile tile){
         UnitFactoryAdvancedEntity entity = tile.entity();
-        UnitNumber = entity.unitNumber;
-        type = getSelectedType(entity);
+        UnitType selectedType = getSelectedType(entity);
         float selectedProduceTime = getSelectedProduceTime(entity);
-        entity.unitSource = type;
+        entity.unitSource = selectedType;
 
         entity.time += entity.delta() * entity.speedScl;
         if(tile.isEnemyCheat()){
@@ -250,8 +244,8 @@ public class UnitFactoryAdvanced extends Block{
             entity.buildTime = 0f;
 
             Call.onUnitFactoryAdvancedSpawn(tile);
-            if(type != null){
-                useContent(tile, type);
+            if(selectedType != null){
+                useContent(tile, selectedType);
             }
 
             for(ItemStack stack : getSelectedConsumerStacks(entity)){
@@ -286,7 +280,7 @@ public class UnitFactoryAdvanced extends Block{
     public TileEntity newEntity(){
         UnitFactoryAdvancedEntity entity = new UnitFactoryAdvancedEntity();
         if(types != null && types.length > 0){
-            entity.unitNumber = cUnitNumber(UnitNumber);
+            entity.unitNumber = 0;
             entity.unitSource = types[entity.unitNumber];
         }
         return entity;
@@ -394,9 +388,12 @@ public class UnitFactoryAdvanced extends Block{
         @Override
         public void readConfig(DataInput stream) throws IOException{
             unitNumber = stream.readByte();
-            if(UnitFactoryAdvanced.types != null && UnitFactoryAdvanced.types.length > 0){
-                unitNumber = Math.max(0, Math.min(unitNumber, UnitFactoryAdvanced.types.length - 1));
-                unitSource = UnitFactoryAdvanced.types[unitNumber];
+            if(tile != null && tile.block() instanceof UnitFactoryAdvanced){
+                UnitFactoryAdvanced factory = (UnitFactoryAdvanced)tile.block();
+                if(factory.types != null && factory.types.length > 0){
+                    unitNumber = factory.cUnitNumber(unitNumber);
+                    unitSource = factory.types[unitNumber];
+                }
             }
         }
     }
