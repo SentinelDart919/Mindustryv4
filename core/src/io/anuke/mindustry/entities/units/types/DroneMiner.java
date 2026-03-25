@@ -1,11 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.utils.Queue;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.TileEntity;
-import io.anuke.mindustry.entities.Unit;
-import io.anuke.mindustry.entities.Units;
-import io.anuke.mindustry.entities.traits.BuilderTrait;
 import io.anuke.mindustry.entities.traits.MinerTrait;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.entities.units.UnitCommand;
@@ -13,10 +9,8 @@ import io.anuke.mindustry.entities.units.UnitState;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
-import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.ItemType;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.mindustry.world.blocks.BuildBlock;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Mathf;
@@ -28,7 +22,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.world;
 
-public class Scavenger extends FlyingUnit implements MinerTrait {
+public class DroneMiner extends FlyingUnit implements MinerTrait {
 
     protected Item targetItem;
     protected Tile mineTile;
@@ -52,7 +46,7 @@ public class Scavenger extends FlyingUnit implements MinerTrait {
             }
 
             //core full
-            if(targetItem != null && entity.tile.block().acceptStack(targetItem, 1, entity.tile, Scavenger.this) == 0){
+            if(targetItem != null && entity.tile.block().acceptStack(targetItem, 1, entity.tile, DroneMiner.this) == 0){
                 setState(drop);
                 return;
             }
@@ -118,7 +112,7 @@ public class Scavenger extends FlyingUnit implements MinerTrait {
                     TileEntity tile = (TileEntity) target;
 
                     if(distanceTo(target) < type.range){
-                        if(tile.tile.block().acceptStack(inventory.getItem().item, inventory.getItem().amount, tile.tile, Scavenger.this) == inventory.getItem().amount){
+                        if(tile.tile.block().acceptStack(inventory.getItem().item, inventory.getItem().amount, tile.tile, DroneMiner.this) == inventory.getItem().amount){
                             Call.transferItemTo(inventory.getItem().item, inventory.getItem().amount, x, y, tile.tile);
                             inventory.clearItem();
                         }
