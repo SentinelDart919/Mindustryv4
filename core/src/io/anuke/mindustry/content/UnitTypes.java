@@ -2,6 +2,7 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
+import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
@@ -13,7 +14,7 @@ public class UnitTypes implements ContentList{
         alphaDrone,
         scrapper , wraith, ghoul, revenant, lich,
         crawler, bombDrone,
-        scrappeon, dagger, titan, fortress,
+        scrappeon, dagger, titan, fortress, chaosarray,
         debugtank;
 
 
@@ -215,13 +216,34 @@ public class UnitTypes implements ContentList{
             baseRotateSpeed = 0.04f;
             weaponOffsetX = 3.38f;
             weapon = Weapons.lichMissiles;
+        }};
 
+        chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
+            health = 3000;
+            mass = 5f;
+            hitsize = 20;
+            speed = 0.12f;
+            maxVelocity = 0.68f;
+            drag = 0.4f;
+            rotatespeed = 0.06f;
+            weaponOffsetX = 17f;
+            weaponOffsetY = 2f;
+            weapon = Weapons.chaos;
         }};
 
         debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{
+            isTank = true;
+            mass = 1f;
+            hitsize = 2f;
+            speed = 0.2f;
+            maxVelocity = 2f;
+            drag = 0.4f;
+            rotatespeed = 0.06f;
+            baseRotateSpeed = 0.04f;
+            range = 80f;
             weaponOffsetX = 0;
             weaponOffsetY = 0;
-            weapon = Weapons.artillery;
+            weapon = Weapons.debugtankturret;
         }};
     }
 

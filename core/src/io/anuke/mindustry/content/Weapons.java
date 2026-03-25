@@ -8,8 +8,9 @@ import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze, lichMissiles,
-    sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster;
+    kamikaze, lichMissiles, chaos,
+    sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
+    debugtankturret;
 
     @Override
     public void load(){
@@ -243,6 +244,29 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             recoil = 2f;
             ammo = AmmoTypes.healBlaster;
+        }};
+
+        chaos = new Weapon("chaos"){{
+            length = 8;
+            width = 17f;
+            reload = 50f;
+            roundrobin = true;
+            recoil = 3f;
+            shake = 2f;
+            shots = 4;
+            spacing = 4f;
+            ejectEffect = ShootFx.shellEjectMedium;
+            ammo = AmmoTypes.flakSurge;
+        }};
+
+        debugtankturret = new Weapon("debugtankturret"){{
+            length = 1f;
+            reload = 60f;
+            roundrobin = false;
+            recoil = 5f;
+            shake = 2f;
+            ejectEffect = ShootFx.shellEjectMedium;
+            ammo = AmmoTypes.unitArtillery;
         }};
     }
 

@@ -196,7 +196,8 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.scrapper,
                     UnitTypes.ghost,
                     UnitTypes.lich,
-                    UnitTypes.debugtank
+                    UnitTypes.debugtank,
+                    UnitTypes.chaosarray
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -212,6 +213,8 @@ public class DebugBlocks extends BlockList implements ContentList{
                     new ItemStack[]{
                             new ItemStack(Items.silicon, 5)},
                     new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
                             new ItemStack(Items.silicon, 5)}
 
             };
@@ -219,6 +222,7 @@ public class DebugBlocks extends BlockList implements ContentList{
                     2000f,
                     1000f,
                     3000f,
+                    1000f,
                     1000f,
                     1000f
             };
