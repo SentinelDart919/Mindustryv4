@@ -2,7 +2,6 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
-import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
@@ -10,7 +9,7 @@ import io.anuke.mindustry.type.ContentType;
 
 public class UnitTypes implements ContentList{
     public static UnitType
-        scavenger, spirit, ghost, phantom,
+        scavenger, draug, spirit, ghost, phantom,
         alphaDrone,
         scrapper , wraith, ghoul, revenant, lich,
         crawler, bombDrone,
@@ -40,7 +39,7 @@ public class UnitTypes implements ContentList{
             }
         };
 
-        scavenger = new UnitType("scavenger", Scavenger.class, Scavenger::new){{
+        scavenger = new UnitType("scavenger", DroneMiner.class, DroneMiner::new){{
             weapon = Weapons.mineBlaster;
             isFlying = true;
             drag = 0.01f;
@@ -50,6 +49,17 @@ public class UnitTypes implements ContentList{
             health = 20;
             toMine = ObjectSet.with(Items.scrap);
             itemCapacity = 50;
+        }};
+
+        draug = new UnitType("draug", DroneMiner.class, DroneMiner::new){{
+            weapon = Weapons.mineBlaster;
+            isFlying = true;
+            drag = 0.01f;
+            speed = 0.19f;
+            maxVelocity = 0.61f;
+            range = 55f;
+            health = 40;
+            toMine = ObjectSet.with(Items.copper, Items.lead);
         }};
 
         spirit = new UnitType("spirit", Spirit.class, Spirit::new){{
@@ -245,7 +255,12 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 0;
             weaponOffsetY = 0;
             weapon = Weapons.debugtankturret;
-        }};
+
+        }
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
     }
 
     @Override
