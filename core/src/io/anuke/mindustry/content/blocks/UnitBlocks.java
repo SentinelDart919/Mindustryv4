@@ -181,8 +181,6 @@ public class UnitBlocks extends BlockList implements ContentList{
         highTierFactory = new UnitFactoryAdvanced("high-tier-factory"){{
             types = new UnitType[]{
                     UnitTypes.lich,
-                    UnitTypes.revenant,
-                    UnitTypes.fortress,
                     UnitTypes.chaosarray,
             };
             consumerStacks = new ItemStack[][]{
@@ -195,13 +193,6 @@ public class UnitBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.surgealloy, 400),
                     },
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 80),
-                            new ItemStack(Items.titanium, 80),
-                            new ItemStack(Items.plastanium, 50)},
-                    new ItemStack[]{
-                            new ItemStack(Items.silicon, 40),
-                            new ItemStack(Items.thorium, 50)},
-                    new ItemStack[]{
                             new ItemStack(Items.silicon, 600),
                             new ItemStack(Items.lead, 700),
                             new ItemStack(Items.thorium, 400),
@@ -213,8 +204,6 @@ public class UnitBlocks extends BlockList implements ContentList{
             };
             producerTimes = new float[]{
                     17000f,
-                    15500f,
-                    7500f,
                     18000f
 
             };
