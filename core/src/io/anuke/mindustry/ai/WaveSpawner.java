@@ -4,10 +4,14 @@ import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.Squad;
+import io.anuke.mindustry.entities.units.UnitType;
+import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
+import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.SpawnGroup;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Waves;
+import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.util.GridBits;
@@ -67,6 +71,11 @@ public class WaveSpawner{
     }
 
     public void spawnEnemies(){
+        if(state.mode == GameMode.SiegeMode){
+            spawnSiegeModeEnemies();
+            return;
+        }
+
         int flyGroups = 0;
         int groundGroups = 0;
 
@@ -146,6 +155,115 @@ public class WaveSpawner{
                 }
             }
         }
+    }
+
+    private void spawnSiegeModeEnemies(){
+        Array<UnitType> picked = pickExtraSurvivalUnits();
+        if(picked.size == 0){
+            return;
+        }
+
+        int flyUnits = 0;
+        int groundUnits = 0;
+        for(UnitType type : picked){
+            if(type.isFlying){
+                flyUnits++;
+            }else if(dynamicSpawn){
+                groundUnits++;
+            }
+        }
+
+        int addGround = groundUnits - groundSpawns.size;
+        int addFly = flyUnits - flySpawns.size;
+
+        if(dynamicSpawn){
+            for(int i = 0; i < addGround; i++){
+                GroundSpawn spawn = new GroundSpawn();
+                findLocation(spawn);
+                groundSpawns.add(spawn);
+            }
+        }
+
+        for(int i = 0; i < addFly; i++){
+            FlyerSpawn spawn = new FlyerSpawn();
+            findLocation(spawn);
+            flySpawns.add(spawn);
+        }
+
+        int flyCount = 0, groundCount = 0;
+
+        for(UnitType type : picked){
+            Squad squad = new Squad();
+            float spawnX, spawnY;
+            float spread;
+
+            if(type.isFlying){
+                FlyerSpawn spawn = flySpawns.get(Mathf.mod(flyCount, flySpawns.size));
+                float margin = 40f;
+                spawnX = world.width() * tilesize / 2f + Mathf.sqrwavex(spawn.angle) * (world.width() / 2f * tilesize + margin);
+                spawnY = world.height() * tilesize / 2f + Mathf.sqrwavey(spawn.angle) * (world.height() / 2f * tilesize + margin);
+                spread = margin / 1.5f;
+                flyCount++;
+            }else{
+                if(groundSpawns.size == 0) continue;
+
+                GroundSpawn spawn = groundSpawns.get(Mathf.mod(groundCount, groundSpawns.size));
+
+                if(dynamicSpawn){
+                    checkQuadrant(spawn.x, spawn.y);
+                    if(!getQuad(spawn.x, spawn.y)){
+                        findLocation(spawn);
+                    }
+                }
+
+                spawnX = spawn.x * quadsize * tilesize + quadsize * tilesize / 2f;
+                spawnY = spawn.y * quadsize * tilesize + quadsize * tilesize / 2f;
+                spread = quadsize * tilesize / 3f;
+                groundCount++;
+            }
+
+            BaseUnit unit = type.create(Team.red);
+            unit.setWave();
+            unit.setSquad(squad);
+            unit.set(spawnX + Mathf.range(spread), spawnY + Mathf.range(spread));
+            unit.add();
+        }
+    }
+
+    private Array<UnitType> pickExtraSurvivalUnits(){
+        Array<UnitType> result = new Array<>();
+        int funds = WaveExtraMission.displayedFunds;
+
+        while(funds > 0){
+            Array<UnitType> affordable = new Array<>();
+            int cheapest = Integer.MAX_VALUE;
+
+            for(UnitType type : content.<UnitType>getBy(ContentType.unit)){
+                if(type == null || !type.spawnsInSiegeMode || type.unitCost <= 0) continue;
+                if(type.unitCost <= funds){
+                    affordable.add(type);
+                    cheapest = Math.min(cheapest, type.unitCost);
+                }
+            }
+
+            if(affordable.size == 0 || cheapest == Integer.MAX_VALUE){
+                break;
+            }
+
+            affordable.sort((a, b) -> Integer.compare(a.unitCost, b.unitCost));
+
+            int maxIndex = Math.min(affordable.size - 1, Math.max(0, state.wave / 4));
+            UnitType choice = affordable.get(Mathf.random(maxIndex));
+            result.add(choice);
+            funds -= choice.unitCost;
+        }
+
+        int spent = WaveExtraMission.displayedFunds - funds;
+        if(spent > 0){
+            WaveExtraMission.spendFunds(spent);
+        }
+
+        return result;
     }
 
     public void checkAllQuadrants(){
