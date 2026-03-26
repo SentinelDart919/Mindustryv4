@@ -7,12 +7,16 @@ import io.anuke.mindustry.ai.BlockIndexer;
 import io.anuke.mindustry.ai.Pathfinder;
 import io.anuke.mindustry.ai.WaveSpawner;
 import io.anuke.mindustry.content.blocks.Blocks;
+import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
+import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.io.MapIO;
 import io.anuke.mindustry.maps.*;
+import io.anuke.mindustry.maps.generation.FortressGenerator;
+import io.anuke.mindustry.maps.generation.Generation;
 import io.anuke.mindustry.maps.generation.WorldGenerator;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -257,6 +261,10 @@ public class World extends Module{
             return;
         }
 
+        if(state.mode == GameMode.customAttackMode){
+            applyCustomAttackFortress(map);
+        }
+
         endMapLoad();
 
         invalidMap = false;
@@ -287,6 +295,35 @@ public class World extends Module{
     public void notifyChanged(Tile tile){
         if(!generating){
             threads.runDelay(() -> Events.fire(new TileChangeEvent(tile)));
+        }
+    }
+
+    private void applyCustomAttackFortress(Map map){
+        Tile blueCore = null;
+        Array<Tile> enemyCores = new Array<>();
+
+        for(int x = 0; x < tiles.length; x++){
+            for(int y = 0; y < tiles[0].length; y++){
+                Tile tile = tiles[x][y];
+                if(tile == null || tile.block() != StorageBlocks.core) continue;
+
+                if(tile.getTeam() == defaultTeam){
+                    if(blueCore == null){
+                        blueCore = tile;
+                    }
+                }else if(tile.getTeam() != Team.none){
+                    enemyCores.add(tile);
+                }
+            }
+        }
+
+        if(blueCore == null || enemyCores.size == 0){
+            return;
+        }
+
+        Generation generation = new Generation(null, tiles, map.meta.width, map.meta.height, new SeedRandom(Mathf.random(99999)));
+        for(Tile enemyCore : enemyCores){
+            new FortressGenerator().generate(generation, enemyCore.getTeam(), blueCore.x, blueCore.y, enemyCore.x, enemyCore.y);
         }
     }
 
