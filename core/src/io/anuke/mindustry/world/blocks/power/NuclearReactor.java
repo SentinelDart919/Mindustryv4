@@ -3,6 +3,7 @@ package io.anuke.mindustry.world.blocks.power;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.Items;
+import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.ExplosionFx;
 import io.anuke.mindustry.entities.Damage;
@@ -81,6 +82,12 @@ public class NuclearReactor extends PowerGenerator{
     @Override
     public void update(Tile tile){
         NuclearReactorEntity entity = tile.entity();
+
+        if(tile.isEnemyCheat()){
+            entity.items.add(consumes.item(), itemCapacity - entity.items.get(consumes.item()));
+            entity.liquids.add(entity.liquids.currentAmount() <= 0.001f ? Liquids.cryofluid : entity.liquids.current(),
+                    liquidCapacity - entity.liquids.total());
+        }
 
         int fuel = entity.items.get(consumes.item());
         float fullness = (float) fuel / itemCapacity;

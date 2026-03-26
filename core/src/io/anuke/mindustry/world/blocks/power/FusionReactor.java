@@ -57,6 +57,11 @@ public class FusionReactor extends PowerGenerator{
     public void update(Tile tile){
         FusionReactorEntity entity = tile.entity();
 
+        if(tile.isEnemyCheat()){
+            entity.items.add(consumes.item(), itemCapacity - entity.items.get(consumes.item()));
+            entity.liquids.add(Liquids.cryofluid, liquidCapacity - entity.liquids.get(Liquids.cryofluid));
+        }
+
         if(entity.cons.valid()){
             entity.warmup = Mathf.lerpDelta(entity.warmup, 1f, warmupSpeed);
         }else{
