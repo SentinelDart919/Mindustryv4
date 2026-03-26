@@ -10,7 +10,8 @@ import io.anuke.mindustry.world.blocks.units.*;
 
 public class UnitBlocks extends BlockList implements ContentList{
     public static Block
-        scavengerFactory, spiritFactory, phantomFactory, ghostFactory,
+        //scavengerFactory, spiritFactory, phantomFactory, ghostFactory,
+            dronesFactory,
         scrapperFactory, wraithFactory, ghoulFactory, revenantFactory,
         scrappeonFactory,
         daggerFactory, titanFactory, fortressFactory,
@@ -19,7 +20,8 @@ public class UnitBlocks extends BlockList implements ContentList{
 
     @Override
     public void load(){
-        scavengerFactory = new UnitFactory("scavenger-factory"){{
+        //This code is Deprecated
+        /*scavengerFactory = new UnitFactory("scavenger-factory"){{
             type = UnitTypes.scavenger;
             produceTime = 7600;
             size = 2;
@@ -49,7 +51,49 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 2;
             consumes.power(0.2f);
             consumes.items(new ItemStack(Items.silicon, 70), new ItemStack(Items.lead, 80), new ItemStack(Items.titanium, 80));
+        }};*/
+        dronesFactory = new UnitFactoryAdvanced("drones-factory"){{
+            types = new UnitType[]{
+                    UnitTypes.scavenger,
+                    UnitTypes.draug,
+                    UnitTypes.spirit,
+                    UnitTypes.ghost,
+                    UnitTypes.phantom
+            };
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.scrap, 10),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.copper, 10),
+                            new ItemStack(Items.lead, 15)
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 30),
+                            new ItemStack(Items.lead, 30)
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 50),
+                            new ItemStack(Items.lead, 50),
+                            new ItemStack(Items.densealloy, 60)
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 70),
+                            new ItemStack(Items.lead, 80),
+                            new ItemStack(Items.titanium, 80)
+                    }
+            };
+            producerTimes = new float[]{
+                    5600,
+                    4600,
+                    5700,
+                    6300,
+                    7300,
+            };
+            consumes.power(0.08f);
+            size =2;
         }};
+
 
         wraithFactory = new UnitFactory("wraith-factory"){{
             type = UnitTypes.wraith;
