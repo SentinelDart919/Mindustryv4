@@ -151,6 +151,51 @@ public class Waves{
                 items = new ItemStack(Items.pyratite, 100);
                 end = 130;
             }},
+                new SpawnGroup(UnitTypes.chaosarray){{
+                    begin = 42;
+                    spacing = 42;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                }},
+
+                new SpawnGroup(UnitTypes.chaosarray){{
+                    begin = 84;
+                    spacing = 42;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                    effect = StatusEffects.overdrive;
+                }},
+
+                new SpawnGroup(UnitTypes.chaosarray){{
+                    begin = 126;
+                    spacing = 42;
+                    unitScaling = 1;
+                    unitAmount = 2;
+                    effect = StatusEffects.overdrive;
+                }},
+
+                new SpawnGroup(UnitTypes.lich){{
+                    begin = 84;
+                    spacing = 42;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                }},
+
+                new SpawnGroup(UnitTypes.lich){{
+                    begin = 126;
+                    spacing = 42;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                    effect = StatusEffects.overdrive;
+                }},
+
+                new SpawnGroup(UnitTypes.lich){{
+                    begin = 168;
+                    spacing = 42;
+                    unitScaling = 1;
+                    unitAmount = 2;
+                    effect = StatusEffects.overdrive;
+                }},
 
             new SpawnGroup(UnitTypes.ghoul){{
                 begin = 40;
