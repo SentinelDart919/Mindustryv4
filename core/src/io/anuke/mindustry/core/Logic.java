@@ -13,6 +13,7 @@ import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.Tile;
@@ -39,6 +40,13 @@ public class Logic extends Module{
         Events.on(TileChangeEvent.class, event -> {
             if(event.tile.getTeam() == defaultTeam && Recipe.getByResult(event.tile.block()) != null){
                 handleContent(Recipe.getByResult(event.tile.block()));
+            }
+        });
+
+        Events.on(ResetEvent.class, event -> WaveExtraMission.resetFunds());
+        Events.on(WaveEvent.class, event -> {
+            if(state.mode == GameMode.SiegeMode){
+                WaveExtraMission.awardWaveFunds(state.wave, state.difficulty);
             }
         });
     }
@@ -181,11 +189,16 @@ public class Logic extends Module{
             if(!state.isPaused()){
                 Timers.update();
 
-                if(!state.mode.disableWaveTimer && !state.mode.disableWaves && !state.gameOver){
+                boolean experimentalWaveTimer = state.mode == GameMode.SiegeMode;
+                boolean canTickWaveTimer = !state.mode.disableWaves && !state.gameOver &&
+                        (!state.mode.disableWaveTimer || experimentalWaveTimer) &&
+                        (!experimentalWaveTimer || state.enemies() == 0);
+
+                if(canTickWaveTimer){
                     state.wavetime -= Timers.delta();
                 }
 
-                if(!Net.client() && state.wavetime <= 0 && !state.mode.disableWaves){
+                if(!Net.client() && state.wavetime <= 0 && !state.mode.disableWaves && (!experimentalWaveTimer || state.enemies() == 0)){
                     runWave();
                 }
 
