@@ -7,7 +7,8 @@ public enum Difficulty{
     easy(1.4f, 1.5f,1.75f),
     normal(1f, 1f, 1f),
     hard(0.5f, 0.75f, 0.5f),
-    insane(0.25f, 0.5f, 0.25f);
+    insane(0.25f, 0.5f, 0.25f),
+    eradication(0.10f, 0.05f, 0.05f),;
 
     /**Multiplier of the time between waves.*/
     public final float timeScaling;
