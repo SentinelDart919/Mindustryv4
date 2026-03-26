@@ -23,7 +23,7 @@ public class Generation{
         this.random = random;
     }
 
-    Tile tile(int x, int y){
+    public Tile tile(int x, int y){
         if(!Structs.inBounds(x, y, tiles)){
             return null;
         }
