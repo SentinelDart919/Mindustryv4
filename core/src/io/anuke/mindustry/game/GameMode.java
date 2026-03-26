@@ -33,7 +33,9 @@ public enum GameMode{
         disableWaves = true;
         enemyCheat  = true;
     }},
-    experimentalSurvivalMode
+    SiegeMode {{
+        enemyCheat = true;
+    }}
     ;
 
     public boolean infiniteResources, disableWaveTimer, disableWaves, showMission = true, hidden, enemyCheat, isPvp;

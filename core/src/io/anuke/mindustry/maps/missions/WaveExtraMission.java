@@ -58,7 +58,7 @@ public class WaveExtraMission extends MissionWithStartingCore{
 
     @Override
     public GameMode getMode(){
-        return GameMode.experimentalSurvivalMode;
+        return GameMode.SiegeMode;
     }
 
     @Override
