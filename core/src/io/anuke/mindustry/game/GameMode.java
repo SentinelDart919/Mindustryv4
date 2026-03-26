@@ -27,7 +27,14 @@ public enum GameMode{
         isPvp = true;
         enemyCoreBuildRadius = 600f;
         respawnTime = 60 * 10;
-    }};
+    }},
+    customAttackMode{{
+        disableWaveTimer = true;
+        disableWaves = true;
+        enemyCheat  = true;
+    }},
+    experimentalSurvivalMode
+    ;
 
     public boolean infiniteResources, disableWaveTimer, disableWaves, showMission = true, hidden, enemyCheat, isPvp;
     public float enemyCoreBuildRadius = 400f;
