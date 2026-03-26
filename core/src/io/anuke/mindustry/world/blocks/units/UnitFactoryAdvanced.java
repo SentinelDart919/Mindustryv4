@@ -362,6 +362,7 @@ public class UnitFactoryAdvanced extends Block{
         public float time;
         public float speedScl;
         public float warmup; //only for enemy spawners
+        /** Int that handles what unit of the Array to use*/
         public int unitNumber;
         public UnitType unitSource;
 
