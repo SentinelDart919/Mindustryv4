@@ -9,9 +9,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.StateChangeEvent;
+import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
+import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.Packets.AdminAction;
 import io.anuke.mindustry.type.Recipe;
@@ -372,14 +374,17 @@ public class HudFragment extends Fragment{
 
         table.labelWrap(() ->
             world.getSector() == null ?
-                (state.enemies() > 0 && state.mode.disableWaveTimer ?
+                ((state.enemies() > 0 && state.mode.disableWaveTimer ?
                 wavef.get(state.wave) + "\n" + (state.enemies() == 1 ?
                     enemyf.get(state.enemies()) :
                     enemiesf.get(state.enemies())) :
                 wavef.get(state.wave) + "\n" +
-                    (!state.mode.disableWaveTimer ?
+                    (!state.mode.disableWaveTimer || state.mode == GameMode.SiegeMode ?
                     Bundles.format("text.wave.waiting", (int)(state.wavetime/60)) :
-                    Bundles.get("text.waiting"))) :
+                    Bundles.get("text.waiting"))) +
+                (state.mode == GameMode.SiegeMode ?
+                    "\n" + Bundles.format("text.mission.enemyfunds", WaveExtraMission.displayedFunds) +
+                    "\n" + Bundles.format("text.mission.enemyfunds.next", WaveExtraMission.nextWaveFundsGain(state.wave, state.difficulty)) : "")) :
             Bundles.format("text.mission.display", world.getSector().currentMission().displayString())).growX().pad(8f);
 
         table.clicked(() -> {
@@ -400,11 +405,13 @@ public class HudFragment extends Fragment{
                 state.wavetime = 0f;
             }
         }).growY().fillX().right().width(40f).update(l -> {
-            boolean vis = state.mode.disableWaveTimer && ((Net.server() || players[0].isAdmin) || !Net.active());
+            boolean vis = state.mode.disableWaveTimer && state.mode != GameMode.SiegeMode &&
+                    ((Net.server() || players[0].isAdmin) || !Net.active());
             boolean paused = state.is(State.paused) || !vis;
 
             l.getStyle().imageUp = Core.skin.getDrawable(vis ? "icon-play" : "clear");
             l.setTouchable(!paused ? Touchable.enabled : Touchable.disabled);
-        }).visible(() -> state.mode.disableWaveTimer && ((Net.server() || players[0].isAdmin) || !Net.active()) && unitGroups[Team.red.ordinal()].size() == 0);
+        }).visible(() -> state.mode.disableWaveTimer && state.mode != GameMode.SiegeMode &&
+                ((Net.server() || players[0].isAdmin) || !Net.active()) && unitGroups[Team.red.ordinal()].size() == 0);
     }
 }
