@@ -31,6 +31,7 @@ public class UnitTypes implements ContentList{
                 mass = 0.1f;
                 weapon = Weapons.droneBlaster;
                 trailColor = Color.valueOf("ffd37f");
+                spawnsInSiegeMode = false;
             }
 
             @Override
@@ -49,6 +50,7 @@ public class UnitTypes implements ContentList{
             health = 20;
             toMine = ObjectSet.with(Items.scrap);
             itemCapacity = 50;
+            spawnsInSiegeMode = false;
         }};
 
         draug = new UnitType("draug", DroneMiner.class, DroneMiner::new){{
@@ -60,6 +62,7 @@ public class UnitTypes implements ContentList{
             range = 55f;
             health = 40;
             toMine = ObjectSet.with(Items.copper, Items.lead);
+            spawnsInSiegeMode = false;
         }};
 
         spirit = new UnitType("spirit", Spirit.class, Spirit::new){{
@@ -70,7 +73,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.8f;
             range = 50f;
             health = 60;
-
+            spawnsInSiegeMode = false;
         }};
 
         ghost = new UnitType("ghost", Ghost.class, Ghost::new){{
@@ -86,6 +89,7 @@ public class UnitTypes implements ContentList{
             buildPower = 0.6f;
             minePower = 0.98f;
             toMine = ObjectSet.with(Items.thorium, Items.titanium);
+            spawnsInSiegeMode = false;
         }};
 
         phantom = new UnitType("phantom", Phantom.class, Phantom::new){{
@@ -101,6 +105,7 @@ public class UnitTypes implements ContentList{
             buildPower = 0.9f;
             minePower = 1.2f;
             toMine = ObjectSet.with(Items.lead, Items.copper, Items.titanium, Items.thorium);
+            spawnsInSiegeMode = false;
         }};
 
         scrappeon = new UnitType("scrappeon", Scrappeon.class, Scrappeon::new){{
@@ -111,6 +116,7 @@ public class UnitTypes implements ContentList{
             mass = 1.25f;
             weapon = Weapons.scrapLockBlaster;
             health = 60;
+            unitCost = 5;
         }};
 
         crawler = new UnitType("crawler", Crawler.class, Crawler::new){{
@@ -121,6 +127,7 @@ public class UnitTypes implements ContentList{
             hitsize = 8f;
             mass = 1.75f;
             health = 100f;
+            unitCost = 30;
         }};
 
         bombDrone = new UnitType("bomb_drone", BombDrone.class, BombDrone::new){{
@@ -132,6 +139,7 @@ public class UnitTypes implements ContentList{
             hitsize = 7.89f;
             mass = 1.25f;
             health = 60;
+            unitCost = 30;
         }};
 
 
@@ -154,6 +162,7 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.1f;
             weapon = Weapons.flamethrower;
             health = 440;
+            unitCost = 25;
         }};
 
         fortress = new UnitType("fortress", Fortress.class, Fortress::new){{
@@ -167,6 +176,7 @@ public class UnitTypes implements ContentList{
             targetAir = false;
             weapon = Weapons.artillery;
             health = 800;
+            unitCost = 100;
         }};
 
         scrapper = new UnitType("scrapper", Scrapper.class, Scrapper::new){{
@@ -177,6 +187,7 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.scrapBlaster;
             isFlying = true;
             health = 30;
+            unitCost = 10;
         }};
 
         wraith = new UnitType("wraith", Wraith.class, Wraith::new){{
@@ -187,6 +198,7 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.chainBlaster;
             isFlying = true;
             health = 70;
+            unitCost = 20;
         }};
 
         ghoul = new UnitType("ghoul", Ghoul.class, Ghoul::new){{
@@ -198,6 +210,7 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             targetAir = false;
             weapon = Weapons.bomber;
+            unitCost = 75;
         }};
 
         revenant = new UnitType("revenant", Revenant.class, Revenant::new){{
@@ -210,6 +223,7 @@ public class UnitTypes implements ContentList{
             range = 80f;
             isFlying = true;
             weapon = Weapons.laserBurster;
+            unitCost = 300;
         }};
 
         lich = new UnitType("lich", Lich.class, Lich::new){{
@@ -227,6 +241,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 14f;
             weaponOffsetY = -3f;
             weapon = Weapons.lichMissiles;
+            unitCost = 2000;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
@@ -240,6 +255,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 17f;
             weaponOffsetY = 2f;
             weapon = Weapons.chaos;
+            unitCost = 1500;
         }};
 
         debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{
@@ -255,6 +271,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 0;
             weaponOffsetY = 0;
             weapon = Weapons.debugtankturret;
+            spawnsInSiegeMode = false;
 
         }
             @Override

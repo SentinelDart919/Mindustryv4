@@ -35,6 +35,9 @@ public class UnitType extends UnlockableContent{
     public boolean isFlying;
     public boolean isTank;
     public boolean targetAir = true;
+    public boolean spawnsInSiegeMode = true;
+    /** Cost for the ExtraSurvival Mode*/
+    public int unitCost = 10;
     public float drag = 0.1f;
     public float maxVelocity = 5f;
     public float retreatPercent = 0.2f;
