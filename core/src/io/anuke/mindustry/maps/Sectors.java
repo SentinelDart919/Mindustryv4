@@ -93,10 +93,10 @@ public class Sectors{
             return Difficulty.normal;
         }else if(sector.difficulty < 9){
             return Difficulty.hard;
-        }else{
+        }else if(sector.difficulty < 12){
             return Difficulty.insane;
-        }
-    }
+        } else {
+            return Difficulty.eradication;}}
 
     public Array<Item> getOres(int x, int y){
         return presets.getOres(x, y) == null ? allOres : presets.getOres(x, y);
