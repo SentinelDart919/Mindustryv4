@@ -2,13 +2,14 @@ package io.anuke.mindustry.content.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.fx.BulletFx;
+import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.bullet.BasicBulletType;
 import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
 
 public class StandardBullets extends BulletList implements ContentList{
-    public static BulletType copper, dense, thorium, homing, tracer, mechSmall, glaive, denseBig, thoriumBig, tracerBig;
+    public static BulletType copper, dense, thorium, homing, tracer, mechSmall, glaive, denseBig, thoriumBig, tracerBig, obsidianFrag;
 
     @Override
     public void load(){
@@ -104,5 +105,15 @@ public class StandardBullets extends BulletList implements ContentList{
                 incendChance = 0.3f;
             }
         };
+
+        obsidianFrag = new BasicBulletType(3f, 6, "bullet"){{
+            bulletWidth = 5f;
+            bulletHeight = 12f;
+            bulletShrink = 1f;
+            lifetime = 20f;
+            backColor = Palette.lightishGray;
+            frontColor = Color.LIGHT_GRAY;
+            despawneffect = Fx.none;
+        }};
     }
 }
