@@ -69,6 +69,7 @@ public class Recipes implements ContentList{
 
         //TURRETS
         new Recipe(turret, TurretBlocks.duo, new ItemStack(Items.copper, 40)).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.scatter, new ItemStack(Items.copper, 85), new ItemStack(Items.lead, 45));
         new Recipe(turret, TurretBlocks.arc, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 30), new ItemStack(Items.silicon, 20));
         new Recipe(turret, TurretBlocks.hail, new ItemStack(Items.copper, 60), new ItemStack(Items.densealloy, 35));
         new Recipe(turret, TurretBlocks.lancer, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 90));

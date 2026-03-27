@@ -63,6 +63,7 @@ public abstract class Turret extends Block{
     protected float shootShake = 0f;
     protected float xRand = 0f;
     protected boolean targetAir = true;
+    protected boolean targetGround = true;
 
     protected Translator tr = new Translator();
     protected Translator tr2 = new Translator();
@@ -124,6 +125,7 @@ public abstract class Turret extends Block{
         stats.add(BlockStat.reload, 60f / reload, StatUnit.seconds);
         stats.add(BlockStat.shots, shots, StatUnit.none);
         stats.add(BlockStat.targetsAir, targetAir);
+        stats.add(BlockStat.targetsGround, targetGround);
     }
 
     @Override
@@ -231,8 +233,12 @@ public abstract class Turret extends Block{
     protected void findTarget(Tile tile){
         TurretEntity entity = tile.entity();
 
-        entity.target = Units.getClosestTarget(tile.getTeam(),
+        if((targetAir && targetGround)) entity.target = Units.getClosestTarget(tile.getTeam(),
                 tile.drawx(), tile.drawy(), range, e -> !e.isDead() && (!e.isFlying() || targetAir));
+        if(targetAir && !targetGround) entity.target = Units.getClosestTarget(tile.getTeam(),
+                tile.drawx(), tile.drawy(), range, e -> !e.isDead() && e.isFlying());
+        if(targetGround && !targetAir) entity.target = Units.getClosestTarget(tile.getTeam(),
+                tile.drawx(), tile.drawy(), range, e -> !e.isDead() && !e.isFlying());
     }
 
     protected void turnToTarget(Tile tile, float targetRot){

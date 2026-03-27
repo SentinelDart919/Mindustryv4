@@ -13,7 +13,7 @@ import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 public class TurretBlocks extends BlockList implements ContentList{
-    public static Block duo, /*scatter,*/
+    public static Block duo, scatter,
             scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown;
 
     @Override
@@ -30,6 +30,23 @@ public class TurretBlocks extends BlockList implements ContentList{
             rotatespeed = 10f;
         }};
 
+        scatter = new BurstTurret("scatter"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.flakScrap, AmmoTypes.flakLead, AmmoTypes.flakObsidian};
+            reload = 18f;
+            range = 170f;
+            size = 2;
+            burstSpacing = 5f;
+            shots = 3;
+            targetGround = false;
+            targetAir = true;
+            ammoUseEffect = ShootFx.shellEjectMedium;
+            recoil = 2f;
+            rotatespeed = 15f;
+            inaccuracy = 17f;
+            shootCone = 35f;
+            health = 200 * size * size;
+        }};
+
         hail = new ArtilleryTurret("hail"){{
             ammoTypes = new AmmoType[]{AmmoTypes.artilleryDense, AmmoTypes.artilleryHoming, AmmoTypes.artilleryIncindiary};
             reload = 60f;
@@ -38,6 +55,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             inaccuracy = 1f;
             shootCone = 10f;
             health = 120;
+            targetAir = false;
         }};
 
         scorch = new LiquidTurret("scorch"){
@@ -56,6 +74,7 @@ public class TurretBlocks extends BlockList implements ContentList{
                 shootCone = 50f;
                 ammoUseEffect = ShootFx.shellEjectSmall;
                 health = 160;
+                targetAir = false;
 
                 drawer = (tile, entity) -> Draw.rect(entity.target != null ? shootRegion : region, tile.drawx() + tr2.x, tile.drawy() + tr2.y, entity.rotation - 90);
             }
@@ -117,6 +136,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             heatColor = Color.RED;
             recoil = 1f;
             size = 1;
+            targetAir = false;
         }};
 
         swarmer = new BurstTurret("swarmer"){{
@@ -186,12 +206,12 @@ public class TurretBlocks extends BlockList implements ContentList{
             recoil = 6f;
             shootShake = 2f;
             range = 320f;
-
+            targetAir = false;
             health = 550;
         }};
 
         cyclone = new ItemTurret("cyclone"){{
-            ammoTypes = new AmmoType[]{AmmoTypes.flakExplosive, AmmoTypes.flakPlastic, AmmoTypes.flakSurge};
+            ammoTypes = new AmmoType[]{AmmoTypes.flakObsidian, AmmoTypes.flakExplosive, AmmoTypes.flakPlastic, AmmoTypes.flakSurge};
             xRand = 4f;
             reload = 8f;
             range = 145f;
