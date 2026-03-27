@@ -54,6 +54,7 @@ public class Recipes implements ContentList{
         new Recipe(defense, DefenseBlocks.surgeWallLarge, new ItemStack(Items.surgealloy, 12 * 4));
 
         //projectors
+        new Recipe(effect, DefenseBlocks.mender, new ItemStack(Items.copper, 25),  new ItemStack(Items.lead, 30));
         new Recipe(effect, DefenseBlocks.mendProjector, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 150), new ItemStack(Items.titanium, 50), new ItemStack(Items.silicon, 180));
         new Recipe(effect, DefenseBlocks.overdriveProjector, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 150), new ItemStack(Items.titanium, 150), new ItemStack(Items.silicon, 250));
         new Recipe(effect, DefenseBlocks.forceProjector, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 150), new ItemStack(Items.titanium, 150), new ItemStack(Items.silicon, 250));
