@@ -15,7 +15,7 @@ public class AmmoTypes implements ContentList{
         shock, bombExplosive, bombIncendiary, bombOil, shellCarbide, flamerThermite, weaponMissile, weaponMissileSwarm, bulletMech,
         healBlaster, bulletGlaive,
         explode,
-        flakExplosive, flakPlastic, flakSurge,
+        flakScrap, flakLead, flakObsidian, flakExplosive, flakPlastic, flakSurge,
         missileExplosive, missileIncindiary, missileSurge,
         artilleryDense, artilleryPlastic, artilleryHoming, artilleryIncindiary, artilleryExplosive, unitArtillery,
         basicFlame, lancerLaser, lightning, meltdownLaser, burstLaser,
@@ -136,6 +136,25 @@ public class AmmoTypes implements ContentList{
         }};
 
         //flak
+        flakScrap = new AmmoType(Items.scrap, FlakBullets.scrap, 5){{
+            shootEffect = ShootFx.shootBig;
+            smokeEffect = ShootFx.shootBigSmoke;
+            reloadMultiplier = 0.5f;
+            quantityMultiplier = 5f;
+        }};
+
+        flakLead = new AmmoType(Items.lead, FlakBullets.lead, 5){{
+            shootEffect = ShootFx.shootBig;
+            smokeEffect = ShootFx.shootBigSmoke;
+            quantityMultiplier = 4f;
+        }};
+
+        flakObsidian = new AmmoType(Items.obsidian, FlakBullets.obsidian, 5){{
+            shootEffect = ShootFx.shootBig;
+            smokeEffect = ShootFx.shootBigSmoke;
+            reloadMultiplier = 0.8f;
+            quantityMultiplier = 5f;
+        }};
 
         flakExplosive = new AmmoType(Items.blastCompound, FlakBullets.explosive, 5){{
             shootEffect = ShootFx.shootBig;
