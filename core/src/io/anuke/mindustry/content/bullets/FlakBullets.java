@@ -1,6 +1,8 @@
 package io.anuke.mindustry.content.bullets;
 
+import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.fx.BulletFx;
+import io.anuke.mindustry.entities.bullet.BasicBulletType;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.bullet.FlakBulletType;
@@ -10,17 +12,46 @@ import io.anuke.mindustry.game.ContentList;
 import io.anuke.ucore.util.Mathf;
 
 public class FlakBullets extends BulletList implements ContentList{
-    public static BulletType plastic, explosive, surge;
+    public static BulletType scrap, lead, obsidian,plastic, explosive, surge;
 
     @Override
     public void load(){
+        scrap = new FlakBulletType(4f, 2.5f) {{
+          splashDamage =22f;
+          splashDamageRadius =24f;
+          lifetime = 60f;
+          bulletWidth = 6f;
+          bulletHeight = 8f;
+          hiteffect = BulletFx.flakExplosion;
+        }};
 
+        lead = new FlakBulletType(4f, 3f) {{
+            lifetime = 60f;
+            bulletWidth = 6f;
+            bulletHeight = 8f;
+            hiteffect = BulletFx.flakExplosion;
+            splashDamage = 27f;
+            splashDamageRadius = 15f;
+        }};
+
+        obsidian = new FlakBulletType(4f, 5f) {{
+            lifetime = 70f;
+            bulletWidth = 6f;
+            bulletHeight = 8f;
+            hiteffect = BulletFx.flakExplosion;
+            splashDamage = 30f;
+            splashDamageRadius = 26f;
+            fragBullet = StandardBullets.obsidianFrag;
+            fragBullets = 6;
+            backColor = Palette.lightishGray;
+            frontColor = Color.LIGHT_GRAY;
+        }};
 
         plastic = new FlakBulletType(4f, 5){
             {
                 splashDamageRadius = 40f;
                 fragBullet = ArtilleryBullets.plasticFrag;
-                fragBullets = 4;
+                fragBullets = 6;
                 hiteffect = BulletFx.plasticExplosion;
                 frontColor = Palette.plastaniumFront;
                 backColor = Palette.plastaniumBack;
