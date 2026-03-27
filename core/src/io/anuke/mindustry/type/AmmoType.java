@@ -16,7 +16,7 @@ public class AmmoType extends Content {
      * For item ammo, this is amount given per ammo item.
      * For liquid ammo, this is amount used per shot.
      */
-    public final float quantityMultiplier;
+    public float quantityMultiplier;
     /**Reload speed multiplier.*/
     public float reloadMultiplier = 1f;
     /**Bullet recoil strength.*/
