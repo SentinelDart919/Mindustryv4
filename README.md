@@ -4,7 +4,7 @@ This is a Fan made project not aproved by the main dev, non-profit, the only obj
 
 ### Building
 
-First, make sure you have JDK 8 installed and JDK 11 for Gradle (was a forced update of gradle so I had to update to the version that uses JDK 11)
+First, make sure you have JRE 11 to run and JDK 11 installed for make your builds
 Open a terminal in the root directory, and run the following commands:
 
 #### Windows
