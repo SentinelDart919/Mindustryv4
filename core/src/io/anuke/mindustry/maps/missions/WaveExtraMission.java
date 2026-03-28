@@ -16,7 +16,6 @@ public class WaveExtraMission extends MissionWithStartingCore{
     public static int displayedFunds = 10;
     private static final int baseFunds = 10;
     private final int target;
-
     /**
      * Creates a wave survival mission with the player core being in the center of the map.
      * @param target The number of waves to be survived.
@@ -63,13 +62,12 @@ public class WaveExtraMission extends MissionWithStartingCore{
 
     @Override
     public String displayString(){
-        String missionText = state.wave > target ?
+        return state.wave > target ?
             Bundles.format(
                 state.enemies() > 1 ?
                 "text.mission.wave.enemies" :
                 "text.mission.wave.enemy", target, target, state.enemies()) :
             Bundles.format("text.mission.wave", state.wave, target, (int)(state.wavetime/60));
-        return missionText;
     }
 
     @Override
@@ -105,11 +103,31 @@ public class WaveExtraMission extends MissionWithStartingCore{
 
     public static int nextWaveFundsGain(int wave, Difficulty difficulty){
         return getWaveFundsGain(wave + 1, difficulty);
+
     }
 
     private static int getWaveFundsGain(int wave, Difficulty difficulty){
-        float waveScale = 1f + (wave - 1) * 0.2f;
-        float difficultyScale = 1f / difficulty.UnitAmountScaling;
-        return Math.max(baseFunds, Math.round(baseFunds * waveScale * difficultyScale));
+        int difficultyBonus = getDifficultyFundsGain(difficulty);
+        int waveBonus = Math.max(1, wave -1);
+        if(wave > 2)return difficultyBonus * waveBonus; else return difficultyBonus;
+    }
+
+    private static int getDifficultyFundsGain(Difficulty difficulty){
+        switch(difficulty){
+            case training:
+                return 2;
+            case easy:
+                return 5;
+            case normal:
+                return 10;
+            case hard:
+                return 20;
+            case insane:
+                return 30;
+            case eradication:
+                return 50;
+            default:
+                return 2;
+        }
     }
 }

@@ -189,16 +189,16 @@ public class Logic extends Module{
             if(!state.isPaused()){
                 Timers.update();
 
-                boolean experimentalWaveTimer = state.mode == GameMode.SiegeMode;
+                boolean SiegeModeTimer = state.mode == GameMode.SiegeMode;
                 boolean canTickWaveTimer = !state.mode.disableWaves && !state.gameOver &&
-                        (!state.mode.disableWaveTimer || experimentalWaveTimer) &&
-                        (!experimentalWaveTimer || state.enemies() == 0);
+                        (!state.mode.disableWaveTimer || SiegeModeTimer) &&
+                        (!SiegeModeTimer || state.enemies() == 0);
 
                 if(canTickWaveTimer){
                     state.wavetime -= Timers.delta();
                 }
 
-                if(!Net.client() && state.wavetime <= 0 && !state.mode.disableWaves && (!experimentalWaveTimer || state.enemies() == 0)){
+                if(!Net.client() && state.wavetime <= 0 && !state.mode.disableWaves && (!SiegeModeTimer || state.enemies() == 0)){
                     runWave();
                 }
 
