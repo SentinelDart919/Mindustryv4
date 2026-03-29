@@ -3,9 +3,11 @@ package io.anuke.mindustry.world;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.mindustry.world.blocks.Floor;
@@ -246,7 +248,8 @@ public class Tile implements PosTrait, TargetTrait{
     }
 
     public boolean isEnemyCheat(){
-        return getTeam() == waveTeam && !state.mode.isPvp;
+        if(state.mode != GameMode.customAttackMode) return getTeam() == waveTeam && !state.mode.isPvp;
+        else return getTeam() != Vars.defaultTeam;
     }
 
     public boolean isLinked(){
