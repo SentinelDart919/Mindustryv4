@@ -9,6 +9,7 @@ import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.OreBlocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
+import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapTileData;
@@ -195,6 +196,8 @@ public class WorldGenerator{
 
             if(state.mode.isPvp){
                 world.setBlock(tiles[spawns.get(1).x][spawns.get(1).y], StorageBlocks.core, Team.red);
+            }else if(state.mode == GameMode.customAttackMode){
+                world.applyCustomAttackFortress();
             }
 
             world.endMapLoad();
