@@ -11,6 +11,8 @@ import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.Team;
+import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.ui.dialogs.FileChooser;
 import io.anuke.ucore.function.Consumer;
@@ -59,7 +61,7 @@ public class DesktopPlatform extends Platform{
             }else{
                 presence.details = Strings.capitalize(world.getMap().name) + " | Wave " + state.wave + " | Difficulty: " + Strings.capitalize(state.difficulty.name());
 
-                presence.largeImageText = "Wave " + state.wave + " | Difficulty: " + state.difficulty;
+                presence.largeImageText = "Wave " + state.wave + " | Difficulty: " + Strings.capitalize(state.difficulty.name());
             }
 
             if(state.mode != GameMode.noWaves){
@@ -67,6 +69,24 @@ public class DesktopPlatform extends Platform{
             }else{
                 presence.state = unitGroups[players[0].getTeam().ordinal()].size() == 1 ? "1 Unit Active" :
                 (unitGroups[players[0].getTeam().ordinal()].size() + " Units Active");
+            }
+            if(state.mode == GameMode.customAttackMode){
+                int enemyCores = 0;
+
+                for(Team enemy : state.teams.enemiesOf(players[0].getTeam())){
+                    if(state.teams.isActive(enemy)){
+                        enemyCores += state.teams.get(enemy).cores.size;
+                    }
+                }
+                presence.state = " Attack Mode | Remaining Enemy Cores = " + enemyCores + "\n | Difficulty: " + Strings.capitalize(state.difficulty.name());
+            }
+
+            if(state.mode == GameMode.SiegeMode){
+                presence.details = Strings.capitalize(world.getMap().name);
+                presence.state =  " | Siege Survival | Wave " + state.wave + " | Difficulty: " + Strings.capitalize(state.difficulty.name() + " | Enemy Funds = " + WaveExtraMission.displayedFunds);
+
+                presence.largeImageText = "Wave " + state.wave + " | Difficulty: " + Strings.capitalize(state.difficulty.name());
+
             }
 
             if(Net.active()){
