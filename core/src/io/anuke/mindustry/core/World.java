@@ -1,6 +1,7 @@
 package io.anuke.mindustry.core;
 
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import io.anuke.mindustry.ai.BlockIndexer;
@@ -30,6 +31,7 @@ import io.anuke.ucore.util.*;
 import static io.anuke.mindustry.Vars.*;
 
 public class World extends Module{
+    private static final int customAttackCorePlacementAttempts = 250;
     public final Maps maps = new Maps();
     public final Sectors sectors = new Sectors();
     public final WorldGenerator generator = new WorldGenerator();
@@ -262,7 +264,7 @@ public class World extends Module{
         }
 
         if(state.mode == GameMode.customAttackMode){
-            applyCustomAttackFortress(map);
+            applyCustomAttackFortress();
         }
 
         endMapLoad();
@@ -298,7 +300,7 @@ public class World extends Module{
         }
     }
 
-    private void applyCustomAttackFortress(Map map){
+    public void applyCustomAttackFortress(){
         Tile blueCore = null;
         Array<Tile> enemyCores = new Array<>();
 
@@ -317,13 +319,67 @@ public class World extends Module{
             }
         }
 
-        if(blueCore == null || enemyCores.size == 0){
+        if(blueCore == null){
             return;
         }
 
-        Generation generation = new Generation(null, tiles, map.meta.width, map.meta.height, new SeedRandom(Mathf.random(99999)));
+        Generation generation = new Generation(null, tiles, width(), height(), new SeedRandom(Mathf.random(99999)));
+        if(enemyCores.size == 0){
+            Tile generatedEnemyCore = findCustomAttackEnemyCore(generation, blueCore);
+            if(generatedEnemyCore == null){
+                return;
+            }
+
+            placeCustomAttackEnemyCore(generation, generatedEnemyCore, Team.red);
+            enemyCores.add(generatedEnemyCore);
+        }
+
         for(Tile enemyCore : enemyCores){
             new FortressGenerator().generate(generation, enemyCore.getTeam(), blueCore.x, blueCore.y, enemyCore.x, enemyCore.y);
+        }
+    }
+
+    private Tile findCustomAttackEnemyCore(Generation generation, Tile playerCore){
+        float minDistance = 650f;
+
+        for(int i = 0; i < customAttackCorePlacementAttempts; i++){
+            Tile tile = generation.tile(generation.random.nextInt(generation.width), generation.random.nextInt(generation.height));
+            if(!canPlaceCustomAttackEnemyCore(tile, playerCore)){
+                continue;
+            }
+
+            float dst = Vector2.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
+            if(dst >= minDistance){
+                return tile;
+            }
+        }
+
+        for(int x = 0; x < generation.width; x++){
+            for(int y = 0; y < generation.height; y++){
+                Tile tile = generation.tile(x, y);
+                if(!canPlaceCustomAttackEnemyCore(tile, playerCore)){
+                    continue;
+                }
+
+                float dst = Vector2.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
+                if(dst >= minDistance){
+                    return tile;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean canPlaceCustomAttackEnemyCore(Tile tile, Tile playerCore){
+        return tile != null && tile != playerCore && !tile.floor().isLiquid;
+    }
+
+    private void placeCustomAttackEnemyCore(Generation generation, Tile tile, Team team){
+        generation.setBlock(tile.x, tile.y, StorageBlocks.core, team);
+        Tile placed = generation.tile(tile.x, tile.y);
+        if(placed != null){
+            state.teams.get(team).cores.add(placed);
         }
     }
 
