@@ -35,6 +35,7 @@ public enum GameMode{
     }},
     SiegeMode {{
         enemyCheat = true;
+        disableWaveTimer = true;
     }}
     ;
 
