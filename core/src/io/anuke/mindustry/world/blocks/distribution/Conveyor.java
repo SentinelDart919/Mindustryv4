@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.LongArray;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
+import io.anuke.mindustry.gen.Sounds;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
@@ -47,6 +48,7 @@ public class Conveyor extends Block{
         autoSleep = true;
         itemCapacity = 4;
         noSideBlend = false;
+        ambientSound = Sounds.loopConveyor;
     }
 
     private static int compareItems(long a, long b){
