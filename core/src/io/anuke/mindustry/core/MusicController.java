@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Music;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.units.BaseUnit;
+import io.anuke.mindustry.game.EventType;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.game.EventType.GameOverEvent;
 import io.anuke.mindustry.game.EventType.PlayEvent;
@@ -17,12 +18,13 @@ import io.anuke.ucore.util.Mathf;
 
 public class MusicController extends Module{
     public static boolean MusicCurrentlyPlaying = false;
-    private static final float gameMusicDelay = 60f * 60f * 5f;
+    private static final float DarkMusicChance = 0.4f;
 
     private Music menu;
     private Music editor;
     private Music[] game;
     private Music[] boss;
+    private Music[] dark;
     private Music current;
     private float gameMusicTimer;
 
@@ -47,6 +49,13 @@ public class MusicController extends Module{
                 "boss2"
         );
 
+        dark = loadMusic(
+                "game2",
+                "game5",
+                "game7",
+                "game4"
+        );
+
         menu.setLooping(true);
         editor.setLooping(true);
         for(Music music : game){
@@ -55,9 +64,18 @@ public class MusicController extends Module{
         for(Music music : boss){
             music.setLooping(false);
         }
+        for(Music music : dark){
+            music.setLooping(false);
+        }
 
         Events.on(GameLoadEvent.class, e -> play(menu));
         Events.on(PlayEvent.class, e -> startGameSilence());
+        Events.on(EventType.WorldLoadEvent.class, e -> startGameSilence());
+        Events.on(EventType.WaveEvent.class, e -> {
+            if(Vars.state.is(GameState.State.playing) && current == null && Mathf.chance(DarkMusicChance)){
+                playRandom(dark);
+            }
+        });
         Events.on(GameOverEvent.class, e -> play(menu));
         Events.on(StateChangeEvent.class, e -> {
             if(e.to == GameState.State.menu) play(menu);
@@ -91,9 +109,13 @@ public class MusicController extends Module{
         return Settings.getInt("musicvol", 10) / 10f;
     }
 
+    private float nextGameMusicDelay(){
+        return Mathf.random(20, 60) * Mathf.random(20, 60) * 5f;
+    }
+
     private void startGameSilence(){
         stopCurrent();
-        gameMusicTimer = gameMusicDelay;
+        gameMusicTimer = nextGameMusicDelay();
     }
 
     private void stopCurrent(){
@@ -144,7 +166,7 @@ public class MusicController extends Module{
             if(!current.isPlaying() && isGameTrack(current)){
                 current = null;
                 MusicCurrentlyPlaying = false;
-                gameMusicTimer = gameMusicDelay;
+                gameMusicTimer = nextGameMusicDelay();
             }
         }else{
             MusicCurrentlyPlaying = false;
@@ -164,6 +186,7 @@ public class MusicController extends Module{
         if(editor != null) editor.dispose();
         disposeAll(game);
         disposeAll(boss);
+        disposeAll(dark);
     }
 
     private void disposeAll(Music[] tracks){
@@ -174,7 +197,7 @@ public class MusicController extends Module{
     }
 
     private boolean isGameTrack(Music music){
-        return contains(game, music) || contains(boss, music);
+        return contains(game, music) || contains(boss, music) || contains(dark, music);
     }
 
     private boolean isBossTrack(Music music){
