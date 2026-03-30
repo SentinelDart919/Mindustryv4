@@ -6,6 +6,8 @@ import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
 
+import io.anuke.mindustry.gen.Sounds;
+
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
     kamikaze, lichMissiles, chaos,
@@ -62,6 +64,7 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             recoil = 2f;
             ammo = AmmoTypes.healBlaster;
+            shootSound = Sounds.shootLaser;
         }};
 
         missiles = new Weapon("missiles"){{
@@ -204,6 +207,7 @@ public class Weapons implements ContentList{
             roundrobin = true;
             ejectEffect = Fx.none;
             ammo = AmmoTypes.lancerLaser;
+            shootSound = Sounds.shootLancer;
         }};
 
         healBlasterDrone = new Weapon("heal-blaster"){{
@@ -214,6 +218,7 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             recoil = 2f;
             ammo = AmmoTypes.healBlaster;
+            shootSound = Sounds.shootLaser;
         }};
 
         healBlasterDrone2 = new Weapon("heal-blaster"){{
@@ -224,6 +229,7 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             recoil = 2f;
             ammo = AmmoTypes.healBlaster;
+            shootSound = Sounds.shootLaser;
         }};
 
         healBlasterDrone3 = new Weapon("heal-blaster"){{
@@ -234,6 +240,7 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             recoil = 2f;
             ammo = AmmoTypes.healBlaster;
+            shootSound = Sounds.shootLaser;
         }};
 
         mineBlaster = new Weapon("mine-blaster"){{
