@@ -1,8 +1,10 @@
 package io.anuke.mindustry.world.blocks;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.fx.ExplosionFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.Player;
@@ -35,6 +37,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
+import static io.anuke.mindustry.sounds.Sounds.*;
 
 public class BuildBlock extends Block{
 
@@ -60,6 +63,9 @@ public class BuildBlock extends Block{
         tile.setRotation(rotation);
         world.setBlock(tile, block, team);
         Effects.effect(Fx.placeBlock, tile.drawx(), tile.drawy(), block.size);
+        Sound sound = blockPlace;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.1f);}
         threads.runDelay(() -> tile.block().placed(tile));
 
         //last builder was this local client player, call placed()
@@ -112,6 +118,9 @@ public class BuildBlock extends Block{
     @Override
     public void onDestroyed(Tile tile){
         Effects.effect(ExplosionFx.blockExplosionSmoke, tile);
+        Sound sound = blockExplode;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.1f);}
 
         if(!tile.floor().solid && !tile.floor().isLiquid){
             RubbleDecal.create(tile.drawx(), tile.drawy(), size);

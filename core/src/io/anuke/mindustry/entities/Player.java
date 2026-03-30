@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Mechs;
 import io.anuke.mindustry.content.fx.UnitFx;
 import io.anuke.mindustry.entities.effect.ScorchDecal;
@@ -19,6 +21,7 @@ import io.anuke.mindustry.graphics.Trail;
 import io.anuke.mindustry.io.TypeIO;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.NetConnection;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.*;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -37,6 +40,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
+import static io.anuke.mindustry.sounds.Sounds.unitExplode;
 
 public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTrait{
     public static final int timerSync = 2;
@@ -93,6 +97,9 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         Damage.dynamicExplosion(player.x, player.y, flammability, explosiveness, 0f, player.getSize() / 2f, Palette.darkFlame);
 
         ScorchDecal.create(player.x, player.y);
+        Sound sound = unitExplode;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, player.x, player.y, 1f, 0.7f);}
         player.onDeath();
     }
 

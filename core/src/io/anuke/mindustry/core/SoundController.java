@@ -137,6 +137,35 @@ public class SoundController extends Module{
         return id;
     }
 
+    public long updateLoop(Sound sound, long id, float x, float y, float volume){
+        if(sound == null || Vars.headless){
+            return stopLoop(sound, id);
+        }
+
+        if(id == -1L){
+            id = sound.loop(0f, 1f, calcPan(x));
+            if(id == -1L) return -1L;
+            sound.setLooping(id, true);
+        }
+
+        float finalVolume = calcVolume(x, y) * volume;
+        if(Settings.getBool("mutesound") || finalVolume <= 0.001f){
+            sound.pause(id);
+        }else{
+            sound.resume(id);
+            sound.setPan(id, calcPan(x), Mathf.clamp(finalVolume, 0f, 1f));
+        }
+
+        return id;
+    }
+
+    public long stopLoop(Sound sound, long id){
+        if(sound != null && id != -1L){
+            sound.stop(id);
+        }
+        return -1L;
+    }
+
     public long playRandom(String group){
         return playRandom(group, 1f);
     }
@@ -147,10 +176,21 @@ public class SoundController extends Module{
         return play(list.random(), volume);
     }
 
+    public long playRandom(String group, float volume, float pitch, float pan){
+        Array<Sound> list = groups.get(group);
+        if(list == null || list.size == 0) return -1L;
+        return play(list.random(), volume, pitch, pan);
+    }
+
     public long atRandom(String group, float x, float y, float pitch, float volume){
         Array<Sound> list = groups.get(group);
         if(list == null || list.size == 0) return -1L;
         return at(list.random(), x, y, pitch, volume);
+    }
+
+    public Sound random(String group){
+        Array<Sound> list = groups.get(group);
+        return list == null || list.size == 0 ? null : list.random();
     }
 
     private boolean canPlay(Sound sound){

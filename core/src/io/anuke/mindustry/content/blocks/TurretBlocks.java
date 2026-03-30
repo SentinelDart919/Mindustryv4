@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.AmmoTypes;
 import io.anuke.mindustry.content.fx.ShootFx;
-import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
@@ -25,7 +24,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             restitution = 0.03f;
             range = 90f;
             shootCone = 15f;
-            shootSound = Sounds.shootDuo;
+            setShootSound("shootDuo");
             ammoUseEffect = ShootFx.shellEjectSmall;
             health = 80;
             inaccuracy = 2f;
@@ -115,7 +114,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             powerUsed = 20f;
             powerCapacity = 60f;
             shootShake = 2f;
-            shootSound = Sounds.shootLancer;
+            setShootSound("shootLancer");
             shootEffect = ShootFx.lancerLaserShoot;
             smokeEffect = ShootFx.lancerLaserShootSmoke;
             chargeEffect = ShootFx.lancerLaserCharge;
@@ -135,7 +134,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             powerUsed = 10f;
             powerCapacity = 30f;
             range = 150f;
-            shootSound = Sounds.shootArc;
+            setShootSound("shootArc");
             shootEffect = ShootFx.lightningShoot;
             heatColor = Color.RED;
             recoil = 1f;

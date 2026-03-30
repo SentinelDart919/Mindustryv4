@@ -67,6 +67,7 @@ public abstract class Turret extends Block{
     protected boolean targetAir = true;
     protected boolean targetGround = true;
     public Sound shootSound;
+    public String shootSoundName;
 
     protected Translator tr = new Translator();
     protected Translator tr2 = new Translator();
@@ -93,6 +94,11 @@ public abstract class Turret extends Block{
         group = BlockGroup.turrets;
         turretIcon = true;
         flags = EnumSet.of(BlockFlag.turret);
+    }
+
+    public void setShootSound(String name){
+        shootSoundName = name;
+        shootSound = Sounds.get(name);
     }
 
     @Override

@@ -52,11 +52,17 @@ public class Weapon extends Content{
     /**translator for vector calulations*/
     protected Translator tr = new Translator();
     public Sound shootSound;
+    public String shootSoundName;
 
     public TextureRegion equipRegion, region;
 
     protected Weapon(String name){
         this.name = name;
+    }
+
+    public void setShootSound(String name){
+        shootSoundName = name;
+        shootSound = Sounds.get(name);
     }
 
     @Remote(targets = Loc.server, called = Loc.both, unreliable = true)

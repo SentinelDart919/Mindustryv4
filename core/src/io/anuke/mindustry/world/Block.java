@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
@@ -18,6 +19,7 @@ import io.anuke.mindustry.graphics.CacheLayer;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.CursorType;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
@@ -32,6 +34,7 @@ import io.anuke.ucore.util.EnumSet;
 import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
+import static io.anuke.mindustry.sounds.Sounds.blockExplode;
 
 public class Block extends BaseBlock {
     /** internal name */
@@ -113,10 +116,12 @@ public class Block extends BaseBlock {
     protected TextureRegion[] icon;
     protected TextureRegion[] compactIcon;
     protected TextureRegion editorIcon;
-
+    public long ambientSoundId = -1L;
     public TextureRegion shadowRegion;
     public TextureRegion region;
     public Sound ambientSound;
+    public String ambientSoundName;
+    public float ambientSoundVolume = 1f;
     public Block(String name){
         this.name = name;
         this.formalName = Bundles.get("block." + name + ".name", name);
@@ -124,6 +129,38 @@ public class Block extends BaseBlock {
         this.solid = false;
     }
 
+    public void setAmbientSound(String name){
+        ambientSoundName = name;
+        ambientSound = Sounds.get(name);
+    }
+    /*
+    public boolean shouldPlayAmbientSound(Tile tile){
+        return ambientSound != null;
+    }
+
+    public void updateAmbientSound(Tile tile){
+        if(tile.entity == null) return;
+
+        if(soundController == null || ambientSound == null || !shouldPlayAmbientSound(tile)){
+            stopAmbientSound(tile);
+            return;
+        }
+
+        tile.entity.ambientSoundId = soundController.updateLoop(ambientSound, tile.entity.ambientSoundId, tile.drawx(), tile.drawy(), ambientSoundVolume);
+    }
+
+    public void stopAmbientSound(Tile tile){
+        if(tile.entity == null){
+            return;
+        }
+
+        if(soundController != null && ambientSound != null){
+            tile.entity.ambientSoundId = soundController.stopLoop(ambientSound, tile.entity.ambientSoundId);
+        }else{
+            tile.entity.ambientSoundId = -1L;
+        }
+    }
+*/
     /**Populates the array with all blocks that produce this content.*/
     public static void getByProduction(Array<Block> arr, Content result){
         arr.clear();
@@ -215,6 +252,7 @@ public class Block extends BaseBlock {
     }
 
     public void removed(Tile tile){
+        /*stopAmbientSound(tile);*/
     }
 
     /** Called after the block is placed by anyone. */
@@ -427,6 +465,9 @@ public class Block extends BaseBlock {
                 }
             });
         }
+        Sound sound = blockExplode;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.1f);}
 
         Damage.dynamicExplosion(x, y, flammability, explosiveness, power, tilesize * size / 2f, tempColor);
         if(!tile.floor().solid && !tile.floor().isLiquid){

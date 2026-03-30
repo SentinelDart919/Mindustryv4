@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities.units;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import io.anuke.annotations.Annotations.Loc;
@@ -35,6 +36,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
+import static io.anuke.mindustry.sounds.Sounds.unitExplode;
 
 /**Base class for AI units.*/
 public abstract class BaseUnit extends Unit implements ShooterTrait{
@@ -75,7 +77,9 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         ScorchDecal.create(unit.x, unit.y);
         Effects.effect(ExplosionFx.explosion, unit);
         Effects.shake(2f, 2f, unit);
-
+        Sound sound = unitExplode;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, unit.x, unit.y, 1f, 0.7f);}
         //must run afterwards so the unit's group is not null
         threads.runDelay(unit::remove);
     }
