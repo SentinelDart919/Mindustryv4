@@ -1,5 +1,6 @@
 package io.anuke.mindustry.type;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -10,6 +11,7 @@ import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.traits.ShooterTrait;
 import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.gen.Sounds;
 import io.anuke.mindustry.net.Net;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Effects.Effect;
@@ -50,6 +52,7 @@ public class Weapon extends Content{
     protected boolean roundrobin = false;
     /**translator for vector calulations*/
     protected Translator tr = new Translator();
+    public Sound shootSound;
 
     public TextureRegion equipRegion, region;
 
@@ -94,6 +97,10 @@ public class Weapon extends Content{
         Effects.effect(weapon.ejectEffect, x, y, rotation * -Mathf.sign(left));
         Effects.effect(ammo.shootEffect, x + weapon.tr.x, y + weapon.tr.y, rotation, shooter);
         Effects.effect(ammo.smokeEffect, x + weapon.tr.x, y + weapon.tr.y, rotation, shooter);
+        Sound sound = weapon.shootSound == null ? Sounds.shoot : weapon.shootSound;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, x, y, 1f, 1f);
+        }
 
         //reset timer for remote players
         shooter.getTimer().get(shooter.getShootTimer(left), weapon.reload);
