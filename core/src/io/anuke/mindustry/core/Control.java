@@ -3,8 +3,6 @@ package io.anuke.mindustry.core;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.content.Mechs;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -39,9 +37,6 @@ import static io.anuke.mindustry.Vars.*;
  * This class is not created in the headless server.
  */
 public class Control extends Module{
-    /** Minimum period of time between the same sound being played.*/
-    private static final long minSoundPeriod = 100;
-
     public final Saves saves;
     public final Unlocks unlocks;
 
@@ -49,7 +44,6 @@ public class Control extends Module{
     private boolean hiscore = false;
     private boolean wasPaused = false;
     private InputHandler[] inputs = {};
-    private ObjectMap<Sound, Long> soundMap = new ObjectMap<>();
     private Throwable error;
 
     public Control(){
@@ -71,12 +65,10 @@ public class Control extends Module{
 
         Sounds.setFalloff(9000f);
         Sounds.setPlayer((sound, volume) -> {
-            long time = TimeUtils.millis();
-            long value = soundMap.get(sound, 0L);
-
-            if(TimeUtils.timeSinceMillis(value) >= minSoundPeriod){
+            if(soundController != null){
+                threads.runGraphics(() -> soundController.play(sound, volume));
+            }else{
                 threads.runGraphics(() -> sound.play(volume));
-                soundMap.put(sound, time);
             }
         });
 
