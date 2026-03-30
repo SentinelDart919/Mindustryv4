@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.defense.turrets;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -11,6 +12,7 @@ import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.gen.Sounds;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.AmmoEntry;
@@ -64,6 +66,7 @@ public abstract class Turret extends Block{
     protected float xRand = 0f;
     protected boolean targetAir = true;
     protected boolean targetGround = true;
+    public Sound shootSound;
 
     protected Translator tr = new Translator();
     protected Translator tr2 = new Translator();
@@ -327,6 +330,11 @@ public abstract class Turret extends Block{
 
         if(shootShake > 0){
             Effects.shake(shootShake, shootShake, tile.entity);
+        }
+
+        Sound sound = shootSound == null ? Sounds.shoot : shootSound;
+        if(io.anuke.mindustry.Vars.soundController != null && sound != null){
+            io.anuke.mindustry.Vars.soundController.at(sound, tile.drawx() + tr.x, tile.drawy() + tr.y, 1f, 1f);
         }
 
         entity.recoil = recoil;
