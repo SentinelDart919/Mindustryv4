@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
@@ -115,7 +116,7 @@ public class Block extends BaseBlock {
 
     public TextureRegion shadowRegion;
     public TextureRegion region;
-
+    public Sound ambientSound;
     public Block(String name){
         this.name = name;
         this.formalName = Bundles.get("block." + name + ".name", name);
