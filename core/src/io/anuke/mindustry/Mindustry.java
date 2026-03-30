@@ -1,7 +1,7 @@
 package io.anuke.mindustry;
 
 import io.anuke.mindustry.core.*;
-import io.anuke.mindustry.gen.Sounds;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.io.BundleLoader;
 import io.anuke.ucore.core.Events;

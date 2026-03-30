@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.AmmoTypes;
 import io.anuke.mindustry.content.fx.ShootFx;
-import io.anuke.mindustry.gen.Sounds;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
