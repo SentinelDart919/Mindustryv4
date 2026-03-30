@@ -1,6 +1,7 @@
 package io.anuke.mindustry;
 
 import io.anuke.mindustry.core.*;
+import io.anuke.mindustry.gen.Sounds;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.io.BundleLoader;
 import io.anuke.ucore.core.Events;
@@ -24,11 +25,14 @@ public class Mindustry extends ModuleCore{
 
         module(logic = new Logic());
         module(world = new World());
+        module(soundController = new SoundController());
+        Sounds.init();
         module(control = new Control());
         module(renderer = new Renderer());
         module(ui = new UI());
         module(netServer = new NetServer());
         module(netClient = new NetClient());
+        module(musicController = new MusicController());
     }
 
     @Override
