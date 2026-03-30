@@ -105,9 +105,11 @@ public class Vars{
     public static Control control;
     public static Logic logic;
     public static Renderer renderer;
+    public static SoundController soundController;
     public static UI ui;
     public static World world;
     public static NetServer netServer;
+    public static MusicController musicController;
     public static NetClient netClient;
 
     public static Player[] players = {};
