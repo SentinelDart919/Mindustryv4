@@ -94,6 +94,9 @@ public class Sounds{
     public static Sound shootRevenant;
     public static Sound shootLancer;
     public static Sound shootLaser;
+    public static Sound shootRipple;
+    public static Sound shootArtillery;
+    public static Sound shootArtillerySmall;
     public static Sound loopThoriumReactor;
     public static Sound loopCombustion;
     public static Sound loopConveyor;
