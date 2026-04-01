@@ -94,9 +94,15 @@ public class Sounds{
     public static Sound shootRevenant;
     public static Sound shootLancer;
     public static Sound shootLaser;
+    public static Sound shootSalvo;
+    public static Sound shootScatter;
+    public static Sound shootCyclone;
+    public static Sound shootMeltdown;
+    public static Sound shootMissileSmall;
     public static Sound shootRipple;
     public static Sound shootArtillery;
     public static Sound shootArtillerySmall;
+    public static Sound shootDart;
     public static Sound loopThoriumReactor;
     public static Sound loopCombustion;
     public static Sound loopConveyor;
@@ -112,6 +118,7 @@ public class Sounds{
     public static Sound explosionArtillery;
     public static Sound explosionArtilleryShock;
     public static Sound explosionArtilleryShockBig;
+    public static Sound shootFuse;
     public static Sound explosionCrawler;
     public static Sound explosionReactor;
     public static Sound shockBullet;
@@ -129,7 +136,17 @@ public class Sounds{
         shootArc = register("shootArc", Vars.soundController.load("shootArc", "sounds/shoot/shootArc.ogg"));
         shootRevenant = register("shootRevenant", Vars.soundController.load("shootRevenant", "sounds/shoot/shootRevenant.ogg"));
         shootLancer = register("shootLancer", Vars.soundController.load("shootLancer", "sounds/shoot/shootLancer.ogg"));
+        shootArtillery = register("shootArtillery", Vars.soundController.load("shootArtillery", "sounds/shoot/shootArtillery.ogg"));
+        shootArtillerySmall = register("shootArtillerySmall", Vars.soundController.load("shootArtillerySmall", "sounds/shoot/shootArtillerySmall.ogg"));
+        shootRipple = register("shootRipple", Vars.soundController.load("shootRipple", "sounds/shoot/shootRipple.ogg"));
+        shootDart = register("shootDart", Vars.soundController.load("shootDart", "sounds/shoot/shootDart.ogg"));
         shootLaser = register("shootLaser", Vars.soundController.load("shootLaser", "sounds/shoot/shootLaser.ogg"));
+        shootSalvo = register("shootSalvo", Vars.soundController.load("shootSalvo", "sounds/shoot/shootSalvo.ogg"));
+        shootScatter = register("shootScatter", Vars.soundController.load("shootScatter", "sounds/shoot/shootScatter.ogg"));
+        shootMissileSmall = register("shootMissileSmall", Vars.soundController.load("shootMissileSmall", "sounds/shoot/shootMissileSmall.ogg"));
+        shootCyclone = register("shootCyclone", Vars.soundController.load("shootCyclone", "sounds/shoot/shootCyclone.ogg"));
+        shootFuse = register("shootFuse", Vars.soundController.load("shootFuse", "sounds/shoot/shootFuse.ogg"));
+        shootMeltdown = register("shootMeltdown", Vars.soundController.load("shootMeltdown", "sounds/shoot/shootMeltdown.ogg"));
         loopThoriumReactor = register("loopThoriumReactor", Vars.soundController.load("loopThoriumReactor", "sounds/loops/loopThoriumReactor.ogg"));
         loopCombustion = register("loopCombustion", Vars.soundController.load("loopCombustion", "sounds/loops/loopCombustion.ogg"));
         loopConveyor = register("loopConveyor", Vars.soundController.load("loopConveyor", "sounds/loops/loopConveyor.ogg"));
@@ -177,12 +194,15 @@ public class Sounds{
         blockPlace = register("blockPlace", randomGroup("blockPlace"));
         blockBreak = register("blockBreak", randomGroup("blockBreak"));
 
-        Vars.soundController.setMinInterval("shoot", 111L);
+        /*Vars.soundController.setMinInterval("shoot", 111L);
         Vars.soundController.setMinInterval("shootDuo", 132L);
         Vars.soundController.setMinInterval("shootArc", 114L);
         Vars.soundController.setMinInterval("shootRevenant", 141L);
         Vars.soundController.setMinInterval("shootLancer", 141L);
         Vars.soundController.setMinInterval("shootLaser", 142L);
+        Vars.soundController.setMinInterval("shootArtillery", 119);
+        Vars.soundController.setMinInterval("shootArtillerySmall", 122);
+        Vars.soundController.setMinInterval("shootRipple", 142L);*/
 
         rebindContentSounds();
     }

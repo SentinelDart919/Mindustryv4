@@ -20,6 +20,7 @@ public class Weapons implements ContentList{
             roundrobin = false;
             ejectEffect = Fx.none;
             ammo = AmmoTypes.explode;
+            setShootSound("explosionCrawler");
         }};
 
         blaster = new Weapon("blaster"){{
@@ -36,6 +37,7 @@ public class Weapons implements ContentList{
             roundrobin = true;
             ejectEffect = ShootFx.shellEjectSmall;
             ammo = AmmoTypes.bulletCopper;
+            setShootSound("shootDart");
         }};
 
         glaiveBlaster = new Weapon("bomber"){{
@@ -74,6 +76,7 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
             velocityRnd = 0.2f;
             spacing = 1f;
+            setShootSound("shootMissileSmall");
             ammo = AmmoTypes.weaponMissile;
         }};
 
@@ -85,6 +88,7 @@ public class Weapons implements ContentList{
         velocityRnd = 0.2f;
         roundrobin = true;
         ejectEffect = Fx.none;
+        setShootSound("shootMissileSmall");
         ammo = AmmoTypes.weaponMissileSwarm;
         }};
 
@@ -98,6 +102,7 @@ public class Weapons implements ContentList{
             roundrobin = true;
             ejectEffect = Fx.none;
             shake = 3f;
+            setShootSound("shootMissileSmall");
             ammo = AmmoTypes.weaponMissileSwarm;
         }};
 
@@ -134,6 +139,7 @@ public class Weapons implements ContentList{
             velocityRnd = 0.2f;
             ejectEffect = Fx.none;
             ammo = AmmoTypes.shock;
+            setShootSound("shootArc");
         }};
 
         flakgun = new Weapon("flakgun"){{
@@ -165,6 +171,7 @@ public class Weapons implements ContentList{
             shake = 2f;
             ejectEffect = ShootFx.shellEjectMedium;
             ammo = AmmoTypes.unitArtillery;
+            setShootSound("shootArtillery");
         }};
 
         sapper = new Weapon("sapper"){{
@@ -272,6 +279,7 @@ public class Weapons implements ContentList{
             shake = 2f;
             ejectEffect = ShootFx.shellEjectMedium;
             ammo = AmmoTypes.unitArtillery;
+            setShootSound("shootArtillery");
         }};
     }
 

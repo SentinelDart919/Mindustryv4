@@ -41,6 +41,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             targetGround = false;
             targetAir = true;
             ammoUseEffect = ShootFx.shellEjectMedium;
+            setShootSound("shootScatter");
             recoil = 2f;
             rotatespeed = 15f;
             inaccuracy = 17f;
@@ -50,6 +51,7 @@ public class TurretBlocks extends BlockList implements ContentList{
 
         hail = new ArtilleryTurret("hail"){{
             ammoTypes = new AmmoType[]{AmmoTypes.artilleryDense, AmmoTypes.artilleryHoming, AmmoTypes.artilleryIncindiary};
+            setShootSound("shootArtillerySmall");
             reload = 60f;
             recoil = 2f;
             range = 230f;
@@ -147,6 +149,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             reload = 50f;
             shots = 4;
             burstSpacing = 5;
+            setShootSound("shootMissileSmall");
             inaccuracy = 10f;
             range = 140f;
             xRand = 6f;
@@ -177,6 +180,7 @@ public class TurretBlocks extends BlockList implements ContentList{
                 burstSpacing = 4;
                 shots = 3;
                 ammoUseEffect = ShootFx.shellEjectBig;
+                setShootSound("shootSalvo");
 
                 drawer = (tile, entity) -> {
                     Draw.rect(region, tile.drawx() + tr2.x, tile.drawy() + tr2.y, entity.rotation - 90);
@@ -203,6 +207,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             reload = 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = ShootFx.shellEjectBig;
+            setShootSound("shootRipple");
             cooldown = 0.03f;
             velocityInaccuracy = 0.2f;
             restitution = 0.02f;
@@ -215,6 +220,7 @@ public class TurretBlocks extends BlockList implements ContentList{
 
         cyclone = new ItemTurret("cyclone"){{
             ammoTypes = new AmmoType[]{AmmoTypes.flakObsidian, AmmoTypes.flakExplosive, AmmoTypes.flakPlastic, AmmoTypes.flakSurge};
+            setShootSound("shootCyclone");
             xRand = 4f;
             reload = 8f;
             range = 145f;
@@ -229,6 +235,7 @@ public class TurretBlocks extends BlockList implements ContentList{
 
         fuse = new ItemTurret("fuse"){{
             ammoTypes = new AmmoType[]{AmmoTypes.fuseShotgun};
+            setShootSound("shootFuse");
             reload = 50f;
             shootShake = 4f;
             range = 80f;
@@ -262,6 +269,7 @@ public class TurretBlocks extends BlockList implements ContentList{
         meltdown = new LaserTurret("meltdown"){{
             shootType = AmmoTypes.meltdownLaser;
             shootEffect = ShootFx.shootBigSmoke2;
+            setShootSound("shootMeltdown");
             shootCone = 40f;
             recoil = 4f;
             size = 4;
