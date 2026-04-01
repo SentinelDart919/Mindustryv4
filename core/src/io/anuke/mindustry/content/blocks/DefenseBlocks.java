@@ -101,7 +101,7 @@ public class DefenseBlocks extends BlockList implements ContentList{
         }};
 
         mendProjector = new MendProjector("mend-projector"){{
-            consumes.power(0.2f);
+            consumes.power(0.17f);
             range = 85f;
             reload = 250f;
             healPercent = 14f;
