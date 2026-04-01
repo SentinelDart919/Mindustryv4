@@ -1,7 +1,9 @@
 package io.anuke.mindustry.world.blocks.power;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -20,6 +22,7 @@ import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.util.Translator;
 
 import static io.anuke.mindustry.Vars.tilesize;
+import static io.anuke.mindustry.sounds.Sounds.explosionReactor;
 
 public class FusionReactor extends PowerGenerator{
     protected final Translator tr = new Translator();
@@ -144,6 +147,9 @@ public class FusionReactor extends PowerGenerator{
 
         Effects.shake(6f, 16f, tile.worldx(), tile.worldy());
         Effects.effect(ExplosionFx.nuclearShockwave, tile.worldx(), tile.worldy());
+        Sound sound = explosionReactor;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, tile.x, tile.y, 1f, 2.0f);}
         for(int i = 0; i < 6; i++){
             Timers.run(Mathf.random(40), () -> Effects.effect(BlockFx.nuclearcloud, tile.worldx(), tile.worldy()));
         }

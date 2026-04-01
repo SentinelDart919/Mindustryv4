@@ -251,8 +251,9 @@ public class SoundController extends Module{
             TileEntity entity = tile.entity;
             int count = ambientCounts.get(block, 0);
             boolean underGlobalBudget = ambientSoundBudget <= 0 || totalAmbient < ambientSoundBudget;
+            boolean shouldPlay = block.shouldPlayAmbientSound(tile);
 
-            if(!underGlobalBudget || (block.ambientSoundLimit > 0 && count >= block.ambientSoundLimit)){
+            if(!shouldPlay || !underGlobalBudget || (block.ambientSoundLimit > 0 && count >= block.ambientSoundLimit)){
                 block.updateAmbientSound(tile, false);
             }else{
                 block.updateAmbientSound(tile, true);

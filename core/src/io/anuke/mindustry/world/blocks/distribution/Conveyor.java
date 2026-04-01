@@ -50,7 +50,7 @@ public class Conveyor extends Block{
         autoSleep = true;
         itemCapacity = 4;
         noSideBlend = false;
-        setAmbientSound("loopConveyor", 0.05f, 4);
+        setAmbientSound("loopConveyor", 0.03f, 4);
     }
 
     private static int compareItems(long a, long b){
@@ -381,7 +381,7 @@ public class Conveyor extends Block{
 
     @Override
     public boolean shouldPlayAmbientSoundCondition(Tile tile){
-        return tile.entity != null && tile.entity.items.total() > 0;
+        return tile.entity != null;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package io.anuke.mindustry.world.blocks.power;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -26,6 +28,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.tilesize;
+import static io.anuke.mindustry.sounds.Sounds.explosionReactor;
 
 public class NuclearReactor extends PowerGenerator{
     protected final int timerFuel = timers++;
@@ -53,7 +56,7 @@ public class NuclearReactor extends PowerGenerator{
         powerCapacity = 80f;
         hasItems = true;
         hasLiquids = true;
-
+        setAmbientSound("loopThoriumReactor", 0.03f, 4);
         consumes.item(Items.thorium);
     }
 
@@ -77,6 +80,11 @@ public class NuclearReactor extends PowerGenerator{
         super.setStats();
         stats.add(BlockStat.inputLiquid, new LiquidFilterValue(liquid -> liquid.temperature <= 0.5f));
         stats.add(BlockStat.basePowerGeneration, powerMultiplier * 60f * 0.5f, StatUnit.powerSecond);
+    }
+
+    @Override
+    public boolean shouldPlayAmbientSoundCondition(Tile tile){
+        return true;
     }
 
     @Override
@@ -126,6 +134,7 @@ public class NuclearReactor extends PowerGenerator{
         }
 
         entity.heat = Mathf.clamp(entity.heat);
+        entity.ambientSoundEnabled = fuel > 0;
 
         if(entity.heat >= 0.999f){
             entity.kill();
@@ -143,7 +152,9 @@ public class NuclearReactor extends PowerGenerator{
         int fuel = entity.items.get(consumes.item());
 
         if(fuel < 5 && entity.heat < 0.5f) return;
-
+        Sound sound = explosionReactor;
+        if(Vars.soundController != null && sound != null){
+            Vars.soundController.at(sound, tile.x, tile.y, 1f, 2.0f);}
         Effects.shake(6f, 16f, tile.worldx(), tile.worldy());
         Effects.effect(ExplosionFx.nuclearShockwave, tile.worldx(), tile.worldy());
         for(int i = 0; i < 6; i++){
