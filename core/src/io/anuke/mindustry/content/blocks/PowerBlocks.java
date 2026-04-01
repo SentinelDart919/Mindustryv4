@@ -1,5 +1,6 @@
 package io.anuke.mindustry.content.blocks;
 
+import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.game.ContentList;
@@ -7,7 +8,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.power.*;
 
 public class PowerBlocks extends BlockList implements ContentList{
-    public static Block combustionGenerator, thermalGenerator, turbineGenerator, rtgGenerator, solarPanel, largeSolarPanel,
+    public static Block combustionGenerator, thermalGenerator, turbineGenerator,differentialGenerator, rtgGenerator, solarPanel, largeSolarPanel,
             thoriumReactor, fusionReactor, battery, batteryLarge, powerNode, powerNodeLarge, surgeTower;
 
     @Override
@@ -16,6 +17,8 @@ public class PowerBlocks extends BlockList implements ContentList{
             powerOutput = 0.15f;
             powerCapacity = 40f;
             itemDuration = 120f;
+            setAmbientSound("loopSmelter", 0.03f);
+
         }};
 
         thermalGenerator = new LiquidHeatGenerator("thermal-generator"){{
@@ -23,6 +26,7 @@ public class PowerBlocks extends BlockList implements ContentList{
             powerCapacity = 40f;
             powerPerLiquid = 0.6f;
             generateEffect = BlockFx.redgeneratespark;
+            setAmbientSound("loopHum", 0.08f);
             size = 2;
         }};
 
@@ -33,6 +37,18 @@ public class PowerBlocks extends BlockList implements ContentList{
             powerPerLiquid = 0.7f;
             consumes.liquid(Liquids.water, 0.05f);
             size = 2;
+            setAmbientSound("loopSmelter", 0.06f);
+
+        }};
+        differentialGenerator = new TurbineGenerator("differential-generator"){{
+            powerOutput = 1.2f;
+            powerCapacity = 40f;
+            itemDuration = 220f;
+            powerPerLiquid = 0.7f;
+            consumes.item(Items.pyratite);
+            consumes.liquid(Liquids.cryofluid, 0.1f);
+            size = 3;
+            setAmbientSound("loopDifferential", 0.12f);
         }};
 
         rtgGenerator = new DecayGenerator("rtg-generator"){{
@@ -40,6 +56,7 @@ public class PowerBlocks extends BlockList implements ContentList{
             size = 2;
             powerOutput = 0.45f;
             itemDuration = 220f;
+            setAmbientSound("");
         }};
 
         solarPanel = new SolarGenerator("solar-panel"){{
@@ -60,6 +77,7 @@ public class PowerBlocks extends BlockList implements ContentList{
         fusionReactor = new FusionReactor("fusion-reactor"){{
             size = 4;
             health = 600;
+            setAmbientSound("loopPulse", 0.08f);
         }};
 
         battery = new Battery("battery"){{

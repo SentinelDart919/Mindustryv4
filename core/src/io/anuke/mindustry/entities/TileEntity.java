@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -11,6 +12,7 @@ import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.traits.TargetTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
@@ -53,6 +55,10 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     public ItemModule items;
     public LiquidModule liquids;
     public ConsumeModule cons;
+    /*public Sound ambientSound;
+    public String ambientSoundName;
+    public float ambientSoundVolume = 1f;*/
+
 
     /**List of (cached) tiles with entities in proximity, used for outputting to*/
     private Array<Tile> proximity = new Array<>(8);
@@ -66,6 +72,10 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
             tile.entity.health = health;
         }
     }
+    /*public void setAmbientSound(String name){
+        ambientSoundName = name;
+        ambientSound = Sounds.get(name);
+    }*/
 
     @Remote(called = Loc.server)
     public static void onTileDestroyed(Tile tile){

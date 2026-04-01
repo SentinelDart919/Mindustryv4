@@ -62,7 +62,7 @@ public abstract class LiquidGenerator extends PowerGenerator{
                 Effects.effect(generateEffect, tile.drawx() + Mathf.range(3f), tile.drawy() + Mathf.range(3f));
             }
         }
-
+        entity.ambientSoundEnabled = entity.liquids.currentAmount() > 0;
         tile.entity.power.graph.update();
     }
 

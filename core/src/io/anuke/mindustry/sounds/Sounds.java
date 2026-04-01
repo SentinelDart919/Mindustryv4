@@ -105,6 +105,15 @@ public class Sounds{
     public static Sound shootDart;
     public static Sound loopThoriumReactor;
     public static Sound loopCombustion;
+    public static Sound loopDifferential;
+    public static Sound loopSmelter;
+    public static Sound loopGrind;
+    public static Sound loopMachine;
+    public static Sound loopMachine2;
+    public static Sound loopMachineSpin;
+    public static Sound loopHum;
+    public static Sound loopPulse;
+    public static Sound loopThruster;
     public static Sound loopConveyor;
     public static Sound blockExplode;
     public static Sound blockExplodeAlt;
@@ -149,7 +158,16 @@ public class Sounds{
         shootMeltdown = register("shootMeltdown", Vars.soundController.load("shootMeltdown", "sounds/shoot/shootMeltdown.ogg"));
         loopThoriumReactor = register("loopThoriumReactor", Vars.soundController.load("loopThoriumReactor", "sounds/loops/loopThoriumReactor.ogg"));
         loopCombustion = register("loopCombustion", Vars.soundController.load("loopCombustion", "sounds/loops/loopCombustion.ogg"));
+        loopDifferential = register("loopDifferential", Vars.soundController.load("loopDifferential", "sounds/loops/loopDifferential.ogg"));
+        loopSmelter = register("loopSmelter", Vars.soundController.load("loopSmelter", "sounds/loops/loopSmelter.ogg"));
+        loopGrind = register("loopGrind", Vars.soundController.load("loopGrind", "sounds/loops/loopGrind.ogg"));
+        loopMachine = register("loopMachine", Vars.soundController.load("loopMachine", "sounds/loops/loopMachine.ogg"));
+        loopMachine2 = register("loopMachine2", Vars.soundController.load("loopMachine2", "sounds/loops/loopMachine2.ogg"));
+        loopMachineSpin = register("loopMachineSpin", Vars.soundController.load("loopMachineSpin", "sounds/loops/loopMachineSpin.ogg"));
+        loopHum = register("loopHum", Vars.soundController.load("loopHum", "sounds/loops/loopHum.ogg"));
+        loopPulse = register("loopPulse", Vars.soundController.load("loopPulse", "sounds/loops/loopPulse.ogg"));
         loopConveyor = register("loopConveyor", Vars.soundController.load("loopConveyor", "sounds/loops/loopConveyor.ogg"));
+        loopThruster = register("loopThruster", Vars.soundController.load("loopThruster", "sounds/loops/loopThruster.ogg"));
         register("blockExplode1", Vars.soundController.load("blockExplode1", "sounds/explosions/blockExplode1.ogg"));
         register("blockExplode2", Vars.soundController.load("blockExplode2", "sounds/explosions/blockExplode2.ogg"));
         register("blockExplode3", Vars.soundController.load("blockExplode3", "sounds/explosions/blockExplode3.ogg"));
@@ -235,6 +253,14 @@ public class Sounds{
         Vars.soundController.setPriority("shootMeltdown", 3);
 
         Vars.soundController.setPriority("loopThoriumReactor", 2);
+        Vars.soundController.setPriority("loopDifferential", 2);
+        Vars.soundController.setPriority("loopSmelter", 2);
+        Vars.soundController.setPriority("loopGrind", 2);
+        Vars.soundController.setPriority("loopMachine", 2);
+        Vars.soundController.setPriority("loopMachine2", 2);
+        Vars.soundController.setPriority("loopMachineSpin", 2);
+        Vars.soundController.setPriority("loopHum", 2);
+        Vars.soundController.setPriority("loopPulse", 2);
         Vars.soundController.setPriority("loopCombustion", 2);
         Vars.soundController.setPriority("blockPlace1", 2);
         Vars.soundController.setPriority("blockPlace2", 2);
@@ -244,6 +270,7 @@ public class Sounds{
         Vars.soundController.setPriority("blockBreak3", 2);
 
         Vars.soundController.setPriority("loopConveyor", 1);
+        Vars.soundController.setPriority("loopThruster", 1);
 
         rebindContentSounds();
     }

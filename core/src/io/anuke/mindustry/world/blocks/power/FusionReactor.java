@@ -43,6 +43,7 @@ public class FusionReactor extends PowerGenerator{
         liquidCapacity = 30f;
         hasItems = true;
         itemCapacity = 20;
+        setAmbientSound("");
 
         consumes.item(Items.blastCompound);
         consumes.liquid(Liquids.cryofluid, 0.09f);
@@ -74,7 +75,7 @@ public class FusionReactor extends PowerGenerator{
         float powerAdded = Math.min(powerCapacity - entity.power.amount, maxPowerProduced * Mathf.pow(entity.warmup, 4f) * Timers.delta());
         entity.power.amount += powerAdded;
         entity.totalProgress += entity.warmup * Timers.delta();
-
+        entity.ambientSoundEnabled = entity.totalProgress > 0;
         tile.entity.power.graph.update();
     }
 

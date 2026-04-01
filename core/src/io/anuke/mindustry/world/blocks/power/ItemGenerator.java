@@ -36,7 +36,7 @@ public abstract class ItemGenerator extends PowerGenerator{
         super(name);
         itemCapacity = 20;
         hasItems = true;
-
+        setAmbientSound("loopCombustion");
         consumes.add(new ConsumeItemFilter(item -> getItemEfficiency(item) >= minItemEfficiency)).update(false).optional(true);
     }
 
@@ -107,6 +107,7 @@ public abstract class ItemGenerator extends PowerGenerator{
                 Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
             }
         }
+        entity.ambientSoundEnabled = entity.generateTime > 0;
     }
 
     protected abstract float getItemEfficiency(Item item);

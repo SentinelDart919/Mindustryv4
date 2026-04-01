@@ -80,6 +80,7 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
                 }
             }
         }
+        entity.ambientSoundEnabled = entity.generateTime > 0;
     }
 
     @Override
