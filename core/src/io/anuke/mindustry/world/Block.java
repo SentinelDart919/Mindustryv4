@@ -25,6 +25,7 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.meta.*;
 import io.anuke.ucore.core.Timers;
+import io.anuke.ucore.core.Core;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Hue;
 import io.anuke.ucore.graphics.Lines;
@@ -116,12 +117,14 @@ public class Block extends BaseBlock {
     protected TextureRegion[] icon;
     protected TextureRegion[] compactIcon;
     protected TextureRegion editorIcon;
-    public long ambientSoundId = -1L;
     public TextureRegion shadowRegion;
     public TextureRegion region;
     public Sound ambientSound;
     public String ambientSoundName;
     public float ambientSoundVolume = 1f;
+    public float ambientSoundRange = 0f;
+    public int ambientSoundLimit = 0;
+    public float ambientSoundFadeSpeed = 0.08f;
     public Block(String name){
         this.name = name;
         this.formalName = Bundles.get("block." + name + ".name", name);
@@ -133,20 +136,60 @@ public class Block extends BaseBlock {
         ambientSoundName = name;
         ambientSound = Sounds.get(name);
     }
-    /*
+
+    public void setAmbientSound(String name, float volume){
+        setAmbientSound(name);
+        ambientSoundVolume = volume;
+    }
+
+    public void setAmbientSound(String name, float volume, int limit){
+        setAmbientSound(name, volume);
+        ambientSoundLimit = limit;
+    }
+
+    public void setAmbientSound(String name, float volume, int limit, float range, float fadeSpeed){
+        setAmbientSound(name, volume, limit);
+        ambientSoundRange = range;
+        ambientSoundFadeSpeed = fadeSpeed;
+    }
+
     public boolean shouldPlayAmbientSound(Tile tile){
-        return ambientSound != null;
+        return ambientSound != null && tile.entity != null && tile.entity.ambientSoundEnabled && shouldPlayAmbientSoundCondition(tile) && isAmbientSoundInRange(tile);
+    }
+
+    public boolean shouldPlayAmbientSoundCondition(Tile tile){
+        return true;
+    }
+
+    public boolean isAmbientSoundInRange(Tile tile){
+        if(headless || Core.camera == null) return true;
+
+        float range = ambientSoundRange > 0f ? ambientSoundRange : Math.max(Core.camera.viewportWidth, Core.camera.viewportHeight) * 1.25f;
+        float dx = tile.drawx() - Core.camera.position.x;
+        float dy = tile.drawy() - Core.camera.position.y;
+        return dx * dx + dy * dy <= range * range;
     }
 
     public void updateAmbientSound(Tile tile){
+        updateAmbientSound(tile, shouldPlayAmbientSound(tile));
+    }
+
+    public void updateAmbientSound(Tile tile, boolean play){
         if(tile.entity == null) return;
 
-        if(soundController == null || ambientSound == null || !shouldPlayAmbientSound(tile)){
+        if(soundController == null || ambientSound == null){
             stopAmbientSound(tile);
             return;
         }
 
-        tile.entity.ambientSoundId = soundController.updateLoop(ambientSound, tile.entity.ambientSoundId, tile.drawx(), tile.drawy(), ambientSoundVolume);
+        tile.entity.ambientSoundFade = Mathf.lerpDelta(tile.entity.ambientSoundFade, play ? 1f : 0f, ambientSoundFadeSpeed);
+
+        if(!play && tile.entity.ambientSoundFade <= 0.001f){
+            stopAmbientSound(tile);
+            return;
+        }
+
+        tile.entity.ambientSoundId = soundController.updateLoop(ambientSound, tile.entity.ambientSoundId, tile.drawx(), tile.drawy(), ambientSoundVolume * tile.entity.ambientSoundFade);
     }
 
     public void stopAmbientSound(Tile tile){
@@ -159,8 +202,8 @@ public class Block extends BaseBlock {
         }else{
             tile.entity.ambientSoundId = -1L;
         }
+        tile.entity.ambientSoundFade = 0f;
     }
-*/
     /**Populates the array with all blocks that produce this content.*/
     public static void getByProduction(Array<Block> arr, Content result){
         arr.clear();
@@ -252,7 +295,7 @@ public class Block extends BaseBlock {
     }
 
     public void removed(Tile tile){
-        /*stopAmbientSound(tile);*/
+        stopAmbientSound(tile);
     }
 
     /** Called after the block is placed by anyone. */

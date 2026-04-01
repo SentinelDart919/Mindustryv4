@@ -45,6 +45,9 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     public Timer timer;
     public float health;
     public float timeScale = 1f, timeScaleDuration;
+    public long ambientSoundId = -1L;
+    public boolean ambientSoundEnabled = true;
+    public float ambientSoundFade = 0f;
 
     public PowerModule power;
     public ItemModule items;
@@ -284,5 +287,12 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     @Override
     public EntityGroup targetGroup(){
         return tileGroup;
+    }
+
+    @Override
+    public void removed(){
+        if(tile != null){
+            tile.block().stopAmbientSound(tile);
+        }
     }
 }

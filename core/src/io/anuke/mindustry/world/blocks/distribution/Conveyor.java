@@ -50,7 +50,7 @@ public class Conveyor extends Block{
         autoSleep = true;
         itemCapacity = 4;
         noSideBlend = false;
-        setAmbientSound("loopConveyor");
+        setAmbientSound("loopConveyor", 0.05f, 4);
     }
 
     private static int compareItems(long a, long b){
@@ -370,43 +370,24 @@ public class Conveyor extends Block{
 
     @Override
     public void removed(Tile tile){
-        if(tile.entity instanceof ConveyorEntity){
-            stopAmbientLoop((ConveyorEntity)tile.entity);
-        }
         super.removed(tile);
     }
     @Override
     public void placed(Tile tile){
         ConveyorEntity entity = tile.entity();
-            startAmbientLoop(entity);
-            super.placed(tile);
-
+        entity.ambientSoundEnabled = true;
+        super.placed(tile);
     }
 
-
-    public void playSound(boolean play, ConveyorEntity entity){
-        if(play){startAmbientLoop(entity); play = false;} else stopAmbientLoop(entity); play = true;
+    @Override
+    public boolean shouldPlayAmbientSoundCondition(Tile tile){
+        return tile.entity != null && tile.entity.items.total() > 0;
     }
 
     @Override
     public TileEntity newEntity(){
         return new ConveyorEntity();
     }
-    private void startAmbientLoop(ConveyorEntity entity){
-            if( Vars.soundController != null && ambientSound != null){
-            entity.ambientSoundId = Vars.soundController.updateLoop(ambientSound, entity.ambientSoundId, entity.x, entity.y, 0.2f);
-        }else{
-            stopAmbientLoop(entity);
-        }
-    }
-    private void stopAmbientLoop(ConveyorEntity entity){
-        if(Vars.soundController != null && ambientSound != null){
-            entity.ambientSoundId = Vars.soundController.stopLoop(ambientSound, entity.ambientSoundId);
-        }else{
-            entity.ambientSoundId = -1L;
-        }
-    }
-
     public static class ConveyorEntity extends TileEntity{
 
         LongArray convey = new LongArray();
@@ -418,21 +399,14 @@ public class Conveyor extends Block{
         int blendsclx, blendscly;
 
         float clogHeat = 0f;
-        long ambientSoundId = 1L;
 
         @Override
         public void onDeath(){
-            if(tile != null && tile.block() instanceof Conveyor){
-                ((Conveyor)tile.block()).stopAmbientLoop(this);
-            }
             super.onDeath();
         }
 
         @Override
         public void removed(){
-            if(tile != null && tile.block() instanceof Conveyor){
-                ((Conveyor)tile.block()).stopAmbientLoop(this);
-            }
             super.removed();
         }
 

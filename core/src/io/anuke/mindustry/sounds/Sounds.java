@@ -194,15 +194,56 @@ public class Sounds{
         blockPlace = register("blockPlace", randomGroup("blockPlace"));
         blockBreak = register("blockBreak", randomGroup("blockBreak"));
 
-        /*Vars.soundController.setMinInterval("shoot", 111L);
-        Vars.soundController.setMinInterval("shootDuo", 132L);
-        Vars.soundController.setMinInterval("shootArc", 114L);
-        Vars.soundController.setMinInterval("shootRevenant", 141L);
-        Vars.soundController.setMinInterval("shootLancer", 141L);
-        Vars.soundController.setMinInterval("shootLaser", 142L);
-        Vars.soundController.setMinInterval("shootArtillery", 119);
-        Vars.soundController.setMinInterval("shootArtillerySmall", 122);
-        Vars.soundController.setMinInterval("shootRipple", 142L);*/
+        Vars.soundController.setPriority("blockExplode1", 4);
+        Vars.soundController.setPriority("blockExplode2", 4);
+        Vars.soundController.setPriority("blockExplode3", 4);
+        Vars.soundController.setPriority("blockExplode1Alt", 4);
+        Vars.soundController.setPriority("blockExplode2Alt", 4);
+        Vars.soundController.setPriority("blockExplodeElectric", 4);
+        Vars.soundController.setPriority("blockExplodeElectricBig", 4);
+        Vars.soundController.setPriority("blockExplodeExplosive", 4);
+        Vars.soundController.setPriority("blockExplodeExplosiveAlt", 4);
+        Vars.soundController.setPriority("blockExplodeFlammable", 4);
+        Vars.soundController.setPriority("blockExplodeWall", 4);
+        Vars.soundController.setPriority("explosion", 4);
+        Vars.soundController.setPriority("explosionArtillery", 4);
+        Vars.soundController.setPriority("explosionArtilleryShock", 4);
+        Vars.soundController.setPriority("explosionArtilleryShockBig", 4);
+        Vars.soundController.setPriority("explosionCrawler", 4);
+        Vars.soundController.setPriority("explosionReactor1", 4);
+        Vars.soundController.setPriority("explosionReactor2", 4);
+        Vars.soundController.setPriority("shockBullet", 4);
+        Vars.soundController.setPriority("unitExplode1", 4);
+        Vars.soundController.setPriority("unitExplode2", 4);
+        Vars.soundController.setPriority("unitExplode3", 4);
+
+        Vars.soundController.setPriority("shoot", 3);
+        Vars.soundController.setPriority("shootDuo", 3);
+        Vars.soundController.setPriority("shootArc", 3);
+        Vars.soundController.setPriority("shootRevenant", 3);
+        Vars.soundController.setPriority("shootLancer", 3);
+        Vars.soundController.setPriority("shootArtillery", 3);
+        Vars.soundController.setPriority("shootArtillerySmall", 3);
+        Vars.soundController.setPriority("shootRipple", 3);
+        Vars.soundController.setPriority("shootDart", 3);
+        Vars.soundController.setPriority("shootLaser", 3);
+        Vars.soundController.setPriority("shootSalvo", 3);
+        Vars.soundController.setPriority("shootScatter", 3);
+        Vars.soundController.setPriority("shootMissileSmall", 3);
+        Vars.soundController.setPriority("shootCyclone", 3);
+        Vars.soundController.setPriority("shootFuse", 3);
+        Vars.soundController.setPriority("shootMeltdown", 3);
+
+        Vars.soundController.setPriority("loopThoriumReactor", 2);
+        Vars.soundController.setPriority("loopCombustion", 2);
+        Vars.soundController.setPriority("blockPlace1", 2);
+        Vars.soundController.setPriority("blockPlace2", 2);
+        Vars.soundController.setPriority("blockPlace3", 2);
+        Vars.soundController.setPriority("blockBreak1", 2);
+        Vars.soundController.setPriority("blockBreak2", 2);
+        Vars.soundController.setPriority("blockBreak3", 2);
+
+        Vars.soundController.setPriority("loopConveyor", 1);
 
         rebindContentSounds();
     }

@@ -5,12 +5,20 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.modules.Module;
 import io.anuke.ucore.util.Mathf;
+
+import static io.anuke.mindustry.Vars.tilesize;
+import static io.anuke.mindustry.Vars.world;
 
 public class SoundController extends Module{
     private static final long defaultMinInterval = 100L;
@@ -18,7 +26,16 @@ public class SoundController extends Module{
     private final ObjectMap<String, Sound> sounds = new ObjectMap<>();
     private final ObjectMap<String, Array<Sound>> groups = new ObjectMap<>();
     private final ObjectMap<Sound, Long> lastPlayed = new ObjectMap<>();
+    private final ObjectMap<Sound, Integer> priorities = new ObjectMap<>();
     private final ObjectMap<Sound, Long> minIntervals = new ObjectMap<>();
+    private final ObjectSet<TileEntity> ambientEntities = new ObjectSet<>();
+    private final ObjectSet<TileEntity> nextAmbientEntities = new ObjectSet<>();
+    private final Array<Tile> ambientTiles = new Array<>();
+    private final ObjectIntMap<Block> ambientCounts = new ObjectIntMap<>();
+    private final Array<PriorityEntry> priorityEntries = new Array<>();
+    private int ambientSoundBudget = 6;
+    private int prioritySoundBudget = 8;
+    private long priorityWindow = 120L;
 
     private float falloff = 9000f;
 
@@ -77,6 +94,39 @@ public class SoundController extends Module{
         this.falloff = falloff;
     }
 
+    public void setPriority(String name, Integer priority){
+        Sound sound = sounds.get(name);
+        if(sound != null){
+            setPriority(sound, priority);
+        }
+    }
+
+    public void setPriority(Sound sound, Integer priority){
+        if(sound == null) return;
+
+        if(priority == null){
+            priorities.remove(sound);
+        }else{
+            priorities.put(sound, priority);
+        }
+    }
+
+    public Integer getPriority(Sound sound){
+        return sound == null ? null : priorities.get(sound);
+    }
+
+    public void setAmbientSoundBudget(int amount){
+        ambientSoundBudget = Math.max(0, amount);
+    }
+
+    public void setPrioritySoundBudget(int amount){
+        prioritySoundBudget = Math.max(0, amount);
+    }
+
+    public void setPriorityWindow(long millis){
+        priorityWindow = Math.max(0L, millis);
+    }
+
     public void setMinInterval(String name, long interval){
         Sound sound = sounds.get(name);
         if(sound != null){
@@ -111,6 +161,7 @@ public class SoundController extends Module{
         long id = sound.play(Mathf.clamp(finalVolume, 0f, 1f), pitch, Mathf.clamp(pan, -1f, 1f));
         if(id != -1L){
             lastPlayed.put(sound, TimeUtils.millis());
+            registerPriority(sound);
         }
         return id;
     }
@@ -133,6 +184,7 @@ public class SoundController extends Module{
         long id = sound.play(Mathf.clamp(finalVolume, 0f, 1f), pitch, calcPan(x));
         if(id != -1L){
             lastPlayed.put(sound, TimeUtils.millis());
+            registerPriority(sound);
         }
         return id;
     }
@@ -157,6 +209,73 @@ public class SoundController extends Module{
         }
 
         return id;
+    }
+
+    @Override
+    public void update(){
+        if(Vars.headless || Core.camera == null) return;
+
+        nextAmbientEntities.clear();
+        ambientTiles.clear();
+        ambientCounts.clear();
+
+        float worldRange = Math.max(Core.camera.viewportWidth, Core.camera.viewportHeight) * 1.5f;
+        int tileRange = Math.max(1, (int)(worldRange / tilesize) + 2);
+        int centerX = Mathf.scl(Core.camera.position.x, tilesize);
+        int centerY = Mathf.scl(Core.camera.position.y, tilesize);
+
+        int minx = Math.max(0, centerX - tileRange);
+        int miny = Math.max(0, centerY - tileRange);
+        int maxx = Math.min(world.width() - 1, centerX + tileRange);
+        int maxy = Math.min(world.height() - 1, centerY + tileRange);
+
+        for(int x = minx; x <= maxx; x++){
+            for(int y = miny; y <= maxy; y++){
+                Tile tile = world.rawTile(x, y);
+                if(tile == null || tile.entity == null || tile.block().ambientSound == null) continue;
+
+                ambientTiles.add(tile);
+            }
+        }
+
+        ambientTiles.sort((a, b) -> {
+            int apr = ambientPriority(a);
+            int bpr = ambientPriority(b);
+            if(apr != bpr) return Integer.compare(bpr, apr);
+            return Float.compare(dst2(a), dst2(b));
+        });
+
+        int totalAmbient = 0;
+        for(Tile tile : ambientTiles){
+            Block block = tile.block();
+            TileEntity entity = tile.entity;
+            int count = ambientCounts.get(block, 0);
+            boolean underGlobalBudget = ambientSoundBudget <= 0 || totalAmbient < ambientSoundBudget;
+
+            if(!underGlobalBudget || (block.ambientSoundLimit > 0 && count >= block.ambientSoundLimit)){
+                block.updateAmbientSound(tile, false);
+            }else{
+                block.updateAmbientSound(tile, true);
+                ambientCounts.put(block, count + 1);
+                totalAmbient++;
+            }
+
+            if(entity.ambientSoundId != -1L || entity.ambientSoundFade > 0.001f){
+                nextAmbientEntities.add(entity);
+            }
+        }
+
+        for(TileEntity entity : ambientEntities){
+            if(entity == null || entity.tile == null || nextAmbientEntities.contains(entity)) continue;
+
+            entity.tile.block().updateAmbientSound(entity.tile, false);
+            if(entity.ambientSoundId != -1L || entity.ambientSoundFade > 0.001f){
+                nextAmbientEntities.add(entity);
+            }
+        }
+
+        ambientEntities.clear();
+        ambientEntities.addAll(nextAmbientEntities);
     }
 
     public long stopLoop(Sound sound, long id){
@@ -198,7 +317,57 @@ public class SoundController extends Module{
 
         long interval = minIntervals.get(sound, defaultMinInterval);
         long last = lastPlayed.get(sound, 0L);
-        return TimeUtils.timeSinceMillis(last) >= interval;
+        return TimeUtils.timeSinceMillis(last) >= interval && canPlayPriority(sound);
+    }
+
+    private boolean canPlayPriority(Sound sound){
+        Integer priority = getPriority(sound);
+        if(priority == null || prioritySoundBudget <= 0) return true;
+
+        cleanupPriorityEntries();
+        if(priorityEntries.size < prioritySoundBudget) return true;
+
+        int lowest = Integer.MAX_VALUE;
+        for(PriorityEntry entry : priorityEntries){
+            lowest = Math.min(lowest, entry.priority);
+        }
+
+        return priority > lowest;
+    }
+
+    private void registerPriority(Sound sound){
+        Integer priority = getPriority(sound);
+        if(priority == null || prioritySoundBudget <= 0) return;
+
+        cleanupPriorityEntries();
+        if(priorityEntries.size >= prioritySoundBudget){
+            int lowestIndex = -1;
+            int lowestPriority = Integer.MAX_VALUE;
+            for(int i = 0; i < priorityEntries.size; i++){
+                PriorityEntry entry = priorityEntries.get(i);
+                if(entry.priority < lowestPriority){
+                    lowestPriority = entry.priority;
+                    lowestIndex = i;
+                }
+            }
+
+            if(lowestIndex != -1 && priority > lowestPriority){
+                priorityEntries.removeIndex(lowestIndex);
+            }else if(lowestIndex != -1){
+                return;
+            }
+        }
+
+        priorityEntries.add(new PriorityEntry(TimeUtils.millis(), priority));
+    }
+
+    private void cleanupPriorityEntries(){
+        long now = TimeUtils.millis();
+        for(int i = priorityEntries.size - 1; i >= 0; i--){
+            if(now - priorityEntries.get(i).time > priorityWindow){
+                priorityEntries.removeIndex(i);
+            }
+        }
     }
 
     private float getVolume(){
@@ -216,6 +385,27 @@ public class SoundController extends Module{
         return Mathf.clamp(1f / Math.max(dst2 / falloff, 1f)) * getVolume();
     }
 
+    private float dst2(Tile tile){
+        float dx = tile.drawx() - Core.camera.position.x;
+        float dy = tile.drawy() - Core.camera.position.y;
+        return dx * dx + dy * dy;
+    }
+
+    private int ambientPriority(Tile tile){
+        Integer priority = getPriority(tile.block().ambientSound);
+        return priority == null ? 0 : priority;
+    }
+
+    private static class PriorityEntry{
+        final long time;
+        final int priority;
+
+        PriorityEntry(long time, int priority){
+            this.time = time;
+            this.priority = priority;
+        }
+    }
+
     @Override
     public void dispose(){
         for(Sound sound : sounds.values()){
@@ -224,6 +414,8 @@ public class SoundController extends Module{
         sounds.clear();
         groups.clear();
         lastPlayed.clear();
+        priorities.clear();
         minIntervals.clear();
+        priorityEntries.clear();
     }
 }
