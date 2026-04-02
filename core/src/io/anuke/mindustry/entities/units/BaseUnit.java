@@ -73,6 +73,15 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         Damage.dynamicExplosion(unit.x, unit.y, flammability, explosiveness, 0f, unit.getSize() / 2f, Palette.darkFlame);
 
         unit.onSuperDeath();
+        //visual only.
+        if(Net.client()){
+            Tile tile = world.tile(unit.spawner);
+            if(tile != null){
+                tile.block().unitRemoved(tile, unit);
+            }
+
+            unit.spawner = -1;
+        }
 
         ScorchDecal.create(unit.x, unit.y);
         Effects.effect(ExplosionFx.explosion, unit);
@@ -340,6 +349,11 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     @Override
     public void removed(){
+        super.removed();
+        Tile tile = world.tile(spawner);
+        if(tile != null && !Net.client()){
+            tile.block().unitRemoved(tile, this);
+        }
         spawner = -1;
     }
 

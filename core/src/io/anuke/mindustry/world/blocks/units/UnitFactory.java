@@ -6,6 +6,7 @@ import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.gen.Call;
@@ -43,6 +44,7 @@ public class UnitFactory extends Block{
     protected float produceTime = 1000f;
     protected float launchVelocity = 0f;
     protected TextureRegion topRegion;
+    public int maxSpawn = 10;
 
     public UnitFactory(String name){
         super(name);
@@ -57,13 +59,14 @@ public class UnitFactory extends Block{
     }
 
     @Remote(called = Loc.server)
-    public static void onUnitFactorySpawn(Tile tile){
+    public static void onUnitFactorySpawn(Tile tile, int spawns){
         if(!(tile.entity instanceof UnitFactoryEntity) || !(tile.block() instanceof UnitFactory)) return;
 
         UnitFactoryEntity entity = tile.entity();
         UnitFactory factory = (UnitFactory) tile.block();
 
         entity.buildTime = 0f;
+        entity.spawned = spawns;
 
         Effects.shake(2f, 3f, entity);
         Effects.effect(BlockFx.producesmoke, tile.drawx(), tile.drawy());
@@ -94,6 +97,7 @@ public class UnitFactory extends Block{
         super.setStats();
 
         stats.add(BlockStat.craftSpeed, produceTime / 60f, StatUnit.seconds);
+        stats.add(BlockStat.maxUnits, maxSpawn, StatUnit.none);
     }
 
     @Override
@@ -101,7 +105,14 @@ public class UnitFactory extends Block{
         super.setBars();
 
         bars.add(new BlockBar(BarType.production, true, tile -> tile.<UnitFactoryEntity>entity().buildTime / produceTime));
+        bars.add(new BlockBar(BarType.production, true, tile -> (float) tile.<UnitFactoryEntity>entity().spawned / maxSpawn));
         bars.remove(BarType.inventory);
+    }
+    @Override
+    public void unitRemoved(Tile tile, Unit unit){
+        UnitFactoryEntity entity = tile.entity();
+        entity.spawned--;
+        entity.spawned = Math.max(entity.spawned, 0);
     }
 
     @Override
@@ -150,6 +161,10 @@ public class UnitFactory extends Block{
 
         entity.time += entity.delta() * entity.speedScl;
 
+        if(entity.spawned >= maxSpawn){
+            return;
+        }
+
         if(tile.isEnemyCheat()){
             entity.warmup += entity.delta();
         }
@@ -166,6 +181,7 @@ public class UnitFactory extends Block{
             }
             //check if grace period had passed
         }else if(entity.warmup > produceTime*gracePeriodMultiplier * Vars.state.difficulty.spawnerScaling){
+            maxSpawn = 10000;
             float speedMultiplier = Math.min(0.1f + (entity.warmup - produceTime * gracePeriodMultiplier * Vars.state.difficulty.spawnerScaling) / speedupTime, maxSpeedup);
             //otherwise, it's an enemy, cheat by not requiring resources
             entity.buildTime += entity.delta() * speedMultiplier;
@@ -177,7 +193,7 @@ public class UnitFactory extends Block{
         if(entity.buildTime >= produceTime){
             entity.buildTime = 0f;
 
-            Call.onUnitFactorySpawn(tile);
+            Call.onUnitFactorySpawn(tile, entity.spawned +1);
             useContent(tile, type);
 
             for(ItemStack stack : consumes.items()){
@@ -225,17 +241,20 @@ public class UnitFactory extends Block{
         public float time;
         public float speedScl;
         public float warmup; //only for enemy spawners
+        public int spawned;
 
         @Override
         public void write(DataOutput stream) throws IOException{
             stream.writeFloat(buildTime);
             stream.writeFloat(warmup);
+            stream.writeInt(spawned);
         }
 
         @Override
         public void read(DataInput stream) throws IOException{
             buildTime = stream.readFloat();
             warmup = stream.readFloat();
+            spawned = stream.readInt();
         }
     }
 }

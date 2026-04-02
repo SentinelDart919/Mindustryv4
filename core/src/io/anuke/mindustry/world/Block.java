@@ -305,6 +305,9 @@ public class Block extends BaseBlock {
     /** Called every frame a unit is on this tile. */
     public void unitOn(Tile tile, Unit unit){
     }
+    /** Called when a unit that spawned at this tile is removed. */
+    public void unitRemoved(Tile tile, Unit unit){
+    }
 
     /** Returns whether ot not this block can be place on the specified tile. */
     public boolean canPlaceOn(Tile tile){
