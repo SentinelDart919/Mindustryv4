@@ -149,7 +149,6 @@ public class UnitFactoryAdvanced extends Block{
                 entity.spawned[i]--;
                 entity.spawned[i] = Math.max(entity.spawned[i], 0);
             }
-            System.out.println("type id ="+ types[i] +" and unit id ="+ unit);
         }
 
     }
