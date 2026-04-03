@@ -8,6 +8,7 @@ import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.gen.Call;
@@ -40,6 +41,7 @@ import io.anuke.ucore.util.Mathf;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class UnitFactoryAdvanced extends Block{
     protected float gracePeriodMultiplier = 15f;
@@ -52,6 +54,8 @@ public class UnitFactoryAdvanced extends Block{
     public ItemStack[][] consumerStacks;
     /** Array of the multiple Producing times for every Unit Type**/
     public float[] producerTimes;
+
+    public int[] maxSpawn;
     protected float launchVelocity = 0f;
     protected TextureRegion topRegion;
     public UnitFactoryAdvanced(String name){
@@ -80,7 +84,7 @@ public class UnitFactoryAdvanced extends Block{
 
     }
     @Remote(called = Loc.server)
-    public static void onUnitFactoryAdvancedSpawn(Tile tile){
+    public static void onUnitFactoryAdvancedSpawn(Tile tile, int spawns){
 
         if(!(tile.entity instanceof UnitFactoryAdvancedEntity) || !(tile.block() instanceof UnitFactoryAdvanced)) return;
 
@@ -89,6 +93,7 @@ public class UnitFactoryAdvanced extends Block{
         UnitType selectedType = factory.getSelectedType(entity);
 
         entity.buildTime = 0f;
+        entity.spawned[entity.unitNumber] = spawns;
 
         Effects.shake(2f, 3f, entity);
         Effects.effect(BlockFx.producesmoke, tile.drawx(), tile.drawy());
@@ -134,6 +139,19 @@ public class UnitFactoryAdvanced extends Block{
         }));
         bars.remove(BarType.inventory);
         addItemBars();
+    }
+
+    public void unitRemoved(Tile tile, Unit unit){
+        UnitFactoryAdvanced.UnitFactoryAdvancedEntity entity = tile.entity();
+        for (int i = 0; i < types.length; i++){
+            UnitType type = types[i];
+            if(((BaseUnit) unit).getType().equals(type)){
+                entity.spawned[i]--;
+                entity.spawned[i] = Math.max(entity.spawned[i], 0);
+            }
+            System.out.println("type id ="+ types[i] +" and unit id ="+ unit);
+        }
+
     }
     @Override
     public void buildTable(Tile tile, Table table){
@@ -207,10 +225,14 @@ public class UnitFactoryAdvanced extends Block{
         UnitType selectedType = getSelectedType(entity);
         float selectedProduceTime = getSelectedProduceTime(entity);
         entity.unitSource = selectedType;
+        if(entity.spawned[entity.unitNumber] >= maxSpawn[entity.unitNumber]){
+            return;
+        }
 
         entity.time += entity.delta() * entity.speedScl;
         if(tile.isEnemyCheat()){
             entity.warmup += entity.delta();
+            maxSpawn[entity.unitNumber] = 100000;
         }
 
         if(selectedProduceTime <= 0f){
@@ -241,7 +263,7 @@ public class UnitFactoryAdvanced extends Block{
         if(selectedProduceTime > 0f && entity.buildTime >= selectedProduceTime){
             entity.buildTime = 0f;
 
-            Call.onUnitFactoryAdvancedSpawn(tile);
+            Call.onUnitFactoryAdvancedSpawn(tile, entity.spawned[entity.unitNumber] +1);
             if(selectedType != null){
                 useContent(tile, selectedType);
             }
@@ -279,6 +301,8 @@ public class UnitFactoryAdvanced extends Block{
         UnitFactoryAdvancedEntity entity = new UnitFactoryAdvancedEntity();
         if(types != null && types.length > 0){
             entity.unitNumber = 0;
+            entity.spawned = new int[types.length];
+            Arrays.fill(entity.spawned, 0);
             entity.unitSource = types[entity.unitNumber];
         }
         return entity;
@@ -364,6 +388,8 @@ public class UnitFactoryAdvanced extends Block{
         public float warmup; //only for enemy spawners
         /** Int that handles what unit of the Array to use*/
         public int unitNumber;
+        public int[] spawned;
+
         public UnitType unitSource;
 
 
@@ -371,6 +397,7 @@ public class UnitFactoryAdvanced extends Block{
         public void write(DataOutput stream) throws IOException{
             stream.writeFloat(buildTime);
             stream.writeFloat(warmup);
+            stream.writeInt(spawned[unitNumber]);
 
         }
 
@@ -378,6 +405,7 @@ public class UnitFactoryAdvanced extends Block{
         public void read(DataInput stream) throws IOException{
             buildTime = stream.readFloat();
             warmup = stream.readFloat();
+            spawned[unitNumber] = stream.readInt();
 
         }
         @Override

@@ -90,6 +90,13 @@ public class UnitBlocks extends BlockList implements ContentList{
                     6300,
                     7300,
             };
+            maxSpawn = new int[]{
+                    20,
+                    15,
+                    10,
+                    10,
+                    5,
+            };
             consumes.power(0.08f);
             size =2;
         }};
@@ -109,6 +116,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 2;
             consumes.power(0.05f);
             consumes.items(new ItemStack(Items.scrap, 10), new ItemStack(Items.lead, 10));
+            maxSpawn = 20;
         }};
 
         ghoulFactory = new UnitFactory("ghoul-factory"){{
@@ -118,6 +126,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.power(0.2f);
             shadow = "shadow-round-3";
             consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.titanium, 30), new ItemStack(Items.plastanium, 20));
+            maxSpawn = 6;
         }};
 
         revenantFactory = new UnitFactory("revenant-factory"){{
@@ -127,6 +136,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.power(0.3f);
             shadow = "shadow-round-4";
             consumes.items(new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 80), new ItemStack(Items.plastanium, 50));
+            maxSpawn = 4;
         }};
 
         scrappeonFactory = new UnitFactory("scrappeon-factory"){{
@@ -135,6 +145,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 2;
             consumes.power(0.02f);
             consumes.items(new ItemStack(Items.scrap, 10));
+            maxSpawn = 20;
         }};
 
         crawlerFactory = new UnitFactory("crawler-factory"){{
@@ -168,6 +179,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.power(0.15f);
             shadow = "shadow-round-3";
             consumes.items(new ItemStack(Items.silicon, 20), new ItemStack(Items.thorium, 30));
+            maxSpawn = 6;
         }};
 
         fortressFactory = new UnitFactory("fortress-factory"){{
@@ -177,6 +189,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             consumes.power(0.2f);
             shadow = "shadow-round-3";
             consumes.items(new ItemStack(Items.silicon, 40), new ItemStack(Items.thorium, 50));
+            maxSpawn = 4;
         }};
         highTierFactory = new UnitFactoryAdvanced("high-tier-factory"){{
             types = new UnitType[]{
@@ -205,7 +218,10 @@ public class UnitBlocks extends BlockList implements ContentList{
             producerTimes = new float[]{
                     17000f,
                     18000f
-
+            };
+            maxSpawn = new int[]{
+                    2,
+                    2
             };
             size = 8;
             consumes.power(0.64f);

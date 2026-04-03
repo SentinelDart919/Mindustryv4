@@ -226,6 +226,14 @@ public class DebugBlocks extends BlockList implements ContentList{
                     1000f,
                     1000f
             };
+            maxSpawn = new int[]{
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+            };
             size = 2;
             consumes.power(0.04f);
         }};
