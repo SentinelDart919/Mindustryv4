@@ -41,7 +41,7 @@ public class PowerBlocks extends BlockList implements ContentList{
 
         }};
         differentialGenerator = new TurbineGenerator("differential-generator"){{
-            powerOutput = 1.2f;
+            powerOutput = 1.38f;
             powerCapacity = 40f;
             itemDuration = 220f;
             powerPerLiquid = 0.7f;

@@ -25,7 +25,6 @@ public class Incinerator extends Block{
         hasLiquids = true;
         update = true;
         solid = true;
-
         consumes.power(0.05f);
     }
 
@@ -41,8 +40,10 @@ public class Incinerator extends Block{
 
         if(entity.cons.valid()){
             entity.heat = Mathf.lerpDelta(entity.heat, 1f, 0.04f);
+            entity.ambientSoundEnabled = true;
         }else{
             entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.02f);
+            entity.ambientSoundEnabled = false;
         }
     }
 

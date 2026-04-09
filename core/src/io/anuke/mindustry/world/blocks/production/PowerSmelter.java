@@ -56,6 +56,7 @@ public class PowerSmelter extends PowerBlock{
         update = true;
         solid = true;
         itemCapacity = 20;
+        setAmbientSound("loopSmelter", 0.09f);
     }
 
     @Override
@@ -103,10 +104,12 @@ public class PowerSmelter extends PowerBlock{
         //heat it up if there's enough power
         if(entity.cons.valid()){
             entity.heat += 1f / heatUpTime * entity.delta();
+            entity.ambientSoundEnabled = true;
             if(Mathf.chance(entity.delta() * burnEffectChance))
                 Effects.effect(burnEffect, entity.x + Mathf.range(size * 4f), entity.y + Mathf.range(size * 4));
         }else{
             entity.heat -= 1f / heatUpTime * Timers.delta();
+            entity.ambientSoundEnabled = false;
         }
 
         entity.heat = Mathf.clamp(entity.heat);
@@ -159,6 +162,7 @@ public class PowerSmelter extends PowerBlock{
             offloadNear(tile, result);
         }
         Effects.effect(craftEffect, flameColor, tile.drawx(), tile.drawy());
+        //entity.ambientSoundEnabled = entity.heat > minHeat;
     }
 
     @Override

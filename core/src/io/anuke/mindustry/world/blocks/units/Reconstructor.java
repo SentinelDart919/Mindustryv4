@@ -197,7 +197,7 @@ public class Reconstructor extends Block{
         if(entity.current != null){
             float progress = entity.departing ? entity.updateTime : (1f - entity.updateTime);
 
-            //Player player = entity.current;
+            Player player = (Player) entity.current;
 
             TextureRegion region = entity.current.getIconRegion();
 

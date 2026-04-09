@@ -21,6 +21,7 @@ public class PowerCrafter extends Block{
 
     public PowerCrafter(String name){
         super(name);
+        setAmbientSound("loopMachine", 0.09f);
         solid = true;
         update = true;
         hasPower = true;
@@ -67,6 +68,7 @@ public class PowerCrafter extends Block{
         if(entity.cons.valid()){
             entity.progress += 1f / craftTime * entity.delta();
             entity.totalProgress += entity.delta();
+            entity.ambientSoundEnabled = true;
         }
 
         if(entity.progress >= 1f){
@@ -83,6 +85,7 @@ public class PowerCrafter extends Block{
                 }
             }
             entity.progress = 0f;
+            entity.ambientSoundEnabled = false;
         }
 
         if(outputItem != null && entity.timer.get(timerDump, 5)){

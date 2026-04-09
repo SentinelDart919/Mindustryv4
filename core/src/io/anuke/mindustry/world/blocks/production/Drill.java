@@ -71,7 +71,7 @@ public class Drill extends Block{
         hasLiquids = true;
         liquidCapacity = 5f;
         hasItems = true;
-
+        setAmbientSound("loopDrill", 0.019f);
         consumes.add(new ConsumeLiquid(Liquids.water, 0.05f)).optional(true);
     }
 
@@ -192,11 +192,12 @@ public class Drill extends Block{
             entity.warmup = Mathf.lerpDelta(entity.warmup, speed, warmupSpeed);
             entity.progress += entity.delta()
             * entity.dominantItems * speed * entity.warmup;
-
+            entity.ambientSoundEnabled = true;
             if(Mathf.chance(Timers.delta() * updateEffectChance * entity.warmup))
                 Effects.effect(updateEffect, entity.x + Mathf.range(size * 2f), entity.y + Mathf.range(size * 2f));
         }else{
             entity.warmup = Mathf.lerpDelta(entity.warmup, 0f, warmupSpeed);
+            entity.ambientSoundEnabled = false;
             return;
         }
 

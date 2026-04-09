@@ -32,6 +32,7 @@ public class Cultivator extends Drill{
 
     public Cultivator(String name){
         super(name);
+        setAmbientSound("loopCultivator", 0.075f);
         drillEffect = Fx.none;
     }
 

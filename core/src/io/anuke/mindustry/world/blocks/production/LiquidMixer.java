@@ -62,13 +62,13 @@ public class LiquidMixer extends LiquidBlock{
             float use = Math.min(consumes.get(ConsumeLiquid.class).used() * entity.delta(), liquidCapacity - entity.liquids.get(outputLiquid));
             entity.accumulator += use;
             entity.liquids.add(outputLiquid, use);
+            entity.ambientSoundEnabled = true;
             for(int i = 0; i < (int) (entity.accumulator / liquidPerItem); i++){
                 if(!entity.items.has(consumes.item())) break;
                 entity.items.remove(consumes.item(), 1);
                 entity.accumulator -= liquidPerItem;
             }
-        }
-
+        } else entity.ambientSoundEnabled = false;
         tryDumpLiquid(tile, outputLiquid);
     }
 

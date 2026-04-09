@@ -35,6 +35,7 @@ public class GenericCrafter extends Block{
 
     public GenericCrafter(String name){
         super(name);
+        setAmbientSound("loopMachine", 0.09f);
         update = true;
         solid = true;
         health = 60;
@@ -88,11 +89,12 @@ public class GenericCrafter extends Block{
             entity.progress += 1f / craftTime * entity.delta();
             entity.totalProgress += entity.delta();
             entity.warmup = Mathf.lerpDelta(entity.warmup, 1f, 0.02f);
-
+            entity.ambientSoundEnabled = true;
             if(Mathf.chance(Timers.delta() * updateEffectChance))
                 Effects.effect(updateEffect, entity.x + Mathf.range(size * 4f), entity.y + Mathf.range(size * 4));
         }else{
             entity.warmup = Mathf.lerp(entity.warmup, 0f, 0.02f);
+            entity.ambientSoundEnabled = false;
         }
 
         if(entity.progress >= 1f){

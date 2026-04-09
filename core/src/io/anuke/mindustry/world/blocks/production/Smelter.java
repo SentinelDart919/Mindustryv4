@@ -43,9 +43,10 @@ public class Smelter extends Block{
         hasItems = true;
         solid = true;
         itemCapacity = 20;
-
+        setAmbientSound("loopSmelter", 0.09f);
         consumes.require(ConsumeItems.class);
         consumes.require(ConsumeItem.class);
+
     }
 
     @Override
@@ -94,14 +95,17 @@ public class Smelter extends Block{
             entity.items.remove(consumes.item(), 1);
             entity.burnTime += burnDuration;
             Effects.effect(burnEffect, entity.x + Mathf.range(2f), entity.y + Mathf.range(2f));
+            entity.ambientSoundEnabled = true;
         }
 
         //decrement burntime
         if(entity.burnTime > 0){
             entity.burnTime -= entity.delta();
             entity.heat = Mathf.lerpDelta(entity.heat, 1f, 0.02f);
+            entity.ambientSoundEnabled = true;
         }else{
             entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.02f);
+            entity.ambientSoundEnabled = false;
         }
 
         //make sure it has all the items
@@ -147,7 +151,6 @@ public class Smelter extends Block{
                 entity.items.remove(item.item, item.amount);
             }
         }
-
         offloadNear(tile, result);
         Effects.effect(craftEffect, flameColor, tile.drawx(), tile.drawy());
     }

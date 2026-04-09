@@ -89,8 +89,10 @@ public class Separator extends Block{
         if(entity.cons.valid()){
             entity.progress += 1f / filterTime*entity.delta();
             entity.warmup = Mathf.lerpDelta(entity.warmup, 1f, 0.02f);
+            entity.ambientSoundEnabled = true;
         }else{
             entity.warmup = Mathf.lerpDelta(entity.warmup, 0f, 0.02f);
+            entity.ambientSoundEnabled = false;
         }
 
         if(entity.progress >= 1f){
@@ -118,7 +120,6 @@ public class Separator extends Block{
                 offloading = false;
             }
         }
-
         if(entity.timer.get(timerDump, 5)){
             tryDump(tile);
         }
