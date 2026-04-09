@@ -104,6 +104,7 @@ public class Recipes implements ContentList{
         //smelting
         new Recipe(crafting, CraftingBlocks.smelter, new ItemStack(Items.copper, 100));
         new Recipe(crafting, CraftingBlocks.arcsmelter, new ItemStack(Items.copper, 110), new ItemStack(Items.densealloy, 70), new ItemStack(Items.lead, 50));
+        new Recipe(crafting, CraftingBlocks.denseAlloyKiln, new ItemStack(Items.copper, 210), new ItemStack(Items.densealloy, 190), new ItemStack(Items.silicon, 110), new ItemStack(Items.lead, 150), new ItemStack(Items.chromium, 100));
         new Recipe(crafting, CraftingBlocks.arcscrapsmelter, new ItemStack(Items.copper, 130), new ItemStack(Items.densealloy, 90), new ItemStack(Items.silicon, 60), new ItemStack(Items.lead, 70));
         new Recipe(crafting, CraftingBlocks.siliconsmelter, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 50));
         new Recipe(crafting, CraftingBlocks.siliconcrucible, new ItemStack(Items.titanium, 120), new ItemStack(Items.densealloy, 140),new ItemStack(Items.plastanium, 50), new ItemStack(Items.silicon, 80));
@@ -112,6 +113,7 @@ public class Recipes implements ContentList{
         new Recipe(crafting, CraftingBlocks.plastaniumCompressor, new ItemStack(Items.silicon, 160), new ItemStack(Items.lead, 230), new ItemStack(Items.densealloy, 120), new ItemStack(Items.titanium, 160));
         new Recipe(crafting, CraftingBlocks.phaseWeaver, new ItemStack(Items.silicon, 260), new ItemStack(Items.lead, 240), new ItemStack(Items.thorium, 150));
         new Recipe(crafting, CraftingBlocks.alloySmelter, new ItemStack(Items.silicon, 160), new ItemStack(Items.lead, 160), new ItemStack(Items.thorium, 140));
+        new Recipe(crafting, CraftingBlocks.surgeAlloyCrucible, new ItemStack(Items.silicon, 180), new ItemStack(Items.lead, 200), new ItemStack(Items.thorium, 180), new ItemStack(Items.chromium, 200), new ItemStack(Items.surgealloy, 20));
 
         //misc
         new Recipe(crafting, CraftingBlocks.pulverizer, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 50));
@@ -146,6 +148,7 @@ public class Recipes implements ContentList{
         //generators - combustion
         new Recipe(power, PowerBlocks.combustionGenerator, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 30));
         new Recipe(power, PowerBlocks.turbineGenerator, new ItemStack(Items.copper, 70), new ItemStack(Items.densealloy, 50), new ItemStack(Items.lead, 80), new ItemStack(Items.silicon, 60));
+        new Recipe(power, PowerBlocks.differentialGenerator, new ItemStack(Items.copper, 70), new ItemStack(Items.titanium, 50), new ItemStack(Items.densealloy, 100), new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 65));
         new Recipe(power, PowerBlocks.thermalGenerator, new ItemStack(Items.copper, 80), new ItemStack(Items.densealloy, 70), new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 70), new ItemStack(Items.thorium, 70));
 
         //generators - solar
@@ -155,14 +158,7 @@ public class Recipes implements ContentList{
         //generators - nuclear
         new Recipe(power, PowerBlocks.thoriumReactor, new ItemStack(Items.lead, 600), new ItemStack(Items.silicon, 400), new ItemStack(Items.densealloy, 300), new ItemStack(Items.thorium, 300));
         new Recipe(power, PowerBlocks.rtgGenerator, new ItemStack(Items.lead, 200), new ItemStack(Items.silicon, 150), new ItemStack(Items.phasefabric, 50), new ItemStack(Items.plastanium, 150), new ItemStack(Items.thorium, 100));
-        new Recipe(power, PowerBlocks.fusionReactor, new ItemStack(Items.lead, 1000), new ItemStack(Items.silicon, 600), new ItemStack(Items.densealloy, 800), new ItemStack(Items.thorium, 200), new ItemStack(Items.surgealloy, 500));
-
-        //core disabled due to being broken
-        /*new Recipe(distribution, StorageBlocks.core,
-            new ItemStack(Items.copper, 2000), new ItemStack(Items.densealloy, 1500),
-            new ItemStack(Items.silicon, 1500), new ItemStack(Items.thorium, 500),
-            new ItemStack(Items.surgealloy, 500), new ItemStack(Items.phasefabric, 750)
-        );*/
+        new Recipe(power, PowerBlocks.fusionReactor, new ItemStack(Items.lead, 1000), new ItemStack(Items.silicon, 600), new ItemStack(Items.densealloy, 800), new ItemStack(Items.thorium, 200), new ItemStack(Items.surgealloy, 500), new ItemStack(Items.chromium, 250));
 
         //DRILLS, PRODUCERS
         new Recipe(production, ProductionBlocks.mechanicalDrill, new ItemStack(Items.copper, 12)).setAlwaysUnlocked(true);
@@ -180,12 +176,12 @@ public class Recipes implements ContentList{
         new Recipe(upgrade, UpgradeBlocks.dartPad, new ItemStack(Items.lead, 150), new ItemStack(Items.copper, 150), new ItemStack(Items.silicon, 200)).setVisible(RecipeVisibility.desktopOnly);
         new Recipe(upgrade, UpgradeBlocks.tridentPad, new ItemStack(Items.lead, 250), new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 250), new ItemStack(Items.titanium, 300), new ItemStack(Items.plastanium, 200));
         new Recipe(upgrade, UpgradeBlocks.javelinPad, new ItemStack(Items.lead, 350), new ItemStack(Items.silicon, 450), new ItemStack(Items.titanium, 500), new ItemStack(Items.plastanium, 400), new ItemStack(Items.phasefabric, 200));
-        new Recipe(upgrade, UpgradeBlocks.glaivePad, new ItemStack(Items.lead, 450), new ItemStack(Items.silicon, 650), new ItemStack(Items.titanium, 700), new ItemStack(Items.plastanium, 600), new ItemStack(Items.surgealloy, 200));
+        new Recipe(upgrade, UpgradeBlocks.glaivePad, new ItemStack(Items.lead, 450), new ItemStack(Items.silicon, 650), new ItemStack(Items.titanium, 700), new ItemStack(Items.plastanium, 600), new ItemStack(Items.surgealloy, 200), new ItemStack(Items.chromium, 100));
 
         new Recipe(upgrade, UpgradeBlocks.alphaPad, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 100), new ItemStack(Items.copper, 150)).setVisible(RecipeVisibility.mobileOnly);
         new Recipe(upgrade, UpgradeBlocks.tauPad, new ItemStack(Items.lead, 250), new ItemStack(Items.densealloy, 250), new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 250));
         new Recipe(upgrade, UpgradeBlocks.deltaPad, new ItemStack(Items.lead, 350), new ItemStack(Items.densealloy, 350), new ItemStack(Items.copper, 400), new ItemStack(Items.silicon, 450), new ItemStack(Items.thorium, 300));
-        new Recipe(upgrade, UpgradeBlocks.omegaPad, new ItemStack(Items.lead, 450), new ItemStack(Items.densealloy, 550), new ItemStack(Items.silicon, 650), new ItemStack(Items.thorium, 600), new ItemStack(Items.surgealloy, 240));
+        new Recipe(upgrade, UpgradeBlocks.omegaPad, new ItemStack(Items.lead, 450), new ItemStack(Items.densealloy, 550), new ItemStack(Items.silicon, 650), new ItemStack(Items.thorium, 600), new ItemStack(Items.surgealloy, 240), new ItemStack(Items.chromium, 100));
 
         //actual unit related stuff
        /* new Recipe(units, UnitBlocks.scavengerFactory, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 90), new ItemStack(Items.scrap, 70));
