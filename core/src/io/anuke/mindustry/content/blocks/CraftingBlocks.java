@@ -10,7 +10,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.production.*;
 
 public class CraftingBlocks extends BlockList implements ContentList{
-    public static Block smelter, arcsmelter, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter,
+    public static Block smelter, arcsmelter, denseAlloyKiln, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter, surgeAlloyCrucible,
             pyratiteMixer, blastMixer, coalcentrifuge,
             cryofluidmixer, melter, scrapmelter, slag_centrifuge,separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator;
 
@@ -22,7 +22,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftTime = 45f;
             burnDuration = 46f;
             useFlux = true;
-
+            setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.copper, 1), new ItemStack(Items.lead, 2)});
             consumes.item(Items.coal).optional(true);
         }};
@@ -36,9 +36,23 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             useFlux = true;
             fluxNeeded = 2;
-
+            setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.copper, 1), new ItemStack(Items.lead, 2)});
             consumes.power(0.1f);
+        }};
+        denseAlloyKiln = new PowerSmelter("dense-alloy-kiln"){{
+            health = 240;
+            craftEffect = BlockFx.smeltsmoke;
+            result = Items.densealloy;
+            itemOutputAmount = 3;
+            craftTime = 65f;
+            size = 3;
+
+            useFlux = true;
+            fluxNeeded = 2;
+            setAmbientSound("loopSmelter", 0.09f);
+            consumes.items(new ItemStack[]{new ItemStack(Items.copper, 4), new ItemStack(Items.lead, 6), new ItemStack(Items.pyratite, 1)});
+            consumes.power(0.6f);
         }};
 
         arcscrapsmelter = new PowerSmelter("arc-scrap-smelter"){{
@@ -50,7 +64,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             useFlux = true;
             fluxNeeded = 2;
-
+            setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.scrap, 2), new ItemStack(Items.coal, 1)});
             consumes.power(0.08f);
         }};
@@ -64,7 +78,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             size = 2;
             hasLiquids = false;
             flameColor = Color.valueOf("ffef99");
-
+            setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 1), new ItemStack(Items.sand, 2)});
             consumes.power(0.05f);
         }};
@@ -78,6 +92,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             powerCapacity = 20f;
             size = 4;
             hasLiquids = false;
+            setAmbientSound("loopSmelter", 0.07f);
             flameColor = Color.valueOf("ffef99");
 
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 4), new ItemStack(Items.sand, 6), new ItemStack(Items.pyratite, 1)});
@@ -96,7 +111,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             hasPower = hasLiquids = true;
             craftEffect = BlockFx.formsmoke;
             updateEffect = BlockFx.plasticburn;
-
+            setAmbientSound("loopMachine", 0.03f);
             consumes.liquid(Liquids.oil, 0.25f);
             consumes.power(0.3f);
             consumes.item(Items.titanium, 2);
@@ -108,7 +123,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftTime = 120f;
             powerCapacity = 50f;
             size = 2;
-
+            setAmbientSound("loopTech", 0.02f);
             consumes.items(new ItemStack[]{new ItemStack(Items.thorium, 4), new ItemStack(Items.sand, 10)});
             consumes.power(0.5f);
         }};
@@ -126,6 +141,20 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.4f);
             consumes.items(new ItemStack[]{new ItemStack(Items.titanium, 2), new ItemStack(Items.lead, 4), new ItemStack(Items.silicon, 3), new ItemStack(Items.copper, 3)});
         }};
+        surgeAlloyCrucible = new PowerSmelter("surge-alloy-crucible"){{
+            craftEffect = BlockFx.smeltsmoke;
+            result = Items.surgealloy;
+            itemOutputAmount = 3;
+            craftTime = 115;
+            powerCapacity = 140f;
+            size = 3;
+
+            useFlux = true;
+            fluxNeeded = 3;
+
+            consumes.power(1.2f);
+            consumes.items(new ItemStack[]{new ItemStack(Items.titanium, 5), new ItemStack(Items.lead, 11), new ItemStack(Items.silicon, 9), new ItemStack(Items.copper, 8), new ItemStack(Items.pyratite, 1)});
+        }};
 
         cryofluidmixer = new LiquidMixer("cryofluidmixer"){{
             outputLiquid = Liquids.cryofluid;
@@ -133,7 +162,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             itemCapacity = 50;
             size = 2;
             hasPower = true;
-
+            setAmbientSound("loopMachine", 0.03f);
             consumes.power(0.1f);
             consumes.item(Items.titanium);
             consumes.liquid(Liquids.water, 0.3f);
@@ -146,7 +175,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             hasLiquids = true;
             output = Items.blastCompound;
             size = 2;
-
+            setAmbientSound("loopMachineSpin", 0.12f);
             consumes.liquid(Liquids.oil, 0.05f);
             consumes.item(Items.pyratite, 1);
             consumes.power(0.04f);
@@ -160,7 +189,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             result = Items.pyratite;
 
             size = 2;
-
+            setAmbientSound("loopMachineSpin", 0.1f);
             consumes.power(0.02f);
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 1), new ItemStack(Items.lead, 2), new ItemStack(Items.sand, 2)});
         }};
@@ -172,7 +201,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             itemCapacity = 20;
             craftTime = 10f;
             hasLiquids = hasPower = true;
-
+            setAmbientSound("loopMachine", 0.03f);
             consumes.power(0.1f);
             consumes.item(Items.stone, 1);
         }};
@@ -184,7 +213,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             itemCapacity = 20;
             craftTime = 6f;
             hasLiquids = hasPower = true;
-
+            setAmbientSound("loopMachine", 0.03f);
             consumes.power(0.1f);
             consumes.item(Items.scrap, 2);
         }};
@@ -202,7 +231,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             filterTime = 40f;
             itemCapacity = 40;
             health = 50;
-
+            setAmbientSound("loopMachineSpin", 0.03f);
             consumes.item(Items.stone, 2);
             consumes.liquid(Liquids.water, 0.3f);
         }};
@@ -225,7 +254,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             spinnerRadius = 3.5f;
             spinnerThickness = 1.5f;
             spinnerSpeed = 3f;
-
+            setAmbientSound("loopMachineSpin", 0.06f);
             consumes.item(Items.scrap, 1);
             consumes.liquid(Liquids.slag, 0.4f);
         }};
@@ -241,7 +270,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
                 new ItemStack(Items.titanium, 2),
                 new ItemStack(Items.thorium, 1)
             };
-
+            setAmbientSound("loopMachineSpim", 0.03f);
             hasPower = true;
             filterTime = 15f;
             itemCapacity = 60;
@@ -279,7 +308,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftTime = 40f;
             updateEffect = BlockFx.pulverizeSmall;
             hasItems = hasPower = true;
-
+            setAmbientSound("loopGrind", 0.025f);
             consumes.item(Items.stone, 1);
             consumes.power(0.05f);
         }};
