@@ -115,6 +115,8 @@ public class Sounds{
     public static Sound loopPulse;
     public static Sound loopThruster;
     public static Sound loopConveyor;
+    public static Sound loopCultivator;
+    public static Sound loopDrill;
     public static Sound blockExplode;
     public static Sound blockExplodeAlt;
     public static Sound blockExplodeElectric;
@@ -167,6 +169,8 @@ public class Sounds{
         loopHum = register("loopHum", Vars.soundController.load("loopHum", "sounds/loops/loopHum.ogg"));
         loopPulse = register("loopPulse", Vars.soundController.load("loopPulse", "sounds/loops/loopPulse.ogg"));
         loopConveyor = register("loopConveyor", Vars.soundController.load("loopConveyor", "sounds/loops/loopConveyor.ogg"));
+        loopCultivator = register("loopCultivator", Vars.soundController.load("loopCultivator", "sounds/loops/loopCultivator.ogg"));
+        loopDrill = register("loopDrill", Vars.soundController.load("loopDrill", "sounds/loops/loopDrill.ogg"));
         loopThruster = register("loopThruster", Vars.soundController.load("loopThruster", "sounds/loops/loopThruster.ogg"));
         register("blockExplode1", Vars.soundController.load("blockExplode1", "sounds/explosions/blockExplode1.ogg"));
         register("blockExplode2", Vars.soundController.load("blockExplode2", "sounds/explosions/blockExplode2.ogg"));
@@ -262,6 +266,7 @@ public class Sounds{
         Vars.soundController.setPriority("loopHum", 2);
         Vars.soundController.setPriority("loopPulse", 2);
         Vars.soundController.setPriority("loopCombustion", 2);
+        Vars.soundController.setPriority("loopDrill", 2);
         Vars.soundController.setPriority("blockPlace1", 2);
         Vars.soundController.setPriority("blockPlace2", 2);
         Vars.soundController.setPriority("blockPlace3", 2);
@@ -270,6 +275,7 @@ public class Sounds{
         Vars.soundController.setPriority("blockBreak3", 2);
 
         Vars.soundController.setPriority("loopConveyor", 1);
+        Vars.soundController.setPriority("loopCultivator", 1);
         Vars.soundController.setPriority("loopThruster", 1);
 
         rebindContentSounds();
