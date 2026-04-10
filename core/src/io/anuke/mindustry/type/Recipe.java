@@ -68,6 +68,7 @@ public class Recipe extends UnlockableContent{
     }
 
     public static Recipe getByResult(Block block){
+        if(block == null) return null;
         return recipeMap.get(block);
     }
 
