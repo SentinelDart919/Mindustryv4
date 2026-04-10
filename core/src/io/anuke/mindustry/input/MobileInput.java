@@ -19,6 +19,7 @@ import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.game.Schematic;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeDrawResult;
@@ -67,10 +68,10 @@ public class MobileInput extends InputHandler implements GestureListener{
     private boolean selecting;
     /** Whether the player is currently in line-place mode. */
     private boolean lineMode;
-    /** Current place mode. */
-    private PlaceMode mode = none;
     /** Whether no recipe was available when switching to break mode. */
     private Recipe lastRecipe;
+    private float schemX, schemY;
+    private boolean draggingSchematic;
     /** Last placed request. Used for drawing block overlay. */
     private PlaceRequest lastPlaced;
 
@@ -160,6 +161,25 @@ public class MobileInput extends InputHandler implements GestureListener{
         removals.add(request);
     }
 
+    void drawPlace(int x, int y, Block block, int rotation){
+        if(block == null) return;
+        if(validPlace(x, y, block, rotation)){
+            Draw.color();
+
+            TextureRegion[] regions = block.getBlockIcon();
+
+            for(TextureRegion region : regions){
+                Draw.rect(region, x * tilesize + block.offset(), y * tilesize + block.offset(),
+                        region.getRegionWidth(), region.getRegionHeight(), block.rotate ? rotation * 90 : 0);
+            }
+        }else{
+            Draw.color(Palette.removeBack);
+            Lines.square(x * tilesize + block.offset(), y * tilesize + block.offset() - 1, block.size * tilesize / 2f);
+            Draw.color(Palette.remove);
+            Lines.square(x * tilesize + block.offset(), y * tilesize + block.offset(), block.size * tilesize / 2f);
+        }
+    }
+
     void drawRequest(PlaceRequest request){
         Tile tile = request.tile();
 
@@ -221,20 +241,37 @@ public class MobileInput extends InputHandler implements GestureListener{
             }
         }).update(l -> l.setChecked(mode == breaking));
 
+        table.addImageButton("icon-copy", "clear-partial", 16 * 2f, () -> {
+            mode = mode == copying ? (recipe == null ? none : placing) : copying;
+        }).update(b -> b.setChecked(mode == copying));
+
         //rotate button
-        table.addImageButton("icon-arrow", "clear-partial", 16 * 2f, () -> rotation = Mathf.mod(rotation + 1, 4))
+        table.addImageButton("icon-arrow", "clear-partial", 16 * 2f, () -> {
+            if(mode == PlaceMode.schematic && schematic != null){
+                schematic.rotate();
+            }else{
+                rotation = Mathf.mod(rotation + 1, 4);
+            }
+        })
         .update(i -> i.getImage().setRotationOrigin(rotation * 90, Align.center))
-        .visible(() -> recipe != null && recipe.result.rotate);
+        .visible(() -> (recipe != null && recipe.result.rotate) || (mode == PlaceMode.schematic && schematic != null));
 
         //cancel button
         table.addImageButton("icon-cancel", "clear-partial", 16 * 2f, () -> {
             player.clearBuilding();
             mode = none;
             recipe = null;
-        }).visible(() -> player.isBuilding() || recipe != null || mode == breaking);
+            schematic = null;
+        }).visible(() -> player.isBuilding() || recipe != null || mode == breaking || mode == PlaceMode.schematic);
 
         //confirm button
         table.addImageButton("icon-check", "clear-partial", 16 * 2f, () -> {
+            if(mode == PlaceMode.schematic && schematic != null){
+                schematics.place(schematic, tileX(0), tileY(0), player.getTeam());
+                mode = PlaceMode.none;
+                schematic = null;
+                return;
+            }
             for(PlaceRequest request : selection){
                 Tile tile = request.tile();
 
@@ -256,7 +293,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             removals.addAll(selection);
             selection.clear();
             selecting = false;
-        }).visible(() -> !selection.isEmpty());
+        }).visible(() -> !selection.isEmpty() || (mode == PlaceMode.schematic && schematic != null));
     }
 
     @Override
@@ -266,7 +303,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
     @Override
     public boolean isPlacing(){
-        return super.isPlacing() && mode == placing;
+        return super.isPlacing() && (mode == placing || mode == PlaceMode.schematic || mode == copying);
     }
 
     @Override
@@ -374,8 +411,29 @@ public class MobileInput extends InputHandler implements GestureListener{
                 Draw.color(Palette.remove);
                 Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
 
+            }else if(mode == copying){
+                int minx = Math.min(lineStartX, tileX);
+                int miny = Math.min(lineStartY, tileY);
+                int maxx = Math.max(lineStartX, tileX);
+                int maxy = Math.max(lineStartY, tileY);
+
+                Draw.color(Palette.accent);
+                Lines.stroke(2f);
+                Lines.rect(minx * tilesize, miny * tilesize, (maxx - minx + 1) * tilesize, (maxy - miny + 1) * tilesize);
+                Draw.reset();
             }
 
+        }
+
+        if(mode == PlaceMode.schematic && schematic != null){
+            int tileX = tileX(Gdx.input.getX());
+            int tileY = tileY(Gdx.input.getY());
+
+            for(Schematic.Stile tile : schematic.tiles){
+                int ox = tileX + tile.x + (tile.block.size - 1) / 2;
+                int oy = tileY + tile.y + (tile.block.size - 1) / 2;
+                drawPlace(ox, oy, tile.block, tile.rotation);
+            }
         }
 
         TargetTrait target = player.target;
@@ -406,6 +464,22 @@ public class MobileInput extends InputHandler implements GestureListener{
     //region input events
 
     @Override
+    public int tileX(float cursorX){
+        if(mode == PlaceMode.schematic && schematic != null){
+            return world.toTile(schemX - (schematic.width - 1) * tilesize / 2f);
+        }
+        return super.tileX(cursorX);
+    }
+
+    @Override
+    public int tileY(float cursorY){
+        if(mode == PlaceMode.schematic && schematic != null){
+            return world.toTile(schemY - (schematic.height - 1) * tilesize / 2f);
+        }
+        return super.tileY(cursorY);
+    }
+
+    @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button){
         if(state.is(State.menu) || player.isDead()) return false;
 
@@ -414,11 +488,28 @@ public class MobileInput extends InputHandler implements GestureListener{
 
         float worldx = Graphics.world(screenX, screenY).x, worldy = Graphics.world(screenX, screenY).y;
 
+        if(mode == PlaceMode.schematic && schematic != null){
+            float sw = schematic.width * tilesize;
+            float sh = schematic.height * tilesize;
+            if(worldx >= schemX - sw/2f && worldx <= schemX + sw/2f && worldy >= schemY - sh/2f && worldy <= schemY + sh/2f){
+                draggingSchematic = true;
+                return true;
+            }else{
+                draggingSchematic = false;
+            }
+        }
+
         //ignore off-screen taps
         if(cursor == null || ui.hasMouse(screenX, screenY)) return false;
 
         //only begin selecting if the tapped block is a request
         selecting = hasRequest(cursor) && isPlacing() && mode == placing;
+
+        if(mode == copying){
+            lineStartX = cursor.x;
+            lineStartY = cursor.y;
+            lineMode = true;
+        }
 
         //call tap events
         if(pointer == 0 && !selecting && mode == none){
@@ -430,14 +521,12 @@ public class MobileInput extends InputHandler implements GestureListener{
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button){
-
         //place down a line if in line mode
         if(lineMode){
             int tileX = tileX(screenX);
             int tileY = tileY(screenY);
 
             if(mode == placing && recipe != null){
-
                 //normalize area
                 NormalizeResult result = PlaceUtils.normalizeArea(lineStartX, lineStartY, tileX, tileY, rotation, true, 100);
 
@@ -481,16 +570,25 @@ public class MobileInput extends InputHandler implements GestureListener{
                         }
                     }
                 }
+            }else if(mode == copying){
+                schematic = schematics.create(lineStartX, lineStartY, tileX, tileY);
+                recipe = null;
+                mode = PlaceMode.schematic;
+                if(schematic != null){
+                    schemX = (lineStartX + (tileX - lineStartX + 1)/2f) * tilesize;
+                    schemY = (lineStartY + (tileY - lineStartY + 1)/2f) * tilesize;
+                }
             }
 
             lineMode = false;
         }else{
             Tile tile = tileAt(screenX, screenY);
 
-            if(tile == null) return false;
-
-            tryDropItems(tile.target(), Graphics.world(screenX, screenY).x, Graphics.world(screenX, screenY).y);
+            if(tile != null){
+                tryDropItems(tile.target(), Graphics.world(screenX, screenY).x, Graphics.world(screenX, screenY).y);
+            }
         }
+        draggingSchematic = false;
         return false;
     }
 
@@ -577,6 +675,16 @@ public class MobileInput extends InputHandler implements GestureListener{
             mode = none;
         }
 
+        if(mode == PlaceMode.schematic && schematic != null && schemX == -1){
+            schemX = Core.camera.position.x;
+            schemY = Core.camera.position.y;
+        }
+
+        if(mode != PlaceMode.schematic && mode != copying){
+            schemX = -1;
+            schemY = -1;
+        }
+
         //reset state when not placing
         if(mode == none){
             selecting = false;
@@ -599,7 +707,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         //automatically switch to placing after a new recipe is selected
-        if(lastRecipe != recipe && mode == breaking && recipe != null){
+        if(lastRecipe != recipe && (mode == breaking || mode == copying) && recipe != null){
             mode = placing;
             lastRecipe = recipe;
         }
@@ -661,6 +769,12 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         float dx = deltaX * Core.camera.zoom / Core.cameraScale, dy = deltaY * Core.camera.zoom / Core.cameraScale;
+
+        if(draggingSchematic){
+            schemX += dx;
+            schemY -= dy;
+            return true;
+        }
 
         if(selecting){ //pan all requests
             for(PlaceRequest req : selection){
