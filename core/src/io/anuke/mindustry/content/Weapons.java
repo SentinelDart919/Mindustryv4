@@ -89,7 +89,7 @@ public class Weapons implements ContentList{
         roundrobin = true;
         ejectEffect = Fx.none;
         setShootSound("shootMissileSmall");
-        ammo = AmmoTypes.weaponMissileSwarm;
+        ammo = AmmoTypes.missileExplosive;
         }};
 
         swarmer = new Weapon("swarmer"){{
