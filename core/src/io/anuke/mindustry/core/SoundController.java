@@ -215,6 +215,16 @@ public class SoundController extends Module{
     public void update(){
         if(Vars.headless || Core.camera == null) return;
 
+        if(Vars.state.is(GameState.State.menu)){
+            for(TileEntity entity : ambientEntities){
+                if(entity != null && entity.tile != null){
+                    entity.tile.block().stopAmbientSound(entity.tile);
+                }
+            }
+            ambientEntities.clear();
+            return;
+        }
+
         nextAmbientEntities.clear();
         ambientTiles.clear();
         ambientCounts.clear();
