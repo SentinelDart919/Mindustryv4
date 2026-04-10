@@ -102,6 +102,8 @@ public class HudFragment extends Fragment{
                         }
                     }).get();
 
+                    select.addImageButton("icon-copy", "clear", isize, ui.schematics::show).get();
+
                     select.addImage("blank").color(Palette.accent).width(6f).fillY();
                 });
 
