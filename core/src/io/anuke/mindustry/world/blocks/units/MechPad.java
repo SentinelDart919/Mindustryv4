@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -14,6 +15,7 @@ import io.anuke.mindustry.entities.traits.SpawnerTrait;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.Mech;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -39,12 +41,21 @@ public class MechPad extends Block{
     protected float buildTime = 60 * 5;
 
     protected TextureRegion openRegion;
+    public Sound buildPlayerSound;
+    public String buildPlayerSoundName;
 
     public MechPad(String name){
         super(name);
         update = true;
         solidifes = true;
         hasPower = true;
+        setAmbientSound("loopUnitBuilding", 0.09f);
+        setBuildPlayerSound("unitCreate");
+    }
+
+    public void setBuildPlayerSound(String name){
+        buildPlayerSoundName = name;
+        buildPlayerSound = Sounds.get(name);
     }
 
     @Override
@@ -182,6 +193,7 @@ public class MechPad extends Block{
                 entity.open = false;
             }else{
                 entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.1f);
+
             }
         }
 
@@ -190,9 +202,12 @@ public class MechPad extends Block{
             entity.progress += 1f / buildTime * entity.delta();
 
             entity.time += 0.5f * entity.delta();
-
+            entity.ambientSoundEnabled = true;
             if(entity.progress >= 1f){
                 Call.onMechFactoryDone(tile);
+                Sound sound = buildPlayerSound;
+                if(Vars.soundController != null && sound != null){
+                    Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
             }
         }else{
             if(entity.cons.valid() && Units.anyEntities(tile, 4f, unit -> unit.getTeam() == entity.getTeam() && unit instanceof Player)){
@@ -200,6 +215,7 @@ public class MechPad extends Block{
             }
 
             entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.1f);
+            entity.ambientSoundEnabled = false;
         }
     }
 

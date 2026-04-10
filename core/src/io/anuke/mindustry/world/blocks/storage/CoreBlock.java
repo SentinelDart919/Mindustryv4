@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.storage;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -18,6 +19,7 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.maps.TutorialSector;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
@@ -43,6 +45,8 @@ public class CoreBlock extends StorageBlock{
 
     protected TextureRegion openRegion;
     protected TextureRegion topRegion;
+    public Sound buildPlayerSound;
+    public String buildPlayerSoundName;
 
     public CoreBlock(String name){
         super(name);
@@ -55,8 +59,14 @@ public class CoreBlock extends StorageBlock{
         itemCapacity = 2000;
         viewRange = 200f;
         flags = EnumSet.of(BlockFlag.resupplyPoint, BlockFlag.target);
+        setAmbientSound("loopUnitBuilding", 0.09f);
+        setBuildPlayerSound("unitCreate");
     }
 
+    public void setBuildPlayerSound(String name){
+        buildPlayerSoundName = name;
+        buildPlayerSound = Sounds.get(name);
+    }
     @Remote(called = Loc.server)
     public static void onUnitRespawn(Tile tile, Unit player){
         if(player == null || tile.entity == null) return;
@@ -183,10 +193,15 @@ public class CoreBlock extends StorageBlock{
             }
             entity.heat = Mathf.lerpDelta(entity.heat, 1f, 0.1f);
             entity.time += entity.delta();
+            entity.ambientSoundEnabled = true;
             entity.progress += 1f / (entity.currentUnit instanceof Player ? state.mode.respawnTime : droneRespawnDuration) * entity.delta();
 
             if(entity.progress >= 1f){
                 Call.onUnitRespawn(tile, entity.currentUnit);
+                Sound sound = buildPlayerSound;
+                if(Vars.soundController != null && sound != null){
+                    Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
+                entity.ambientSoundEnabled = false;
             }
         }else if(!netServer.isWaitingForPlayers()){
             entity.warmup += Timers.delta();
@@ -198,6 +213,7 @@ public class CoreBlock extends StorageBlock{
                     if(unit.getType().id == droneType.id){
                         entity.droneID = unit.id;
                         found = true;
+                        entity.ambientSoundEnabled = false;
                         break;
                     }
                 }
@@ -211,6 +227,7 @@ public class CoreBlock extends StorageBlock{
                     useContent(tile, droneType);
 
                     entity.droneID = unit.id;
+                    entity.ambientSoundEnabled = true;
                 }
             }
 
