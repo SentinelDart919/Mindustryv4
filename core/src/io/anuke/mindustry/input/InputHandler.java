@@ -11,6 +11,7 @@ import io.anuke.mindustry.content.fx.EnvironmentFx;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.effect.ItemTransfer;
 import io.anuke.mindustry.entities.traits.BuilderTrait.BuildRequest;
+import io.anuke.mindustry.game.Schematic;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.ValidateException;
@@ -46,6 +47,9 @@ public abstract class InputHandler extends InputAdapter{
     public final OverlayFragment frag = new OverlayFragment(this);
 
     public Recipe recipe;
+    public Schematic schematic;
+    public PlaceMode mode = PlaceMode.none;
+    public int selectX, selectY;
     public int rotation;
     public boolean droppingItem;
 
@@ -257,18 +261,26 @@ public abstract class InputHandler extends InputAdapter{
         return world.tile(tileX(x), tileY(y));
     }
 
-    int tileX(float cursorX){
+    public int tileX(float cursorX){
         Vector2 vec = Graphics.world(cursorX, 0);
         if(selectedBlock()){
-            vec.sub(recipe.result.offset(), recipe.result.offset());
+            if(recipe != null){
+                vec.sub(recipe.result.offset(), recipe.result.offset());
+            }else if(mode == PlaceMode.schematic && schematic != null){
+                vec.x -= (schematic.width - 1) * tilesize / 2f;
+            }
         }
         return world.toTile(vec.x);
     }
 
-    int tileY(float cursorY){
+    public int tileY(float cursorY){
         Vector2 vec = Graphics.world(0, cursorY);
         if(selectedBlock()){
-            vec.sub(recipe.result.offset(), recipe.result.offset());
+            if(recipe != null){
+                vec.sub(recipe.result.offset(), recipe.result.offset());
+            }else if(mode == PlaceMode.schematic && schematic != null){
+                vec.y -= (schematic.height - 1) * tilesize / 2f;
+            }
         }
         return world.toTile(vec.y);
     }
@@ -278,7 +290,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public boolean isPlacing(){
-        return recipe != null;
+        return recipe != null || mode == PlaceMode.schematic || mode == PlaceMode.copying;
     }
 
     public float mouseAngle(float x, float y){
@@ -291,7 +303,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public boolean canShoot(){
-        return recipe == null && !ui.hasMouse() && !onConfigurable() && !isDroppingItem();
+        return !isPlacing() && mode == PlaceMode.none && !ui.hasMouse() && !onConfigurable() && !isDroppingItem();
     }
 
     public boolean onConfigurable(){
@@ -324,6 +336,10 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public void tryPlaceBlock(int x, int y){
+        tryPlaceBlock(x, y, recipe, rotation);
+    }
+
+    public void tryPlaceBlock(int x, int y, Recipe recipe, int rotation){
         if(recipe != null && validPlace(x, y, recipe.result, rotation) && cursorNear()){
             placeBlock(x, y, recipe, rotation);
         }
@@ -336,6 +352,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public boolean validPlace(int x, int y, Block type, int rotation){
+        if(type == null) return false;
         for(Tile tile : state.teams.get(player.getTeam()).cores){
             if(tile.distanceTo(x * tilesize, y * tilesize) < coreBuildRange){
                 return Build.validPlace(player.getTeam(), x, y, type, rotation) &&
