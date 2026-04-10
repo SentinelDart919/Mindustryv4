@@ -22,6 +22,7 @@ public class Mindustry extends ModuleCore{
         Log.setUseColors(false);
         BundleLoader.load();
         content.load();
+        schematics.load();
 
         module(logic = new Logic());
         module(world = new World());
