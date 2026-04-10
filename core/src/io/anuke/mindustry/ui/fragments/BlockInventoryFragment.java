@@ -22,6 +22,7 @@ import io.anuke.ucore.scene.event.HandCursorListener;
 import io.anuke.ucore.scene.event.InputEvent;
 import io.anuke.ucore.scene.event.InputListener;
 import io.anuke.ucore.scene.event.Touchable;
+import io.anuke.ucore.scene.ui.ScrollPane;
 import io.anuke.ucore.scene.ui.layout.Table;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.util.Strings;
@@ -31,7 +32,8 @@ import static io.anuke.mindustry.Vars.*;
 public class BlockInventoryFragment extends Fragment{
     private final static float holdWithdraw = 40f;
 
-    private Table table;
+    private Table table, itemTable;
+    private ScrollPane pane;
     private Tile tile;
     private InputHandler input;
     private float holdTime = 0f;
@@ -57,9 +59,16 @@ public class BlockInventoryFragment extends Fragment{
     @Override
     public void build(Group parent){
         table = new Table();
-        table.visible(() -> !state.is(State.menu));
-        table.setTransform(true);
-        parent.setTransform(true);
+        table.visible(() -> !state.is(State.menu) && tile != null && tile.entity != null && tile.entity.items.total() > 0);
+        table.background("inventory");
+
+        itemTable = new Table();
+
+        pane = new ScrollPane(itemTable);
+        pane.setScrollingDisabled(true, false);
+
+        table.add(pane).maxHeight(mobile ? 16 * 3 * 7 + 48 : 16 * 2 * 7 + 48);
+
         parent.addChild(table);
     }
 
@@ -72,7 +81,7 @@ public class BlockInventoryFragment extends Fragment{
 
     public void hide(){
         table.actions(Actions.scaleTo(0f, 1f, 0.06f, Interpolation.pow3Out), Actions.visible(false), Actions.run(() -> {
-            table.clear();
+            itemTable.clear();
             table.update(null);
         }));
         table.setTouchable(Touchable.disabled);
@@ -85,8 +94,7 @@ public class BlockInventoryFragment extends Fragment{
 
         IntSet container = new IntSet();
 
-        table.clearChildren();
-        table.background("inventory");
+        itemTable.clear();
         table.setTouchable(Touchable.enabled);
         table.update(() -> {
             if(state.is(State.menu) || tile == null || tile.entity == null || !tile.block().isAccessible() || tile.entity.items.total() == 0){
@@ -118,8 +126,8 @@ public class BlockInventoryFragment extends Fragment{
         int cols = 3;
         int row = 0;
 
-        table.margin(6f);
-        table.defaults().size(mobile ? 16 * 3 : 16 * 2).space(6f);
+        itemTable.margin(6f);
+        itemTable.defaults().size(mobile ? 16 * 3 : 16 * 2).space(6f);
 
         if(tile.block().hasItems){
 
@@ -160,9 +168,9 @@ public class BlockInventoryFragment extends Fragment{
                         lastItem = null;
                     }
                 });
-                table.add(image);
+                itemTable.add(image);
 
-                if(row++ % cols == cols - 1) table.row();
+                if(row++ % cols == cols - 1) itemTable.row();
             }
         }
 
@@ -170,11 +178,15 @@ public class BlockInventoryFragment extends Fragment{
             table.setSize(0f, 0f);
         }
 
+        itemTable.pack();
+        pane.setScrollY(0);
+
         updateTablePosition();
 
         if(actions){
+            table.setTransform(true);
             table.actions(Actions.scaleTo(0f, 1f), Actions.visible(true),
-                    Actions.scaleTo(1f, 1f, 0.07f, Interpolation.pow3Out));
+                    Actions.scaleTo(1f, 1f, 0.07f, Interpolation.pow3Out), Actions.run(() -> table.setTransform(false)));
         }
     }
 
