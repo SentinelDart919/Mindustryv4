@@ -257,16 +257,19 @@ public class Conveyor extends Block{
 
         if(entity.minitem < itemSpace){
             entity.clogHeat = Mathf.lerpDelta(entity.clogHeat, 1f, 0.02f);
+            entity.ambientSoundEnabled = false;
         }else{
             entity.clogHeat = Mathf.lerpDelta(entity.clogHeat, 0f, 1f);
+            entity.ambientSoundEnabled = true;
         }
 
         if(entity.items.total() == 0){
             entity.sleep();
+
         }else{
             entity.noSleep();
         }
-
+        entity.ambientSoundEnabled = true;
         if(minremove != Integer.MAX_VALUE) entity.convey.truncate(minremove);
     }
 
