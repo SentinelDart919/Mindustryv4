@@ -1,5 +1,5 @@
 package io.anuke.mindustry.input;
 
-enum PlaceMode{
-    none, breaking, placing
+public enum PlaceMode{
+    none, breaking, placing, copying, schematic
 }
