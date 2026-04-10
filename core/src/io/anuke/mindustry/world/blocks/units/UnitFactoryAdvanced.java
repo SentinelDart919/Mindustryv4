@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
@@ -15,6 +16,7 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.BarType;
@@ -43,6 +45,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static io.anuke.mindustry.sounds.Sounds.blockPlace;
+
 public class UnitFactoryAdvanced extends Block{
     protected float gracePeriodMultiplier = 15f;
     protected float speedupTime = 60f * 60f * 20;
@@ -56,6 +60,8 @@ public class UnitFactoryAdvanced extends Block{
     public float[] producerTimes;
 
     public int[] maxSpawn;
+    public Sound buildUnitSound;
+    public String buildUnitSoundName;
     protected float launchVelocity = 0f;
     protected TextureRegion topRegion;
     public UnitFactoryAdvanced(String name){
@@ -68,6 +74,13 @@ public class UnitFactoryAdvanced extends Block{
         itemCapacity = 10;
         flags = EnumSet.of(BlockFlag.producer, BlockFlag.target);
         consumes.power(0);
+        setAmbientSound("loopUnitBuilding", 0.09f);
+        setBuildUnitSound("unitCreate");
+    }
+
+    public void setBuildUnitSound(String name){
+        buildUnitSoundName = name;
+        buildUnitSound = Sounds.get(name);
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
@@ -81,6 +94,7 @@ public class UnitFactoryAdvanced extends Block{
         entity.unitNumber = UnitDataNumber;
         entity.unitSource = factory.types[UnitDataNumber];
         entity.buildTime = 0f;
+        entity.ambientSoundEnabled = false;
 
     }
     @Remote(called = Loc.server)
@@ -225,6 +239,8 @@ public class UnitFactoryAdvanced extends Block{
         float selectedProduceTime = getSelectedProduceTime(entity);
         entity.unitSource = selectedType;
         if(entity.spawned[entity.unitNumber] >= maxSpawn[entity.unitNumber]){
+            entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+            entity.ambientSoundEnabled = false;
             return;
         }
 
@@ -236,6 +252,7 @@ public class UnitFactoryAdvanced extends Block{
 
         if(selectedProduceTime <= 0f){
             entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+            entity.ambientSoundEnabled = false;
             return;
         }
 
@@ -246,8 +263,10 @@ public class UnitFactoryAdvanced extends Block{
 
                 entity.buildTime += entity.delta();
                 entity.speedScl = Mathf.lerpDelta(entity.speedScl, 1f, 0.05f);
+                entity.ambientSoundEnabled = true;
             }else{
                 entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+                entity.ambientSoundEnabled = false;
             }
             //check if grace period had passed
         }else if(entity.warmup > selectedProduceTime*gracePeriodMultiplier * Vars.state.difficulty.spawnerScaling){
@@ -255,14 +274,19 @@ public class UnitFactoryAdvanced extends Block{
             //otherwise, it's an enemy, cheat by not requiring resources
             entity.buildTime += entity.delta() * speedMultiplier;
             entity.speedScl = Mathf.lerpDelta(entity.speedScl, 1f, 0.05f);
+            entity.ambientSoundEnabled = true;
         }else{
             entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+            entity.ambientSoundEnabled = false;
         }
 
         if(selectedProduceTime > 0f && entity.buildTime >= selectedProduceTime){
             entity.buildTime = 0f;
 
             Call.onUnitFactoryAdvancedSpawn(tile, entity.spawned[entity.unitNumber] +1);
+            Sound sound = buildUnitSound;
+            if(Vars.soundController != null && sound != null){
+                Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
             if(selectedType != null){
                 useContent(tile, selectedType);
             }

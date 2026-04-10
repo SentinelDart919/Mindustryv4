@@ -225,6 +225,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             };
             size = 8;
             consumes.power(0.64f);
+            setBuildUnitSound("unitCreateBig");
         }};
 
 

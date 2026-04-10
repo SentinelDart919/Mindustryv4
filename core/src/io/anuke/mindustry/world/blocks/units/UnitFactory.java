@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -13,6 +14,7 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.BarType;
@@ -45,6 +47,8 @@ public class UnitFactory extends Block{
     protected float launchVelocity = 0f;
     protected TextureRegion topRegion;
     public int maxSpawn = 10;
+    public Sound buildUnitSound;
+    public String buildUnitSoundName;
 
     public UnitFactory(String name){
         super(name);
@@ -54,8 +58,15 @@ public class UnitFactory extends Block{
         solid = false;
         itemCapacity = 10;
         flags = EnumSet.of(BlockFlag.producer, BlockFlag.target);
+        setAmbientSound("loopUnitBuilding", 0.09f);
+        setBuildUnitSound("unitCreate");
 
         consumes.require(ConsumeItems.class);
+    }
+
+    public void setBuildUnitSound(String name){
+        buildUnitSoundName = name;
+        buildUnitSound = Sounds.get(name);
     }
 
     @Remote(called = Loc.server)
@@ -67,6 +78,7 @@ public class UnitFactory extends Block{
 
         entity.buildTime = 0f;
         entity.spawned = spawns;
+        entity.ambientSoundEnabled = false;
 
         Effects.shake(2f, 3f, entity);
         Effects.effect(BlockFx.producesmoke, tile.drawx(), tile.drawy());
@@ -162,11 +174,14 @@ public class UnitFactory extends Block{
         entity.time += entity.delta() * entity.speedScl;
 
         if(entity.spawned >= maxSpawn){
+            entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+            entity.ambientSoundEnabled = false;
             return;
         }
 
         if(tile.isEnemyCheat()){
             entity.warmup += entity.delta();
+            maxSpawn = 10000;
         }
 
         if(!tile.isEnemyCheat()){
@@ -176,26 +191,31 @@ public class UnitFactory extends Block{
 
                 entity.buildTime += entity.delta();
                 entity.speedScl = Mathf.lerpDelta(entity.speedScl, 1f, 0.05f);
+                entity.ambientSoundEnabled = true;
             }else{
                 entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+                entity.ambientSoundEnabled = false;
             }
             //check if grace period had passed
         }else if(entity.warmup > produceTime*gracePeriodMultiplier * Vars.state.difficulty.spawnerScaling){
-            maxSpawn = 10000;
             float speedMultiplier = Math.min(0.1f + (entity.warmup - produceTime * gracePeriodMultiplier * Vars.state.difficulty.spawnerScaling) / speedupTime, maxSpeedup);
             //otherwise, it's an enemy, cheat by not requiring resources
             entity.buildTime += entity.delta() * speedMultiplier;
             entity.speedScl = Mathf.lerpDelta(entity.speedScl, 1f, 0.05f);
+            entity.ambientSoundEnabled = true;
         }else{
             entity.speedScl = Mathf.lerpDelta(entity.speedScl, 0f, 0.05f);
+            entity.ambientSoundEnabled = false;
         }
 
         if(entity.buildTime >= produceTime){
             entity.buildTime = 0f;
 
             Call.onUnitFactorySpawn(tile, entity.spawned +1);
+            Sound sound = buildUnitSound;
+            if(Vars.soundController != null && sound != null){
+                Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
             useContent(tile, type);
-
             for(ItemStack stack : consumes.items()){
                 entity.items.remove(stack.item, stack.amount);
             }
