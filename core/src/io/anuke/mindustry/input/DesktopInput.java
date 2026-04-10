@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
+import io.anuke.mindustry.game.Schematic;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeDrawResult;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
@@ -18,6 +19,7 @@ import io.anuke.ucore.core.KeyBinds;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
+import io.anuke.ucore.input.Input;
 import io.anuke.ucore.scene.ui.layout.Unit;
 import io.anuke.ucore.util.Mathf;
 
@@ -33,10 +35,6 @@ public class DesktopInput extends InputHandler{
     /**Current cursor type.*/
     private CursorType cursorType = normal;
 
-    /**Position where the player started dragging a line.*/
-    private int selectX, selectY;
-    /**Whether selecting mode is active.*/
-    private PlaceMode mode;
     /**Animation scale for line.*/
     private float selectScale;
 
@@ -47,6 +45,7 @@ public class DesktopInput extends InputHandler{
 
     /**Draws a placement icon for a specific block.*/
     void drawPlace(int x, int y, Block block, int rotation){
+        if(block == null) return;
         if(validPlace(x, y, block, rotation)){
             Draw.color();
 
@@ -113,6 +112,22 @@ public class DesktopInput extends InputHandler{
             Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);
             Draw.color(Palette.remove);
             Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
+        }else if(mode == copying){
+            int minx = Math.min(selectX, cursorX);
+            int miny = Math.min(selectY, cursorY);
+            int maxx = Math.max(selectX, cursorX);
+            int maxy = Math.max(selectY, cursorY);
+
+            Draw.color(Palette.accent);
+            Lines.stroke(2f);
+            Lines.rect(minx * tilesize, miny * tilesize, (maxx - minx + 1) * tilesize, (maxy - miny + 1) * tilesize);
+            Draw.reset();
+        }else if(mode == PlaceMode.schematic && schematic != null){
+            for(Schematic.Stile tile : schematic.tiles){
+                int ox = cursorX + tile.x + (tile.block.size - 1) / 2;
+                int oy = cursorY + tile.y + (tile.block.size - 1) / 2;
+                drawPlace(ox, oy, tile.block, tile.rotation);
+            }
         }else if(isPlacing()){
             if(recipe.result.rotate){
                 Draw.color(!validPlace(cursorX, cursorY, recipe.result, rotation) ? Palette.remove : Palette.placeRotate);
@@ -130,6 +145,32 @@ public class DesktopInput extends InputHandler{
     public void update(){
         if(Net.active() && Inputs.keyTap("player_list")){
             ui.listfrag.toggle();
+        }
+
+        int cursorX = tileX(Gdx.input.getX());
+        int cursorY = tileY(Gdx.input.getY());
+
+        if(Inputs.keyTap(section, "schematic_select")){
+            ui.schematics.show();
+        }
+
+        if(Inputs.keyTap(section, "copy")){
+            recipe = null;
+            mode = copying;
+            schematic = null;
+            cursorX = tileX(Gdx.input.getX());
+            cursorY = tileY(Gdx.input.getY());
+            selectX = cursorX;
+            selectY = cursorY;
+        }
+
+        if(mode == PlaceMode.schematic && schematic != null){
+            if(Inputs.keyTap(section, "schematic_flip_x")){
+                schematic.flipX();
+            }
+            if(Inputs.keyTap(section, "schematic_flip_y")){
+                schematic.flipY();
+            }
         }
 
         if(Inputs.keyRelease(section, "select")){
@@ -167,7 +208,18 @@ public class DesktopInput extends InputHandler{
             selectScale = 0f;
         }
 
-        rotation = Mathf.mod(rotation + (int) Inputs.getAxisTapped(section, "rotate"), 4);
+        int axis = (int) Inputs.getAxisTapped(section, "rotate");
+        if(axis != 0){
+            if(mode == PlaceMode.schematic && schematic != null){
+                if(axis > 0){
+                    schematic.rotate();
+                }else{
+                    for(int i = 0; i < 3; i++) schematic.rotate();
+                }
+            }else{
+                rotation = Mathf.mod(rotation + axis, 4);
+            }
+        }
 
         Tile cursor = tileAt(Gdx.input.getX(), Gdx.input.getY());
 
@@ -208,7 +260,13 @@ public class DesktopInput extends InputHandler{
         }
 
         if(Inputs.keyTap(section, "select") && !ui.hasMouse()){
-            if(isPlacing()){
+            if(mode == PlaceMode.schematic && schematic != null){
+                schematics.place(schematic, cursorX, cursorY, player.getTeam());
+                if(!Inputs.keyDown(Input.CONTROL_LEFT)){
+                    mode = none;
+                    schematic = null;
+                }
+            }else if(recipe != null){
                 selectX = cursorX;
                 selectY = cursorY;
                 mode = placing;
@@ -237,7 +295,7 @@ public class DesktopInput extends InputHandler{
         }
 
 
-        if(Inputs.keyRelease(section, "break") || Inputs.keyRelease(section, "select")){
+        if(Inputs.keyRelease(section, "break") || Inputs.keyRelease(section, "select") || (Inputs.keyRelease(section, "copy") && mode == copying)){
 
             if(mode == placing){ //touch up while placing, place everything in selection
                 NormalizeResult result = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, true, maxLength);
@@ -260,13 +318,17 @@ public class DesktopInput extends InputHandler{
                         tryBreakBlock(wx, wy);
                     }
                 }
+            }else if(mode == copying){
+                schematic = schematics.create(selectX, selectY, cursorX, cursorY);
+                recipe = null;
+                mode = PlaceMode.schematic;
             }
 
             if(selected != null){
                 tryDropItems(selected.target(), Graphics.mouseWorld().x, Graphics.mouseWorld().y);
             }
 
-            mode = none;
+            if(mode != PlaceMode.schematic) mode = none;
         }
         
     }
