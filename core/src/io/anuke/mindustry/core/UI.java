@@ -14,6 +14,7 @@ import io.anuke.mindustry.game.EventType.ResizeEvent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.InputHandler;
 import io.anuke.mindustry.ui.dialogs.*;
+import io.anuke.ucore.core.Core;
 import io.anuke.mindustry.ui.fragments.*;
 import io.anuke.ucore.core.*;
 import io.anuke.ucore.function.Consumer;
@@ -55,6 +56,7 @@ public class UI extends SceneModule{
     public SettingsMenuDialog settings;
     public ControlsDialog controls;
     public MapEditorDialog editor;
+    public SchematicsDialog schematics;
     public LanguageDialog language;
     public BansDialog bans;
     public AdminsDialog admins;
@@ -159,6 +161,7 @@ public class UI extends SceneModule{
         language = new LanguageDialog();
         unlocks = new UnlocksDialog();
         settings = new SettingsMenuDialog();
+        schematics = new SchematicsDialog();
         host = new HostDialog();
         paused = new PausedDialog();
         changelog = new ChangelogDialog();
