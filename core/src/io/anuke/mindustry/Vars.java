@@ -12,6 +12,7 @@ import io.anuke.mindustry.entities.effect.Fire;
 import io.anuke.mindustry.entities.effect.Puddle;
 import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.entities.units.BaseUnit;
+import io.anuke.mindustry.game.Schematics;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.gen.Serialization;
@@ -85,6 +86,8 @@ public class Vars{
     public static FileHandle screenshotDirectory;
     //directory for user-created map data
     public static FileHandle customMapDirectory;
+    //directory for schematics
+    public static FileHandle schematicDirectory;
     //save file directory
     public static FileHandle saveDirectory;
     public static String mapExtension = "mmap";
@@ -111,6 +114,8 @@ public class Vars{
     public static NetServer netServer;
     public static MusicController musicController;
     public static NetClient netClient;
+
+    public static Schematics schematics;
 
     public static Player[] players = {};
 
@@ -178,7 +183,10 @@ public class Vars{
         dataDirectory = Settings.getDataDirectory(appName);
         screenshotDirectory = dataDirectory.child("screenshots/");
         customMapDirectory = dataDirectory.child("maps/");
+        schematicDirectory = dataDirectory.child("schematics/");
         saveDirectory = dataDirectory.child("saves/");
         baseCameraScale = Math.round(Unit.dp.scl(4));
+
+        schematics = new Schematics();
     }
 }
