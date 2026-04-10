@@ -8,6 +8,10 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.blocks.storage.CoreBlock;
+import io.anuke.mindustry.world.blocks.units.MechPad;
+import io.anuke.mindustry.world.blocks.units.UnitFactory;
+import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 
 public class Sounds{
     private static final ObjectMap<String, Sound> all = new ObjectMap<>();
@@ -117,6 +121,8 @@ public class Sounds{
     public static Sound loopConveyor;
     public static Sound loopCultivator;
     public static Sound loopDrill;
+    public static Sound loopCircuit;
+    public static Sound loopUnitBuilding;
     public static Sound blockExplode;
     public static Sound blockExplodeAlt;
     public static Sound blockExplodeElectric;
@@ -136,6 +142,8 @@ public class Sounds{
     public static Sound unitExplode;
     public static Sound blockBreak;
     public static Sound blockPlace;
+    public static Sound unitCreate;
+    public static Sound unitCreateBig;
 
     public static void init(){
         if(Vars.headless || Vars.soundController == null) return;
@@ -171,6 +179,8 @@ public class Sounds{
         loopConveyor = register("loopConveyor", Vars.soundController.load("loopConveyor", "sounds/loops/loopConveyor.ogg"));
         loopCultivator = register("loopCultivator", Vars.soundController.load("loopCultivator", "sounds/loops/loopCultivator.ogg"));
         loopDrill = register("loopDrill", Vars.soundController.load("loopDrill", "sounds/loops/loopDrill.ogg"));
+        loopCircuit = register("loopCircuit", Vars.soundController.load("loopCircuit", "sounds/loops/loopCircuit.ogg"));
+        loopUnitBuilding = register("loopUnitBuilding", Vars.soundController.load("loopUnitBuilding", "sounds/loops/loopUnitBuilding.ogg"));
         loopThruster = register("loopThruster", Vars.soundController.load("loopThruster", "sounds/loops/loopThruster.ogg"));
         register("blockExplode1", Vars.soundController.load("blockExplode1", "sounds/explosions/blockExplode1.ogg"));
         register("blockExplode2", Vars.soundController.load("blockExplode2", "sounds/explosions/blockExplode2.ogg"));
@@ -200,6 +210,8 @@ public class Sounds{
         register("blockBreak1", Vars.soundController.load("blockBreak1", "sounds/blocks/blockBreak1.ogg"));
         register("blockBreak2", Vars.soundController.load("blockBreak2", "sounds/blocks/blockBreak2.ogg"));
         register("blockBreak3", Vars.soundController.load("blockBreak3", "sounds/blocks/blockBreak3.ogg"));
+        unitCreate = register("unitCreate", Vars.soundController.load("unitCreate", "sounds/blocks/unitCreate.ogg"));
+        unitCreateBig = register("unitCreateBig", Vars.soundController.load("unitCreateBig", "sounds/blocks/unitCreateBig.ogg"));
 
 
         Vars.soundController.createGroup("blockExplode", "blockExplode1", "blockExplode2", "blockExplode3");
@@ -255,6 +267,7 @@ public class Sounds{
         Vars.soundController.setPriority("shootCyclone", 3);
         Vars.soundController.setPriority("shootFuse", 3);
         Vars.soundController.setPriority("shootMeltdown", 3);
+        Vars.soundController.setPriority("unitCreateBig", 3);
 
         Vars.soundController.setPriority("loopThoriumReactor", 2);
         Vars.soundController.setPriority("loopDifferential", 2);
@@ -267,12 +280,15 @@ public class Sounds{
         Vars.soundController.setPriority("loopPulse", 2);
         Vars.soundController.setPriority("loopCombustion", 2);
         Vars.soundController.setPriority("loopDrill", 2);
+        Vars.soundController.setPriority("loopCircuit", 2);
+        Vars.soundController.setPriority("loopUnitBuilding", 2);
         Vars.soundController.setPriority("blockPlace1", 2);
         Vars.soundController.setPriority("blockPlace2", 2);
         Vars.soundController.setPriority("blockPlace3", 2);
         Vars.soundController.setPriority("blockBreak1", 2);
         Vars.soundController.setPriority("blockBreak2", 2);
         Vars.soundController.setPriority("blockBreak3", 2);
+        Vars.soundController.setPriority("unitCreate", 2);
 
         Vars.soundController.setPriority("loopConveyor", 1);
         Vars.soundController.setPriority("loopCultivator", 1);
@@ -301,6 +317,30 @@ public class Sounds{
                     Turret turret = (Turret)block;
                     if(turret.shootSoundName != null){
                         turret.shootSound = get(turret.shootSoundName);
+                    }
+                }
+                if(block instanceof UnitFactory){
+                    UnitFactory factory = (UnitFactory)block;
+                    if(factory.buildUnitSoundName != null){
+                        factory.buildUnitSound = get(factory.buildUnitSoundName);
+                    }
+                }
+                if(block instanceof UnitFactoryAdvanced){
+                    UnitFactoryAdvanced factory = (UnitFactoryAdvanced)block;
+                    if(factory.buildUnitSoundName != null){
+                        factory.buildUnitSound = get(factory.buildUnitSoundName);
+                    }
+                }
+                if(block instanceof MechPad){
+                    MechPad factory = (MechPad)block;
+                    if(factory.buildPlayerSoundName != null){
+                        factory.buildPlayerSound = get(factory.buildPlayerSoundName);
+                    }
+                }
+                if(block instanceof CoreBlock){
+                    CoreBlock core = (CoreBlock)block;
+                    if(core.buildPlayerSoundName != null){
+                        core.buildPlayerSound = get(core.buildPlayerSoundName);
                     }
                 }
             }
