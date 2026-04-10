@@ -62,7 +62,7 @@ public class Recipes implements ContentList{
         new Recipe(effect, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
         new Recipe(effect, StorageBlocks.container, new ItemStack(Items.densealloy, 200));
         new Recipe(effect, StorageBlocks.vault, new ItemStack(Items.densealloy, 500), new ItemStack(Items.thorium, 250));
-        new Recipe(effect, StorageBlocks.core, new ItemStack(Items.copper, 500), new ItemStack(Items.lead, 500), new ItemStack(Items.densealloy, 500), new ItemStack(Items.silicon, 250));
+        new Recipe(effect, StorageBlocks.core, new ItemStack(Items.copper, 1000), new ItemStack(Items.lead, 1000), new ItemStack(Items.densealloy, 1000), new ItemStack(Items.silicon, 1000), new ItemStack(Items.thorium, 1000), new ItemStack(Items.phasefabric, 1000), new ItemStack(Items.chromium, 1000));
 
         new Recipe(effect, DefenseBlocks.shockMine, new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 25))
             .setDependencies(Items.blastCompound);
