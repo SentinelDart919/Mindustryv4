@@ -303,10 +303,12 @@ public class Control extends Module{
                     Settings.putBool("4.0-warning-2", true);
                     Settings.save();
                 }).size(100f, 60f);
-                dialog.content().add("Reminder: The beta version you are about to play is very unstable, and is [accent]not representative of the final 4.0 release.[]\n\n " +
-                        "\nThere is currently[scarlet] no sound implemented[]; this is intentional.\n" +
-                        "All current art and UI is temporary, and will be re-drawn before release. " +
-                        "\n\n[accent]Saves and maps may be corrupted without warning between updates.").wrap().width(400f);
+                dialog.content().add("Reminder: This is a[accent] Modded Version of the Build 63[]\n\n " +
+                        "\nThere is currently[yellow] a Sound System and Music system implemented[]\n" +
+                        "I will keep the old style of the textures even the UI" +
+                        "\n\n[accent]Saves and maps may be corrupted without warning between updates." +
+                        "\n\n[green]and most important HAVE FUN![]\n\n "
+                ).wrap().width(400f);
                 dialog.show();
             });
         }
