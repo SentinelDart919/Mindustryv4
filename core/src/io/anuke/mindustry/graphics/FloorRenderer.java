@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import com.badlogic.gdx.utils.ObjectSet;
+import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.world.Tile;
@@ -35,67 +36,106 @@ public class FloorRenderer{
     private CacheBatch cbatch;
     private IntSet drawnLayerSet = new IntSet();
     private IntArray drawnLayers = new IntArray();
+    private IntSet dirtyChunks = new IntSet();
+    private int incrementalUpdates = 0;
+    private volatile boolean dirty = false;
 
     public FloorRenderer(){
-        Events.on(WorldLoadGraphicsEvent.class, event -> clearTiles());
-    }
-
-    public void drawFloor(){
-        if(cache == null){
-            return;
-        }
-
-        OrthographicCamera camera = Core.camera;
-
-        int crangex = (int) (camera.viewportWidth * camera.zoom / (chunksize * tilesize)) + 1;
-        int crangey = (int) (camera.viewportHeight * camera.zoom / (chunksize * tilesize)) + 1;
-
-        int camx = Mathf.scl(camera.position.x, chunksize * tilesize);
-        int camy = Mathf.scl(camera.position.y, chunksize * tilesize);
-
-        int layers = CacheLayer.values().length;
-
-        drawnLayers.clear();
-        drawnLayerSet.clear();
-
-        //preliminary layer check
-        for(int x = -crangex; x <= crangex; x++){
-            for(int y = -crangey; y <= crangey; y++){
-                int worldx = camx + x;
-                int worldy = camy + y;
-
-                if(!Structs.inBounds(worldx, worldy, cache))
-                    continue;
-
-                Chunk chunk = cache[worldx][worldy];
-
-                //loop through all layers, and add layer index if it exists
-                for(int i = 0; i < layers; i++){
-                    if(chunk.caches[i] != -1){
-                        drawnLayerSet.add(i);
+        Events.on(WorldLoadGraphicsEvent.class, event -> {
+            synchronized(dirtyChunks){
+                dirty = true;
+                dirtyChunks.clear();
+            }
+        });
+        Events.on(TileChangeEvent.class, event -> {
+            synchronized(dirtyChunks){
+                if(cache != null){
+                    int cx = event.tile.x / chunksize;
+                    int cy = event.tile.y / chunksize;
+                    if(Structs.inBounds(cx, cy, cache)){
+                        dirtyChunks.add(cx + cy * cache.length);
+                        dirty = true;
                     }
                 }
             }
+        });
+    }
+
+    public void drawFloor(){
+        synchronized(dirtyChunks){
+            if(dirty){
+                if(cache != null && !dirtyChunks.isEmpty() && incrementalUpdates < 40){
+                    IntSetIterator it = dirtyChunks.iterator();
+                    while(it.hasNext){
+                        int packed = it.next();
+                        int cx = packed % cache.length;
+                        int cy = packed / cache.length;
+                        cacheChunk(cx, cy);
+                        incrementalUpdates++;
+                    }
+                    dirtyChunks.clear();
+                }else{
+                    clearTiles();
+                }
+                dirty = false;
+            }
+
+            if(cache == null){
+                return;
+            }
+
+            OrthographicCamera camera = Core.camera;
+
+            int crangex = (int) (camera.viewportWidth * camera.zoom / (chunksize * tilesize)) + 1;
+            int crangey = (int) (camera.viewportHeight * camera.zoom / (chunksize * tilesize)) + 1;
+
+            int camx = Mathf.scl(camera.position.x, chunksize * tilesize);
+            int camy = Mathf.scl(camera.position.y, chunksize * tilesize);
+
+            int layers = CacheLayer.values().length;
+
+            drawnLayers.clear();
+            drawnLayerSet.clear();
+
+            //preliminary layer check
+            for(int x = -crangex; x <= crangex; x++){
+                for(int y = -crangey; y <= crangey; y++){
+                    int worldx = camx + x;
+                    int worldy = camy + y;
+
+                    if(!Structs.inBounds(worldx, worldy, cache))
+                        continue;
+
+                    Chunk chunk = cache[worldx][worldy];
+
+                    //loop through all layers, and add layer index if it exists
+                    for(int i = 0; i < layers; i++){
+                        if(chunk.caches[i] != -1){
+                            drawnLayerSet.add(i);
+                        }
+                    }
+                }
+            }
+
+            IntSetIterator it = drawnLayerSet.iterator();
+            while(it.hasNext){
+                drawnLayers.add(it.next());
+            }
+
+            drawnLayers.sort();
+
+            Graphics.end();
+            beginDraw();
+
+            for(int i = 0; i < drawnLayers.size; i++){
+                CacheLayer layer = CacheLayer.values()[drawnLayers.get(i)];
+
+                drawLayer(layer);
+            }
+
+            endDraw();
+            Graphics.begin();
         }
-
-        IntSetIterator it = drawnLayerSet.iterator();
-        while(it.hasNext){
-            drawnLayers.add(it.next());
-        }
-
-        drawnLayers.sort();
-
-        Graphics.end();
-        beginDraw();
-
-        for(int i = 0; i < drawnLayers.size; i++){
-            CacheLayer layer = CacheLayer.values()[drawnLayers.get(i)];
-
-            drawLayer(layer);
-        }
-
-        endDraw();
-        Graphics.begin();
     }
 
     public void beginDraw(){
@@ -155,6 +195,7 @@ public class FloorRenderer{
 
     private void cacheChunk(int cx, int cy){
         Chunk chunk = cache[cx][cy];
+        Arrays.fill(chunk.caches, -1);
 
         ObjectSet<CacheLayer> used = new ObjectSet<>();
 
@@ -207,19 +248,20 @@ public class FloorRenderer{
     }
 
     public void clearTiles(){
+        dirtyChunks.clear();
+        incrementalUpdates = 0;
         if(cbatch != null) cbatch.dispose();
 
         int chunksx = Mathf.ceil((float) (world.width()) / chunksize),
             chunksy = Mathf.ceil((float) (world.height()) / chunksize) ;
         cache = new Chunk[chunksx][chunksy];
-        cbatch = new CacheBatch(world.width() * world.height() * 4 * 4);
+        cbatch = new CacheBatch(world.width() * world.height() * 4 * 6);
 
         Timers.mark();
 
         for(int x = 0; x < chunksx; x++){
             for(int y = 0; y < chunksy; y++){
                 cache[x][y] = new Chunk();
-                Arrays.fill(cache[x][y].caches, -1);
 
                 cacheChunk(x, y);
             }
