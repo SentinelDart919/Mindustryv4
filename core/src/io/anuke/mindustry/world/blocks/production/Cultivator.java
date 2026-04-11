@@ -108,7 +108,7 @@ public class Cultivator extends Drill{
 
     @Override
     public Item getDrop(Tile tile){
-        return Items.biomatter;
+        return result;
     }
 
     public static class CultivatorEntity extends DrillEntity{
