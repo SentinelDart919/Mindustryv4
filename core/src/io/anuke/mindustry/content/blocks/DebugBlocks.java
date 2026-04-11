@@ -20,6 +20,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
 import io.anuke.mindustry.world.blocks.defense.ForceProjector;
 import io.anuke.mindustry.world.blocks.defense.OverdriveProjector;
+import io.anuke.mindustry.world.blocks.defense.Wall;
 import io.anuke.mindustry.world.blocks.distribution.Sorter;
 import io.anuke.mindustry.world.blocks.power.PowerNode;
 import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
@@ -28,6 +29,7 @@ import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.scene.ui.ButtonGroup;
 import io.anuke.ucore.scene.ui.ImageButton;
 import io.anuke.ucore.scene.ui.layout.Table;
+import io.anuke.ucore.util.Geometry;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -35,7 +37,7 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class DebugBlocks extends BlockList implements ContentList{
-    public static Block powerVoid, superBooster, powerInfinite, itemSource, liquidSource, itemVoid, debugFactory;
+    public static Block powerVoid, superBooster, powerInfinite, itemSource, liquidSource, itemVoid, debugFactory, infectiontest;
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
     public static void setLiquidSourceLiquid(Player player, Tile tile, Liquid liquid){
@@ -237,6 +239,21 @@ public class DebugBlocks extends BlockList implements ContentList{
             size = 2;
             consumes.power(0.04f);
         }};
+        infectiontest = new Wall("infectiontest"){
+            {
+                health = 80;
+            }
+
+            @Override
+            public void placed(Tile tile){
+                super.placed(tile);
+                tile.infect();
+                for(int i = 0; i < 8; i++){
+                    Tile other = tile.getNearby(Geometry.d8[i]);
+                    if(other != null) other.infect();
+                }
+            }
+        };
     }
 
 
