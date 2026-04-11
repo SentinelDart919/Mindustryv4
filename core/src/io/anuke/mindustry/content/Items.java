@@ -8,7 +8,7 @@ import io.anuke.mindustry.type.ItemType;
 
 public class Items implements ContentList{
     public static Item stone, obsidian, scrap, copper, lead, densealloy, chromium, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy,
-            biomatter, sand, blastCompound, pyratite;
+            biomatter, corruptedbiomatter, sand, blastCompound, pyratite;
 
     @Override
     public void load(){
@@ -102,6 +102,10 @@ public class Items implements ContentList{
         biomatter = new Item("biomatter", Color.valueOf("648b55")){{
             flammability = 0.4f;
             fluxiness = 0.3f;
+        }};
+        corruptedbiomatter = new Item("corrupted-biomatter", Color.valueOf("6b0707")){{
+            flammability = 0.9f;
+            fluxiness = 0.0f;
         }};
 
         sand = new Item("sand", Color.valueOf("e3d39e")){{

@@ -6,7 +6,7 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Liquid;
 
 public class Liquids implements ContentList{
-    public static Liquid water, lava, slag, oil, cryofluid, chromium_acid;
+    public static Liquid water, lava, slag, oil, cryofluid, chromium_acid, infected_water;
 
     @Override
     public void load(){
@@ -21,6 +21,14 @@ public class Liquids implements ContentList{
             @Override
             public boolean alwaysUnlocked() {
                 return true;
+            }
+        };
+
+        infected_water = new Liquid("infected_water", Color.valueOf("720909")){
+            {
+                heatCapacity = 0.0f;
+                tier = 0;
+                effect = StatusEffects.wet;
             }
         };
 
