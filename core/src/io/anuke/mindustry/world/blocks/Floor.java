@@ -56,6 +56,8 @@ public class Floor extends Block{
     public boolean isLiquid;
     /** if true, this block cannot be mined by players. useful for annoying things like stone. */
     public boolean playerUnmineable = false;
+
+    public Floor infectedVariant;
     protected TextureRegion edgeRegion;
     protected TextureRegion[] edgeRegions;
     protected TextureRegion[] cliffRegions;
