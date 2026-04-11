@@ -6,13 +6,16 @@ import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.Cultivator;
 import io.anuke.mindustry.world.blocks.production.Drill;
 import io.anuke.mindustry.world.blocks.production.Fracker;
 import io.anuke.mindustry.world.blocks.production.SolidPump;
 
+import static io.anuke.mindustry.content.blocks.Blocks.infectedGrass;
+
 public class ProductionBlocks extends BlockList implements ContentList{
-    public static Block mechanicalDrill, pneumaticDrill, laserDrill, blastDrill, plasmaDrill, waterExtractor, oilExtractor, cultivator;
+    public static Block mechanicalDrill, pneumaticDrill, laserDrill, blastDrill, plasmaDrill, waterExtractor, oilExtractor, cultivator, corruptedcultivator;
 
     @Override
     public void load(){
@@ -107,6 +110,23 @@ public class ProductionBlocks extends BlockList implements ContentList{
             consumes.power(0.08f);
             consumes.liquid(Liquids.water, 0.2f);
         }};
+        corruptedcultivator = new Cultivator("corrupted-cultivator"){{
+            result = Items.corruptedbiomatter;
+            drillTime = 260;
+            size = 2;
+            hasLiquids = true;
+            hasPower = true;
+            plantColor = Color.valueOf("511111");
+            plantColorLight = Color.valueOf("6b0707");
+
+            consumes.power(0.08f);
+            consumes.liquid(Liquids.water, 0.2f);
+        }
+            @Override
+            public boolean isValid(Tile tile){
+                return tile != null && tile.floor() == infectedGrass;
+            }
+        };
 
     }
 }
