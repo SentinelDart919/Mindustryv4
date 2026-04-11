@@ -16,7 +16,7 @@ import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
 public class Blocks extends BlockList implements ContentList{
-    public static Block air, blockpart, spawn, space, metalfloor, deepwater, water, lava, tar, stone, blackstone, dirt, sand, ice, snow, grass, shrub, rock, icerock, blackrock;
+    public static Block air, blockpart, spawn, space, metalfloor, deepwater, water, lava, tar, stone, blackstone, dirt, sand, ice, snow, grass, shrub, rock, icerock, blackrock, infectedGrass, infectedSand, infectedDirt, infectedWater, infectedDeepWater;
 
 
     @Override
@@ -45,7 +45,7 @@ public class Blocks extends BlockList implements ContentList{
             }
         };
 
-        //Registers build blocks from size 1-6
+        //Registers build blocks from size 1-10
         //no reference is needed here since they can be looked up by name later
         for(int i = 1; i <= 10; i++){
             new BuildBlock("build" + i);
@@ -157,6 +157,45 @@ public class Blocks extends BlockList implements ContentList{
             minimapColor = Color.valueOf("549d5b");
         }};
 
+        infectedGrass = new Floor("infected-grass"){{
+            hasOres = true;
+            minimapColor = Color.valueOf("720909");
+        }};
+
+        infectedSand = new Floor("infected-sand"){{
+            hasOres = true;
+            minimapColor = Color.valueOf("4c2626");
+        }};
+
+        infectedDirt = new Floor("infected-dirt"){{
+            minimapColor = Color.valueOf("5b3c3c");
+        }};
+
+        infectedWater = new Floor("infected-water"){{
+            minimapColor = Color.valueOf("c50101");
+            liquidColor = Color.valueOf("c50101");
+            speedMultiplier = 0.5f;
+            variants = 0;
+            status = StatusEffects.wet;
+            statusIntensity = 0.9f;
+            liquidDrop = Liquids.infected_water;
+            isLiquid = true;
+            cacheLayer = CacheLayer.water;
+        }};
+
+        infectedDeepWater = new Floor("infected-deepwater"){{
+            liquidColor = Color.valueOf("a91111");
+            speedMultiplier = 0.2f;
+            variants = 0;
+            liquidDrop = Liquids.infected_water;
+            isLiquid = true;
+            status = StatusEffects.wet;
+            statusIntensity = 1f;
+            drownTime = 140f;
+            cacheLayer = CacheLayer.water;
+            minimapColor = Color.valueOf("465a96");
+        }};
+
         shrub = new Rock("shrub"){{
             shadow = "shrubshadow";
         }};
@@ -172,5 +211,11 @@ public class Blocks extends BlockList implements ContentList{
         blackrock = new Rock("blackrock"){{
             variants = 1;
         }};
+
+        ((Floor)grass).infectedVariant = (Floor)infectedGrass;
+        ((Floor)sand).infectedVariant = (Floor)infectedSand;
+        ((Floor)dirt).infectedVariant = (Floor)infectedDirt;
+        ((Floor)water).infectedVariant = (Floor)infectedWater;
+        ((Floor)deepwater).infectedVariant = (Floor)infectedDeepWater;
     }
 }
