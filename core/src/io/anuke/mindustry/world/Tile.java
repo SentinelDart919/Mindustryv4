@@ -15,10 +15,12 @@ import io.anuke.mindustry.world.modules.ConsumeModule;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.modules.LiquidModule;
 import io.anuke.mindustry.world.modules.PowerModule;
+import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.trait.PosTrait;
 import io.anuke.ucore.function.Consumer;
 import io.anuke.ucore.util.Bits;
 import io.anuke.ucore.util.Geometry;
+import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -31,6 +33,7 @@ public class Tile implements PosTrait, TargetTrait{
     public byte link = 0;
     /** Tile traversal cost. */
     public byte cost = 1;
+    public boolean isInfected = false;
     /** Tile entity, usually null. */
     public TileEntity entity;
     public short x, y;
@@ -173,6 +176,29 @@ public class Tile implements PosTrait, TargetTrait{
 
     public void setFloor(Floor type){
         this.floor = type;
+        changed();
+    }
+
+    public void infect(){
+        if(isInfected) return;
+        isInfected = true;
+
+        if(floor.infectedVariant != null){
+            setFloor(floor.infectedVariant);
+        }
+
+        Timers.run(60f * (2f + Mathf.random(2f)), () -> {
+            int amount = Mathf.random(2, 8);
+            for(int i = 0; i < 8; i++){
+                if(Mathf.random(8 - i - 1) < amount){
+                    amount--;
+                    Tile other = getNearby(Geometry.d8[i]);
+                    if(other != null && !other.isInfected && other.floor().infectedVariant != null){
+                        other.infect();
+                    }
+                }
+            }
+        });
     }
 
     public byte getVisibility(){
