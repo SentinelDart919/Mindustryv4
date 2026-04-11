@@ -32,5 +32,22 @@ public class OreBlocks extends BlockList{
                 }
             }
         }
+
+        for(Item item : content.items()){
+            if(!item.genOre) continue;
+            ObjectMap<Block, Block> map = oreBlockMap.get(item);
+
+            for(Block block : content.blocks()){
+                if(block instanceof Floor && ((Floor) block).hasOres && ((Floor) block).infectedVariant != null){
+                    Floor base = (Floor) block;
+                    OreBlock original = (OreBlock) map.get(base);
+                    OreBlock infected = (OreBlock) map.get(base.infectedVariant);
+
+                    if(infected != null){
+                        original.infectedVariant = infected;
+                    }
+                }
+            }
+        }
     }
 }
