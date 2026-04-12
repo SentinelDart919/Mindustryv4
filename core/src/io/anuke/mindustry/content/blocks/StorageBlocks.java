@@ -1,5 +1,6 @@
 package io.anuke.mindustry.content.blocks;
 
+import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.storage.CoreBlock;
@@ -7,7 +8,7 @@ import io.anuke.mindustry.world.blocks.storage.SortedUnloader;
 import io.anuke.mindustry.world.blocks.storage.Vault;
 
 public class StorageBlocks extends BlockList implements ContentList{
-    public static Block core, vault, container, unloader;
+    public static Block core, vault, container, unloader, hive;
 
     @Override
     public void load(){
@@ -27,6 +28,13 @@ public class StorageBlocks extends BlockList implements ContentList{
 
         unloader = new SortedUnloader("unloader"){{
             speed = 12f;
+        }};
+
+        hive = new CoreBlock("hive"){{
+            size = 3;
+            itemCapacity = 200000;
+            health = 100000;
+            droneType = UnitTypes.bombDrone;
         }};
     }
 }
