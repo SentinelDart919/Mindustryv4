@@ -167,6 +167,15 @@ public class Tile implements PosTrait, TargetTrait{
         changed();
     }
 
+    public void setBlock(Block type, Team team, int rotation){
+        preChanged();
+        this.wall = type;
+        this.team = (byte)team.ordinal();
+        this.link = 0;
+        setRotation((byte) (rotation % 4));
+        changed();
+    }
+
     public void setBlock(Block type){
         preChanged();
         this.wall = type;
