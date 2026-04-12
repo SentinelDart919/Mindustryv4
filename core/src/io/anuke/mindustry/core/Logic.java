@@ -236,6 +236,7 @@ public class Logic extends Module{
                 EntityQuery.collideGroups(playerGroup, playerGroup);
 
                 world.pathfinder.update();
+                io.anuke.mindustry.ai.MassAI.update();
             }
 
             if(!Net.client() && !world.isInvalidMap()){
