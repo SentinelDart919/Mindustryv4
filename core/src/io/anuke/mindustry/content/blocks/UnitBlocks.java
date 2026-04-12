@@ -16,7 +16,8 @@ public class UnitBlocks extends BlockList implements ContentList{
         scrappeonFactory,
         daggerFactory, titanFactory, fortressFactory,
             crawlerFactory, bombdroneFactory,
-        reconstructor, highTierFactory, repairPoint, commandCenter;
+        reconstructor, highTierFactory, repairPoint, commandCenter,
+            hiveSpawner;
 
     @Override
     public void load(){
@@ -240,6 +241,29 @@ public class UnitBlocks extends BlockList implements ContentList{
 
         commandCenter = new CommandCenter("command-center"){{
             size = 2;
+        }};
+        hiveSpawner = new UnitHiveSpawner("hive-spawner"){{
+            size = 2;
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.copper, 50),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.lead, 50),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.titanium, 50),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.scrap, 50),
+                    },
+            };
+            types = new UnitType[]{
+                    UnitTypes.dagger,
+                    UnitTypes.wraith,
+                    UnitTypes.titan,
+                    UnitTypes.scrappeon
+            };
         }};
     }
 }
