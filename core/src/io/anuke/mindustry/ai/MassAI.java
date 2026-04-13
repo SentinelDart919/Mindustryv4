@@ -7,10 +7,13 @@ import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.DistributionBlocks;
 import io.anuke.mindustry.content.blocks.ProductionBlocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
+import io.anuke.mindustry.game.EventType;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.content.blocks.UnitBlocks;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Timers;
@@ -19,21 +22,22 @@ import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.world;
 /* TODO make them spawn Units,
-    Make them more aggressive
+    Make them more aggressive - (add vein like system that goes directly to enemy blocks and damage them)
     Finish the Mass Like buildings (mostly looking like the The Flesh That Hates mod from MC)
-    Make them spawn turrets when they are under attack
+    Make them spawn turrets when they are under attack - add a trySpawnTurret, also does it randomly
     make them randomly spawn turrets
-    Their Units should Defend the Hive Cores
-    Make them mine more ores
+    Their Units should Defend the Hive Cores - command blocks have retreat / attack / patrol setting my idea is to make the enemy cores run this
+    Add Grace time
+    Make them have more units, turrets, and ore multiplier by difficulty
 */
 public class MassAI {
     private static ObjectSet<Tile> initializedCores = new ObjectSet<>();
     private static Array<BuildingLine> activeLines = new Array<>();
     private static Array<SubSection> activeSubsections = new Array<>();
     private static float spawnTimer = 0;
-    private static final Item[] targetOres = {Items.scrap, Items.lead, Items.copper, Items.titanium};
-    private static final int[] oreLimits = {6, 6, 6, 4};
-    private static int[] oreBoosts = new int[4];
+    private static final Item[] targetOres = {Items.scrap, Items.lead, Items.copper, Items.coal, Items.titanium, Items.thorium, Items.chromium};
+    private static final int[] oreLimits = {6, 6, 6, 5, 4, 4, 4};
+    private static int[] oreBoosts = new int[7];
     private static ObjectMap<Tile, Boolean> coreExpanded = new ObjectMap<>();
 
     static {
@@ -86,6 +90,7 @@ public class MassAI {
             spawnTimer = 0;
             trySpawnSubsection();
             checkCoreExpansion();
+            trySpawnSpawners();
         }
 
         for (int i = activeSubsections.size - 1; i >= 0; i--) {
@@ -128,6 +133,70 @@ public class MassAI {
                 }
             }
         }
+    }
+
+    private static void trySpawnSpawners() {
+        for (Tile core : Vars.state.teams.get(Team.themass).cores) {
+            ItemModule items = core.entity.items;
+
+            int hiveSpawners = 0;
+            int airSpawners = 0;
+            int radius = 30;
+
+            // count existing spawners near the core
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    Tile t = world.tile(core.x + dx, core.y + dy);
+                    if (t != null && t.getTeam() == Team.themass) {
+                        if (t.block() == UnitBlocks.hiveSpawner) hiveSpawners++;
+                        else if (t.block() == UnitBlocks.airHiveSpawner) airSpawners++;
+                    }
+                }
+            }
+            // max 10 spawn per core (if not welcome to unbalanced hell)
+            if (hiveSpawners < 10 && items.has(Items.copper, 10)) {
+                if (placeRandomSpawner(core, UnitBlocks.hiveSpawner, radius)) {
+                    items.remove(Items.copper, 10);
+                }
+            }
+
+            if (airSpawners < 10 && items.has(Items.lead, 10)) {
+                if (placeRandomSpawner(core, UnitBlocks.airHiveSpawner, radius)) {
+                    items.remove(Items.lead, 10);
+                }
+            }
+        }
+    }
+
+    private static boolean placeRandomSpawner(Tile core, Block spawner, int radius) {
+        for (int i = 0; i < 40; i++) {
+            int tx = core.x + Mathf.random(-radius, radius);
+            int ty = core.y + Mathf.random(-radius, radius);
+            Tile target = world.tile(tx, ty);
+
+            if (target != null && target.block() == Blocks.air && target.floor().placeableOn && !target.floor().isLiquid) {
+                boolean occluded = false;
+                int size = spawner.size;
+                int offset = -(size - 1) / 2;
+                
+                for (int dx = 0; dx < size; dx++) {
+                    for (int dy = 0; dy < size; dy++) {
+                        Tile t = world.tile(tx + offset + dx, ty + offset + dy);
+                        if (t == null || t.block() != Blocks.air || t.floor().isLiquid || !t.floor().placeableOn) {
+                            occluded = true;
+                            break;
+                        }
+                    }
+                    if (occluded) break;
+                }
+
+                if (!occluded) {
+                    Vars.world.setBlock(target, spawner, Team.themass);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void checkCoreExpansion() {
@@ -271,7 +340,7 @@ public class MassAI {
             Tile curr = queue.removeFirst();
 
             //
-            if (curr.block() == DistributionBlocks.titaniumconveyor && curr.getTeam() == Team.themass) {
+            if (curr.block() == DistributionBlocks.veins && curr.getTeam() == Team.themass) {
                 boolean isLine = false;
                 for (BuildingLine line : activeLines) {
                     if (line.containsTile(curr)) {
@@ -361,7 +430,7 @@ public class MassAI {
                 if (t == null || t.floor().drops == null || t.floor().drops.item != item || isNearEnemyCore(t)) return false;
                 
                 Block block = t.block();
-                if (block != Blocks.air && !(t.getTeam() == Team.themass && block == DistributionBlocks.titaniumconveyor)) {
+                if (block != Blocks.air && !(t.getTeam() == Team.themass && block == DistributionBlocks.veins)) {
                     return false;
                 }
             }
@@ -436,7 +505,7 @@ public class MassAI {
     }
 
     private static boolean isPassable(Tile tile) {
-        return (tile.block() == Blocks.air || (tile.getTeam() == Team.themass && tile.block() == DistributionBlocks.titaniumconveyor)) && !isNearEnemyCore(tile);
+        return (tile.block() == Blocks.air || (tile.getTeam() == Team.themass && tile.block() == DistributionBlocks.veins)) && !isNearEnemyCore(tile);
     }
 
     private static void startBuilding(Tile core) {
@@ -477,7 +546,7 @@ public class MassAI {
             }
 
             if (drillPlaced) {
-                if (targetTile.block() != ProductionBlocks.pneumaticDrill || targetTile.getTeam() != Team.themass) {
+                if (targetTile.block() != ProductionBlocks.biomassBulb || targetTile.getTeam() != Team.themass) {
                     boostOre(targetOre);
                     failed = true;
                     return;
@@ -519,20 +588,20 @@ public class MassAI {
                         failed = true;
                         return;
                     }
-                    if (next.block() == Blocks.air || (next.getTeam() == Team.themass && next.block() == DistributionBlocks.titaniumconveyor)) {
+                    if (next.block() == Blocks.air || (next.getTeam() == Team.themass && next.block() == DistributionBlocks.veins)) {
                         Tile prev = (progress == 0) ? startTile : path.get(progress - 1);
                         int rotation = next.relativeTo(prev.x, prev.y);
                         
-                        next.setBlock(DistributionBlocks.titaniumconveyor, Team.themass, rotation);
+                        next.setBlock(DistributionBlocks.veins, Team.themass, rotation);
                         progress++;
                     } else {
                         failed = true;
                     }
                 } else {
                     if (isValid2x2(targetTile.x, targetTile.y, targetOre)) {
-                        Vars.world.setBlock(targetTile, ProductionBlocks.pneumaticDrill, Team.themass);
+                        Vars.world.setBlock(targetTile, ProductionBlocks.biomassBulb, Team.themass);
                         drillPlaced = true;
-                    } else if (targetTile.block() == ProductionBlocks.pneumaticDrill && targetTile.getTeam() == Team.themass) {
+                    } else if (targetTile.block() == ProductionBlocks.biomassBulb && targetTile.getTeam() == Team.themass) {
                         drillPlaced = true; // reconnect the drill
                     } else {
                         failed = true;
@@ -641,14 +710,14 @@ public class MassAI {
             if (i < 0 || i >= tiles.size) return false;
             PathTile pt = tiles.get(i);
             Tile tile = pt.tile;
-            return tile == null || tile.block() != DistributionBlocks.titaniumconveyor || tile.getTeam() != Team.themass || tile.getRotation() != pt.rotation;
+            return tile == null || tile.block() != DistributionBlocks.veins || tile.getTeam() != Team.themass || tile.getRotation() != pt.rotation;
         }
 
         boolean tryRebuild(int i) {
             PathTile pt = tiles.get(i);
             Tile tile = pt.tile;
             if (tile != null && tile.block() == Blocks.air) {
-                tile.setBlock(DistributionBlocks.titaniumconveyor, Team.themass, pt.rotation);
+                tile.setBlock(DistributionBlocks.veins, Team.themass, pt.rotation);
                 return true;
             }
             return false;
@@ -660,7 +729,7 @@ public class MassAI {
                 if (next.block() == Blocks.air && !isNearEnemyCore(next)) {
                     Tile prev = tiles.size == 0 ? world.tile(startX - dx, startY - dy) : tiles.peek().tile;
                     int rot = next.relativeTo(prev.x, prev.y);
-                    next.setBlock(DistributionBlocks.titaniumconveyor, Team.themass, rot);
+                    next.setBlock(DistributionBlocks.veins, Team.themass, rot);
                     tiles.add(new PathTile(next, rot));
                 } else {
                     pathBuffer.clear();
@@ -690,7 +759,7 @@ public class MassAI {
             }
 
             if (tile.block() == Blocks.air) {
-                tile.setBlock(DistributionBlocks.titaniumconveyor, Team.themass, rotation);
+                tile.setBlock(DistributionBlocks.veins, Team.themass, rotation);
                 tiles.add(new PathTile(tile, rotation));
             } else if (tile.block().solid) {
                 // Try to pathfind around
