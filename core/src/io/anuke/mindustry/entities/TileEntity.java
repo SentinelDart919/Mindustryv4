@@ -8,10 +8,13 @@ import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.fx.Fx;
+import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.entities.units.types.BlockDefenseDrone;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.ucore.entities.trait.Entity;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
@@ -65,6 +68,9 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     private boolean dead = false;
     private boolean sleeping;
     private float sleepTime;
+
+    public Entity lastDamager;
+    public int defenseDronesCount;
 
     @Remote(called = Loc.server)
     public static void onTileDamage(Tile tile, float health){
@@ -146,6 +152,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     }
 
     public void collision(Bullet other){
+        lastDamager = other.getOwner();
         tile.block().handleBulletHit(this, other);
     }
 
@@ -162,8 +169,20 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
 
         if(health <= 0){
             Call.onTileDestroyed(tile);
-        }else if(preHealth >= maxHealth() - 0.00001f && health < maxHealth()){ //when just damaged
-            world.indexer.notifyTileDamaged(this);
+        }else{//spawns units/drones when is damaged
+            if(preHealth >= maxHealth() - 0.00001f && health < maxHealth()){
+                world.indexer.notifyTileDamaged(this);
+            }
+
+            if(tile.block().defenseDrones){
+                for(int i = defenseDronesCount; i < tile.block().maxDefenseDrones; i++){
+                    BlockDefenseDrone drone = (BlockDefenseDrone) tile.block().defenseDroneType.create(tile.getTeam());
+                    drone.leader = this;
+                    drone.set(tile.worldx() + Mathf.range(4f), tile.worldy() + Mathf.range(4f));
+                    drone.add();
+                    defenseDronesCount++;
+                }
+            }
         }
     }
 
