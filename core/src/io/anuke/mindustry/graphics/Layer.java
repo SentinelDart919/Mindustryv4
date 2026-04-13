@@ -2,6 +2,10 @@ package io.anuke.mindustry.graphics;
 
 public enum Layer{
     /**
+     * Layer for things drawn UNDER blocks.
+     */
+    back,
+    /**
      * Base block layer.
      */
     block,
