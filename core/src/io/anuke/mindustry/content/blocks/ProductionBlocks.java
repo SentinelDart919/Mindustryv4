@@ -15,7 +15,7 @@ import io.anuke.mindustry.world.blocks.production.SolidPump;
 import static io.anuke.mindustry.content.blocks.Blocks.infectedGrass;
 
 public class ProductionBlocks extends BlockList implements ContentList{
-    public static Block mechanicalDrill, pneumaticDrill, laserDrill, blastDrill, plasmaDrill, waterExtractor, oilExtractor, cultivator, corruptedcultivator;
+    public static Block mechanicalDrill, pneumaticDrill, laserDrill, blastDrill, plasmaDrill, waterExtractor, oilExtractor, cultivator, corruptedcultivator, biomassBulb;
 
     @Override
     public void load(){
@@ -127,6 +127,14 @@ public class ProductionBlocks extends BlockList implements ContentList{
                 return tile != null && tile.floor() == infectedGrass;
             }
         };
+        biomassBulb = new Drill("biomass-bulb"){{
+            health = 580;
+            update = true;
+            size = 2;
+            tier = 5;
+            drillTime = 90;
+            drawMineItem = true;
+        }};
 
     }
 }

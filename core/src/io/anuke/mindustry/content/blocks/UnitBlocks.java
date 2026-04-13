@@ -17,7 +17,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         daggerFactory, titanFactory, fortressFactory,
             crawlerFactory, bombdroneFactory,
         reconstructor, highTierFactory, repairPoint, commandCenter,
-            hiveSpawner;
+            hiveSpawner, airHiveSpawner;
 
     @Override
     public void load(){
@@ -246,23 +246,35 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 2;
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
-                            new ItemStack(Items.copper, 50),
+                            new ItemStack(Items.copper, 5),
                     },
                     new ItemStack[]{
-                            new ItemStack(Items.lead, 50),
+                            new ItemStack(Items.titanium, 5),
                     },
                     new ItemStack[]{
-                            new ItemStack(Items.titanium, 50),
-                    },
-                    new ItemStack[]{
-                            new ItemStack(Items.scrap, 50),
+                            new ItemStack(Items.coal, 5),
                     },
             };
             types = new UnitType[]{
-                    UnitTypes.dagger,
-                    UnitTypes.wraith,
-                    UnitTypes.titan,
-                    UnitTypes.scrappeon
+                    UnitTypes.evilDagger,
+                    UnitTypes.evilTanky,
+                    UnitTypes.evilCrawler
+            };
+        }};
+        airHiveSpawner = new UnitHiveSpawner("air-hive-spawner"){{
+            size = 2;
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.lead, 5),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.coal, 5),
+                            new ItemStack(Items.copper, 5),
+                    }
+            };
+            types = new UnitType[]{
+                    UnitTypes.evilWraith,
+                    UnitTypes.evilBombDrone
             };
         }};
     }

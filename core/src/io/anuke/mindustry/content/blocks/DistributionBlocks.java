@@ -6,7 +6,8 @@ import io.anuke.mindustry.world.blocks.distribution.*;
 
 public class DistributionBlocks extends BlockList implements ContentList{
     public static Block conveyor, titaniumconveyor, thoriumconveyor, distributor, junction,
-    itemBridge, phaseConveyor, sorter, router, overflowGate, massDriver;
+    itemBridge, phaseConveyor, sorter, router, overflowGate, massDriver,
+    veins;//da conveinyors
 
     @Override
     public void load(){
@@ -59,6 +60,12 @@ public class DistributionBlocks extends BlockList implements ContentList{
             size = 3;
             itemCapacity = 60;
             range = 440f;
+        }};
+
+        veins = new Veins("veins"){{
+            size = 1;
+            speed = 0.15f;
+            itemCapacity = 6;
         }};
     }
 }

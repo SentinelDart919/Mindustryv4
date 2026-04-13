@@ -17,6 +17,8 @@ public class Recipes implements ContentList{
         //DEBUG
         new Recipe(effect, DebugBlocks.infectiontest).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.hiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DistributionBlocks.veins).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(production, ProductionBlocks.biomassBulb).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, ProductionBlocks.corruptedcultivator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(effect, StorageBlocks.hive).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(distribution, DebugBlocks.itemSource).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
@@ -169,6 +171,7 @@ public class Recipes implements ContentList{
         new Recipe(production, ProductionBlocks.pneumaticDrill, new ItemStack(Items.copper, 18), new ItemStack(Items.densealloy, 10));
         new Recipe(production, ProductionBlocks.laserDrill, new ItemStack(Items.copper, 30), new ItemStack(Items.densealloy, 20), new ItemStack(Items.silicon, 20), new ItemStack(Items.titanium, 30));
         new Recipe(production, ProductionBlocks.blastDrill, new ItemStack(Items.copper, 60), new ItemStack(Items.densealloy, 40), new ItemStack(Items.silicon, 40), new ItemStack(Items.titanium, 90), new ItemStack(Items.thorium, 60));
+        new Recipe(production, ProductionBlocks.plasmaDrill, new ItemStack(Items.copper, 120), new ItemStack(Items.densealloy, 80), new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 120), new ItemStack(Items.thorium, 120), new ItemStack(Items.chromium, 80), new ItemStack(Items.surgealloy, 60));
 
         new Recipe(production, ProductionBlocks.waterExtractor, new ItemStack(Items.copper, 50), new ItemStack(Items.densealloy, 50), new ItemStack(Items.lead, 40));
         new Recipe(production, ProductionBlocks.cultivator, new ItemStack(Items.copper, 20), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 20));

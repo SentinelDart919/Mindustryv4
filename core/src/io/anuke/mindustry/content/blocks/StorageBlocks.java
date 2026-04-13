@@ -4,6 +4,7 @@ import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.storage.CoreBlock;
+import io.anuke.mindustry.world.blocks.storage.HiveBlock;
 import io.anuke.mindustry.world.blocks.storage.SortedUnloader;
 import io.anuke.mindustry.world.blocks.storage.Vault;
 
@@ -14,6 +15,9 @@ public class StorageBlocks extends BlockList implements ContentList{
     public void load(){
         core = new CoreBlock("core"){{
             health = 1100;
+            defenseDrones = true;
+            defenseDroneType = UnitTypes.defenseDrone;
+            maxDefenseDrones = 3;
         }};
 
         vault = new Vault("vault"){{
@@ -30,11 +34,14 @@ public class StorageBlocks extends BlockList implements ContentList{
             speed = 12f;
         }};
 
-        hive = new CoreBlock("hive"){{
+        hive = new HiveBlock("hive"){{
             size = 3;
             itemCapacity = 200000;
             health = 100000;
-            droneType = UnitTypes.bombDrone;
+            droneType = UnitTypes.evilDraug;
+            defenseDrones = true;
+            maxDefenseDrones = 8;
+            defenseDroneType = UnitTypes.evilSwarmDrone;
         }};
     }
 }
