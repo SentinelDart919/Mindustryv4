@@ -10,6 +10,8 @@ import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
+import io.anuke.mindustry.entities.units.UnitType;
+import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.effect.Puddle;
 import io.anuke.mindustry.entities.effect.RubbleDecal;
@@ -110,6 +112,12 @@ public class Block extends BaseBlock {
     public boolean targetable = true;
     /**Whether the overdrive core has any effect on this block.*/
     public boolean canOverdrive = true;
+    /** Whether to spawn defense drones when damaged. */
+    public boolean defenseDrones = false;
+    /** Max of defense drones to spawn. */
+    public int maxDefenseDrones = 3;
+    /** Unit type to spawn as defense drone. */
+    public UnitType defenseDroneType;
 
     protected Array<Tile> tempTiles = new Array<>();
     protected Color tempColor = new Color();
@@ -331,7 +339,16 @@ public class Block extends BaseBlock {
         return name;
     }
 
-    /** Called after all blocks are created. */
+    @Override
+    public void load(){
+        shadowRegion = Draw.region(shadow == null ? "shadow-" + size : shadow);
+        region = Draw.region(name);
+
+        if(defenseDroneType == null && defenseDrones){
+            defenseDroneType = UnitTypes.defenseDrone;
+        }
+    }
+
     @Override
     public void init(){
         //initialize default health based on size
@@ -343,12 +360,6 @@ public class Block extends BaseBlock {
         setBars();
 
         consumes.checkRequired(this);
-    }
-
-    @Override
-    public void load(){
-        shadowRegion = Draw.region(shadow == null ? "shadow-" + size : shadow);
-        region = Draw.region(name);
     }
 
     /**Called when the world is resized.
