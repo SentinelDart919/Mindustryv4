@@ -86,6 +86,7 @@ public class OverlayRenderer{
 
             if(buildFadeTime > 0.005f){
                 for(Team enemy : state.teams.enemiesOf(player.getTeam())){
+                    if(enemy == Team.themass) continue;
                     for(Tile core : state.teams.get(enemy).cores){
                         float dst = Vector2.dst(player.x, player.y, core.drawx(), core.drawy());
                         if(dst < state.mode.enemyCoreBuildRadius * 1.5f){

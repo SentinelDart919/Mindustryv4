@@ -119,6 +119,7 @@ public class Build{
 
         //check for enemy cores
         for(Team enemy : state.teams.enemiesOf(team)){
+            if(enemy == Team.themass) continue;
             for(Tile core : state.teams.get(enemy).cores){
                 if(Vector2.dst(x*tilesize + type.offset(), y*tilesize + type.offset(), core.drawx(), core.drawy()) < state.mode.enemyCoreBuildRadius + type.size*tilesize/2f){
                     return false;
