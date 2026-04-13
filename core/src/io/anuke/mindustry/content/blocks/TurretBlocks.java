@@ -14,7 +14,15 @@ import io.anuke.ucore.util.Mathf;
 
 public class TurretBlocks extends BlockList implements ContentList{
     public static Block duo, scatter,
-            scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown;
+            scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown,
+            evilScatter, evilDuo, evilSalvo, evilRipple, evilFuse;
+            /*TODO
+            *  Turrets For Infection
+            *  Basic ground/air target turret
+            *  Artillery Turret
+            *  Medium ground/air target turret
+            *
+            *  */
 
     @Override
     public void load(){

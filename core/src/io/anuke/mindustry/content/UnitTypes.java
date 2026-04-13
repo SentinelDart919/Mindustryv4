@@ -10,12 +10,17 @@ import io.anuke.mindustry.type.ContentType;
 public class UnitTypes implements ContentList{
     public static UnitType
         scavenger, draug, spirit, ghost, phantom,
-        alphaDrone,
+        alphaDrone, defenseDrone,
         scrapper , wraith, ghoul, revenant, lich,
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
-        debugtank;
-
+        debugtank,
+        evilDraug, evilDagger, evilWraith, evilCrawler, evilBombDrone, evilTanky, evilChaosArray, evilSwarmDrone;
+        /* TODO
+            Add Units For Mass Team
+            Air/Ground Kamikaze Unit, Miner Unit, Air/Ground Unit, Ground/Air Light Attack Unit, Ground Tanky Unit
+            Artillery Unit, Heavy Assault Unit, Swarm Units(for defense mostly)
+         */
 
     @Override
     public void load(){
@@ -27,6 +32,29 @@ public class UnitTypes implements ContentList{
                 maxVelocity = 1.7f;
                 range = 40f;
                 health = 45;
+                hitsize = 4f;
+                mass = 0.1f;
+                weapon = Weapons.droneBlaster;
+                trailColor = Color.valueOf("ffd37f");
+                spawnsInSiegeMode = false;
+            }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }
+        };
+
+        defenseDrone = new UnitType("defense-drone", BlockDefenseDrone.class, BlockDefenseDrone::new){
+            {
+                isFlying = true;
+                drag = 0.005f;
+                speed = 0.7f;
+                maxVelocity = 2.0f;
+                rotatespeed = 0.5f;
+                baseRotateSpeed = 0.5f;
+                range = 80f;
+                health = 60;
                 hitsize = 4f;
                 mass = 0.1f;
                 weapon = Weapons.droneBlaster;
@@ -97,8 +125,8 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             drag = 0.01f;
             mass = 2f;
-            speed = 0.2f;
-            maxVelocity = 0.9f;
+            speed = 0.25f;
+            maxVelocity = 1.9f;
             range = 70f;
             itemCapacity = 70;
             health = 220;
@@ -278,6 +306,145 @@ public class UnitTypes implements ContentList{
             public boolean isHidden() {
                 return true;
             }};
+        // The Mass Units
+        evilDagger = new UnitType("evilDagger", Dagger.class, Dagger::new){{
+            maxVelocity = 1.1f;
+            speed = 0.2f;
+            drag = 0.4f;
+            hitsize = 8f;
+            mass = 1.75f;
+            weapon = Weapons.chainBlaster;
+            health = 130;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilBombDrone = new UnitType("evilBomb_drone", BombDrone.class, BombDrone::new){{
+            isFlying = true;
+            weapon = Weapons.kamikaze;
+            maxVelocity = 1.50f;
+            speed = 0.32f;
+            drag = 0.01f;
+            hitsize = 7.89f;
+            mass = 1.25f;
+            health = 60;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilCrawler = new UnitType("evilCrawler", Crawler.class, Crawler::new){{
+            weapon = Weapons.kamikaze;
+            maxVelocity = 1.25f;
+            speed = 0.36f;
+            drag = 0.01f;
+            hitsize = 8f;
+            mass = 1.75f;
+            health = 100f;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilTanky = new UnitType("evilTanky", Titan.class, Titan::new){{
+            maxVelocity = 0.8f;
+            speed = 0.18f;
+            drag = 0.4f;
+            mass = 3.5f;
+            hitsize = 9f;
+            rotatespeed = 0.1f;
+            weapon = Weapons.flamethrower;
+            health = 1280;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilDraug = new UnitType("evilDraug", DroneMiner.class, DroneMiner::new){{
+            weapon = Weapons.mineBlaster;
+            isFlying = true;
+            drag = 0.01f;
+            speed = 0.19f;
+            maxVelocity = 0.61f;
+            range = 55f;
+            health = 40;
+            toMine = ObjectSet.with(Items.copper, Items.lead);
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilWraith = new UnitType("evilWraith", Wraith.class, Wraith::new){{
+            speed = 0.3f;
+            maxVelocity = 1.9f;
+            drag = 0.01f;
+            mass = 1.5f;
+            weapon = Weapons.chainBlaster;
+            isFlying = true;
+            health = 70;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
+        evilChaosArray  = new UnitType("evil-haos-array", ChaosArray.class, ChaosArray::new){{
+            health = 3000;
+            mass = 5f;
+            hitsize = 20;
+            speed = 0.12f;
+            maxVelocity = 0.68f;
+            drag = 0.4f;
+            rotatespeed = 0.06f;
+            weaponOffsetX = 17f;
+            weaponOffsetY = 2f;
+            weapon = Weapons.chaos;
+            spawnsInSiegeMode = false;
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }
+        };
+        evilSwarmDrone = new UnitType("evil-swarm-drone", BlockDefenseDrone.class, BlockDefenseDrone::new){
+            {
+                isFlying = true;
+                drag = 0.005f;
+                speed = 0.6f;
+                maxVelocity = 1.7f;
+                range = 40f;
+                health = 45;
+                hitsize = 4f;
+                mass = 0.1f;
+                weapon = Weapons.droneBlaster;
+                trailColor = Color.valueOf("ffd37f");
+                spawnsInSiegeMode = false;
+            }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }
+        };
     }
 
     @Override
