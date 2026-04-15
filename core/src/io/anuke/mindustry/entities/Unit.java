@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.traits.*;
 import io.anuke.mindustry.game.Team;
@@ -100,6 +101,10 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     public void damage(float amount){
         super.damage(calculateDamage(amount));
         hitTime = hitDuration;
+
+        if (team == Team.themass) {
+            MassAI.onDamage();
+        }
     }
 
     @Override

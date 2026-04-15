@@ -7,38 +7,60 @@ import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.DistributionBlocks;
 import io.anuke.mindustry.content.blocks.ProductionBlocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
-import io.anuke.mindustry.game.EventType;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.content.blocks.UnitBlocks;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.content.blocks.TurretBlocks;
+import io.anuke.mindustry.type.AmmoEntry;
+import io.anuke.mindustry.type.AmmoType;
+import io.anuke.mindustry.world.blocks.defense.turrets.ItemTurret;
+import io.anuke.mindustry.world.blocks.defense.turrets.Turret.TurretEntity;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Timers;
+import io.anuke.mindustry.entities.units.UnitCommand;
+import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.entities.units.BaseUnit;
+import com.badlogic.gdx.math.Rectangle;
+import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
 import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.world;
-/* TODO make them spawn Units,
+import static io.anuke.mindustry.Vars.unitGroups;
+/* TODO
     Make them more aggressive - (add vein like system that goes directly to enemy blocks and damage them)
-    Finish the Mass Like buildings (mostly looking like the The Flesh That Hates mod from MC)
-    Make them spawn turrets when they are under attack - add a trySpawnTurret, also does it randomly
-    make them randomly spawn turrets
-    Their Units should Defend the Hive Cores - command blocks have retreat / attack / patrol setting my idea is to make the enemy cores run this
-    Add Grace time
-    Make them have more units, turrets, and ore multiplier by difficulty
+   make them spawn Units, done
+   Finish the Mass Like buildings (mostly looking like the The Flesh That Hates mod from MC) done, thx t
+   Make them spawn turrets when they are under attack - add a trySpawnTurret done, thank to good
+   make them randomly spawn turrets done
+   Their Units should Defend the Hive Cores - command blocks have retreat / attack / patrol setting my idea is to make the enemy cores run this done
+   Add Grace time done (unfinished for hive spawners)
+   done
 */
 public class MassAI {
     private static ObjectSet<Tile> initializedCores = new ObjectSet<>();
     private static Array<BuildingLine> activeLines = new Array<>();
     private static Array<SubSection> activeSubsections = new Array<>();
     private static float spawnTimer = 0;
+    private static float turretTimer = 0;
+    private static float nextTurretTime = 0;
+    private static float damageTurretTimer = 0;
+    private static float nextDamageTurretTime = 0;
+    private static Array<PendingBuild> pendingBuilds = new Array<>();
     private static final Item[] targetOres = {Items.scrap, Items.lead, Items.copper, Items.coal, Items.titanium, Items.thorium, Items.chromium};
     private static final int[] oreLimits = {6, 6, 6, 5, 4, 4, 4};
     private static int[] oreBoosts = new int[7];
     private static ObjectMap<Tile, Boolean> coreExpanded = new ObjectMap<>();
+    private static UnitCommand currentCommand = UnitCommand.patrol;
+    private static float commandTimer = 0;
+    private static float enemyNearbyTimer = 0;
+    private static Rectangle rect = new Rectangle();
+    private static boolean enemyNearby = false;
 
     static {
         Events.on(WorldLoadEvent.class, event -> {
@@ -47,8 +69,54 @@ public class MassAI {
             activeSubsections.clear();
             coreExpanded.clear();
             spawnTimer = 0;
+            turretTimer = 0;
+            damageTurretTimer = 0;
+            nextDamageTurretTime = 0;
+            pendingBuilds.clear();
+            nextTurretTime = Mathf.random(15f, 30f) * 60f;
             for (int i = 0; i < oreBoosts.length; i++) oreBoosts[i] = 0;
+            currentCommand = UnitCommand.patrol;
+            commandTimer = 0;
+            enemyNearbyTimer = 0;
+            enemyNearby = false;
         });
+    }
+
+    private static int countTurrets(boolean air) {
+        int count = 0;
+        Team massTeam = Team.themass;
+        for (int x = 0; x < world.width(); x++) {
+            for (int y = 0; y < world.height(); y++) {
+                Tile tile = world.tile(x, y);
+                if (tile != null && tile.getTeam() == massTeam) {
+                    Block block = tile.block();
+                    if (air) {
+                        if (block == TurretBlocks.scatter || block == TurretBlocks.cyclone) {
+                            count++;
+                        }
+                    } else {
+                        if (block == TurretBlocks.duo || block == TurretBlocks.salvo || 
+                            block == TurretBlocks.ripple || block == TurretBlocks.fuse) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    private static int countNearbyCores(Tile near) {
+        int count = 0;
+        Team massTeam = Team.themass;
+        ObjectSet<Tile> cores = Vars.state.teams.get(massTeam).cores;
+        float radius = 40; // in tiles
+        for (Tile core : cores) {
+            if (Mathf.dst(core.x - near.x, core.y - near.y) <= radius) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public static void update() {
@@ -66,7 +134,7 @@ public class MassAI {
             }
         }
 
-        // Remove lines belonging to destroyed cores
+        // Remove lines belonging to destroyed cores btw some line will keep respawning after the core is destroyed, for this destroy all cores/hives
         for(int i = activeLines.size - 1; i >= 0; i--){
             if(!cores.contains(activeLines.get(i).core)){
                 activeLines.removeIndex(i);
@@ -86,6 +154,24 @@ public class MassAI {
         }
 
         spawnTimer += Timers.delta();
+        turretTimer += Timers.delta();
+        damageTurretTimer += Timers.delta();
+
+        for (int i = pendingBuilds.size - 1; i >= 0; i--) {
+            PendingBuild build = pendingBuilds.get(i);
+            build.timer += Timers.delta();
+            if (build.timer >= build.delay) {
+                build.place();
+                pendingBuilds.removeIndex(i);
+            }
+        }
+
+        if (turretTimer >= nextTurretTime) {
+            turretTimer = 0;
+            nextTurretTime = Mathf.random(15f, 30f) * 60f;
+            trySpawnTurret(false, Mathf.chance(0.3), 0, 0);
+        }
+
         if (spawnTimer >= 5f * 60f) {
             spawnTimer = 0;
             trySpawnSubsection();
@@ -100,6 +186,228 @@ public class MassAI {
                 activeSubsections.removeIndex(i);
             }
         }
+
+        // MY LIFE FOR AIUR
+        // command system this to the units attack, patrol hives, attack after minutes from the world loaded, patrol when enemies are nearby the hives and attack again if there is no enemies near
+        if (cores.size == 0) {
+            currentCommand = UnitCommand.retreat;
+        } else {
+            commandTimer += Timers.delta();
+
+            boolean foundEnemy = false;
+            for (Tile core : cores) {
+                rect.setSize(200f * 2f).setCenter(core.worldx(), core.worldy());
+                enemyNearby = false;
+                Units.getNearbyEnemies(Team.themass, rect, u -> enemyNearby = true);
+                if (enemyNearby) {
+                    foundEnemy = true;
+                    break;
+                }
+            }
+
+            if (foundEnemy) {
+                currentCommand = UnitCommand.patrol;
+                enemyNearbyTimer = 0;
+            } else if (currentCommand == UnitCommand.patrol) {
+                enemyNearbyTimer += Timers.delta();
+                // after 15-30 seconds with no enemies they will command attack AND command if the initial grace period is over
+                // done remove grace time if you attack them
+                if (enemyNearbyTimer >= Mathf.random(15f, 30f) * 60f && !isGracePeriod()) {
+                    currentCommand = UnitCommand.attack;
+                }
+            } else if (!isGracePeriod() && currentCommand != UnitCommand.attack) {
+                currentCommand = UnitCommand.attack;
+            }
+        }
+
+        for (BaseUnit unit : unitGroups[Team.themass.ordinal()].all()) {
+            if (unit.getCommand() != currentCommand) {
+                unit.onCommand(currentCommand);
+            }
+        }
+    }
+
+    public static void onDamage() {
+        float grace = getGraceTime();
+        if (commandTimer < grace) {
+            commandTimer = grace;
+        }
+    }
+
+    public static float getGraceTime() {
+        if (Vars.state == null || Vars.state.difficulty == null) return 5f * 60f * 60f;
+        
+        float minutes = 5f;
+        switch (Vars.state.difficulty) {
+            case training: minutes = 10f; break;
+            case easy: minutes = 7f; break;
+            case normal: minutes = 5f; break;
+            case hard: minutes = 3f; break;
+            case insane: minutes = 1f; break;
+            case eradication: minutes = 0.5f; break;
+        }
+        return minutes * 60f * 60f;
+    }
+
+    public static boolean isGracePeriod() {
+        return commandTimer < getGraceTime();
+    }
+
+    public static void trySpawnTurret(boolean fromDamage, boolean targetAir, float targetX, float targetY) {
+        if (fromDamage && damageTurretTimer < nextDamageTurretTime) return;
+
+        Team massTeam = Team.themass;
+        ObjectSet<Tile> cores = Vars.state.teams.get(massTeam).cores;
+        if (cores.size == 0) return;
+
+        // determine which turret to spawn based on resources in the nearest core, it will always choose the most lowcost one and efficient against the target
+        // if unit is aerial will spawn turrets that targets air, same if the target is ground unit
+        Tile checkTile = fromDamage ? world.tile((int)(targetX / Vars.tilesize), (int)(targetY / Vars.tilesize)) : cores.first();
+        if (checkTile == null) checkTile = cores.first();
+        Tile nearestCore = findClosestCore(checkTile, massTeam);
+        if (nearestCore == null) return;
+
+        if (!fromDamage) {
+            int coreCount = countNearbyCores(nearestCore);
+            int limit = 10 * Math.max(1, coreCount);
+            if (countTurrets(targetAir) >= limit) return;
+        }
+
+        ItemModule items = nearestCore.entity.items;
+
+        Block turretBlock = TurretBlocks.duo;
+        if (targetAir) {
+            if (items.has(Items.thorium, 10) && items.has(Items.titanium, 10)) {
+                turretBlock = TurretBlocks.cyclone;
+            } else if (items.has(Items.scrap, 5)) {
+                turretBlock = TurretBlocks.scatter;
+            }
+        } else {
+            if (items.has(Items.chromium, 7) && items.has(Items.thorium, 7)) {
+                turretBlock = TurretBlocks.ripple;
+            } else if (items.has(Items.thorium, 6)) {
+                turretBlock = TurretBlocks.fuse;
+            } else if (items.has(Items.titanium, 5)) {
+                turretBlock = TurretBlocks.salvo;
+            }
+        }
+
+        int size = turretBlock.size;
+
+        // checks spawns
+        Array<Tile> potentialBases = new Array<>();
+        if (fromDamage) {
+            int rx = (int)(targetX / Vars.tilesize);
+            int ry = (int)(targetY / Vars.tilesize);
+            int range = 10;
+            for (int x = -range; x <= range; x++) {
+                for (int y = -range; y <= range; y++) {
+                    Tile t = world.tile(rx + x, ry + y);
+                    if (t != null && t.getTeam() == massTeam && t.block() != Blocks.air) {
+                        potentialBases.add(t);
+                    }
+                }
+            }
+        }
+        
+        if (potentialBases.size == 0) {
+            for (Tile core : cores) potentialBases.add(core);
+            for (int i = 0; i < Math.min(activeLines.size, 10); i++) {
+                BuildingLine line = activeLines.random();
+                if (line.tiles.size > 0) potentialBases.add(line.tiles.random().tile);
+            }
+        }
+
+        if (potentialBases.size == 0) return;
+
+        for (int i = 0; i < 20; i++) {
+            Tile base = potentialBases.random();
+            int rotation = Mathf.random(3);
+            int offset = 2 + (size / 2);
+            Tile target = world.tile(base.x + Geometry.d4[rotation].x * offset, base.y + Geometry.d4[rotation].y * offset);
+
+            if (target != null && isAreaClear(target, size) && !isNearEnemyCore(target)) {
+                if (fromDamage) {
+                    float dist = Mathf.dst(target.worldx() - targetX, target.worldy() - targetY);
+                    if (dist > turretBlock.viewRange) continue;
+                }
+
+                if (turretBlock == TurretBlocks.ripple) {
+                    items.remove(Items.chromium, 7);
+                    items.remove(Items.thorium, 7);
+                } else if (turretBlock == TurretBlocks.fuse) {
+                    items.remove(Items.thorium, 6);
+                } else if (turretBlock == TurretBlocks.salvo) {
+                    items.remove(Items.titanium, 5);
+                } else if (turretBlock == TurretBlocks.scatter) {
+                    items.remove(Items.scrap, 5);
+                } else if (turretBlock == TurretBlocks.cyclone) {
+                    items.remove(Items.thorium, 10);
+                    items.remove(Items.titanium, 10);
+                }
+
+                Array<Tile> veinPath = findPathToAnyLine(target);
+                if (veinPath != null) {
+                    // start from the building line(aka vein lines) and build towards the turret (first tile)
+                    for (int j = veinPath.size - 1; j >= 0; j--) {
+                        Tile vt = veinPath.get(j);
+                        if (vt.block() == Blocks.air) {
+                            //point towards the next tile in the sequence from line to turret
+                            // If j is 0, it points to the turret target(unit/player i think if not I'm crazy)
+                            Tile next = (j == 0) ? target : veinPath.get(j - 1);
+                            
+                            //pathfinds the vein from the lines to the turret placement location
+                            float delay = (veinPath.size - j) * 5f;
+                            pendingBuilds.add(new PendingBuild(vt, DistributionBlocks.veins, massTeam, vt.relativeTo(next.x, next.y), delay));
+                        }
+                    }
+                }
+
+                float turretDelay = (veinPath != null ? veinPath.size * 5f : 0) + 10f;
+                pendingBuilds.add(new PendingBuild(target, turretBlock, massTeam, 0, turretDelay, fromDamage, targetX, targetY));
+                
+                if (fromDamage) {
+                    damageTurretTimer = 0;
+                    nextDamageTurretTime = Mathf.random(10f, 35f) * 60f;
+                }
+
+                return;
+            }
+        }
+    }
+
+    private static boolean isAreaClear(Tile center, int size) {
+        int offset = -(size - 1) / 2;
+        for (int dx = 0; dx < size; dx++) {
+            for (int dy = 0; dy < size; dy++) {
+                Tile t = world.tile(center.x + offset + dx, center.y + offset + dy);
+                if (t == null || t.block() != Blocks.air || t.floor().isLiquid || !t.floor().placeableOn) {
+                    return false;
+                }
+
+                // check if there is no line or building, THIS TO PREVENT TURRETS SPAWNING ON LINES AND CUTTING THE FULL FLOW OF RESOURCES
+                for (BuildingLine line : activeLines) {
+                    if (line.startX == t.x && line.startY == t.y) return false;
+                    for (PathTile pt : line.tiles) {
+                        if (pt.tile == t) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static Tile findClosestCore(Tile tile, Team team) {
+        Tile closest = null;
+        float minDst = Float.MAX_VALUE;
+        for (Tile core : Vars.state.teams.get(team).cores) {
+            float dst = Mathf.dst(tile.x - core.x, tile.y - core.y);
+            if (dst < minDst) {
+                minDst = dst;
+                closest = core;
+            }
+        }
+        return closest;
     }
 
     private static void trySpawnSubsection() {
@@ -222,7 +530,7 @@ public class MassAI {
     }
 
     private static boolean tryExpandCore(Tile core, Array<BuildingLine> lines) {
-        if (!core.entity.items.has(Items.copper, 20) || !core.entity.items.has(Items.lead, 20)) return false; // they will consume more,
+        if (!core.entity.items.has(Items.corruptedbiomatter, 15)) return false; // biomatter is more logic
 
         // Shuffle lines to pick a random one that works
         // They still spawning the core in random places so this is mostly useless
@@ -455,8 +763,8 @@ public class MassAI {
     private static boolean isNearEnemyCore(Tile tile) {
         if (Vars.state.teams == null) return false;
         float radius = Vars.state.mode.enemyCoreBuildRadius;
-        for (Team team : Team.values()) {
-            if (team == Team.themass) continue;
+        for (Team team : Team.all) {
+            if (team == Team.themass || team == Team.none) continue;
             ObjectSet<Tile> cores = Vars.state.teams.get(team).cores;
             if (cores == null) continue;
             for (Tile core : cores) {
@@ -726,7 +1034,7 @@ public class MassAI {
         void buildNext() {
             if (pathBuffer.size > 0) {
                 Tile next = pathBuffer.removeIndex(0);
-                if (next.block() == Blocks.air && !isNearEnemyCore(next)) {
+                if ((next.block() == Blocks.air || (next.block() instanceof Rock)) && !isNearEnemyCore(next)) {
                     Tile prev = tiles.size == 0 ? world.tile(startX - dx, startY - dy) : tiles.peek().tile;
                     int rot = next.relativeTo(prev.x, prev.y);
                     next.setBlock(DistributionBlocks.veins, Team.themass, rot);
@@ -758,7 +1066,7 @@ public class MassAI {
                 return;
             }
 
-            if (tile.block() == Blocks.air) {
+            if (tile.block() == Blocks.air || (tile.block() instanceof Rock)) {
                 tile.setBlock(DistributionBlocks.veins, Team.themass, rotation);
                 tiles.add(new PathTile(tile, rotation));
             } else if (tile.block().solid) {
@@ -852,6 +1160,71 @@ public class MassAI {
         PathTile(Tile tile, int rotation) {
             this.tile = tile;
             this.rotation = rotation;
+        }
+    }
+    // I think I should use this for more stuff but I'm so lazy to refactor the full code
+    private static class PendingBuild {
+        Tile tile;
+        Block block;
+        Team team;
+        int rotation;
+        float delay;
+        float timer;
+        boolean fromDamage;
+        float targetX, targetY;
+
+        PendingBuild(Tile tile, Block block, Team team, int rotation, float delay) {
+            this(tile, block, team, rotation, delay, false, 0, 0);
+        }
+
+        PendingBuild(Tile tile, Block block, Team team, int rotation, float delay, boolean fromDamage, float targetX, float targetY) {
+            this.tile = tile;
+            this.block = block;
+            this.team = team;
+            this.rotation = rotation;
+            this.delay = delay;
+            this.fromDamage = fromDamage;
+            this.targetX = targetX;
+            this.targetY = targetY;
+        }
+
+        void place() {
+            if (tile == null) return;
+            // does something I forgot
+            world.setBlock(tile, block, team);
+            if (rotation != 0) tile.setRotation((byte) rotation);
+
+            if (tile.entity instanceof TurretEntity) {
+                TurretEntity entity = (TurretEntity) tile.entity;
+                if (fromDamage) {
+                    entity.rotation = tile.angleTo(targetX, targetY);
+                } else {
+                    Tile enemyCore = null;
+                    float minDst = Float.MAX_VALUE;
+                    for (Team t : Team.all) {
+                        if (t != team && t != Team.none) {
+                            for (Tile core : Vars.state.teams.get(t).cores) {
+                                float dst = Mathf.dst(tile.x - core.x, tile.y - core.y);
+                                if (dst < minDst) {
+                                    minDst = dst;
+                                    enemyCore = core;
+                                }
+                            }
+                        }
+                    }
+                    if (enemyCore != null) entity.rotation = tile.angleTo(enemyCore);
+                }
+
+                if (block instanceof ItemTurret) {
+                    ItemTurret it = (ItemTurret) block;
+                    AmmoType[] types = it.getAmmoTypes();
+                    if (types != null && types.length > 0) {
+                        AmmoType type = types[0];
+                        entity.ammo.add(new AmmoEntry(type, 20));
+                        entity.totalAmmo = 20;
+                    }
+                }
+            }
         }
     }
 }

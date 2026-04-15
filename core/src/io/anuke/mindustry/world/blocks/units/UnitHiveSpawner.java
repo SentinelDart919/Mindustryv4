@@ -2,6 +2,7 @@ package io.anuke.mindustry.world.blocks.units;
 
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
@@ -58,7 +59,7 @@ public class UnitHiveSpawner extends Block {
     @Override
     public void update(Tile tile) {
         UnitHiveSpawnerEntity entity = tile.entity();
-        if(Vars.state.teams.get(tile.getTeam()).cores.isEmpty()) return;
+        if(Vars.state.teams.get(tile.getTeam()).cores.isEmpty() || MassAI.isGracePeriod()) return;
         Tile core = Geometry.findClosest(tile.drawx(), tile.drawy(), Vars.state.teams.get(tile.getTeam()).cores);
         if(core == null) return;
         entity.spawnTimer += Timers.delta();

@@ -1,15 +1,18 @@
 package io.anuke.mindustry.entities;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.bullet.Bullet;
+import io.anuke.mindustry.entities.effect.ScorchDecal;
 import io.anuke.mindustry.entities.traits.TargetTrait;
 import io.anuke.mindustry.entities.units.types.BlockDefenseDrone;
 import io.anuke.mindustry.game.Team;
@@ -174,6 +177,15 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
                 world.indexer.notifyTileDamaged(this);
             }
 
+            if(tile.getTeam() == Team.themass){
+                MassAI.onDamage();
+
+                if(Mathf.chance(0.4)){
+                    boolean air = lastDamager instanceof Unit && ((Unit) lastDamager).isFlying();
+                    MassAI.trySpawnTurret(true, air, lastDamager != null ? lastDamager.getX() : tile.worldx(), lastDamager != null ? lastDamager.getY() : tile.worldy());
+                }
+            }
+
             if(tile.block().defenseDrones){
                 for(int i = defenseDronesCount; i < tile.block().maxDefenseDrones; i++){
                     BlockDefenseDrone drone = (BlockDefenseDrone) tile.block().defenseDroneType.create(tile.getTeam());
@@ -271,6 +283,10 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
         if(!dead){
             dead = true;
             Block block = tile.block();
+
+            if(block.living){
+                ScorchDecal.create(x, y, Color.valueOf("2b0000"));
+            }
 
             block.onDestroyed(tile);
             world.removeBlock(tile);

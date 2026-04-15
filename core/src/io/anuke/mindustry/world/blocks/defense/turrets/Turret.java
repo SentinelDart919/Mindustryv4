@@ -64,8 +64,8 @@ public abstract class Turret extends Block{
     protected float shootCone = 8f;
     protected float shootShake = 0f;
     protected float xRand = 0f;
-    protected boolean targetAir = true;
-    protected boolean targetGround = true;
+    public boolean targetAir = true;
+    public boolean targetGround = true;
     public Sound shootSound;
     public String shootSoundName;
 
