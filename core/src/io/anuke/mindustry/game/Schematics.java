@@ -52,6 +52,13 @@ public class Schematics {
         }
     }
 
+    public void remove(Schematic schem) {
+        all.removeValue(schem, true);
+        if (schem.file != null && schem.file.exists()) {
+            schem.file.delete();
+        }
+    }
+
     public void place(Schematic schem, int x, int y, Team team) {
         for (Schematic.Stile tile : schem.tiles) {
             if (tile.block == null) continue;

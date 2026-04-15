@@ -25,7 +25,14 @@ public class SchematicsDialog extends FloatingDialog {
                 control.input(0).schematic = s.copy();
                 control.input(0).mode = PlaceMode.schematic;
                 hide();
-            }).size(400, 50).pad(4).row();
+            }).size(400, 50).pad(4);
+            
+            table.addImageButton("icon-trash", "clear", 40, () -> {
+                ui.showConfirm("Delete Schematic", "Are you sure you want to delete '" + s.name() + "'?", () -> {
+                    schematics.remove(s);
+                    rebuild();
+                });
+            }).size(50).pad(4).row();
         }
         
         content().add(pane);
