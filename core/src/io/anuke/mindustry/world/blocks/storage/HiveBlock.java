@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.storage;
 
+import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Unit;
@@ -57,7 +58,7 @@ public class HiveBlock extends CoreBlock {
 
             Shaders.build.region = region;
             Shaders.build.progress = progress;
-            Shaders.build.color.set(Palette.accent);
+            Shaders.build.color.set(Color.valueOf("d30000"));
             Shaders.build.time = -time / 10f;
 
             Graphics.shader(Shaders.build, false);
@@ -65,7 +66,7 @@ public class HiveBlock extends CoreBlock {
             Draw.rect(region, tile.drawx(), tile.drawy());
             Graphics.shader();
 
-            Draw.color(Palette.accent);
+            Draw.color(Color.valueOf("d30000"));
 
             Lines.lineAngleCenter(
                     tile.drawx() + Mathf.sin(time, 6f, Vars.tilesize / 3f * size),
