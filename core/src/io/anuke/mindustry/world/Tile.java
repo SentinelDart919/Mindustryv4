@@ -11,6 +11,7 @@ import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.mindustry.world.blocks.Floor;
+import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.mindustry.world.modules.ConsumeModule;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.modules.LiquidModule;
@@ -196,13 +197,17 @@ public class Tile implements PosTrait, TargetTrait{
             setFloor(floor.infectedVariant);
         }
 
-        Timers.run(60f * (2f + Mathf.random(2f)), () -> {
-            int amount = Mathf.random(2, 8);
+        if(wall instanceof Rock && ((Rock)wall).infectedVariant != null){
+            setBlock(((Rock)wall).infectedVariant);
+        }
+
+        Timers.run(60f * (4f + Mathf.random(6f)), () -> {
+            int amount = Mathf.random(1, 3);
             for(int i = 0; i < 8; i++){
                 if(Mathf.random(8 - i - 1) < amount){
                     amount--;
                     Tile other = getNearby(Geometry.d8[i]);
-                    if(other != null && !other.isInfected && other.floor().infectedVariant != null){
+                    if(other != null && !other.isInfected && (other.floor().infectedVariant != null || (other.wall instanceof Rock && ((Rock)other.wall).infectedVariant != null))){
                         other.infect();
                     }
                 }

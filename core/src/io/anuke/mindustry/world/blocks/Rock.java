@@ -9,6 +9,7 @@ import io.anuke.ucore.util.Mathf;
 public class Rock extends Block{
     protected TextureRegion[] shadowRegions, regions;
     protected int variants;
+    public Rock infectedVariant;
 
     public Rock(String name){
         super(name);
