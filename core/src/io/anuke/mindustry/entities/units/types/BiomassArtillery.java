@@ -2,13 +2,13 @@ package io.anuke.mindustry.entities.units.types;
 
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.entities.Units;
-import io.anuke.mindustry.entities.units.BiomassUnit;
+import io.anuke.mindustry.entities.units.BiomassGroundUnit;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
-public class BiomassArtillery extends BiomassUnit{
+public class BiomassArtillery extends BiomassGroundUnit {
 
     @Override
     public void draw(){

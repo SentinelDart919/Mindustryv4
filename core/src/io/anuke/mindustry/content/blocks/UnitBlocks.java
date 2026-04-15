@@ -17,7 +17,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         daggerFactory, titanFactory, fortressFactory,
             crawlerFactory, bombdroneFactory,
         reconstructor, highTierFactory, repairPoint, commandCenter,
-            hiveSpawner, airHiveSpawner;
+            hiveSpawner, airHiveSpawner, heavyHiveSpawner;
 
     @Override
     public void load(){
@@ -261,6 +261,9 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.evilTanky,
                     UnitTypes.explosiveBiomass
             };
+            shadow = "hive-spawner-shadow";
+            minSpawnTimer = 15f;
+            maxSpawnTimer = 45f;
         }};
         airHiveSpawner = new UnitHiveSpawner("air-hive-spawner"){{
             size = 2;
@@ -278,6 +281,30 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.evilWraith,
                     UnitTypes.evilBombDrone
             };
+            shadow = "air-hive-spawnershadow";
+            minSpawnTimer = 15f;
+            maxSpawnTimer = 45f;
+        }};
+        heavyHiveSpawner = new UnitHiveSpawner("heavy-hive-spawner"){{
+            size = 3;
+            living = true;
+            consumerStacks = new ItemStack[][]{
+                    new ItemStack[]{
+                            new ItemStack(Items.corruptedbiomatter, 25),
+                            new ItemStack(Items.chromium, 25),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.corruptedbiomatter, 5),
+                            new ItemStack(Items.thorium, 10),
+                    }
+            };
+            types = new UnitType[]{
+                    UnitTypes.exterminatorBiomass,
+                    UnitTypes.artilleryBiomass
+            };
+            shadow = "heavy-hive-spawnershadow";
+            minSpawnTimer = 30f;
+            maxSpawnTimer = 90f;
         }};
     }
 }

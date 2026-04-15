@@ -6,8 +6,7 @@ import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
-public class BiomassUnit extends GroundUnit{
-
+public class BiomassAirUnit extends FlyingUnit{
     @Override
     public void drawStats(){
         float hf = healthf();

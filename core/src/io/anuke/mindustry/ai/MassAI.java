@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.*;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
+import io.anuke.mindustry.content.blocks.CraftingBlocks;
 import io.anuke.mindustry.content.blocks.DistributionBlocks;
 import io.anuke.mindustry.content.blocks.ProductionBlocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
@@ -177,6 +178,7 @@ public class MassAI {
             trySpawnSubsection();
             checkCoreExpansion();
             trySpawnSpawners();
+            trySpawnBiomassGenerators();
         }
 
         for (int i = activeSubsections.size - 1; i >= 0; i--) {
@@ -443,12 +445,91 @@ public class MassAI {
         }
     }
 
+    private static void trySpawnBiomassGenerators() {
+        int coreCount = Vars.state.teams.get(Team.themass).cores.size;
+        int baseLimit = 3;  // limit increases per active hives/cores as uusal
+        if (Vars.state.difficulty != null) {
+            switch (Vars.state.difficulty) {
+                case training: baseLimit = 1; break;
+                case easy: baseLimit = 2; break;
+                case normal: baseLimit = 3; break;
+                case hard: baseLimit = 4; break;
+                case insane: baseLimit = 6; break;
+                case eradication: baseLimit = 10; break;
+            }
+        }
+
+        int limit = baseLimit * coreCount;
+
+        int count = 0;
+        for (SubSection s : activeSubsections) {
+            if (s.targetBlock == CraftingBlocks.biomassGenerator) {
+                count++;
+            }
+        }
+
+        if (count < limit) {
+            placeBiomassGenerator();
+        }
+    }
+
+    private static void placeBiomassGenerator() {
+        IntSet infected = Vars.infection.getInfectedQueue();
+        if (infected.size == 0) return;
+
+        // makes the thing spawn in infected tiles
+        IntSet.IntSetIterator it = infected.iterator();
+        int size = infected.size;
+        for (int i = 0; i < 50; i++) {
+            int targetIdx = Mathf.random(size - 1);
+            int packed = -1;
+            it.reset();
+            for(int j = 0; j <= targetIdx && it.hasNext; j++) {
+                packed = it.next();
+            }
+
+            if (packed == -1) continue;
+            Tile target = world.tile(packed);
+
+            if (target != null && target.block() == Blocks.air && target.floor().placeableOn && !target.floor().isLiquid && target.isInfected) {
+                boolean occluded = false;
+                int bsize = CraftingBlocks.biomassGenerator.size;
+                int offset = -(bsize - 1) / 2;
+
+                for (int dx = 0; dx < bsize; dx++) {
+                    for (int dy = 0; dy < bsize; dy++) {
+                        Tile t = world.tile(target.x + offset + dx, target.y + offset + dy);
+                        if (t == null || t.block() != Blocks.air || t.floor().isLiquid || !t.floor().placeableOn || !t.isInfected) {
+                            occluded = true;
+                            break;
+                        }
+                    }
+                    if (occluded) break;
+                }
+
+                if (!occluded) {
+                    Array<Tile> path = findPathToAnyLine(target);
+                    if (path != null && path.size > 1) {
+                        Tile start = path.get(0);
+                        Array<Tile> p = new Array<>();
+                        for (int k = 1; k < path.size; k++) {
+                            p.add(path.get(k));
+                        }
+                        activeSubsections.add(new SubSection(start, target, CraftingBlocks.biomassGenerator, p));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     private static void trySpawnSpawners() {
         for (Tile core : Vars.state.teams.get(Team.themass).cores) {
             ItemModule items = core.entity.items;
 
             int hiveSpawners = 0;
             int airSpawners = 0;
+            int heavySpawners = 0;
             int radius = 30;
 
             // count existing spawners near the core
@@ -458,6 +539,7 @@ public class MassAI {
                     if (t != null && t.getTeam() == Team.themass) {
                         if (t.block() == UnitBlocks.hiveSpawner) hiveSpawners++;
                         else if (t.block() == UnitBlocks.airHiveSpawner) airSpawners++;
+                        else if (t.block() == UnitBlocks.heavyHiveSpawner) heavySpawners++;
                     }
                 }
             }
@@ -471,6 +553,12 @@ public class MassAI {
             if (airSpawners < 10 && items.has(Items.lead, 10)) {
                 if (placeRandomSpawner(core, UnitBlocks.airHiveSpawner, radius)) {
                     items.remove(Items.lead, 10);
+                }
+            }
+
+            if (heavySpawners < 2 && items.has(Items.corruptedbiomatter, 25)) {
+                if (placeRandomSpawner(core, UnitBlocks.heavyHiveSpawner, radius)) {
+                    items.remove(Items.corruptedbiomatter, 25);
                 }
             }
         }
@@ -530,7 +618,7 @@ public class MassAI {
     }
 
     private static boolean tryExpandCore(Tile core, Array<BuildingLine> lines) {
-        if (!core.entity.items.has(Items.corruptedbiomatter, 15)) return false; // biomatter is more logic
+        if (!core.entity.items.has(Items.corruptedbiomatter, 20)) return false; // biomatter is more logic
 
         // Shuffle lines to pick a random one that works
         // They still spawning the core in random places so this is mostly useless
@@ -825,6 +913,7 @@ public class MassAI {
     private static class SubSection {
         Tile startTile;
         final Tile targetTile;
+        final Block targetBlock;
         final Item targetOre;
         final Array<Tile> path;
         int progress = 0;
@@ -835,8 +924,17 @@ public class MassAI {
         boolean destroying = false;
 
         SubSection(Tile startTile, Tile targetTile, Item targetOre, Array<Tile> path) {
+            this(startTile, targetTile, ProductionBlocks.biomassBulb, targetOre, path);
+        }
+
+        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Array<Tile> path) {
+            this(startTile, targetTile, targetBlock, null, path);
+        }
+
+        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Item targetOre, Array<Tile> path) {
             this.startTile = startTile;
             this.targetTile = targetTile;
+            this.targetBlock = targetBlock;
             this.targetOre = targetOre;
             this.path = path;
         }
@@ -854,17 +952,17 @@ public class MassAI {
             }
 
             if (drillPlaced) {
-                if (targetTile.block() != ProductionBlocks.biomassBulb || targetTile.getTeam() != Team.themass) {
-                    boostOre(targetOre);
+                if (targetTile.block() != targetBlock || targetTile.getTeam() != Team.themass) {
+                    if (targetOre != null) boostOre(targetOre);
                     failed = true;
                     return;
                 }
 
-                // check if drill is stuck
+                // check if it's stuck or (full capacity, biomass generator is considered stuck if capacity = 2)
                 if (targetTile.entity != null && targetTile.entity.items.total() >= targetTile.block().itemCapacity) {
                     stuckTimer += Timers.delta();
                     if (stuckTimer >= 15f * 60f) { // 15 seconds
-                        // try to reconnect drill
+                        // try to reconnect
                         Array<Tile> newPath = findPathToAnyLine(targetTile);
                         if (newPath != null && newPath.size > 1) {
                             this.startTile = newPath.get(0);
@@ -876,9 +974,9 @@ public class MassAI {
                             drillPlaced = false;
                             stuckTimer = 0;
                         } else {
-                            // FAILED to reconnect -> destroy the drill
+                            // FAILED to reconnect -> destroy
                             destroying = true;
-                            boostOre(targetOre);
+                            if (targetOre != null) boostOre(targetOre);
                         }
                     }
                 } else {
@@ -906,13 +1004,18 @@ public class MassAI {
                         failed = true;
                     }
                 } else {
-                    if (isValid2x2(targetTile.x, targetTile.y, targetOre)) {
-                        Vars.world.setBlock(targetTile, ProductionBlocks.biomassBulb, Team.themass);
-                        drillPlaced = true;
-                    } else if (targetTile.block() == ProductionBlocks.biomassBulb && targetTile.getTeam() == Team.themass) {
-                        drillPlaced = true; // reconnect the drill
+                    if (targetBlock == ProductionBlocks.biomassBulb) {
+                        if (isValid2x2(targetTile.x, targetTile.y, targetOre)) {
+                            Vars.world.setBlock(targetTile, ProductionBlocks.biomassBulb, Team.themass);
+                            drillPlaced = true;
+                        } else if (targetTile.block() == ProductionBlocks.biomassBulb && targetTile.getTeam() == Team.themass) {
+                            drillPlaced = true; // reconnect the drill
+                        } else {
+                            failed = true;
+                        }
                     } else {
-                        failed = true;
+                        Vars.world.setBlock(targetTile, targetBlock, Team.themass);
+                        drillPlaced = true;
                     }
                 }
             }

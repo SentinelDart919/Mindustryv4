@@ -2,7 +2,7 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
-import io.anuke.mindustry.entities.units.BiomassUnit;
+import io.anuke.mindustry.entities.units.BiomassGroundUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
@@ -341,7 +341,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        explosiveBiomass = new UnitType("explosive-biomass", BiomassUnit.class, BiomassUnit::new){{
+        explosiveBiomass = new UnitType("explosive-biomass", BiomassGroundUnit.class, BiomassGroundUnit::new){{
             weapon = Weapons.kamikaze;
             maxVelocity = 1.25f;
             speed = 0.36f;
@@ -411,7 +411,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        exterminatorBiomass  = new UnitType("exterminator-biomass", BiomassUnit.class, BiomassUnit::new){{
+        exterminatorBiomass  = new UnitType("exterminator-biomass", BiomassGroundUnit.class, BiomassGroundUnit::new){{
             health = 3000;
             mass = 5f;
             hitsize = 20;

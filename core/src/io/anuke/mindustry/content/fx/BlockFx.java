@@ -20,7 +20,8 @@ public class BlockFx extends FxList implements ContentList{
     pulverize, pulverizeRed, pulverizeRedder, pulverizeSmall, pulverizeMedium, producesmoke, smeltsmoke, formsmoke, blastsmoke,
     lava, dooropen, doorclose, dooropenlarge, doorcloselarge, purify, purifyoil, purifystone, generate, mine, mineBig, mineHuge,
     smelt, teleportActivate, teleport, teleportOut, ripple, bubble, commandSend, healBlock, healBlockFull, healWaveMend, overdriveWave,
-    overdriveBlockFull, shieldBreak;
+    overdriveBlockFull, shieldBreak,
+    biomassSpore, biomassSmoke;
 
     @Override
     public void load(){
@@ -123,6 +124,13 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.reset();
             });
         });
+        biomassSmoke = new Effect(24, e -> {
+            Angles.randLenVectors(e.id, 8, 4f + e.fin() * 18f, (x, y) -> {
+                Draw.color(Color.valueOf("331616"), Color.valueOf("510f0f"), e.fin());
+                Fill.square(e.x + x, e.y + y, 1f + e.fout() * 3f, 45);
+                Draw.reset();
+            });
+        });
         smeltsmoke = new Effect(15, e -> {
             Angles.randLenVectors(e.id, 6, 4f + e.fin() * 5f, (x, y) -> {
                 Draw.color(Color.WHITE, e.color, e.fin());
@@ -149,6 +157,14 @@ public class BlockFx extends FxList implements ContentList{
             Angles.randLenVectors(e.id, 3, 1f + e.fin() * 10f, (x, y) -> {
                 float size = e.fslope() * 4f;
                 Draw.color(Color.ORANGE, Color.GRAY, e.fin());
+                Draw.rect("circle", e.x + x, e.y + y, size, size);
+                Draw.reset();
+            });
+        });
+        biomassSpore = new Effect(32, e -> {
+            Angles.randLenVectors(e.id, 5, 1f + e.fin() * 10f, (x, y) -> {
+                float size = e.fslope() * 4f;
+                Draw.color(Color.valueOf("b01616"), Color.valueOf("3a0000"), e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });

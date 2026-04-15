@@ -17,6 +17,9 @@ public class Recipes implements ContentList{
         //DEBUG
         new Recipe(effect, DebugBlocks.infectiontest).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.hiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, UnitBlocks.airHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, UnitBlocks.heavyHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(production, CraftingBlocks.biomassGenerator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(distribution, DistributionBlocks.veins).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, ProductionBlocks.biomassBulb).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, ProductionBlocks.corruptedcultivator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
