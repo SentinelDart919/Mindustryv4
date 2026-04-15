@@ -42,9 +42,11 @@ public class Weapon extends Content{
     /**visual weapon knockback.*/
     protected float recoil = 1.5f;
     /**shoot barrel y offset*/
-    protected float length = 3f;
+    public float length = 3f;
     /**shoot barrel x offset.*/
     public float width = 4f;
+    /**whether the weapon is mirrored on both sides*/
+    public boolean weaponMirror = true;
     /**fraction of velocity that is random*/
     protected float velocityRnd = 0f;
     /**whether to shoot the weapons in different arms one after another, rather than all at once*/
@@ -128,7 +130,7 @@ public class Weapon extends Content{
 
     public void update(ShooterTrait shooter, float pointerX, float pointerY){
         update(shooter, true, pointerX, pointerY);
-        update(shooter, false, pointerX, pointerY);
+        if(weaponMirror) update(shooter, false, pointerX, pointerY);
     }
 
     private void update(ShooterTrait shooter, boolean left, float pointerX, float pointerY){

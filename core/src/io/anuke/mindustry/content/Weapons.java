@@ -10,7 +10,8 @@ public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
     kamikaze, lichMissiles, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
-    debugtankturret;
+    debugtankturret,
+    artilleryBiomass, exterminatorweapon;// the mass
 
     @Override
     public void load(){
@@ -86,6 +87,7 @@ public class Weapons implements ContentList{
         shots = 16;
         spacing = 1f;
         velocityRnd = 0.2f;
+        width = 14f;
         roundrobin = true;
         ejectEffect = Fx.none;
         setShootSound("shootMissileSmall");
@@ -280,6 +282,32 @@ public class Weapons implements ContentList{
             ejectEffect = ShootFx.shellEjectMedium;
             ammo = AmmoTypes.unitArtillery;
             setShootSound("shootArtillery");
+        }};
+        artilleryBiomass = new Weapon("artillery-biomass"){{
+            length = 1f;
+            reload = 60f;
+            roundrobin = true;
+            recoil = 3.5f;
+            shake = 2f;
+            width = -4f;
+            length = 5.5f;
+            weaponMirror = false;
+            ejectEffect = Fx.none;
+            ammo = AmmoTypes.unitArtillery;
+            setShootSound("shootArtillery");
+        }};
+        exterminatorweapon = new Weapon("exterminator-weapon"){{
+            length = 8;
+            width = 17f;
+            length = 10f;
+            reload = 50f;
+            roundrobin = true;
+            recoil = 3f;
+            shake = 2f;
+            shots = 4;
+            spacing = 4f;
+            ejectEffect = Fx.none;
+            ammo = AmmoTypes.flakSurge;
         }};
     }
 
