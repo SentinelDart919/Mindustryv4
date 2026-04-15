@@ -27,10 +27,10 @@ public class BombDrone extends FlyingUnit {
 
         Draw.alpha(1f);
 
-        drawProp(-3.5f - Mathf.range(wobblyness),  3.45f + Mathf.range(wobblyness),  propRot) ;
-        drawProp(-3.5f - Mathf.range(wobblyness),  -3.45f - Mathf.range(wobblyness),  propRot);
-        drawProp( 3.5f + Mathf.range(wobblyness),  3.45f + Mathf.range(wobblyness), -propRot);
-        drawProp( 3.5f + Mathf.range(wobblyness), -3.45f - Mathf.range(wobblyness), -propRot);
+        drawProp(-3.5f,  3.45f,  propRot) ;
+        drawProp(-3.5f,  -3.45f,  propRot);
+        drawProp( 3.5f,  3.45f, -propRot);
+        drawProp( 3.5f, -3.45f , -propRot);
     }
 
     void drawProp(float localX, float localY, float spin){
