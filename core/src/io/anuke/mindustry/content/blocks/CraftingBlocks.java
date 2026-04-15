@@ -7,12 +7,17 @@ import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
+import io.anuke.ucore.core.Timers;
+import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.util.Mathf;
 
 public class CraftingBlocks extends BlockList implements ContentList{
     public static Block smelter, arcsmelter, denseAlloyKiln, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter, surgeAlloyCrucible,
             pyratiteMixer, blastMixer, coalcentrifuge,
-            cryofluidmixer, melter, scrapmelter, slag_centrifuge,separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator;
+            cryofluidmixer, melter, scrapmelter, slag_centrifuge,separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator,
+            biomassGenerator;
 
     @Override
     public void load(){
@@ -342,5 +347,28 @@ public class CraftingBlocks extends BlockList implements ContentList{
         incinerator = new Incinerator("incinerator"){{
             health = 90;
         }};
+        biomassGenerator = new GenericCrafter("biomass-generator"){{
+            itemCapacity = 2;
+            craftTime = 990;
+            hasItems = true;
+            output = Items.corruptedbiomatter;
+            size = 2;
+            shadow = "biomass-generatorshadow";
+            craftEffect = BlockFx.biomassSmoke;
+            updateEffect = BlockFx.biomassSpore;
+            setAmbientSound("none");
+        }
+            @Override
+            public boolean canPlaceOn(Tile tile) {
+                return tile != null && tile.isInfected;
+            }
+
+            @Override
+            public void draw(Tile tile) {
+                float pulse = 1f + Mathf.absin(Timers.time(), 10f, 0.15f);
+
+                Draw.rect(name(), tile.drawx(), tile.drawy(), pulse * size * 8f, pulse * size * 8f);
+            }
+        };
     }
 }
