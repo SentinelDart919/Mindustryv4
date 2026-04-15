@@ -2,6 +2,7 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
+import io.anuke.mindustry.entities.units.BiomassUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
@@ -15,7 +16,7 @@ public class UnitTypes implements ContentList{
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
         debugtank,
-        evilDraug, evilDagger, evilWraith, evilCrawler, evilBombDrone, evilTanky, evilChaosArray, evilSwarmDrone;
+        evilDraug, evilDagger, evilWraith, explosiveBiomass, evilBombDrone, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass; // the mass units btw
         /* TODO
             Add Units For Mass Team
             Air/Ground Kamikaze Unit, Miner Unit, Air/Ground Unit, Ground/Air Light Attack Unit, Ground Tanky Unit
@@ -307,7 +308,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
         // The Mass Units
-        evilDagger = new UnitType("evilDagger", Dagger.class, Dagger::new){{
+        evilDagger = new UnitType("evil-dagger", Dagger.class, Dagger::new){{
             maxVelocity = 1.1f;
             speed = 0.2f;
             drag = 0.4f;
@@ -323,7 +324,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilBombDrone = new UnitType("evilBomb_drone", BombDrone.class, BombDrone::new){{
+        evilBombDrone = new UnitType("evil-bomb_drone", BombDrone.class, BombDrone::new){{
             isFlying = true;
             weapon = Weapons.kamikaze;
             maxVelocity = 1.50f;
@@ -340,7 +341,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilCrawler = new UnitType("evilCrawler", Crawler.class, Crawler::new){{
+        explosiveBiomass = new UnitType("explosive-biomass", BiomassUnit.class, BiomassUnit::new){{
             weapon = Weapons.kamikaze;
             maxVelocity = 1.25f;
             speed = 0.36f;
@@ -349,6 +350,7 @@ public class UnitTypes implements ContentList{
             mass = 1.75f;
             health = 100f;
             spawnsInSiegeMode = false;
+            living = true;
         }
 
             @Override
@@ -356,7 +358,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilTanky = new UnitType("evilTanky", Titan.class, Titan::new){{
+        evilTanky = new UnitType("evil-tanky", Titan.class, Titan::new){{
             maxVelocity = 0.8f;
             speed = 0.18f;
             drag = 0.4f;
@@ -366,6 +368,7 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.flamethrower;
             health = 1280;
             spawnsInSiegeMode = false;
+            living = true;
         }
 
             @Override
@@ -373,7 +376,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilDraug = new UnitType("evilDraug", DroneMiner.class, DroneMiner::new){{
+        evilDraug = new UnitType("evil-draug", DroneMiner.class, DroneMiner::new){{
             weapon = Weapons.mineBlaster;
             isFlying = true;
             drag = 0.01f;
@@ -383,6 +386,7 @@ public class UnitTypes implements ContentList{
             health = 40;
             toMine = ObjectSet.with(Items.copper, Items.lead);
             spawnsInSiegeMode = false;
+            living = true;
         }
 
             @Override
@@ -390,7 +394,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilWraith = new UnitType("evilWraith", Wraith.class, Wraith::new){{
+        evilWraith = new UnitType("evil-wraith", Wraith.class, Wraith::new){{
             speed = 0.3f;
             maxVelocity = 1.9f;
             drag = 0.01f;
@@ -399,6 +403,7 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             health = 70;
             spawnsInSiegeMode = false;
+            living = true;
         }
 
             @Override
@@ -406,7 +411,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilChaosArray  = new UnitType("evil-haos-array", ChaosArray.class, ChaosArray::new){{
+        exterminatorBiomass  = new UnitType("exterminator-biomass", BiomassUnit.class, BiomassUnit::new){{
             health = 3000;
             mass = 5f;
             hitsize = 20;
@@ -416,8 +421,9 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             weaponOffsetX = 17f;
             weaponOffsetY = 2f;
-            weapon = Weapons.chaos;
+            weapon = Weapons.exterminatorweapon;
             spawnsInSiegeMode = false;
+            living = true;
         }
 
             @Override
@@ -438,6 +444,7 @@ public class UnitTypes implements ContentList{
                 weapon = Weapons.droneBlaster;
                 trailColor = Color.valueOf("ffd37f");
                 spawnsInSiegeMode = false;
+                living = true;
             }
 
             @Override
@@ -445,6 +452,20 @@ public class UnitTypes implements ContentList{
                 return true;
             }
         };
+        artilleryBiomass = new UnitType("artillery-biomass", BiomassArtillery.class, BiomassArtillery::new){{
+            maxVelocity = 0.8f;
+            speed = 0.15f;
+            drag = 0.4f;
+            mass = 5f;
+            hitsize = 10f;
+            rotatespeed = 0.06f;
+            targetAir = false;
+            weapon = Weapons.artilleryBiomass;
+
+            health = 800;
+            unitCost = 100;
+            living = true;
+        }};
     }
 
     @Override

@@ -244,6 +244,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         }};
         hiveSpawner = new UnitHiveSpawner("hive-spawner"){{
             size = 2;
+            living = true;
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
                             new ItemStack(Items.copper, 5),
@@ -258,11 +259,12 @@ public class UnitBlocks extends BlockList implements ContentList{
             types = new UnitType[]{
                     UnitTypes.evilDagger,
                     UnitTypes.evilTanky,
-                    UnitTypes.evilCrawler
+                    UnitTypes.explosiveBiomass
             };
         }};
         airHiveSpawner = new UnitHiveSpawner("air-hive-spawner"){{
             size = 2;
+            living = true;
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
                             new ItemStack(Items.lead, 5),

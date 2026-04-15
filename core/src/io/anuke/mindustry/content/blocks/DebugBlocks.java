@@ -199,7 +199,10 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.ghost,
                     UnitTypes.lich,
                     UnitTypes.debugtank,
-                    UnitTypes.chaosarray
+                    UnitTypes.chaosarray,
+                    UnitTypes.artilleryBiomass,
+                    UnitTypes.explosiveBiomass,
+                    UnitTypes.exterminatorBiomass
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -217,7 +220,13 @@ public class DebugBlocks extends BlockList implements ContentList{
                     new ItemStack[]{
                             new ItemStack(Items.silicon, 5)},
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 5)}
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
 
             };
             producerTimes = new float[]{
@@ -226,7 +235,10 @@ public class DebugBlocks extends BlockList implements ContentList{
                     3000f,
                     1000f,
                     1000f,
-                    1000f
+                    1000f,
+                    1000f,
+                    1000f,
+                    1000f,
             };
             maxSpawn = new int[]{
                     5,
@@ -234,7 +246,10 @@ public class DebugBlocks extends BlockList implements ContentList{
                     5,
                     5,
                     5,
-                    5
+                    5,
+                    5,
+                    5,
+                    5,
             };
             size = 2;
             consumes.power(0.04f);

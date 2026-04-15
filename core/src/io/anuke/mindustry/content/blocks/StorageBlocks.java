@@ -37,10 +37,12 @@ public class StorageBlocks extends BlockList implements ContentList{
         hive = new HiveBlock("hive"){{
             size = 3;
             itemCapacity = 200000;
-            health = 100000;
+            health = 10000;
             droneType = UnitTypes.evilDraug;
             defenseDrones = true;
             maxDefenseDrones = 8;
+            shadow = "hive-shadow";
+            living = true;
             defenseDroneType = UnitTypes.evilSwarmDrone;
         }};
     }

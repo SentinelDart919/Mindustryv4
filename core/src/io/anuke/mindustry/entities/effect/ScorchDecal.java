@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities.effect;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.graphics.Draw;
@@ -13,6 +14,10 @@ public class ScorchDecal extends Decal{
     private static final TextureRegion[] regions = new TextureRegion[scorches];
 
     public static void create(float x, float y){
+        create(x, y, null);
+    }
+
+    public static void create(float x, float y, Color color){
         if(regions[0] == null){
             for(int i = 0; i < regions.length; i++){
                 regions[i] = Draw.region("scorch" + (i + 1));
@@ -24,6 +29,7 @@ public class ScorchDecal extends Decal{
         if(tile == null || tile.floor().liquidDrop != null) return;
 
         ScorchDecal decal = new ScorchDecal();
+        if(color != null) decal.color = color;
         decal.set(x, y);
         decal.add();
     }

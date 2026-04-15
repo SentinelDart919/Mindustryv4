@@ -108,6 +108,8 @@ public class Block extends BaseBlock {
     public float viewRange = 10;
     /**Whether the top icon is outlined, like a turret.*/
     public boolean turretIcon = false;
+    /**Whether the block is living.*/
+    public boolean living = false;
     /**Whether units target this block.*/
     public boolean targetable = true;
     /**Whether the overdrive core has any effect on this block.*/

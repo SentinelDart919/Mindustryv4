@@ -133,6 +133,7 @@ public class ProductionBlocks extends BlockList implements ContentList{
             size = 2;
             tier = 5;
             drillTime = 90;
+            living = true;
             drawMineItem = true;
         }};
 

@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import io.anuke.annotations.Annotations.Loc;
@@ -83,7 +84,11 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
             unit.spawner = -1;
         }
 
-        ScorchDecal.create(unit.x, unit.y);
+        if(unit.getType().living){
+            ScorchDecal.create(unit.x, unit.y, Color.valueOf("2b0000"));
+        }else{
+            ScorchDecal.create(unit.x, unit.y);
+        }
         Effects.effect(ExplosionFx.explosion, unit);
         Effects.shake(2f, 2f, unit);
         Sound sound = unitExplode;

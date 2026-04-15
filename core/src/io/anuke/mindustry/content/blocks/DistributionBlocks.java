@@ -66,6 +66,7 @@ public class DistributionBlocks extends BlockList implements ContentList{
             size = 1;
             speed = 0.15f;
             itemCapacity = 6;
+            living = true;
         }};
     }
 }
