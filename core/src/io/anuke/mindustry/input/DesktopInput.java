@@ -102,14 +102,14 @@ public class DesktopInput extends InputHandler{
                     tile = tile.target();
 
                     Draw.color(Palette.removeBack);
-                    Lines.square(tile.drawx(), tile.drawy()-1, tile.block().size * tilesize / 2f - 1);
+                    Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f);
                     Draw.color(Palette.remove);
-                    Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f - 1);
+                    Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f);
                 }
             }
 
             Draw.color(Palette.removeBack);
-            Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);
+            Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
             Draw.color(Palette.remove);
             Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
         }else if(mode == copying){
@@ -149,6 +149,8 @@ public class DesktopInput extends InputHandler{
 
         int cursorX = tileX(Gdx.input.getX());
         int cursorY = tileY(Gdx.input.getY());
+
+        if(ui.chatfrag.chatOpen()) return;
 
         if(Inputs.keyTap(section, "schematic_select")){
             ui.schematics.show();
