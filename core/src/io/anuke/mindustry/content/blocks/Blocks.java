@@ -163,8 +163,10 @@ public class Blocks extends BlockList implements ContentList{
         }};
 
         infectedSand = new Floor("infected-sand"){{
+            drops = new ItemStack(Items.sand, 1);
             hasOres = true;
             minimapColor = Color.valueOf("4c2626");
+            playerUnmineable = true;
         }};
 
         infectedDirt = new Floor("infected-dirt"){{
