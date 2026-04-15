@@ -266,6 +266,8 @@ public class BlockIndexer{
     }
 
     private void updateQuadrant(Tile tile){
+        if(structQuadrants == null) return;
+
         //this quadrant is now 'dirty', re-scan the whole thing
         int quadrantX = tile.x / structQuadrantSize;
         int quadrantY = tile.y / structQuadrantSize;
@@ -273,6 +275,8 @@ public class BlockIndexer{
 
         for(Team team : Team.all){
             TeamData data = state.teams.get(team);
+
+            if(structQuadrants[data.team.ordinal()] == null) continue;
 
             //fast-set this quadrant to 'occupied' if the tile just placed is already of this team
             if(tile.getTeam() == data.team && tile.entity != null && tile.block().targetable){
@@ -287,7 +291,7 @@ public class BlockIndexer{
                 for(int y = quadrantY * structQuadrantSize; y < world.height() && y < (quadrantY + 1) * structQuadrantSize; y++){
                     Tile result = world.tile(x, y);
                     //when a targetable block is found, mark this quadrant as occupied and stop searching
-                    if(result.entity != null && result.getTeam() == data.team){
+                    if(result != null && result.entity != null && result.getTeam() == data.team){
                         structQuadrants[data.team.ordinal()].set(index);
                         break outer;
                     }

@@ -93,26 +93,26 @@ public class Pathfinder{
     /**Clears the frontier, increments the search and sets up all flow sources.
      * This only occurs for active teams.*/
     private void update(Tile tile, Team team){
-        //make sure team exists
-        if(paths[team.ordinal()] != null){
-            PathData path = paths[team.ordinal()];
+        //make sure team exists and has path data
+        if(paths == null || team.ordinal() >= paths.length || paths[team.ordinal()] == null) return;
 
-            //impassable tiles have a weight of float.max
-            if(!passable(tile, team)){
-                path.weights[tile.x][tile.y] = Float.MAX_VALUE;
-            }
+        PathData path = paths[team.ordinal()];
 
-            //increment search, clear frontier
-            path.search++;
-            path.frontier.clear();
-            path.lastSearchTime = TimeUtils.millis();
+        //impassable tiles have a weight of float.max
+        if(!passable(tile, team)){
+            path.weights[tile.x][tile.y] = Float.MAX_VALUE;
+        }
 
-            //add all targets to the frontier
-            for(Tile other : world.indexer.getEnemy(team, BlockFlag.target)){
-                path.weights[other.x][other.y] = 0;
-                path.searches[other.x][other.y] = path.search;
-                path.frontier.addFirst(other);
-            }
+        //increment search, clear frontier
+        path.search++;
+        path.frontier.clear();
+        path.lastSearchTime = TimeUtils.millis();
+
+        //add all targets to the frontier
+        for(Tile other : world.indexer.getEnemy(team, BlockFlag.target)){
+            path.weights[other.x][other.y] = 0;
+            path.searches[other.x][other.y] = path.search;
+            path.frontier.addFirst(other);
         }
     }
 

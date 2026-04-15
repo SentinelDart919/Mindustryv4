@@ -113,6 +113,7 @@ public class MinimapRenderer implements Disposable{
     }
 
     public void update(Tile tile){
+        if(pixmap == null || texture == null || tile == null) return;
         int color = colorFor(world.tile(tile.x, tile.y));
         pixmap.drawPixel(tile.x, pixmap.getHeight() - 1 - tile.y, color);
 
@@ -132,6 +133,7 @@ public class MinimapRenderer implements Disposable{
     }
 
     private int colorFor(Tile tile){
+        if(tile == null) return 0;
         tile = tile.target();
         return ColorMapper.colorFor(tile.floor(), tile.block(), tile.getTeam(), tile.getElevation(), tile.getCliffs());
     }

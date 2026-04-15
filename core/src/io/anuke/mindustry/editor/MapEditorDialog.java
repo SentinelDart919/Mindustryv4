@@ -10,7 +10,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.game.Team;
@@ -23,6 +26,12 @@ import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Graphics;
+import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.util.Geometry;
+import io.anuke.ucore.util.Structs;
+import io.anuke.mindustry.maps.MapTileData.DataPosition;
+import io.anuke.mindustry.maps.generation.WorldGenerator;
+import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.ucore.core.Inputs;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.function.Consumer;
@@ -149,6 +158,83 @@ public class MapEditorDialog extends Dialog implements Disposable{
                             });
                         }, false, mapExtension);
                     }));
+
+            t.row();
+
+            t.addImageTextButton("$text.editor.generate", "icon-redo", isize, () -> {
+                FloatingDialog dialog = new FloatingDialog("$text.editor.generate");
+                dialog.addCloseButton();
+                TextField seedField = new TextField("");
+                seedField.setMessageText("$text.editor.seed");
+
+                dialog.content().add("$text.editor.seed").padRight(10);
+                dialog.content().add(seedField).width(200);
+                dialog.buttons().addImageTextButton("$text.editor.generate", "icon-redo", isize, () -> {
+                    long seed;
+                    if(seedField.getText().isEmpty()){
+                        seed = (long)Mathf.random(Long.MAX_VALUE);
+                    }else{
+                        try{
+                            seed = Long.parseLong(seedField.getText());
+                        }catch(NumberFormatException e){
+                            seed = (long)seedField.getText().hashCode();
+                        }
+                    }
+
+                    long finalSeed = seed;
+                    ui.loadGraphics(() -> {
+                        MapTileData data = editor.getMap();
+                        int width = data.width();
+                        int height = data.height();
+                        int sx = (int) (finalSeed % Short.MAX_VALUE);
+                        int sy = (int) (finalSeed / Short.MAX_VALUE % Short.MAX_VALUE);
+
+                        WorldGenerator generator = world.generator;
+                        GenResult result = new GenResult();
+                        Array<GridPoint2> spawns = new Array<>();
+                        spawns.add(new GridPoint2(width / 2, height / 2));
+                        Array<Item> ores = Item.getAllOres();
+
+                        Tile[][] tiles = new Tile[width][height];
+
+                        for(int x = 0; x < width; x++){
+                            for(int y = 0; y < height; y++){
+                                generator.generateTile(result, sx, sy, x, y, true, spawns, ores);
+                                tiles[x][y] = new Tile(x, y, result.floor.id, result.wall.id, (byte)0, (byte)0, result.elevation);
+                            }
+                        }
+
+                        generator.prepareTiles(tiles);
+
+                        for(int x = 0; x < width; x++){
+                            for(int y = 0; y < height; y++){
+                                Tile tile = tiles[x][y];
+                                byte elevation = tile.getElevation();
+
+                                for(GridPoint2 point : Geometry.d4){
+                                    if(!Structs.inBounds(x + point.x, y + point.y, width, height)) continue;
+                                    if(tiles[x + point.x][y + point.y].getElevation() < elevation){
+                                        if(world.generator.sim2.octaveNoise2D(1, 1, 1.0 / 8, x, y) > 0.8){
+                                            tile.setElevation(-1);
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                data.write(x, y, MapTileData.DataPosition.floor, tile.floor().id);
+                                data.write(x, y, MapTileData.DataPosition.wall, tile.block().id);
+                                data.write(x, y, MapTileData.DataPosition.elevation, tile.getElevation());
+                            }
+                        }
+                        editor.renderer().updateAll();
+                        view.clearStack();
+                        dialog.hide();
+                        menu.hide();
+                    });
+                }).size(200, 60);
+
+                dialog.show();
+            }).size(swidth * 2f + 10, 60f).colspan(2);
 
             t.row();
 
