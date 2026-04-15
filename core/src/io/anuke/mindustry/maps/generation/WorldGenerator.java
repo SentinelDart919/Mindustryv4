@@ -35,11 +35,11 @@ public class WorldGenerator{
     private static final int baseSeed = 0;
     private int oreIndex = 0;
 
-    private Simplex sim = new Simplex(baseSeed);
-    private Simplex sim2 = new Simplex(baseSeed + 1);
-    private Simplex sim3 = new Simplex(baseSeed + 2);
-    private RidgedPerlin rid = new RidgedPerlin(baseSeed + 4, 1);
-    private SeedRandom random = new SeedRandom(baseSeed + 3);
+    public Simplex sim = new Simplex(baseSeed);
+    public Simplex sim2 = new Simplex(baseSeed + 1);
+    public Simplex sim3 = new Simplex(baseSeed + 2);
+    public RidgedPerlin rid = new RidgedPerlin(baseSeed + 4, 1);
+    public SeedRandom random = new SeedRandom(baseSeed + 3);
 
     private GenResult result = new GenResult();
     private ObjectMap<Block, Block> decoration;
