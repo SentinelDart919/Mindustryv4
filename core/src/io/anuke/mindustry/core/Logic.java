@@ -95,6 +95,7 @@ public class Logic extends Module{
 
         Timers.clear();
         Entities.clear();
+        infection.reset();
         TileEntity.sleepingEntities = 0;
 
         Events.fire(new ResetEvent());
@@ -236,6 +237,7 @@ public class Logic extends Module{
                 EntityQuery.collideGroups(playerGroup, playerGroup);
 
                 world.pathfinder.update();
+                infection.update();
                 io.anuke.mindustry.ai.MassAI.update();
             }
 

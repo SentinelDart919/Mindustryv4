@@ -82,16 +82,5 @@ public class Veins extends Conveyor{//Conveinsyors now exist
     public void update(Tile tile) {
         super.update(tile);
         tile.infect();
-        spawnTimer += Timers.delta();
-        if (spawnTimer >= Mathf.random(minSpawnTimer, maxSpawnTimer) * 60f){
-            int amount = Mathf.random(2, 8);
-            for(int i = 0; i < 8; i++){
-                if(Mathf.random(8 - i - 1) < amount){
-                    amount--;
-                    Tile other = tile.getNearby(Geometry.d8[i]);
-                    if(other != null) other.infect();
-                }
-            }
-        }
     }
 }

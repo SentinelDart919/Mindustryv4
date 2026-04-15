@@ -112,6 +112,7 @@ public class Vars{
     public static UI ui;
     public static World world;
     public static NetServer netServer;
+    public static InfectionManager infection;
     public static MusicController musicController;
     public static NetClient netClient;
 
@@ -175,6 +176,7 @@ public class Vars{
 
         state = new GameState();
         threads = new ThreadHandler();
+        infection = new InfectionManager();
 
         mobile = Gdx.app.getType() == ApplicationType.Android || Gdx.app.getType() == ApplicationType.iOS || testMobile;
         ios = Gdx.app.getType() == ApplicationType.iOS;

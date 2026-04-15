@@ -190,29 +190,7 @@ public class Tile implements PosTrait, TargetTrait{
     }
 
     public void infect(){
-        if(isInfected) return;
-        isInfected = true;
-
-        if(floor.infectedVariant != null){
-            setFloor(floor.infectedVariant);
-        }
-
-        if(wall instanceof Rock && ((Rock)wall).infectedVariant != null){
-            setBlock(((Rock)wall).infectedVariant);
-        }
-
-        Timers.run(60f * (4f + Mathf.random(6f)), () -> {
-            int amount = Mathf.random(1, 3);
-            for(int i = 0; i < 8; i++){
-                if(Mathf.random(8 - i - 1) < amount){
-                    amount--;
-                    Tile other = getNearby(Geometry.d8[i]);
-                    if(other != null && !other.isInfected && (other.floor().infectedVariant != null || (other.wall instanceof Rock && ((Rock)other.wall).infectedVariant != null))){
-                        other.infect();
-                    }
-                }
-            }
-        });
+        Vars.infection.infect(this);
     }
 
     public byte getVisibility(){
