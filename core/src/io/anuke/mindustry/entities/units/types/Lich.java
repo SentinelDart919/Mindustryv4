@@ -78,6 +78,7 @@ public class Lich extends FlyingUnit{
 
 
         for(int i : Mathf.signs){
+            if(!getWeapon().weaponMirror && i < 0) continue;
             Draw.alpha(hitTime / hitDuration);
             float tra = rotation - 90,
                     trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
