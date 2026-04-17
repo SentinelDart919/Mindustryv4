@@ -1,6 +1,7 @@
 package io.anuke.mindustry.content.blocks;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -11,6 +12,9 @@ import io.anuke.mindustry.world.blocks.production.Cultivator;
 import io.anuke.mindustry.world.blocks.production.Drill;
 import io.anuke.mindustry.world.blocks.production.Fracker;
 import io.anuke.mindustry.world.blocks.production.SolidPump;
+import io.anuke.ucore.core.Timers;
+import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.content.blocks.Blocks.infectedGrass;
 
@@ -135,7 +139,30 @@ public class ProductionBlocks extends BlockList implements ContentList{
             drillTime = 90;
             living = true;
             drawMineItem = true;
-        }};
+            updateEffect = BlockFx.biomassSmoke;
+            drillEffect = BlockFx.biomassSpore;
+            shadow = "biomass-bulbshadow";
+        }
+        @Override
+            public TextureRegion[] getIcon(){
+            return new TextureRegion[]{Draw.region(name), Draw.region(name + "-top")};
+        }
+        @Override
+            public void draw(Tile tile){
+
+
+            DrillEntity entity = tile.entity();
+            float pulse = 1f + Mathf.absin(Timers.time(), drillTime / 60, 0.15f);
+
+            Draw.rect(region, tile.drawx(), tile.drawy());
+            Draw.rect(topRegion, tile.drawx(), tile.drawy(), pulse * size * 8f, pulse * size * 8f);
+            if(entity.dominantItem != null && drawMineItem){
+                Draw.color(entity.dominantItem.color);
+                Draw.rect("blank", tile.drawx(), tile.drawy(), 2f, 2f);
+                Draw.color();
+            }
+        }
+        };
 
     }
 }
