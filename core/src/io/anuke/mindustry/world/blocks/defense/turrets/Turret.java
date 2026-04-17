@@ -116,8 +116,8 @@ public abstract class Turret extends Block{
     public void load(){
         super.load();
 
-        baseRegion = Draw.region("block-" + size);
-        baseTopRegion = Draw.region("block-" + size + "-top");
+        if(!living)baseRegion = Draw.region("block-" + size); else baseRegion = Draw.region("mass-" + size);
+        if(!living)baseTopRegion = Draw.region("block-" + size + "-top");
         heatRegion = Draw.region(name + "-heat");
     }
 
@@ -141,7 +141,7 @@ public abstract class Turret extends Block{
     public void draw(Tile tile){
         Draw.rect(baseRegion, tile.drawx(), tile.drawy());
         Draw.color(tile.getTeam().color, Color.WHITE, 0.45f);
-        Draw.rect(baseTopRegion, tile.drawx(), tile.drawy());
+        if(baseTopRegion != null)Draw.rect(baseTopRegion, tile.drawx(), tile.drawy());
         Draw.color();
     }
 

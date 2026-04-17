@@ -15,6 +15,12 @@ public class Recipes implements ContentList{
     @Override
     public void load(){
         //DEBUG
+        new Recipe(turret, TurretBlocks.evilDuo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilSalvo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilScatter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilRipple).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilCyclone).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilFuse).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(effect, DebugBlocks.infectiontest).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.hiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.airHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);

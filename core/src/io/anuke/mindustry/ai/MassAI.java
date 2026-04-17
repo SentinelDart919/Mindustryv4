@@ -92,12 +92,12 @@ public class MassAI {
                 if (tile != null && tile.getTeam() == massTeam) {
                     Block block = tile.block();
                     if (air) {
-                        if (block == TurretBlocks.scatter || block == TurretBlocks.cyclone) {
+                        if (block == TurretBlocks.evilScatter || block == TurretBlocks.evilCyclone) {
                             count++;
                         }
                     } else {
-                        if (block == TurretBlocks.duo || block == TurretBlocks.salvo || 
-                            block == TurretBlocks.ripple || block == TurretBlocks.fuse) {
+                        if (block == TurretBlocks.evilDuo || block == TurretBlocks.evilSalvo || 
+                            block == TurretBlocks.evilRipple || block == TurretBlocks.evilFuse) {
                             count++;
                         }
                     }
@@ -213,7 +213,6 @@ public class MassAI {
             } else if (currentCommand == UnitCommand.patrol) {
                 enemyNearbyTimer += Timers.delta();
                 // after 15-30 seconds with no enemies they will command attack AND command if the initial grace period is over
-                // done remove grace time if you attack them
                 if (enemyNearbyTimer >= Mathf.random(15f, 30f) * 60f && !isGracePeriod()) {
                     currentCommand = UnitCommand.attack;
                 }
@@ -277,20 +276,20 @@ public class MassAI {
 
         ItemModule items = nearestCore.entity.items;
 
-        Block turretBlock = TurretBlocks.duo;
+        Block turretBlock = TurretBlocks.evilDuo;
         if (targetAir) {
             if (items.has(Items.thorium, 10) && items.has(Items.titanium, 10)) {
-                turretBlock = TurretBlocks.cyclone;
+                turretBlock = TurretBlocks.evilCyclone;
             } else if (items.has(Items.scrap, 5)) {
-                turretBlock = TurretBlocks.scatter;
+                turretBlock = TurretBlocks.evilScatter;
             }
         } else {
             if (items.has(Items.chromium, 7) && items.has(Items.thorium, 7)) {
-                turretBlock = TurretBlocks.ripple;
+                turretBlock = TurretBlocks.evilRipple;
             } else if (items.has(Items.thorium, 6)) {
-                turretBlock = TurretBlocks.fuse;
+                turretBlock = TurretBlocks.evilFuse;
             } else if (items.has(Items.titanium, 5)) {
-                turretBlock = TurretBlocks.salvo;
+                turretBlock = TurretBlocks.evilSalvo;
             }
         }
 
@@ -334,16 +333,16 @@ public class MassAI {
                     if (dist > turretBlock.viewRange) continue;
                 }
 
-                if (turretBlock == TurretBlocks.ripple) {
+                if (turretBlock == TurretBlocks.evilRipple) {
                     items.remove(Items.chromium, 7);
                     items.remove(Items.thorium, 7);
-                } else if (turretBlock == TurretBlocks.fuse) {
+                } else if (turretBlock == TurretBlocks.evilFuse) {
                     items.remove(Items.thorium, 6);
-                } else if (turretBlock == TurretBlocks.salvo) {
+                } else if (turretBlock == TurretBlocks.evilSalvo) {
                     items.remove(Items.titanium, 5);
-                } else if (turretBlock == TurretBlocks.scatter) {
+                } else if (turretBlock == TurretBlocks.evilScatter) {
                     items.remove(Items.scrap, 5);
-                } else if (turretBlock == TurretBlocks.cyclone) {
+                } else if (turretBlock == TurretBlocks.evilCyclone) {
                     items.remove(Items.thorium, 10);
                     items.remove(Items.titanium, 10);
                 }
@@ -1324,7 +1323,6 @@ public class MassAI {
                     if (types != null && types.length > 0) {
                         AmmoType type = types[0];
                         entity.ammo.add(new AmmoEntry(type, 20));
-                        entity.totalAmmo = 20;
                     }
                 }
             }

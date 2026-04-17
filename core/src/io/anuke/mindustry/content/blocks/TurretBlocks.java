@@ -3,6 +3,7 @@ package io.anuke.mindustry.content.blocks;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.AmmoTypes;
+import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.ShootFx;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.game.ContentList;
@@ -15,7 +16,8 @@ import io.anuke.ucore.util.Mathf;
 public class TurretBlocks extends BlockList implements ContentList{
     public static Block duo, scatter,
             scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown,
-            evilScatter, evilDuo, evilSalvo, evilRipple, evilFuse;
+            //The mass
+            evilScatter, evilDuo, evilSalvo, evilRipple, evilFuse, evilCyclone;
             /*TODO
             *  Turrets For Infection
             *  Basic ground/air target turret
@@ -291,5 +293,104 @@ public class TurretBlocks extends BlockList implements ContentList{
 
             health = 165 * size * size;
         }};
+        // The mass
+        evilDuo = new DoubleTurret("evil-duo"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.bulletCopper, AmmoTypes.bulletDense, AmmoTypes.bulletPyratite, AmmoTypes.bulletSilicon};
+            reload = 25f;
+            restitution = 0.03f;
+            range = 90f;
+            shootCone = 15f;
+            setShootSound("shootDuo");
+            ammoUseEffect = ShootFx.shellEjectSmall;
+            health = 80;
+            inaccuracy = 2f;
+            rotatespeed = 10f;
+            living = true;
+        }};
+
+        evilScatter = new BurstTurret("evil-scatter"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.flakScrap, AmmoTypes.flakLead, AmmoTypes.flakObsidian};
+            reload = 18f;
+            range = 170f;
+            size = 2;
+            burstSpacing = 5f;
+            shots = 3;
+            targetGround = false;
+            targetAir = true;
+            ammoUseEffect = BlockFx.biomassSpore;
+            setShootSound("shootScatter");
+            recoil = 2f;
+            rotatespeed = 15f;
+            inaccuracy = 17f;
+            shootCone = 35f;
+            health = 200 * size * size;
+            living = true;
+        }};
+        evilSalvo = new BurstTurret("evil-salvo"){{
+            size = 2;
+            range = 120f;
+            ammoTypes = new AmmoType[]{AmmoTypes.bulletCopper, AmmoTypes.bulletDense, AmmoTypes.bulletPyratite, AmmoTypes.bulletThorium, AmmoTypes.bulletSilicon};
+            reload = 35f;
+            restitution = 0.03f;
+            ammoEjectBack = 3f;
+            cooldown = 0.03f;
+            recoil = 3f;
+            shootShake = 2f;
+            burstSpacing = 4;
+            shots = 3;
+            ammoUseEffect = ShootFx.shellEjectBig;
+            setShootSound("shootSalvo");
+            health = 360;
+            living = true;
+            }};
+        evilRipple = new ArtilleryTurret("evil-ripple"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.artilleryDense, AmmoTypes.artilleryHoming, AmmoTypes.artilleryIncindiary, AmmoTypes.artilleryExplosive, AmmoTypes.artilleryPlastic};
+            size = 3;
+            shots = 4;
+            inaccuracy = 12f;
+            reload = 60f;
+            ammoEjectBack = 5f;
+            ammoUseEffect = ShootFx.shellEjectBig;
+            setShootSound("shootRipple");
+            cooldown = 0.03f;
+            velocityInaccuracy = 0.2f;
+            restitution = 0.02f;
+            recoil = 6f;
+            shootShake = 2f;
+            range = 320f;
+            targetAir = false;
+            health = 550;
+            living = true;
+        }};
+
+        evilCyclone = new ItemTurret("evil-cyclone"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.flakObsidian, AmmoTypes.flakExplosive, AmmoTypes.flakPlastic, AmmoTypes.flakSurge};
+            setShootSound("shootCyclone");
+            xRand = 4f;
+            reload = 8f;
+            range = 145f;
+            size = 3;
+            recoil = 3f;
+            rotatespeed = 10f;
+            inaccuracy = 13f;
+            shootCone = 30f;
+            living = true;
+            health = 145 * size * size;
+        }};
+
+        evilFuse = new ItemTurret("evil-fuse"){{
+            ammoTypes = new AmmoType[]{AmmoTypes.fuseShotgun};
+            setShootSound("shootFuse");
+            reload = 50f;
+            shootShake = 4f;
+            range = 80f;
+            recoil = 5f;
+            restitution = 0.1f;
+            size = 3;
+            living = true;
+            health = 155 * size * size;
+        }};
+
+
     }
 }

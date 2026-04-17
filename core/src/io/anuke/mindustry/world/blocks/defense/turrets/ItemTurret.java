@@ -10,6 +10,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.values.ItemFilterValue;
+import io.anuke.ucore.util.Mathf;
 
 public class ItemTurret extends CooledTurret{
     protected int maxAmmo = 50;
@@ -19,6 +20,18 @@ public class ItemTurret extends CooledTurret{
     public ItemTurret(String name){
         super(name);
         hasItems = true;
+    }
+
+    @Override
+    public void update(Tile tile){
+        super.update(tile);
+        TurretEntity entity = tile.entity();
+        if(!hasAmmo(tile) && living){
+           int randomItem = Mathf.random(0, ammoTypes.length -1);
+           AmmoType type = ammoTypes[randomItem];
+
+           entity.ammo.add(new AmmoEntry(type, 30));
+        }
     }
 
     public AmmoType[] getAmmoTypes(){
