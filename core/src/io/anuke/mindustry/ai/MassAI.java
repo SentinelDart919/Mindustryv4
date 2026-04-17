@@ -558,7 +558,7 @@ public class MassAI {
 
             if (heavySpawners < 2 && items.has(Items.corruptedbiomatter, 25)) {
                 if (placeRandomSpawner(core, UnitBlocks.heavyHiveSpawner, radius)) {
-                    items.remove(Items.corruptedbiomatter, 25);
+                    items.remove(Items.corruptedbiomatter, 5);
                 }
             }
         }
