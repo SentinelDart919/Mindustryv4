@@ -11,7 +11,7 @@ public class Weapons implements ContentList{
     kamikaze, lichMissiles, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
-    artilleryBiomass, exterminatorweapon;// the mass
+    artilleryBiomass, exterminatorweapon, mosquitoweapon;// the mass
 
     @Override
     public void load(){
@@ -308,6 +308,16 @@ public class Weapons implements ContentList{
             spacing = 4f;
             ejectEffect = Fx.none;
             ammo = AmmoTypes.flakSurge;
+        }};
+        mosquitoweapon = new Weapon("mosquito-weapon"){{
+            weaponMirror = false;
+            length = 8f;
+            reload = 20f;
+            roundrobin = false;
+            recoil = 1f;
+            ejectEffect = Fx.none;
+
+            ammo = AmmoTypes.artilleryIncindiary;
         }};
     }
 
