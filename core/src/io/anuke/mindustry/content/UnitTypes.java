@@ -2,7 +2,9 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
+import io.anuke.mindustry.entities.units.BiomassAirUnit;
 import io.anuke.mindustry.entities.units.BiomassGroundUnit;
+import io.anuke.mindustry.entities.units.TankUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
@@ -15,8 +17,8 @@ public class UnitTypes implements ContentList{
         scrapper , wraith, ghoul, revenant, lich,
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
-        debugtank,
-        evilDraug, evilDagger, evilWraith, explosiveBiomass, evilBombDrone, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass; // the mass units btw
+        debugtank, nova,
+        evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
         /* TODO
             Add Units For Mass Team
             Air/Ground Kamikaze Unit, Miner Unit, Air/Ground Unit, Ground/Air Light Attack Unit, Ground Tanky Unit
@@ -170,6 +172,18 @@ public class UnitTypes implements ContentList{
         }};
 
 
+        nova = new UnitType("nova", GroundHealUnit.class, GroundHealUnit::new){{
+            maxVelocity = 1.0f;
+            speed = 0.18f;
+            drag = 0.4f;
+            hitsize = 9f;
+            mass = 2.0f;
+            weapon = Weapons.healBlaster;
+            health = 250;
+            healRange = 80f;
+            isHealer = true;
+        }};
+
         dagger = new UnitType("dagger", Dagger.class, Dagger::new){{
             maxVelocity = 1.1f;
             speed = 0.2f;
@@ -302,6 +316,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 0;
             weaponOffsetY = 0;
             weapon = Weapons.debugtankturret;
+            weapon.weaponMirror = false;
             spawnsInSiegeMode = false;
 
         }
@@ -310,7 +325,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
         // The Mass Units
-        evilDagger = new UnitType("evil-dagger", Dagger.class, Dagger::new){{
+        evilDagger = new UnitType("evil-dagger", BiomassGroundUnit.class, BiomassGroundUnit::new){{
             maxVelocity = 1.1f;
             speed = 0.2f;
             drag = 0.4f;
@@ -326,13 +341,14 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilBombDrone = new UnitType("evil-bomb_drone", BombDrone.class, BombDrone::new){{
+        FlyingExplosiveBiomass = new UnitType("flying-explosive-biomass", BiomassAirUnit.class, BiomassAirUnit::new){{
             isFlying = true;
             weapon = Weapons.kamikaze;
+            trailColor = Color.valueOf("871e1e");
             maxVelocity = 1.50f;
             speed = 0.32f;
             drag = 0.01f;
-            hitsize = 7.89f;
+            hitsize = 11f;
             mass = 1.25f;
             health = 60;
             spawnsInSiegeMode = false;
@@ -360,7 +376,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilTanky = new UnitType("evil-tanky", Titan.class, Titan::new){{
+        evilTanky = new UnitType("evil-tanky", BiomassGroundUnit.class, BiomassGroundUnit::new){{
             maxVelocity = 0.8f;
             speed = 0.18f;
             drag = 0.4f;
@@ -378,7 +394,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilDraug = new UnitType("evil-draug", DroneMiner.class, DroneMiner::new){{
+        evilDraug = new UnitType("evil-draug", BiomassMiner.class, BiomassMiner::new){{
             weapon = Weapons.mineBlaster;
             isFlying = true;
             drag = 0.01f;
@@ -386,6 +402,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.61f;
             range = 55f;
             health = 40;
+            trailColor = Color.valueOf("871e1e");
             toMine = ObjectSet.with(Items.copper, Items.lead);
             spawnsInSiegeMode = false;
             living = true;
@@ -396,12 +413,13 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        evilWraith = new UnitType("evil-wraith", Wraith.class, Wraith::new){{
+        evilWraith = new UnitType("evil-wraith", BiomassAirUnit.class, BiomassAirUnit::new){{
             speed = 0.3f;
             maxVelocity = 1.9f;
             drag = 0.01f;
             mass = 1.5f;
             weapon = Weapons.chainBlaster;
+            trailColor = Color.valueOf("871e1e");
             isFlying = true;
             health = 70;
             spawnsInSiegeMode = false;
@@ -413,7 +431,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
-        exterminatorBiomass  = new UnitType("exterminator-biomass", BiomassGroundUnit.class, BiomassGroundUnit::new){{
+        exterminatorBiomass  = new UnitType("exterminator-biomass", BiomassExterminator.class, BiomassExterminator::new){{
             health = 3000;
             mass = 5f;
             hitsize = 20;
@@ -433,7 +451,7 @@ public class UnitTypes implements ContentList{
                 return true;
             }
         };
-        evilSwarmDrone = new UnitType("evil-swarm-drone", BlockDefenseDrone.class, BlockDefenseDrone::new){
+        evilSwarmDrone = new UnitType("evil-swarm-drone", BiomassSwarm.class, BiomassSwarm::new){
             {
                 isFlying = true;
                 drag = 0.005f;
@@ -444,7 +462,7 @@ public class UnitTypes implements ContentList{
                 hitsize = 4f;
                 mass = 0.1f;
                 weapon = Weapons.droneBlaster;
-                trailColor = Color.valueOf("ffd37f");
+                trailColor = Color.valueOf("871e1e");
                 spawnsInSiegeMode = false;
                 living = true;
             }
@@ -466,6 +484,19 @@ public class UnitTypes implements ContentList{
 
             health = 800;
             unitCost = 100;
+            living = true;
+        }};
+
+        acidMosquito = new UnitType("acid-mosquito", BiomassMosquito.class, BiomassMosquito::new){{
+            isFlying = true;
+            health = 100;
+            hitsize = 4f;
+            mass = 0.1f;
+            weapon = Weapons.mosquitoweapon;
+            weaponOffsetX = 0;
+            weaponOffsetY = 0;
+            trailColor = Color.valueOf("871e1e");
+            spawnsInSiegeMode = false;
             living = true;
         }};
     }
