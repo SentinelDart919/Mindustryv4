@@ -294,7 +294,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             health = 165 * size * size;
         }};
         // The mass
-        evilDuo = new DoubleTurret("evil-duo"){{
+        evilDuo = new ItemTurret("evil-duo"){{
             ammoTypes = new AmmoType[]{AmmoTypes.bulletCopper, AmmoTypes.bulletDense, AmmoTypes.bulletPyratite, AmmoTypes.bulletSilicon};
             reload = 25f;
             restitution = 0.03f;

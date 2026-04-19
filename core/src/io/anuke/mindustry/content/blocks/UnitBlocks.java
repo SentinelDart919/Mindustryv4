@@ -233,6 +233,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         repairPoint = new RepairPoint("repair-point"){{
             shadow = "shadow-round-1";
             repairSpeed = 0.1f;
+            solid = false;
         }};
 
         reconstructor = new Reconstructor("reconstructor"){{
