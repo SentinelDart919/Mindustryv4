@@ -1,10 +1,9 @@
-package io.anuke.mindustry.entities.units.types;
+package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
-import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.world.blocks.Floor;
