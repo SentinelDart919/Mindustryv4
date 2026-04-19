@@ -12,7 +12,7 @@ import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 public class EnvironmentFx extends FxList implements ContentList{
-    public static Effect burning, fire, smoke, steam, fireballsmoke, ballfire, freezing, melting, wet, oily, overdriven, dropItem;
+    public static Effect burning, fire, smoke, steam, fireballsmoke, ballfire, freezing, melting, wet, oily, overdriven, dropItem, acidSteam;
 
     @Override
     public void load(){
@@ -132,6 +132,16 @@ public class EnvironmentFx extends FxList implements ContentList{
             float size = 7f * e.fout();
 
             Draw.rect(((Item) e.data).region, e.x + Angles.trnsx(e.rotation, length), e.y + Angles.trnsy(e.rotation, length), size, size);
+        });
+
+        acidSteam = new Effect(35f, e -> {
+            Draw.color(Color.valueOf("f92a2a"));
+
+            Angles.randLenVectors(e.id, 2, 2f + e.fin() * 7f, (x, y) -> {
+                Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);
+            });
+
+            Draw.color();
         });
     }
 }

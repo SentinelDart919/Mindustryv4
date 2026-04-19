@@ -153,7 +153,7 @@ public class StatusEffects implements ContentList{
                 unit.damagePeriodic(0.5f);
 
                 if(Mathf.chance(Timers.delta() * 0.2f)){
-                    Effects.effect(EnvironmentFx.smoke, unit.x + Mathf.range(unit.getSize() / 2f), unit.y + Mathf.range(unit.getSize() / 2f));
+                    Effects.effect(EnvironmentFx.acidSteam, unit.x + Mathf.range(unit.getSize() / 2f), unit.y + Mathf.range(unit.getSize() / 2f));
                 }
             }
         };
