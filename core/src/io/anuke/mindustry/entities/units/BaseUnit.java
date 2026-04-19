@@ -49,7 +49,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     protected static final int timerShootRight = timerIndex++;
 
     protected UnitType type;
-    protected Timer timer = new Timer(5);
+    protected Timer timer = new Timer(10);
     protected StateMachine state = new StateMachine();
     protected TargetTrait target;
 
@@ -300,7 +300,12 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     @Override
     public float getSize(){
-        return 8;
+        return type.hitsize;
+    }
+
+    @Override
+    public boolean isHealer(){
+        return type.isHealer;
     }
 
     @Override

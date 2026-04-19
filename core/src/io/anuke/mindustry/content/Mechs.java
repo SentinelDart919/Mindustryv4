@@ -22,6 +22,8 @@ import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.graphics.Shapes;
+import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.unitGroups;
@@ -107,11 +109,12 @@ public class Mechs implements ContentList{
         };
 
         tau = new Mech("tau-mech", false){
-            float healRange = 60f;
-            float healAmount = 10f;
+            float healRange = 90f;
+            float healAmount = 0.3f;
             float healReload = 160f;
             Rectangle rect = new Rectangle();
             boolean wasHealed;
+            TextureRegion turretRegion;
 
             {
                 drillPower = 4;
@@ -126,6 +129,13 @@ public class Mechs implements ContentList{
                 weapon = Weapons.healBlaster;
                 armor = 15f;
                 trailColorTo = Palette.heal;
+                isHealer = true;
+            }
+
+            @Override
+            public void load(){
+                super.load();
+                turretRegion = Draw.region("repair-point-turret");
             }
 
             @Override
@@ -141,13 +151,57 @@ public class Mechs implements ContentList{
                                 Effects.effect(UnitFx.heal, unit);
                                 wasHealed = true;
                             }
-                            unit.healBy(healAmount);
+                            unit.healBy(10f);
                         }
                     });
 
                     if(wasHealed){
                         Effects.effect(UnitFx.healWave, player);
                     }
+                }
+
+                if(player.healTarget != null && (player.healTarget.isDead() || player.distanceTo(player.healTarget) > healRange ||
+                        player.healTarget.health >= player.healTarget.maxHealth())){
+                    player.healTarget = null;
+                }else if(player.healTarget != null){
+                    player.healTarget.health += healAmount * Timers.delta() * player.healStrength;
+                    player.healTarget.clampHealth();
+                    player.healRotation = Mathf.slerpDelta(player.healRotation, player.angleTo(player.healTarget), 0.5f);
+                }
+
+                if(player.healTarget != null){
+                    player.healStrength = Mathf.lerpDelta(player.healStrength, 1f, 0.08f * Timers.delta());
+                }else{
+                    player.healStrength = Mathf.lerpDelta(player.healStrength, 0f, 0.07f * Timers.delta());
+                }
+
+                if(player.timer.get(Player.timerHeal, 20)){
+                    player.healTarget = Units.getClosest(player.getTeam(), player.x, player.y, healRange,
+                            unit -> unit.health < unit.maxHealth() && unit != player);
+                }
+            }
+
+            @Override
+            public void draw(Player player){
+            }
+
+            @Override
+            public void drawOver(Player player){
+                float tx = player.x;
+                float ty = player.y;
+
+                Draw.rect(turretRegion, tx, ty, player.healRotation - 90);
+
+                if(player.healTarget != null && player.healStrength > 0.01f &&
+                        Angles.angleDist(player.angleTo(player.healTarget), player.healRotation) < 30f){
+                    float ang = player.angleTo(player.healTarget);
+                    float len = 5f;
+
+                    Draw.color(Color.valueOf("70f17f"));
+                    Shapes.laser("laser", "laser-end",
+                            tx + Angles.trnsx(ang, len), ty + Angles.trnsy(ang, len),
+                            player.healTarget.x, player.healTarget.y, player.healStrength);
+                    Draw.color();
                 }
             }
         };

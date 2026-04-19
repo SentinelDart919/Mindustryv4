@@ -47,7 +47,7 @@ public abstract class GroundUnit extends BaseUnit{
         public void update(){
             if(health < maxHealth() * 0.5f){
                 Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
-                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != GroundUnit.this);
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != GroundUnit.this);
                 if(repair != null && distanceTo(repair) < getType().healRange){
                     state.set(retreat);
                     return;
@@ -87,7 +87,7 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         public void update(){
-            Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != GroundUnit.this);
+            Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != GroundUnit.this);
             Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
             if(health >= maxHealth()){
                 if(isCommanded()){
@@ -98,7 +98,7 @@ public abstract class GroundUnit extends BaseUnit{
                 return;
             }
 
-            if(retarget() || target == null || (target instanceof TileEntity && (((TileEntity)target).getTile() == null || ((TileEntity)target).getTile().target().block().flags == null || !((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair))) || (target instanceof BaseUnit && !((BaseUnit)target).getType().isHealer)){
+            if(retarget() || target == null || (target instanceof TileEntity && (((TileEntity)target).getTile() == null || ((TileEntity)target).getTile().target().block().flags == null || !((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair))) || (target instanceof Unit && !((Unit)target).isHealer())){
                 if(repair != null) target = repair.entity();
                 else if(healer != null) target = healer;
                 else target = getClosestCore();
@@ -109,7 +109,7 @@ public abstract class GroundUnit extends BaseUnit{
                 if(dst > 7f){
                     if(target instanceof TileEntity && ((TileEntity)target).getTile() != null && ((TileEntity)target).getTile().target().block().flags != null && ((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair)){
                         moveTo(target.getX(), target.getY());
-                    }else if(target instanceof BaseUnit && ((BaseUnit)target).getType().isHealer){
+                    }else if(target instanceof Unit && ((Unit)target).isHealer()){
                         if(dst > type.healRange){
                             moveToHome();
                         }else{

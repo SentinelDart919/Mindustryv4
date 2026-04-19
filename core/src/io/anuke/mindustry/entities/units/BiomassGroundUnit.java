@@ -1,12 +1,64 @@
 package io.anuke.mindustry.entities.units;
-
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import io.anuke.mindustry.entities.Predict;
+import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.type.AmmoType;
+import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
 public class BiomassGroundUnit extends GroundUnit{
+
+    public final UnitState
+    patrol = new UnitState(){
+        public void update(){
+            if(retarget()){
+                targetClosest();
+
+                if(target != null && !Units.invalidateTarget(target, team, x, y)){
+                    state.set(pursue);
+                    return;
+                }
+            }
+
+            BiomassGroundUnit.super.patrol.update();
+        }
+    },
+    pursue = new UnitState(){
+        public void update(){
+            if(Units.invalidateTarget(target, team, x, y) || distanceTo(target) > getType().pursueRange){
+                target = null;
+                onCommand(getCommand());
+            }else{
+                if(distanceTo(target) > getWeapon().getAmmo().getRange() * 0.8f){
+                    moveTo(target.getX(), target.getY());
+                }
+
+                if(distanceTo(target) < getWeapon().getAmmo().getRange()){
+                    rotate(angleTo(target));
+
+                    if(Mathf.angNear(angleTo(target), rotation, 13f)){
+                        AmmoType ammo = getWeapon().getAmmo();
+
+                        Vector2 to = Predict.intercept(BiomassGroundUnit.this, target, ammo.bullet.speed);
+
+                        getWeapon().update(BiomassGroundUnit.this, to.x, to.y);
+                    }
+                }
+            }
+        }
+    };
+
+    @Override
+    public void onCommand(UnitCommand command){
+        state.set(command == UnitCommand.retreat ? retreat :
+                command == UnitCommand.attack ? attack :
+                command == UnitCommand.patrol ? patrol :
+                null);
+    }
 
     @Override
     public void drawStats(){

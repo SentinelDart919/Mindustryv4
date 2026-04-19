@@ -61,7 +61,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
         public void update(){
             if(health < maxHealth() * 0.5f){
                 Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
-                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != FlyingUnit.this);
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != FlyingUnit.this);
                 if(repair != null && distanceTo(repair) < getType().healRange){
                     setState(retreat);
                     return;
@@ -156,7 +156,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
             if(retarget()){
                 target = getClosestCore();
-                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != FlyingUnit.this);
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != FlyingUnit.this);
                 Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
                 if(repair != null && (health < maxHealth())) FlyingUnit.this.target = repair.entity;
                 if(healer != null && repair == null && (health < maxHealth())) FlyingUnit.this.target = healer;

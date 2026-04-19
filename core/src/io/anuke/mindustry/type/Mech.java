@@ -24,6 +24,7 @@ public class Mech extends UnlockableContent{
     public float shake = 0f;
     public float armor = 1f;
 
+    public boolean isHealer;
     public float hitsize = 6f;
     public float cellTrnsY = 0f;
     public float mineSpeed = 1f;
@@ -53,6 +54,8 @@ public class Mech extends UnlockableContent{
     public void updateAlt(Player player){}
 
     public void draw(Player player){}
+
+    public void drawOver(Player player){}
 
     public float getExtraArmor(Player player){
         return 0f;
