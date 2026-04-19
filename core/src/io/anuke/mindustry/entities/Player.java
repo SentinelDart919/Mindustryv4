@@ -45,6 +45,7 @@ import static io.anuke.mindustry.sounds.Sounds.unitExplode;
 public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTrait{
     public static final int timerSync = 2;
     public static final int timerAbility = 3;
+    public static final int timerHeal = 4;
     private static final int timerShootLeft = 0;
     private static final int timerShootRight = 1;
     private static final float liftoffBoost = 0.2f;
@@ -67,9 +68,12 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     public NetConnection con;
     public int playerIndex = 0;
     public boolean isLocal = false;
-    public Timer timer = new Timer(4);
+    public Timer timer = new Timer(5);
     public TargetTrait target;
     public TargetTrait moveTarget;
+
+    public Unit healTarget;
+    public float healRotation = 90f, healStrength;
 
     private float walktime;
     private Queue<BuildRequest> placeQueue = new Queue<>();
@@ -224,6 +228,11 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     @Override
     public float getSize(){
         return 8;
+    }
+
+    @Override
+    public boolean isHealer(){
+        return mech.isHealer;
     }
 
     @Override
@@ -384,6 +393,8 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         if(dead) return;
 
         drawBuilding(this);
+
+        mech.drawOver(this);
 
         if(mech.flying || boostHeat > 0.001f){
             float wobblyness = 0.6f;

@@ -18,7 +18,6 @@ import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
-import io.anuke.mindustry.world.blocks.defense.ForceProjector;
 import io.anuke.mindustry.world.blocks.defense.OverdriveProjector;
 import io.anuke.mindustry.world.blocks.defense.Wall;
 import io.anuke.mindustry.world.blocks.distribution.Sorter;
@@ -202,7 +201,9 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.chaosarray,
                     UnitTypes.artilleryBiomass,
                     UnitTypes.explosiveBiomass,
-                    UnitTypes.exterminatorBiomass
+                    UnitTypes.acidMosquito,
+                    UnitTypes.exterminatorBiomass,
+                    UnitTypes.nova
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -227,6 +228,10 @@ public class DebugBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.silicon, 5)},
                     new ItemStack[]{
                             new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
 
             };
             producerTimes = new float[]{
@@ -239,8 +244,12 @@ public class DebugBlocks extends BlockList implements ContentList{
                     1000f,
                     1000f,
                     1000f,
+                    1000f,
+                    1000f,
             };
             maxSpawn = new int[]{
+                    5,
+                    5,
                     5,
                     5,
                     5,

@@ -276,11 +276,16 @@ public class UnitBlocks extends BlockList implements ContentList{
                     new ItemStack[]{
                             new ItemStack(Items.coal, 5),
                             new ItemStack(Items.copper, 5),
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.thorium, 5),
+                            new ItemStack(Items.scrap, 1)
                     }
             };
             types = new UnitType[]{
                     UnitTypes.evilWraith,
-                    UnitTypes.evilBombDrone
+                    UnitTypes.FlyingExplosiveBiomass,
+                    UnitTypes.acidMosquito
             };
             shadow = "air-hive-spawnershadow";
             minSpawnTimer = 15f;
