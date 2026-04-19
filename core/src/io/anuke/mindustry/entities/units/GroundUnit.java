@@ -22,6 +22,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import io.anuke.mindustry.content.blocks.UnitBlocks;
+import io.anuke.mindustry.entities.Unit;
+import io.anuke.mindustry.world.meta.BlockFlag;
+import io.anuke.ucore.util.Geometry;
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.world;
 
@@ -41,6 +45,18 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         public void update(){
+            if(health < maxHealth() * 0.5f){
+                Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != GroundUnit.this);
+                if(repair != null && distanceTo(repair) < getType().healRange){
+                    state.set(retreat);
+                    return;
+                }else if(healer != null){
+                    state.set(retreat);
+                    return;
+                }
+            }
+
             TileEntity core = getClosestEnemyCore();
             float dst = core == null ? 0 : distanceTo(core);
 
@@ -49,7 +65,7 @@ public abstract class GroundUnit extends BaseUnit{
             }
 
             if(dst > getWeapon().getAmmo().getRange() * 0.5f){
-                moveToCore();
+                moveToEnemyCore();
             }
         }
     },
@@ -71,11 +87,43 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         public void update(){
-            if(health >= maxHealth() && !isCommanded()){
-                state.set(attack);
+            Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != GroundUnit.this);
+            Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
+            if(health >= maxHealth()){
+                if(isCommanded()){
+                    onCommand(getCommand());
+                }else{
+                    state.set(attack);
+                }
+                return;
             }
 
-            moveAwayFromCore();
+            if(retarget() || target == null || (target instanceof TileEntity && (((TileEntity)target).getTile() == null || ((TileEntity)target).getTile().target().block().flags == null || !((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair))) || (target instanceof BaseUnit && !((BaseUnit)target).getType().isHealer)){
+                if(repair != null) target = repair.entity();
+                else if(healer != null) target = healer;
+                else target = getClosestCore();
+            }
+
+            if(target != null){
+                float dst = distanceTo(target);
+                if(dst > 7f){
+                    if(target instanceof TileEntity && ((TileEntity)target).getTile() != null && ((TileEntity)target).getTile().target().block().flags != null && ((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair)){
+                        moveTo(target.getX(), target.getY());
+                    }else if(target instanceof BaseUnit && ((BaseUnit)target).getType().isHealer){
+                        if(dst > type.healRange){
+                            moveToHome();
+                        }else{
+                            moveTo(target.getX(), target.getY());
+                        }
+                    }else{
+                        moveToHome();
+                    }
+                }else{
+                    velocity.setZero();
+                }
+            }else{
+                moveToHome();
+            }
         }
     };
 
@@ -204,10 +252,15 @@ public abstract class GroundUnit extends BaseUnit{
     }
 
     @Override
+    public boolean isRetreating(){
+        return state.is(retreat);
+    }
+
+    @Override
     public void updateTargeting(){
         super.updateTargeting();
 
-        if(Units.invalidateTarget(target, team, x, y, Float.MAX_VALUE)){
+        if(!isRetreating() && Units.invalidateTarget(target, team, x, y, Float.MAX_VALUE)){
             target = null;
         }
 
@@ -264,7 +317,13 @@ public abstract class GroundUnit extends BaseUnit{
         velocity.add(vec);
     }
 
-    protected void moveToCore(){
+    protected void moveTo(float x, float y){
+        float angle = angleTo(x, y);
+        velocity.add(vec.trns(angle, type.speed * Timers.delta()));
+        rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
+    }
+
+    protected void moveToEnemyCore(){
         Tile tile = world.tileWorld(x, y);
         if(tile == null) return;
         Tile targetTile = world.pathfinder.getTargetTile(team, tile);
@@ -277,7 +336,7 @@ public abstract class GroundUnit extends BaseUnit{
         rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
     }
 
-    protected void moveAwayFromCore(){
+    protected void moveToHome(){
         Team enemy = null;
         for(Team team : Vars.state.teams.enemiesOf(team)){
             if(Vars.state.teams.isActive(team)){
@@ -291,13 +350,16 @@ public abstract class GroundUnit extends BaseUnit{
         Tile tile = world.tileWorld(x, y);
         if(tile == null) return;
         Tile targetTile = world.pathfinder.getTargetTile(enemy, tile);
-        TileEntity core = getClosestCore();
 
-        if(tile == targetTile || core == null || distanceTo(core) < 90f) return;
+        if(tile == targetTile) return;
 
         float angle = angleTo(targetTile);
 
         velocity.add(vec.trns(angleTo(targetTile), type.speed*Timers.delta()));
         rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
+    }
+
+    protected void moveAwayFromCore(){
+        moveToHome();
     }
 }

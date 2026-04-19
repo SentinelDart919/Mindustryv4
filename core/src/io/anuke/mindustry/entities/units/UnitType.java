@@ -28,13 +28,14 @@ public class UnitType extends UnlockableContent{
     public float hitsize = 7f;
     public float hitsizeTile = 4f;
     public float speed = 0.4f;
-    public float range = 0;
+    public float range = 0, attackLength = 150, pursueRange = 250f, healRange = 200f;
     public float rotatespeed = 0.2f;
     public float baseRotateSpeed = 0.1f;
     public float mass = 1f;
     public boolean isFlying;
     public boolean isTank;
     public boolean living;
+    public boolean isHealer;
     public boolean targetAir = true;
     public boolean spawnsInSiegeMode = true;
     /** Cost for the ExtraSurvival Mode*/
@@ -45,6 +46,7 @@ public class UnitType extends UnlockableContent{
     public float armor = 0f;
     public float carryWeight = 1f;
     public int itemCapacity = 30;
+    public float shootCone = 15f;
     public ObjectSet<Item> toMine = ObjectSet.with(Items.lead, Items.copper);
     public float buildPower = 0.3f, minePower = 0.7f;
     public Weapon weapon = Weapons.blaster;

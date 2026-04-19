@@ -182,14 +182,21 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
             run.run();
         }
     }
+    public boolean retarget(){
+        return timer.get(timerTarget, 20);
+    }
 
     /**Only runs when the unit has a target.*/
     public void behavior(){
 
     }
 
+    public boolean isRetreating(){
+        return false;
+    }
+
     public void updateTargeting(){
-        if(target == null || (target instanceof Unit && (target.isDead() || target.getTeam() == team))
+        if(target == null || (target instanceof Unit && (target.isDead() || (!isRetreating() && target.getTeam() == team)))
         || (target instanceof TileEntity && ((TileEntity) target).tile.entity == null)){
             target = null;
         }

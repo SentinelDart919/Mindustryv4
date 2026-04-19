@@ -60,9 +60,9 @@ public class BiomassArtillery extends BiomassGroundUnit {
         }
     }
     @Override
-    protected void moveToCore(){
+    protected void moveToEnemyCore(){
         if(Units.invalidateTarget(target, this)){
-            super.moveToCore();
+            super.moveToEnemyCore();
         }
     }
 }

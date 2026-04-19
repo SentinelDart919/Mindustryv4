@@ -52,8 +52,6 @@ public class UnitTypes implements ContentList{
                 drag = 0.005f;
                 speed = 0.7f;
                 maxVelocity = 2.0f;
-                rotatespeed = 0.5f;
-                baseRotateSpeed = 0.5f;
                 range = 80f;
                 health = 60;
                 hitsize = 4f;
@@ -222,7 +220,7 @@ public class UnitTypes implements ContentList{
         wraith = new UnitType("wraith", Wraith.class, Wraith::new){{
             speed = 0.3f;
             maxVelocity = 1.9f;
-            drag = 0.01f;
+            drag = 0.005f;
             mass = 1.5f;
             weapon = Weapons.chainBlaster;
             isFlying = true;
@@ -250,6 +248,8 @@ public class UnitTypes implements ContentList{
             maxVelocity = 1.3f;
             drag = 0.01f;
             range = 80f;
+            shootCone = 40f;
+            attackLength = 90f;
             isFlying = true;
             weapon = Weapons.laserBurster;
             unitCost = 300;
@@ -269,6 +269,8 @@ public class UnitTypes implements ContentList{
             baseRotateSpeed = 0.04f;
             weaponOffsetX = 14f;
             weaponOffsetY = -3f;
+            attackLength = 90f;
+            shootCone = 20f;
             weapon = Weapons.lichMissiles;
             unitCost = 2000;
         }};

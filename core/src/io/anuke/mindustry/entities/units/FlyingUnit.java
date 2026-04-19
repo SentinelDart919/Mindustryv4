@@ -1,13 +1,16 @@
 package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.math.Vector2;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.traits.CarriableTrait;
 import io.anuke.mindustry.entities.traits.CarryTrait;
 import io.anuke.mindustry.graphics.Trail;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.AmmoType;
+import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.ucore.core.Timers;
@@ -17,6 +20,10 @@ import io.anuke.ucore.util.*;
 import static io.anuke.mindustry.Vars.world;
 
 public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
+    @Override
+    public boolean isRetreating(){
+        return state.is(retreat);
+    }
     protected static Translator vec = new Translator();
     protected static float wobblyness = 0.6f;
     protected boolean customTrail = false;
@@ -52,74 +59,112 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
         }
 
         public void update(){
+            if(health < maxHealth() * 0.5f){
+                Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != FlyingUnit.this);
+                if(repair != null && distanceTo(repair) < getType().healRange){
+                    setState(retreat);
+                    return;
+                }else if(healer != null){
+                    setState(retreat);
+                    return;
+                }
+            }
+
             if(Units.invalidateTarget(target, team, x, y)){
                 target = null;
             }
 
-            if(target == null){
-                retarget(() -> {
-                    targetClosest();
+            if(retarget()){
+                targetClosest();
 
-                    if(target == null && isCommanded() && getCommand() == UnitCommand.patrol){
-                        setState(patrol);
-                        return;
-                    }
+                if(target == null) targetClosestEnemyFlag(BlockFlag.producer);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.turret);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.target);
 
-                    if(target == null) targetClosestEnemyFlag(BlockFlag.target);
-                    if(target == null) targetClosestEnemyFlag(BlockFlag.producer);
-                    if(target == null) targetClosestEnemyFlag(BlockFlag.turret);
+                if(target == null && isCommanded() && getCommand() != UnitCommand.attack){
+                    onCommand(getCommand());
+                }
+            }else if(target != null){
+                attack(type.attackLength);
 
-                    if(target == null && !isCommanded()){
-                        setState(idle);
-                    }
-                });
-            }else{
-                attack(150f);
-
-                if((Mathf.angNear(angleTo(target), rotation, 15f) || !getWeapon().getAmmo().bullet.keepVelocity) //bombers don't care about rotation
-                && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+                if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity) //bombers and such don't care about rotation
+                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
                     AmmoType ammo = getWeapon().getAmmo();
-
                     Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
-
                     getWeapon().update(FlyingUnit.this, to.x, to.y);
                 }
+            } else {
+                target = getClosestCore();
+                moveTo(Math.max(type.range, 120f));
             }
         }
     },
     patrol = new UnitState(){
         public void update(){
-            retarget(() -> {
+            if(retarget()){
+                targetClosestAllyFlag(BlockFlag.comandCenter);
                 targetClosest();
 
-                if(target != null){
-                    setState(attack);
+                if(target != null && !Units.invalidateTarget(target, team, x, y)){
+                    setState(pursue);
+                    return;
                 }
 
-                target = getClosestCore();
-            });
+                if(target == null) target = getClosestCore();
+            }
 
             if(target != null){
                 circle(60f + Mathf.absin(Timers.time() + id * 23525, 70f, 1200f));
             }
+
+            //circle(60f + Mathf.absin(Timers.time() + id * 23525, 70f, 1200f));
         }
     },
+
+    pursue = new UnitState(){
+        public void update(){
+            if(Units.invalidateTarget(target, team, x, y) || distanceTo(target) > getType().pursueRange){
+                target = null;
+                onCommand(getCommand());
+            }else{
+                attack(type.attackLength);
+
+                if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)
+                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
+                    AmmoType ammo = getWeapon().getAmmo();
+                    Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                    getWeapon().update(FlyingUnit.this, to.x, to.y);
+                }
+            }
+        }
+    },
+
     retreat = new UnitState(){
         public void entered(){
             target = null;
         }
 
         public void update(){
-            if(health >= maxHealth() && !isCommanded()){
-                state.set(attack);
-            }else if(!targetHasFlag(BlockFlag.repair)){
-                retarget(() -> {
-                    Tile target = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
-                    if(target != null) FlyingUnit.this.target = target.entity;
-                });
-            }else{
-                circle(20f);
+            if(health >= maxHealth()){
+                if(isCommanded()){
+                    onCommand(getCommand());
+                }else{
+                    setState(attack);
+                }
             }
+
+            if(retarget()){
+                target = getClosestCore();
+                Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u instanceof BaseUnit && ((BaseUnit)u).getType().isHealer && u != FlyingUnit.this);
+                Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
+                if(repair != null && (health < maxHealth())) FlyingUnit.this.target = repair.entity;
+                if(healer != null && repair == null && (health < maxHealth())) FlyingUnit.this.target = healer;
+                if(target == null) target = getClosestCore();
+            }
+
+            if(target == getClosestCore())circle(60f + Mathf.absin(Timers.time() + id * 23525, 70f, 1200f));
+            else circle(45f + Mathf.randomSeed(id) * 80);
         }
     };
 
