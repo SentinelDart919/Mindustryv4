@@ -483,7 +483,7 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.artilleryBiomass;
 
             health = 800;
-            unitCost = 100;
+            spawnsInSiegeMode = false;
             living = true;
         }};
 
@@ -498,7 +498,13 @@ public class UnitTypes implements ContentList{
             trailColor = Color.valueOf("871e1e");
             spawnsInSiegeMode = false;
             living = true;
-        }};
+        }
+
+            @Override
+            public boolean isHidden() {
+                return true;
+            }
+        };
     }
 
     @Override
