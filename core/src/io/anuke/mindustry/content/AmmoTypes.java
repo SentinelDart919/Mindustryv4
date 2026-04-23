@@ -20,6 +20,7 @@ public class AmmoTypes implements ContentList{
         artilleryDense, artilleryPlastic, artilleryHoming, artilleryIncindiary, artilleryExplosive, unitArtillery,
         basicFlame, lancerLaser, lightning, meltdownLaser, burstLaser,
             fuseShotgun, oil, water, lava, cryofluid, arc;
+    //TODO bullets for the Mass
 
     @Override
     public void load(){

@@ -492,6 +492,7 @@ public class UnitTypes implements ContentList{
             health = 100;
             hitsize = 4f;
             mass = 0.1f;
+            range = 30f;
             weapon = Weapons.mosquitoweapon;
             weaponOffsetX = 0;
             weaponOffsetY = 0;

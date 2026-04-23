@@ -70,18 +70,18 @@ public class UnitBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.lead, 15)
                     },
                     new ItemStack[]{
+                            new ItemStack(Items.silicon, 15),
+                            new ItemStack(Items.lead, 15)
+                    },
+                    new ItemStack[]{
                             new ItemStack(Items.silicon, 30),
-                            new ItemStack(Items.lead, 30)
+                            new ItemStack(Items.lead, 30),
+                            new ItemStack(Items.densealloy, 40)
                     },
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 50),
+                            new ItemStack(Items.silicon, 40),
                             new ItemStack(Items.lead, 50),
-                            new ItemStack(Items.densealloy, 60)
-                    },
-                    new ItemStack[]{
-                            new ItemStack(Items.silicon, 70),
-                            new ItemStack(Items.lead, 80),
-                            new ItemStack(Items.titanium, 80)
+                            new ItemStack(Items.titanium, 50)
                     }
             };
             producerTimes = new float[]{
@@ -108,7 +108,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             produceTime = 1800;
             size = 2;
             consumes.power(0.1f);
-            consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.titanium, 10));
+            consumes.items(new ItemStack(Items.silicon, 8));
         }};
 
         scrapperFactory = new UnitFactory("scrapper-factory"){{
@@ -126,7 +126,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 3;
             consumes.power(0.2f);
             shadow = "shadow-round-3";
-            consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.titanium, 30), new ItemStack(Items.plastanium, 20));
+            consumes.items(new ItemStack(Items.silicon, 22), new ItemStack(Items.titanium, 20));
             maxSpawn = 6;
         }};
 
@@ -136,7 +136,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 4;
             consumes.power(0.3f);
             shadow = "shadow-round-4";
-            consumes.items(new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 80), new ItemStack(Items.plastanium, 50));
+            consumes.items(new ItemStack(Items.silicon, 60), new ItemStack(Items.titanium, 60), new ItemStack(Items.plastanium, 30));
             maxSpawn = 4;
         }};
 
@@ -170,7 +170,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             produceTime = 1700;
             size = 2;
             consumes.power(0.05f);
-            consumes.items(new ItemStack(Items.silicon, 10));
+            consumes.items(new ItemStack(Items.silicon, 8));
         }};
 
         titanFactory = new UnitFactory("titan-factory"){{
@@ -179,7 +179,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 3;
             consumes.power(0.15f);
             shadow = "shadow-round-3";
-            consumes.items(new ItemStack(Items.silicon, 20), new ItemStack(Items.thorium, 30));
+            consumes.items(new ItemStack(Items.silicon, 16), new ItemStack(Items.densealloy, 10));
             maxSpawn = 6;
         }};
 
@@ -189,7 +189,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 3;
             consumes.power(0.2f);
             shadow = "shadow-round-3";
-            consumes.items(new ItemStack(Items.silicon, 40), new ItemStack(Items.thorium, 50));
+            consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.thorium, 40));
             maxSpawn = 4;
         }};
         highTierFactory = new UnitFactoryAdvanced("high-tier-factory"){{
@@ -199,20 +199,20 @@ public class UnitBlocks extends BlockList implements ContentList{
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 500),
-                            new ItemStack(Items.lead, 650),
-                            new ItemStack(Items.thorium, 300),
-                            new ItemStack(Items.plastanium, 250),
-                            new ItemStack(Items.chromium, 400),
-                            new ItemStack(Items.surgealloy, 400),
+                            new ItemStack(Items.silicon, 400),
+                            new ItemStack(Items.lead, 550),
+                            new ItemStack(Items.thorium, 200),
+                            new ItemStack(Items.plastanium, 150),
+                            new ItemStack(Items.chromium, 300),
+                            new ItemStack(Items.surgealloy, 300),
                     },
                     new ItemStack[]{
-                            new ItemStack(Items.silicon, 600),
-                            new ItemStack(Items.lead, 700),
-                            new ItemStack(Items.thorium, 400),
-                            new ItemStack(Items.titanium, 300),
-                            new ItemStack(Items.chromium, 100),
-                            new ItemStack(Items.surgealloy, 200),
+                            new ItemStack(Items.silicon, 500),
+                            new ItemStack(Items.lead, 600),
+                            new ItemStack(Items.thorium, 300),
+                            new ItemStack(Items.titanium, 200),
+                            new ItemStack(Items.chromium, 150),
+                            new ItemStack(Items.surgealloy, 300),
                     }
 
             };

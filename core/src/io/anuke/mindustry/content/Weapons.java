@@ -313,11 +313,12 @@ public class Weapons implements ContentList{
             weaponMirror = false;
             length = 8f;
             reload = 20f;
+            width = -2f;
             roundrobin = false;
             recoil = 1f;
             ejectEffect = Fx.none;
 
-            ammo = AmmoTypes.artilleryIncindiary;
+            ammo = AmmoTypes.bulletPyratite;
         }};
     }
 
