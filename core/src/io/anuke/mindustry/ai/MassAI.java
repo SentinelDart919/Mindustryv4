@@ -2,6 +2,7 @@ package io.anuke.mindustry.ai;
 
 import com.badlogic.gdx.utils.*;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.CraftingBlocks;
@@ -28,8 +29,13 @@ import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import com.badlogic.gdx.math.Rectangle;
 import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
+import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Mathf;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.world;
 import static io.anuke.mindustry.Vars.unitGroups;
@@ -62,6 +68,8 @@ public class MassAI {
     private static float enemyNearbyTimer = 0;
     private static Rectangle rect = new Rectangle();
     private static boolean enemyNearby = false;
+    private static float nextInfectionTime = 0;
+    private static boolean disableGrace = false;
 
     static {
         Events.on(WorldLoadEvent.class, event -> {
@@ -75,12 +83,110 @@ public class MassAI {
             nextDamageTurretTime = 0;
             pendingBuilds.clear();
             nextTurretTime = Mathf.random(15f, 30f) * 60f;
+
+            if (nextInfectionTime <= 0) {// only initialize if not already set by loading
+                nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
+            }
+            disableGrace = false;
             for (int i = 0; i < oreBoosts.length; i++) oreBoosts[i] = 0;
             currentCommand = UnitCommand.patrol;
             commandTimer = 0;
             enemyNearbyTimer = 0;
             enemyNearby = false;
         });
+    }
+
+    public static void write(DataOutputStream stream) throws IOException {
+        stream.writeInt(initializedCores.size);
+        for (Tile core : initializedCores) {
+            stream.writeInt(core.packedPosition());
+        }
+
+        stream.writeInt(activeLines.size);
+        for (BuildingLine line : activeLines) {
+            line.write(stream);
+        }
+
+        stream.writeInt(activeSubsections.size);
+        for (SubSection sub : activeSubsections) {
+            sub.write(stream);
+        }
+
+        stream.writeFloat(spawnTimer);
+        stream.writeFloat(turretTimer);
+        stream.writeFloat(nextTurretTime);
+        stream.writeFloat(damageTurretTimer);
+        stream.writeFloat(nextDamageTurretTime);
+        stream.writeFloat(nextInfectionTime);
+
+        stream.writeInt(pendingBuilds.size);
+        for (PendingBuild build : pendingBuilds) {
+            build.write(stream);
+        }
+
+        for (int boost : oreBoosts) {
+            stream.writeInt(boost);
+        }
+
+        stream.writeInt(coreExpanded.size);
+        for (ObjectMap.Entry<Tile, Boolean> entry : coreExpanded.entries()) {
+            stream.writeInt(entry.key.packedPosition());
+            stream.writeBoolean(entry.value);
+        }
+
+        stream.writeInt(currentCommand.ordinal());
+        stream.writeFloat(commandTimer);
+        stream.writeFloat(enemyNearbyTimer);
+        stream.writeBoolean(enemyNearby);
+    }
+
+    public static void read(DataInputStream stream) throws IOException {
+        int coreCount = stream.readInt();
+        initializedCores.clear();
+        for (int i = 0; i < coreCount; i++) {
+            initializedCores.add(world.tile(stream.readInt()));
+        }
+
+        int lineCount = stream.readInt();
+        activeLines.clear();
+        for (int i = 0; i < lineCount; i++) {
+            activeLines.add(BuildingLine.read(stream));
+        }
+
+        int subCount = stream.readInt();
+        activeSubsections.clear();
+        for (int i = 0; i < subCount; i++) {
+            activeSubsections.add(SubSection.read(stream));
+        }
+
+        spawnTimer = stream.readFloat();
+        turretTimer = stream.readFloat();
+        nextTurretTime = stream.readFloat();
+        damageTurretTimer = stream.readFloat();
+        nextDamageTurretTime = stream.readFloat();
+        nextInfectionTime = stream.readFloat();
+        disableGrace = true;
+
+        int pendingCount = stream.readInt();
+        pendingBuilds.clear();
+        for (int i = 0; i < pendingCount; i++) {
+            pendingBuilds.add(PendingBuild.read(stream));
+        }
+
+        for (int i = 0; i < oreBoosts.length; i++) {
+            oreBoosts[i] = stream.readInt();
+        }
+
+        int expandedCount = stream.readInt();
+        coreExpanded.clear();
+        for (int i = 0; i < expandedCount; i++) {
+            coreExpanded.put(world.tile(stream.readInt()), stream.readBoolean());
+        }
+
+        currentCommand = UnitCommand.values()[stream.readInt()];
+        commandTimer = stream.readFloat();
+        enemyNearbyTimer = stream.readFloat();
+        enemyNearby = stream.readBoolean();
     }
 
     private static int countTurrets(boolean air) {
@@ -124,6 +230,16 @@ public class MassAI {
         if (Vars.state.isPaused() || Vars.state.teams == null) return;
 
         ObjectSet<Tile> cores = Vars.state.teams.get(Team.themass).cores;
+
+        if (Vars.state.allowMassInfection && cores.size == 0) {
+            nextInfectionTime -= Timers.delta();
+            if (nextInfectionTime <= 0) {
+                nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
+                cores = Vars.state.teams.get(Team.themass).cores;
+            }
+        } else if (!Vars.state.allowMassInfection && cores.size == 0) {
+            nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
+        }
         
         // Remove tracking for destroyed cores
         ObjectSet.ObjectSetIterator<Tile> it = initializedCores.iterator();
@@ -251,7 +367,46 @@ public class MassAI {
     }
 
     public static boolean isGracePeriod() {
+        if (disableGrace) return false;
         return commandTimer < getGraceTime();
+    }
+
+    public static void spawnInitialHive() {
+        if (Vars.state.teams.get(Team.themass).cores.size > 0) return;
+
+        Tile playerCore = null;
+        for (Player player : Vars.players) {
+            if (player != null && player.getClosestCore() != null) {
+                playerCore = player.getClosestCore().tile;
+                break;
+            }
+        }
+        if (playerCore == null) return;
+
+        Tile spawn = null;
+        float maxDist = 0;
+
+        for (int i = 0; i < 50; i++) {
+            int x = Mathf.random(world.width() - 1);
+            int y = Mathf.random(world.height() - 1);
+            Tile tile = world.tile(x, y);
+
+            if (tile != null && tile.block() == Blocks.air && !tile.floor().solid && !isNearEnemyCore(tile)) {
+                float dist = Mathf.dst(x - playerCore.x, y - playerCore.y);
+                if (dist > maxDist) {
+                    maxDist = dist;
+                    spawn = tile;
+                }
+            }
+        }
+
+        if (spawn != null) {
+            world.setBlock(spawn, StorageBlocks.hive, Team.themass);
+            if (!Vars.headless) {
+                String msg = Mathf.chance(0.01) ? Bundles.get("text.biomass.alert.rare") : Bundles.get("text.biomass.alert");
+                Vars.ui.hudfrag.showBiomassAlert(msg);
+            }
+        }
     }
 
     public static void trySpawnTurret(boolean fromDamage, boolean targetAir, float targetX, float targetY) {
@@ -1019,6 +1174,45 @@ public class MassAI {
                 }
             }
         }
+
+        void write(DataOutputStream stream) throws IOException {
+            stream.writeInt(startTile.packedPosition());
+            stream.writeInt(targetTile.packedPosition());
+            stream.writeInt(targetBlock == null ? -1 : targetBlock.id);
+            stream.writeInt(targetOre == null ? -1 : targetOre.id);
+            stream.writeInt(path.size);
+            for (Tile t : path) {
+                stream.writeInt(t.packedPosition());
+            }
+            stream.writeInt(progress);
+            stream.writeFloat(timer);
+            stream.writeFloat(stuckTimer);
+            stream.writeBoolean(drillPlaced);
+            stream.writeBoolean(failed);
+            stream.writeBoolean(destroying);
+        }
+
+        static SubSection read(DataInputStream stream) throws IOException {
+            Tile startTile = world.tile(stream.readInt());
+            Tile targetTile = world.tile(stream.readInt());
+            int blockId = stream.readInt();
+            Block targetBlock = blockId == -1 ? null : Vars.content.block(blockId);
+            int oreId = stream.readInt();
+            Item targetOre = oreId == -1 ? null : Vars.content.item(oreId);
+            int pathSize = stream.readInt();
+            Array<Tile> path = new Array<>(pathSize);
+            for (int i = 0; i < pathSize; i++) {
+                path.add(world.tile(stream.readInt()));
+            }
+            SubSection sub = new SubSection(startTile, targetTile, targetBlock, targetOre, path);
+            sub.progress = stream.readInt();
+            sub.timer = stream.readFloat();
+            sub.stuckTimer = stream.readFloat();
+            sub.drillPlaced = stream.readBoolean();
+            sub.failed = stream.readBoolean();
+            sub.destroying = stream.readBoolean();
+            return sub;
+        }
     }
 
     private static class BuildingLine {
@@ -1254,6 +1448,66 @@ public class MassAI {
             }
             return false;
         }
+
+        void write(DataOutputStream stream) throws IOException {
+            stream.writeInt(core.packedPosition());
+            stream.writeInt(direction);
+            stream.writeInt(startX);
+            stream.writeInt(startY);
+            stream.writeInt(targetLength);
+            stream.writeInt(divisions);
+            stream.writeBoolean(subdivided);
+            stream.writeFloat(timer);
+            stream.writeFloat(lastSubsectionTimer);
+
+            stream.writeInt(tiles.size);
+            for (PathTile pt : tiles) {
+                pt.write(stream);
+            }
+
+            stream.writeInt(attempts.size);
+            for (IntIntMap.Entry entry : attempts.entries()) {
+                stream.writeInt(entry.key);
+                stream.writeInt(entry.value);
+            }
+
+            stream.writeInt(gaveUp.size);
+            IntSet.IntSetIterator it = gaveUp.iterator();
+            while (it.hasNext) {
+                stream.writeInt(it.next());
+            }
+        }
+
+        static BuildingLine read(DataInputStream stream) throws IOException {
+            Tile core = world.tile(stream.readInt());
+            int direction = stream.readInt();
+            int sx = stream.readInt();
+            int sy = stream.readInt();
+            int divisions = stream.readInt();
+
+            BuildingLine line = new BuildingLine(core, direction, sx, sy, divisions);
+            line.targetLength = stream.readInt();
+            line.subdivided = stream.readBoolean();
+            line.timer = stream.readFloat();
+            line.lastSubsectionTimer = stream.readFloat();
+
+            int tileCount = stream.readInt();
+            for (int i = 0; i < tileCount; i++) {
+                line.tiles.add(PathTile.read(stream));
+            }
+
+            int attemptCount = stream.readInt();
+            for (int i = 0; i < attemptCount; i++) {
+                line.attempts.put(stream.readInt(), stream.readInt());
+            }
+
+            int gaveUpCount = stream.readInt();
+            for (int i = 0; i < gaveUpCount; i++) {
+                line.gaveUp.add(stream.readInt());
+            }
+
+            return line;
+        }
     }
 
     private static class PathTile {
@@ -1262,6 +1516,15 @@ public class MassAI {
         PathTile(Tile tile, int rotation) {
             this.tile = tile;
             this.rotation = rotation;
+        }
+
+        void write(DataOutputStream stream) throws IOException {
+            stream.writeInt(tile.packedPosition());
+            stream.writeInt(rotation);
+        }
+
+        static PathTile read(DataInputStream stream) throws IOException {
+            return new PathTile(world.tile(stream.readInt()), stream.readInt());
         }
     }
     // I think I should use this for more stuff but I'm so lazy to refactor the full code
@@ -1288,6 +1551,37 @@ public class MassAI {
             this.fromDamage = fromDamage;
             this.targetX = targetX;
             this.targetY = targetY;
+        }
+
+        void write(DataOutputStream stream) throws IOException {
+            stream.writeInt(tile == null ? -1 : tile.packedPosition());
+            stream.writeInt(block == null ? -1 : block.id);
+            stream.writeInt(team == null ? -1 : team.ordinal());
+            stream.writeInt(rotation);
+            stream.writeFloat(delay);
+            stream.writeFloat(timer);
+            stream.writeBoolean(fromDamage);
+            stream.writeFloat(targetX);
+            stream.writeFloat(targetY);
+        }
+
+        static PendingBuild read(DataInputStream stream) throws IOException {
+            int tilePos = stream.readInt();
+            Tile tile = tilePos == -1 ? null : world.tile(tilePos);
+            int blockId = stream.readInt();
+            Block block = blockId == -1 ? null : Vars.content.block(blockId);
+            int teamId = stream.readInt();
+            Team team = teamId == -1 ? null : Team.all[teamId];
+            int rotation = stream.readInt();
+            float delay = stream.readFloat();
+            float timer = stream.readFloat();
+            boolean fromDamage = stream.readBoolean();
+            float targetX = stream.readFloat();
+            float targetY = stream.readFloat();
+
+            PendingBuild build = new PendingBuild(tile, block, team, rotation, delay, fromDamage, targetX, targetY);
+            build.timer = timer;
+            return build;
         }
 
         void place() {

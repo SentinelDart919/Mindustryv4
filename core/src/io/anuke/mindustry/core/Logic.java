@@ -85,6 +85,10 @@ public class Logic extends Module{
         }
 
         Events.fire(new PlayEvent());
+
+        if (state.startWithBiomass) {
+            io.anuke.mindustry.ai.MassAI.spawnInitialHive();
+        }
     }
 
     public void reset(){

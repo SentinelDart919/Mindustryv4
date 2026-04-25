@@ -17,6 +17,8 @@ import io.anuke.mindustry.maps.SectorPresets.SectorPreset;
 import io.anuke.mindustry.maps.generation.Generation;
 import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.mindustry.maps.missions.BattleMission;
+import io.anuke.mindustry.maps.missions.BiomassInfectableMission;
+import io.anuke.mindustry.maps.missions.BiomassInfectedMission;
 import io.anuke.mindustry.maps.missions.Mission;
 import io.anuke.mindustry.maps.missions.Missions;
 import io.anuke.mindustry.maps.missions.WaveMission;
@@ -225,9 +227,14 @@ public class Sectors{
 
     /**Generates a mission for a sector. This is deterministic and the same for each client.*/
     private void generate(Sector sector){
+        float rand = Mathf.randomSeed(sector.getSeed() + 7);
 
-        //50% chance to get a wave mission
-        if(Mathf.randomSeed(sector.getSeed() + 7) < 0.5){
+        //5% chance for biomass infected mission
+        if(rand < 0.15){
+            sector.missions.add(new BiomassInfectedMission());
+        }else if(rand < 0.30f){ //30% chance for biomass infectable mission
+            sector.missions.add(new BiomassInfectableMission(sector.difficulty*5 + Mathf.randomSeed(sector.getSeed(), 1, 4)*5));
+        }else if(rand < 0.55f){ //40% chance to get a wave mission
             //recipe mission (maybe)
             addRecipeMission(sector, 3);
             sector.missions.add(new WaveMission(sector.difficulty*5 + Mathf.randomSeed(sector.getSeed(), 1, 4)*5));

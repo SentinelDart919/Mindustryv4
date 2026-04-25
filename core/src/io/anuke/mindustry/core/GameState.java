@@ -25,6 +25,10 @@ public class GameState{
     public Teams teams = new Teams();
     /**Number of enemies in the game; only used clientside in servers.*/
     public int enemies;
+    /**Whether random biomass (hive) spawning is allowed.*/
+    public boolean allowMassInfection = false;
+    /**Whether to start with present biomass (hive).*/
+    public boolean startWithBiomass = false;
     /**Current game state.*/
     private State state = State.menu;
 

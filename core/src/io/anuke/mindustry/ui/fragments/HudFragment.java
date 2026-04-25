@@ -54,6 +54,10 @@ public class HudFragment extends Fragment{
     private float lastCoreHP;
     private float coreAttackOpacity = 0f;
 
+    private float biomassAlertTime;
+    private float biomassAlertOpacity = 0f;
+    private String biomassAlertText = "";
+
     public void build(Group parent){
 
         //menu at top left
@@ -205,6 +209,32 @@ public class HudFragment extends Fragment{
             .update(label -> label.setColor(Hue.mix(Color.ORANGE, Color.SCARLET, Mathf.absin(Timers.time(), 2f, 1f)))));
         });
 
+        //'biomass alert' table
+        parent.fill(t -> {
+            t.top().visible(() -> {
+                if(state.is(State.menu)){
+                    biomassAlertTime = 0f;
+                    return false;
+                }
+
+                t.getColor().a = biomassAlertOpacity;
+                if(biomassAlertTime > 0){
+                    biomassAlertOpacity = Mathf.lerpDelta(biomassAlertOpacity, 1f, 0.1f);
+                }else{
+                    biomassAlertOpacity = Mathf.lerpDelta(biomassAlertOpacity, 0f, 0.1f);
+                }
+
+                biomassAlertTime -= Timers.delta();
+
+                return biomassAlertOpacity > 0;
+            });
+            t.table("button", top -> top.add("").pad(2)
+                    .update(label -> {
+                        ((Label)label).setText(biomassAlertText);
+                        label.setColor(Hue.mix(Color.SCARLET, Color.PURPLE, Mathf.absin(Timers.time(), 2f, 1f)));
+                    }));
+        });
+
         //'saving' indicator
         parent.fill(t -> {
             t.bottom().visible(() -> !state.is(State.menu) && control.saves.isSaving());
@@ -212,6 +242,11 @@ public class HudFragment extends Fragment{
         });
 
         blockfrag.build(Core.scene.getRoot());
+    }
+
+    public void showBiomassAlert(String text){
+        this.biomassAlertText = text;
+        this.biomassAlertTime = 600f;
     }
 
     public void showToast(String text){

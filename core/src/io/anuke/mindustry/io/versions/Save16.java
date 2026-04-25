@@ -1,6 +1,7 @@
 package io.anuke.mindustry.io.versions;
 
 import com.badlogic.gdx.utils.TimeUtils;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Version;
@@ -42,6 +43,8 @@ public class Save16 extends SaveFileVersion{
         state.mode = GameMode.values()[mode];
         state.wave = wave;
         state.wavetime = wavetime;
+        state.allowMassInfection = stream.readBoolean();
+        state.startWithBiomass = stream.readBoolean();
 
         content.setTemporaryMapper(readContentHeader(stream));
 
@@ -50,6 +53,8 @@ public class Save16 extends SaveFileVersion{
         readEntities(stream);
 
         readMap(stream);
+
+        MassAI.read(stream);
     }
 
     @Override
@@ -68,6 +73,8 @@ public class Save16 extends SaveFileVersion{
         stream.writeInt(state.wave); //wave
         stream.writeByte(state.difficulty.ordinal()); //difficulty ordinal
         stream.writeFloat(state.wavetime); //wave countdown
+        stream.writeBoolean(state.allowMassInfection);
+        stream.writeBoolean(state.startWithBiomass);
 
         writeContentHeader(stream);
 
@@ -78,5 +85,7 @@ public class Save16 extends SaveFileVersion{
         writeEntities(stream);
 
         writeMap(stream);
+
+        MassAI.write(stream);
     }
 }

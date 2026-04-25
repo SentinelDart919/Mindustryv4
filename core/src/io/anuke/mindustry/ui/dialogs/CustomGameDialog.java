@@ -58,6 +58,13 @@ public class CustomGameDialog extends FloatingDialog{
         selmode.add(modes);
         selmode.addButton("?", this::displayGameModeHelp).width(50f).fillY().padLeft(18f);
 
+        Table options = new Table();
+        options.addCheck("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
+        options.row();
+        options.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
+
+        selmode.add(options).left();
+
         content().add(selmode);
         content().row();
 
@@ -86,6 +93,7 @@ public class CustomGameDialog extends FloatingDialog{
 
         content().add(sdif);
         content().row();
+
 
         float images = 146f;
 
