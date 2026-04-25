@@ -72,7 +72,7 @@ public class FortressGenerator{
         float difficultyScl = Mathf.clamp(difficulty / 20f + gen.random.range(0.25f), 0f, 0.9999f);
         float dscl2 = Mathf.clamp(0.5f + difficulty / 20f + gen.random.range(0.1f), 0f, 1.5f);
 
-        Array<Block> turrets = find(b -> b instanceof ItemTurret);
+        Array<Block> turrets = find(b -> b instanceof ItemTurret && !b.living);
         Array<Block> powerTurrets = find(b -> b instanceof PowerTurret);
         Array<Block> walls = find(b -> b instanceof Wall && !(b instanceof Door) && b.size == 1);
 
