@@ -22,7 +22,6 @@ import io.anuke.ucore.util.Mathf;
 public class GroundHealUnit extends GroundUnit {
     private static Rectangle rect = new Rectangle();
 
-    public float healTurretX = 0f, healTurretY = 0f;
     public boolean healTurretMirror = false;
     public float healSpeed = 0.3f;
 
@@ -48,6 +47,8 @@ public class GroundHealUnit extends GroundUnit {
             healTarget.health += healSpeed * Timers.delta() * healStrength;
             healTarget.clampHealth();
             healRotation = Mathf.slerpDelta(healRotation, angleTo(healTarget), 0.5f);
+        } else {
+            healRotation = Mathf.slerpDelta(healRotation, rotation, 0.2f);
         }
 
         if (healTarget != null) {
@@ -142,12 +143,12 @@ public class GroundHealUnit extends GroundUnit {
     @Override
     public void draw() {
         super.draw();
-
+        Draw.alpha(hitTime / hitDuration);
         for (int i : Mathf.signs) {
             if (i < 0 && !healTurretMirror) continue;
 
-            float tx = x + Angles.trnsx(rotation - 90, healTurretX * i, healTurretY);
-            float ty = y + Angles.trnsy(rotation - 90, healTurretX * i, healTurretY);
+            float tx = x + Angles.trnsx(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
+            float ty = y + Angles.trnsy(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
 
             Draw.rect(healTurretRegion, tx, ty, healRotation - 90);
 

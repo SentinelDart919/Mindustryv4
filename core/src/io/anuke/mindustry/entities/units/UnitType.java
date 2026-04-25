@@ -51,6 +51,7 @@ public class UnitType extends UnlockableContent{
     public float buildPower = 0.3f, minePower = 0.7f;
     public Weapon weapon = Weapons.blaster;
     public float weaponOffsetX, weaponOffsetY;
+    public float healTurretOffsetX, healTurretOffsetY;
     public Color trailColor = Color.valueOf("ffa665");
 
     public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;

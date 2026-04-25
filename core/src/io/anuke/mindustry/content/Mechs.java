@@ -122,6 +122,8 @@ public class Mechs implements ContentList{
                 itemCapacity = 70;
                 weaponOffsetY = -1;
                 weaponOffsetX = 1;
+                healTurretOffsetX = 5f;
+                healTurretOffsetY = -2f;
                 mass = 1.75f;
                 speed = 0.44f;
                 drag = 0.35f;
@@ -167,6 +169,8 @@ public class Mechs implements ContentList{
                     player.healTarget.health += healAmount * Timers.delta() * player.healStrength;
                     player.healTarget.clampHealth();
                     player.healRotation = Mathf.slerpDelta(player.healRotation, player.angleTo(player.healTarget), 0.5f);
+                }else{
+                    player.healRotation = Mathf.slerpDelta(player.healRotation, player.rotation, 0.2f);
                 }
 
                 if(player.healTarget != null){
@@ -187,8 +191,8 @@ public class Mechs implements ContentList{
 
             @Override
             public void drawOver(Player player){
-                float tx = player.x;
-                float ty = player.y;
+                float tx = player.x + Angles.trnsx(player.rotation - 90, healTurretOffsetX, healTurretOffsetY);
+                float ty = player.y + Angles.trnsy(player.rotation - 90, healTurretOffsetX, healTurretOffsetY);
 
                 Draw.rect(turretRegion, tx, ty, player.healRotation - 90);
 

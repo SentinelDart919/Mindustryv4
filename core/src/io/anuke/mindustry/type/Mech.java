@@ -37,6 +37,7 @@ public class Mech extends UnlockableContent{
     public boolean turnCursor = true;
 
     public float weaponOffsetX, weaponOffsetY;
+    public float healTurretOffsetX, healTurretOffsetY;
     public Weapon weapon = Weapons.blaster;
 
     public TextureRegion baseRegion, legRegion, region, iconRegion;
