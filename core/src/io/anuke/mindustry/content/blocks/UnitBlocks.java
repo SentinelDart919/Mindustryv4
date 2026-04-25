@@ -15,6 +15,7 @@ public class UnitBlocks extends BlockList implements ContentList{
         scrapperFactory, wraithFactory, ghoulFactory, revenantFactory,
         scrappeonFactory,
         daggerFactory, titanFactory, fortressFactory,
+            novaFactory,
             crawlerFactory, bombdroneFactory,
         reconstructor, highTierFactory, repairPoint, commandCenter,
             hiveSpawner, airHiveSpawner, heavyHiveSpawner;
@@ -109,6 +110,14 @@ public class UnitBlocks extends BlockList implements ContentList{
             size = 2;
             consumes.power(0.1f);
             consumes.items(new ItemStack(Items.silicon, 8));
+        }};
+
+        novaFactory = new UnitFactory("nova-factory"){{
+           type = UnitTypes.nova;
+            produceTime = 1700;
+            size = 2;
+            consumes.power(0.05f);
+            consumes.items(new ItemStack(Items.silicon, 12), new ItemStack(Items.lead, 10));
         }};
 
         scrapperFactory = new UnitFactory("scrapper-factory"){{
