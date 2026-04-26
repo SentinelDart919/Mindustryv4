@@ -26,6 +26,6 @@ public class BiomassSwarm extends BlockDefenseDrone{
 
     @Override
     public TextureRegion getPowerCellRegion(){
-        return Draw.region("biomass-heart");
+        return Draw.region("small-biomass-heart");
     }
 }

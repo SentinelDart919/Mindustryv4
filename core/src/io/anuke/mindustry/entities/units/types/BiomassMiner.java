@@ -31,6 +31,8 @@ public class BiomassMiner extends DroneMiner{
 
     @Override
     public TextureRegion getPowerCellRegion(){
-        return Draw.region("biomass-heart");
+        if(type.hitsize > 10f)return Draw.region("biomass-heart");
+        else  return Draw.region("small-biomass-heart");
     }
 }
+
