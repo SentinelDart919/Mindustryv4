@@ -11,7 +11,7 @@ public class Weapons implements ContentList{
     kamikaze, lichMissiles, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
-    artilleryBiomass, exterminatorweapon, mosquitoweapon;// the mass
+    artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
 
     @Override
     public void load(){
@@ -319,6 +319,24 @@ public class Weapons implements ContentList{
             ejectEffect = Fx.none;
 
             ammo = AmmoTypes.bulletPyratite;
+        }};
+
+        evilDaggerWeapon = new Weapon("evil-dagger-weapon"){{
+            length = 1.5f;
+            reload = 28f;
+            roundrobin = true;
+            ejectEffect = ShootFx.shellEjectSmall;
+            ammo = AmmoTypes.bulletCopper;
+        }};
+
+        evilTankyWeapon = new Weapon("evil-tanky-weapon"){{
+            length = 4f;
+            reload = 14f;
+            width = 10f;
+            roundrobin = true;
+            recoil = 1f;
+            ejectEffect = Fx.none;
+            ammo = AmmoTypes.flamerThermite;
         }};
     }
 
