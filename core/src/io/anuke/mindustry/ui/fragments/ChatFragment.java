@@ -121,12 +121,17 @@ public class ChatFragment extends Table{
                 dialog.setFillParent(true);
                 dialog.content().top();
                 dialog.content().defaults().height(65f);
-                TextField to = dialog.content().addField("", t-> {}).pad(15).width(250f).get();
+                TextField to = dialog.content().addField(chatfield.getText() == null ? "" : chatfield.getText(), t-> {}).pad(15).width(250f).get();
                 to.setMaxLength(maxTextLength);
-                to.keyDown(Keys.ENTER, () -> dialog.content().find("okb").fireClick());
+                to.keyDown(Keys.ENTER, () -> {
+                    if(dialog.content().find("okb") != null){
+                        dialog.content().find("okb").fireClick();
+                    }
+                });
                 dialog.content().addButton("$text.ok", () -> {
+                    if(to == null || chatfield == null) return;
                     chatfield.clearText();
-                    chatfield.appendText(to.getText());
+                    chatfield.appendText(to.getText() == null ? "" : to.getText());
                     chatfield.change();
                     dialog.hide();
                     Gdx.input.setOnscreenKeyboardVisible(false);
@@ -135,7 +140,8 @@ public class ChatFragment extends Table{
 
                 dialog.show();
                 Timers.runTask(1f, () -> {
-                    to.setCursorPosition(to.getText().length());
+                    if(to == null || to.getScene() == null) return;
+                    to.setCursorPosition(to.getText() == null ? 0 : to.getText().length());
                     Core.scene.setKeyboardFocus(to);
                     Gdx.input.setOnscreenKeyboardVisible(true);
                 });
