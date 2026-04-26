@@ -51,7 +51,7 @@ public class WaveExtraMission extends MissionWithStartingCore{
     @Override
     public void onBegin(){
         super.onBegin();
-        resetFunds();
+        if(state.wave <= 1)resetFunds(); else nextWaveFundsGain(state.wave, state.difficulty);
         world.pathfinder.activateTeamPath(waveTeam);
     }
 

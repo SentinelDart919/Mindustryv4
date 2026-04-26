@@ -49,6 +49,11 @@ public class Logic extends Module{
                 WaveExtraMission.awardWaveFunds(state.wave, state.difficulty);
             }
         });
+        Events.on(WorldLoadEvent.class, event -> {
+            if(state.mode == GameMode.SiegeMode && (state.wave > 1)){
+                WaveExtraMission.awardWaveFunds(state.wave, state.difficulty);
+            }
+        });
     }
 
     @Override
