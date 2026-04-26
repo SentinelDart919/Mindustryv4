@@ -182,7 +182,7 @@ public class UnitTypes implements ContentList{
             health = 250;
             healRange = 80f;
             isHealer = true;
-98            healTurretOffsetX = 5f;
+            healTurretOffsetX = 5f;
             healTurretOffsetY = -2f;
         }};
 
