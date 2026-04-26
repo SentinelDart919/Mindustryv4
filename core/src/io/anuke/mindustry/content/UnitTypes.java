@@ -333,7 +333,7 @@ public class UnitTypes implements ContentList{
             drag = 0.4f;
             hitsize = 8f;
             mass = 1.75f;
-            weapon = Weapons.chainBlaster;
+            weapon = Weapons.evilDaggerWeapon;
             health = 130;
             spawnsInSiegeMode = false;
         }
@@ -383,9 +383,9 @@ public class UnitTypes implements ContentList{
             speed = 0.18f;
             drag = 0.4f;
             mass = 3.5f;
-            hitsize = 9f;
+            hitsize = 10.8f;
             rotatespeed = 0.1f;
-            weapon = Weapons.flamethrower;
+            weapon = Weapons.evilTankyWeapon;
             health = 1280;
             spawnsInSiegeMode = false;
             living = true;
