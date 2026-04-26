@@ -36,21 +36,26 @@ public abstract class Platform {
             TextField[] use = {null};
 
             dialog.content().addImageButton("icon-copy", "clear", 16*3, () -> use[0].copy())
-                    .visible(() -> !use[0].getSelection().isEmpty()).width(65f);
+                    .visible(() -> use[0] != null && use[0].getSelection() != null && !use[0].getSelection().isEmpty()).width(65f);
 
             dialog.content().addImageButton("icon-paste", "clear", 16*3, () ->
                     use[0].paste(Gdx.app.getClipboard().getContents(), false))
-                    .visible(() -> !Gdx.app.getClipboard().getContents().isEmpty()).width(65f);
+                    .visible(() -> Gdx.app.getClipboard().getContents() != null && !Gdx.app.getClipboard().getContents().isEmpty()).width(65f);
 
-            TextField to = dialog.content().addField(field.getText(), t-> {}).pad(15).width(250f).get();
+            TextField to = dialog.content().addField(field.getText() == null ? "" : field.getText(), t-> {}).pad(15).width(250f).get();
             to.setMaxLength(maxLength);
-            to.keyDown(Keys.ENTER, () -> dialog.content().find("okb").fireClick());
+            to.keyDown(Keys.ENTER, () -> {
+                if(dialog.content().find("okb") != null){
+                    dialog.content().find("okb").fireClick();
+                }
+            });
 
             use[0] = to;
 
             dialog.content().addButton("$text.ok", () -> {
+                if(to == null || field == null) return;
                 field.clearText();
-                field.appendText(to.getText());
+                field.appendText(to.getText() == null ? "" : to.getText());
                 field.change();
                 dialog.hide();
                 Gdx.input.setOnscreenKeyboardVisible(false);
@@ -58,7 +63,8 @@ public abstract class Platform {
 
             dialog.show();
             Timers.runTask(1f, () -> {
-                to.setCursorPosition(to.getText().length());
+                if(to == null || to.getScene() == null) return;
+                to.setCursorPosition(to.getText() == null ? 0 : to.getText().length());
                 Core.scene.setKeyboardFocus(to);
                 Gdx.input.setOnscreenKeyboardVisible(true);
             });
