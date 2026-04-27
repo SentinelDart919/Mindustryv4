@@ -70,8 +70,6 @@ public class BiomassInfectedMission extends MissionWithStartingCore{
             hiveCore.setTeam(Team.themass);
             state.teams.get(Team.themass).cores.add(hiveCore);
         }
-
-        new FortressGenerator().generate(gen, Team.themass, playerCore.x, playerCore.y, hiveCore.x, hiveCore.y);
     }
 
     @Override
