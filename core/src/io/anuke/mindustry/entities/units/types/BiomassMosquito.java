@@ -25,11 +25,29 @@ public class BiomassMosquito extends BiomassAirUnit {
     protected Weapon weapon;
     protected TextureRegion wing1, wing2;
 
+    // After Crashing out for 2 hours why a good damn sprite region crashes, I think all this stupid stuff should fix it
+    protected void ensureInitialized(){
+        if(type == null) return;
+        if(weapon == null){
+            weapon = type.weapon;
+        }
+
+        if(wing1 == null){
+            wing1 = Draw.region(type.name + "-wing1");
+            if(wing1 == null) wing1 = type.region; // crash are annoying
+        }
+        if(wing2 == null){
+            wing2 = Draw.region(type.name + "-wing2");
+            if(wing2 == null) wing2 = wing1; // CRASH SHALL NO PASS
+        }
+    }
+
     public void init(UnitType type, Team team){
         super.init(type, team);
         this.weapon = type.weapon;
         this.wing1 = Draw.region(type.name + "-wing1");
         this.wing2 = Draw.region(type.name + "-wing2");
+        ensureInitialized();
     }
     @Override
     protected void attack(float circleLength){
@@ -37,7 +55,7 @@ public class BiomassMosquito extends BiomassAirUnit {
     }
     @Override
     public Weapon getWeapon(){
-        return weapon;
+        return weapon != null ? weapon : (type != null ? type.weapon : null);
     }
 
     public void setWeapon(Weapon weapon){
@@ -66,17 +84,18 @@ public class BiomassMosquito extends BiomassAirUnit {
     }
     @Override
     public void draw(){
+        ensureInitialized();
+        if(type == null || type.region == null) return;
 
         Draw.alpha(hitTime / hitDuration);
 
-        float s = 20f;
         float baseRotation = rotation - 90;
         float wingAnim = Mathf.sin(Timers.time(), 1.5f, 25f);
 
-        Draw.rect(wing1, x, y, baseRotation + wingAnim);
-        Draw.rect(wing2, x, y, baseRotation - wingAnim);
+        if(wing1 != null) Draw.rect(wing1, x, y, baseRotation + wingAnim);
+        if(wing2 != null) Draw.rect(wing2, x, y, baseRotation - wingAnim);
 
-        Draw.rect(type.name, x, y, baseRotation);
+        Draw.rect(type.region, x, y, baseRotation);
 
         drawItems();
 
@@ -91,7 +110,9 @@ public class BiomassMosquito extends BiomassAirUnit {
                     trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
             float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
                     wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
-            Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
+            if(weapon != null && weapon.equipRegion != null){
+                Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
+            }
 
         }
     }
@@ -121,6 +142,7 @@ public class BiomassMosquito extends BiomassAirUnit {
     public void read(DataInput data, long time) throws IOException{
         super.read(data, time);
         weapon = content.getByID(ContentType.weapon, data.readByte());
+        ensureInitialized();
     }
 
     @Override
@@ -133,5 +155,6 @@ public class BiomassMosquito extends BiomassAirUnit {
     public void readSave(DataInput stream) throws IOException{
         weapon = content.getByID(ContentType.weapon, stream.readByte());
         super.readSave(stream);
+        ensureInitialized();
     }
 }

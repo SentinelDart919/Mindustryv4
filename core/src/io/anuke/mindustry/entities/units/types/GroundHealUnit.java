@@ -3,6 +3,7 @@ package io.anuke.mindustry.entities.units.types;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
@@ -18,9 +19,11 @@ import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Shapes;
 import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.util.Log;
 
 public class GroundHealUnit extends GroundUnit {
     private static Rectangle rect = new Rectangle();
+    private static ObjectSet<String> warnedMissingHealTurretRegions = new ObjectSet<>();
 
     public boolean healTurretMirror = false;
     public float healSpeed = 0.3f;
@@ -33,7 +36,14 @@ public class GroundHealUnit extends GroundUnit {
     @Override
     public void init(io.anuke.mindustry.entities.units.UnitType type, Team team) {
         super.init(type, team);
-        healTurretRegion = Draw.region(type.name + "-heal-turret");
+
+        // checks if there is regions and drops log, this may look silly but is for remind me these units are pretty volatile (crash when loading game)
+        String turretRegionName = type.name + "-heal-turret";
+        TextureRegion fallback = type.region != null ? type.region : Draw.region("clear");
+        if (!Draw.hasRegion(turretRegionName) && warnedMissingHealTurretRegions.add(turretRegionName)) {
+            Log.err("Missing texture region: '" + turretRegionName + " add it to sprites atlas or update it");
+        }
+        healTurretRegion = Draw.region(turretRegionName, fallback);
     }
 
     @Override
@@ -143,6 +153,13 @@ public class GroundHealUnit extends GroundUnit {
     @Override
     public void draw() {
         super.draw();
+
+        if (healTurretRegion == null) {
+            String turretRegionName = type.name + "-heal-turret";
+            TextureRegion fallback = type.region != null ? type.region : Draw.region("clear");
+            healTurretRegion = Draw.region(turretRegionName, fallback);
+        }// this should fix Crash of not region detected when loading game
+
         Draw.alpha(hitTime / hitDuration);
         for (int i : Mathf.signs) {
             if (i < 0 && !healTurretMirror) continue;
@@ -150,7 +167,9 @@ public class GroundHealUnit extends GroundUnit {
             float tx = x + Angles.trnsx(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
             float ty = y + Angles.trnsy(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
 
-            Draw.rect(healTurretRegion, tx, ty, healRotation - 90);
+            if (healTurretRegion != null && healTurretRegion.getTexture() != null) {
+                Draw.rect(healTurretRegion, tx, ty, healRotation - 90);
+            }
 
             if (healTarget != null && healStrength > 0.01f &&
                     Angles.angleDist(angleTo(healTarget), healRotation) < 30f) {
