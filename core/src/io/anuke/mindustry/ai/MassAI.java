@@ -69,7 +69,7 @@ public class MassAI {
     private static float enemyNearbyTimer = 0;
     private static Rectangle rect = new Rectangle();
     private static boolean enemyNearby = false;
-    private static float nextInfectionTime = 0;
+    public static float nextInfectionTime = 0;
     private static boolean disableGrace = false;
 
     static {
@@ -234,9 +234,10 @@ public class MassAI {
 
         if (Vars.state.allowMassInfection && cores.size == 0) {
             nextInfectionTime -= Timers.delta();
-            //System.out.println("Timer time is " + nextInfectionTime);
+            System.out.println("Timer time is " + nextInfectionTime);
             if (nextInfectionTime <= 0) {
                 nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
+                spawnInitialHive();
                 cores = Vars.state.teams.get(Team.themass).cores;
             }
         }/* else if (!Vars.state.allowMassInfection && cores.size == 0) {

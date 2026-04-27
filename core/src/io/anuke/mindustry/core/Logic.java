@@ -24,6 +24,7 @@ import io.anuke.ucore.entities.Entities;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.EntityQuery;
 import io.anuke.ucore.modules.Module;
+import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -93,7 +94,9 @@ public class Logic extends Module{
         Events.fire(new PlayEvent());
 
         if (state.startWithBiomass) {
-            io.anuke.mindustry.ai.MassAI.spawnInitialHive();
+            MassAI.spawnInitialHive();
+        } else if (state.allowMassInfection && (MassAI.nextInfectionTime <= 0)){
+            MassAI.nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
         }
     }
 
