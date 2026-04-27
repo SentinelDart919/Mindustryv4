@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.*;
@@ -247,7 +248,7 @@ public class Logic extends Module{
 
                 world.pathfinder.update();
                 infection.update();
-                io.anuke.mindustry.ai.MassAI.update();
+                MassAI.update();
             }
 
             if(!Net.client() && !world.isInvalidMap()){

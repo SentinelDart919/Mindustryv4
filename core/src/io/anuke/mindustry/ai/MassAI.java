@@ -31,6 +31,7 @@ import com.badlogic.gdx.math.Rectangle;
 import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
 import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Geometry;
+
 import io.anuke.ucore.util.Mathf;
 
 import java.io.DataInputStream;
@@ -39,7 +40,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.world;
 import static io.anuke.mindustry.Vars.unitGroups;
-/* TODO
+/* DID xD
     Make them more aggressive - (add vein like system that goes directly to enemy blocks and damage them)
    make them spawn Units, done
    Finish the Mass Like buildings (mostly looking like the The Flesh That Hates mod from MC) done, thx t
@@ -233,14 +234,16 @@ public class MassAI {
 
         if (Vars.state.allowMassInfection && cores.size == 0) {
             nextInfectionTime -= Timers.delta();
+            //System.out.println("Timer time is " + nextInfectionTime);
             if (nextInfectionTime <= 0) {
                 nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
                 cores = Vars.state.teams.get(Team.themass).cores;
             }
-        } else if (!Vars.state.allowMassInfection && cores.size == 0) {
+        }/* else if (!Vars.state.allowMassInfection && cores.size == 0) {
             nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
-        }
-        
+            System.out.println("Timer time is " + nextInfectionTime);
+        }*/
+
         // Remove tracking for destroyed cores
         ObjectSet.ObjectSetIterator<Tile> it = initializedCores.iterator();
         while (it.hasNext) {
