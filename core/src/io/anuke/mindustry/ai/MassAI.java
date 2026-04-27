@@ -234,7 +234,7 @@ public class MassAI {
 
         if (Vars.state.allowMassInfection && cores.size == 0) {
             nextInfectionTime -= Timers.delta();
-            System.out.println("Timer time is " + nextInfectionTime);
+            //System.out.println("Timer time is " + nextInfectionTime);
             if (nextInfectionTime <= 0) {
                 nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
                 spawnInitialHive();
