@@ -186,7 +186,7 @@ public class Tile implements PosTrait, TargetTrait{
 
     public void setFloor(Floor type){
         this.floor = type;
-        changed();
+        floorChanged();
     }
 
     public void infect(){
@@ -447,6 +447,12 @@ public class Tile implements PosTrait, TargetTrait{
             }
         }
 
+        updateOcclusion();
+
+        world.notifyChanged(this);
+    }
+
+    private void floorChanged(){
         updateOcclusion();
 
         world.notifyChanged(this);
