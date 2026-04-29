@@ -118,6 +118,15 @@ public class PowerNode extends PowerBlock{
 
     @Override
     public void update(Tile tile){
+        if (tile.entity == null) {
+            return;
+        }
+        if (tile.entity.power == null) {
+            return;
+        }
+        if (tile.entity.power.graph == null) {
+            return;
+        }
         tile.entity.power.graph.update();
     }
 
