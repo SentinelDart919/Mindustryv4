@@ -9,6 +9,7 @@ import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
+import io.anuke.ucore.util.Mathf;
 
 public class UnitTypes implements ContentList{
     public static UnitType
@@ -386,7 +387,7 @@ public class UnitTypes implements ContentList{
             hitsize = 10.8f;
             rotatespeed = 0.1f;
             weapon = Weapons.evilTankyWeapon;
-            health = 1280;
+            health = Mathf.random(820, 1280);
             spawnsInSiegeMode = false;
             living = true;
         }

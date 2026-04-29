@@ -211,14 +211,14 @@ public class Recipes implements ContentList{
         new Recipe(units, UnitBlocks.scrappeonFactory, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 80), new ItemStack(Items.scrap, 50));
         new Recipe(units, UnitBlocks.daggerFactory, new ItemStack(Items.lead, 90), new ItemStack(Items.silicon, 70));
         new Recipe(units, UnitBlocks.titanFactory, new ItemStack(Items.densealloy, 90), new ItemStack(Items.lead, 140), new ItemStack(Items.silicon, 90));
-        new Recipe(units, UnitBlocks.fortressFactory, new ItemStack(Items.thorium, 200), new ItemStack(Items.lead, 220), new ItemStack(Items.silicon, 150), new ItemStack(Items.surgealloy, 100), new ItemStack(Items.phasefabric, 50));
+        new Recipe(units, UnitBlocks.fortressFactory, new ItemStack(Items.thorium, 200), new ItemStack(Items.lead, 220), new ItemStack(Items.silicon, 150), new ItemStack(Items.chromium, 100), new ItemStack(Items.phasefabric, 50));
 
         new Recipe(units, UnitBlocks.novaFactory, new ItemStack(Items.lead, 110), new ItemStack(Items.silicon, 90));
 
         new Recipe(units, UnitBlocks.scrapperFactory, new ItemStack(Items.scrap, 30), new ItemStack(Items.copper, 30), new ItemStack(Items.lead, 40));
         new Recipe(units, UnitBlocks.wraithFactory, new ItemStack(Items.copper, 90), new ItemStack(Items.lead, 80), new ItemStack(Items.silicon, 90));
         new Recipe(units, UnitBlocks.ghoulFactory, new ItemStack(Items.titanium, 100), new ItemStack(Items.lead, 130), new ItemStack(Items.silicon, 220));
-        new Recipe(units, UnitBlocks.revenantFactory, new ItemStack(Items.plastanium, 300), new ItemStack(Items.titanium, 400), new ItemStack(Items.lead, 300), new ItemStack(Items.silicon, 400), new ItemStack(Items.surgealloy, 100));
+        new Recipe(units, UnitBlocks.revenantFactory, new ItemStack(Items.plastanium, 300), new ItemStack(Items.titanium, 400), new ItemStack(Items.lead, 300), new ItemStack(Items.silicon, 400), new ItemStack(Items.chromium, 100));
 
         new Recipe(units, UnitBlocks.crawlerFactory, new ItemStack(Items.copper, 80), new ItemStack(Items.lead, 80), new ItemStack(Items.silicon, 150));
         new Recipe(units, UnitBlocks.bombdroneFactory, new ItemStack(Items.copper, 120),new ItemStack(Items.densealloy, 80) ,new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 200));
