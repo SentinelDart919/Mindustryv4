@@ -66,6 +66,7 @@ public class UI extends SceneModule{
     public UnlocksDialog unlocks;
     public ContentInfoDialog content;
     public SectorsDialog sectors;
+    public CampaignDialog campaigns;
     public MissionDialog missions;
 
     public UI(){
@@ -173,6 +174,7 @@ public class UI extends SceneModule{
         localplayers = new LocalPlayerDialog();
         content = new ContentInfoDialog();
         sectors = new SectorsDialog();
+        campaigns = new CampaignDialog();
         missions = new MissionDialog();
 
         Group group = Core.scene.getRoot();

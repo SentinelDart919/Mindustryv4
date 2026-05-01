@@ -1,11 +1,13 @@
 package io.anuke.mindustry.io;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.io.versions.Save16;
+import io.anuke.mindustry.maps.campaign.Campaign;
 
 import java.io.*;
 import java.util.zip.DeflaterOutputStream;
@@ -16,6 +18,9 @@ import static io.anuke.mindustry.Vars.*;
 public class SaveIO{
     public static final IntArray breakingVersions = IntArray.with(47, 48, 49, 50, 51, 52, 53, 54, 55, 56);
     public static final IntMap<SaveFileVersion> versions = new IntMap<>();
+    public final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
+    private static final int campaignsSaveVersion = 2;
+
     public static final Array<SaveFileVersion> versionArray = Array.with(
         new Save16()
     );
@@ -23,6 +28,55 @@ public class SaveIO{
     static{
         for(SaveFileVersion version : versionArray){
             versions.put(version.version, version);
+        }
+    }
+    public void saveCampaigns(Array<Campaign> campaigns){
+        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+
+        try(DataOutputStream stream = new DataOutputStream(fileHandle.write(false))){
+            stream.writeInt(campaignsSaveVersion);
+            stream.writeInt(campaigns.size);
+
+            for(Campaign campaign : campaigns){
+                stream.writeUTF(campaign.name == null ? "" : campaign.name);
+                stream.writeInt(campaign.getCompletedSectors());
+            }
+        }catch(IOException e){
+            throw new RuntimeException("Failed to save campaigns.", e);
+        }
+    }
+
+    public Array<Campaign> loadCampaigns(){
+        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+        if(!fileHandle.exists()){
+            return new Array<>();
+        }
+
+        try(DataInputStream stream = new DataInputStream(fileHandle.read())){
+            int version = stream.readInt();
+            if(version != 1 && version != campaignsSaveVersion){
+                return new Array<>();
+            }
+
+            int campaignCount = stream.readInt();
+            Array<Campaign> campaigns = new Array<>(campaignCount);
+
+            for(int i = 0; i < campaignCount; i++){
+                Campaign campaign = new Campaign(stream.readUTF());
+                campaign.setCompletedSectors(stream.readInt());
+                if(version == 1){
+                    int sectorCount = stream.readInt();
+                    for(int j = 0; j < sectorCount; j++){
+                        stream.readShort();
+                        stream.readShort();
+                    }
+                }
+                campaigns.add(campaign);
+            }
+
+            return campaigns;
+        }catch(IOException e){
+            throw new RuntimeException("Failed to load campaigns.", e);
         }
     }
 
