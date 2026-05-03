@@ -11,7 +11,7 @@ public class CampaignRegistry{
 
     static{
         register(serpulo, new SerpuloSectorGenerator());
-        planets.add(new PlanetDefinition("Serpulo", serpulo, 0.22f, 0.44f, 0.85f, 24, 12, 2));
+        planets.add(new PlanetDefinition("Serpulo", serpulo, 0.22f, 0.44f, 0.85f, 48, 24, 3, 0.95f, 1.15f, 0.9f));
     }
 
     public static void register(String name, CampaignSectorGenerator generator){
@@ -73,8 +73,11 @@ public class CampaignRegistry{
         public final float colorR, colorG, colorB;
         public final int gridLongitude, gridLatitude;
         public final int subdivisions;
+        public final float meshHeightIntensity;
+        public final float liquidDepthScale;
+        public final float snowHeightScale;
 
-        public PlanetDefinition(String name, String campaign, float colorR, float colorG, float colorB, int gridLongitude, int gridLatitude, int subdivisions){
+        public PlanetDefinition(String name, String campaign, float colorR, float colorG, float colorB, int gridLongitude, int gridLatitude, int subdivisions, float meshHeightIntensity, float liquidDepthScale, float snowHeightScale){
             this.name = name;
             this.campaign = campaign;
             this.colorR = colorR;
@@ -83,6 +86,9 @@ public class CampaignRegistry{
             this.gridLongitude = gridLongitude;
             this.gridLatitude = gridLatitude;
             this.subdivisions = subdivisions;
+            this.meshHeightIntensity = meshHeightIntensity;
+            this.liquidDepthScale = liquidDepthScale;
+            this.snowHeightScale = snowHeightScale;
         }
     }
 

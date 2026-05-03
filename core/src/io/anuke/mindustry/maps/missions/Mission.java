@@ -33,6 +33,14 @@ public abstract class Mission{
         return "icon-mission-defense";
     }
 
+    public boolean isInfectable(){
+        return false;
+    }
+
+    public boolean isInfected(){
+        return false;
+    }
+
     public GameMode getMode(){
         return GameMode.noWaves;
     }

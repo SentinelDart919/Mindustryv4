@@ -28,6 +28,11 @@ public class BiomassInfectedMission extends MissionWithStartingCore{
     }
 
     @Override
+    public boolean isInfected(){
+        return true;
+    }
+
+    @Override
     public String getIcon(){
         return "icon-mission-infected";
     }
@@ -70,6 +75,8 @@ public class BiomassInfectedMission extends MissionWithStartingCore{
             hiveCore.setTeam(Team.themass);
             state.teams.get(Team.themass).cores.add(hiveCore);
         }
+
+        Vars.infection.infectAll(gen.tiles);
     }
 
     @Override

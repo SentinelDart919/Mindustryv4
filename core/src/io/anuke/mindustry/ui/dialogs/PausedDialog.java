@@ -100,6 +100,10 @@ public class PausedDialog extends FloatingDialog{
     }
 
     public void runExitSave(){
+        if(world.getSector() != null){
+            world.sectors.refreshSectorPreview(world.getSector());
+        }
+
         if(control.saves.getCurrent() == null ||
                 !control.saves.getCurrent().isAutosave()){
             state.set(State.menu);

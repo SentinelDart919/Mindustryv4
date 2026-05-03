@@ -6,288 +6,275 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Array.ArrayIterable;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
-import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.Team;
+import io.anuke.mindustry.maps.campaign.CampaignManager;
+import io.anuke.mindustry.maps.campaign.CampaignRegistry;
+import io.anuke.mindustry.maps.campaign.CampaignSectorGenerator;
 import io.anuke.mindustry.io.SaveIO;
-import io.anuke.mindustry.maps.SectorPresets.SectorPreset;
-import io.anuke.mindustry.maps.generation.Generation;
 import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
-import io.anuke.mindustry.maps.missions.BattleMission;
 import io.anuke.mindustry.maps.missions.BiomassInfectableMission;
+import io.anuke.mindustry.maps.missions.BiomassInfectedBattleMission;
 import io.anuke.mindustry.maps.missions.BiomassInfectedMission;
 import io.anuke.mindustry.maps.missions.Mission;
-import io.anuke.mindustry.maps.missions.Missions;
-import io.anuke.mindustry.maps.missions.WaveMission;
 import io.anuke.mindustry.type.Item;
-import io.anuke.mindustry.type.ItemStack;
-import io.anuke.mindustry.type.Recipe;
-import io.anuke.mindustry.type.Recipe.RecipeVisibility;
+import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.mindustry.world.blocks.defense.Wall;
+import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.util.*;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class Sectors{
+public class Sectors {
     public static final int sectorImageSize = 32;
+    public static final String defaultCampaign = CampaignRegistry.serpulo;
 
-    private final GridMap<Sector> grid = new GridMap<>();
-    private final SectorPresets presets = new SectorPresets();
+    private final ObjectMap<String, GridMap<Sector>> campaignGrids = new ObjectMap<>();
     private final Array<Item> allOres = Item.getAllOres();
     private final AsyncExecutor executor = new AsyncExecutor(6);
+    private CampaignManager campaignManager;
+    private String activeCampaign = defaultCampaign;
+    private static final Sectors INSTANCE = new Sectors();
 
-    public void playSector(Sector sector){
-        if(!headless && sector.hasSave() && SaveIO.breakingVersions.contains(sector.getSave().getBuild())){
+    public Sectors() {
+        this.campaignManager = new CampaignManager();
+    }
+    public static Sectors getInstance() {
+        return INSTANCE;
+    }
+    public void playSector(int x, int y) {
+        Sector sector = get(x, y);
+        if (sector != null) {
+            playSector(sector);
+        }
+    }
+
+    public void playSector(Sector sector) {
+        if (!headless && sector.hasSave() && SaveIO.breakingVersions.contains(sector.getSave().getBuild())) {
             sector.getSave().delete();
             ui.showInfo("$text.save.old");
         }
 
-        if(!sector.hasSave()){
-            for(Mission mission : sector.missions){
+        if (!sector.hasSave()) {
+            for (Mission mission : sector.missions) {
                 mission.reset();
             }
             world.loadSector(sector);
             logic.play();
-            if(!headless){
+            if (!headless) {
                 sector.saveID = control.saves.addSave("sector-" + sector.packedPosition()).index;
             }
             world.sectors.save();
             world.setSector(sector);
-            if(!sector.complete) sector.currentMission().onBegin();
-        }else if(SaveIO.breakingVersions.contains(sector.getSave().getBuild())){
+            if (!sector.complete) sector.currentMission().onBegin();
+        } else if (SaveIO.breakingVersions.contains(sector.getSave().getBuild())) {
             ui.showInfo("$text.save.old");
-        }else try{
+        } else try {
             sector.getSave().load();
             world.setSector(sector);
             state.set(State.playing);
-            if(!sector.complete) sector.currentMission().onBegin();
-        }catch(Exception e){
+            if (!sector.complete) sector.currentMission().onBegin();
+        } catch (Exception e) {
             Log.err(e);
             sector.getSave().delete();
 
             playSector(sector);
 
-            if(!headless){
+            if (!headless) {
                 threads.runGraphics(() -> ui.showError("$text.sector.corrupted"));
             }
         }
     }
 
-    /**If a sector is not yet unlocked, returns null.*/
-    public Sector get(int x, int y){
-        return grid.get(x, y);
+    /** If a sector is not yet unlocked, returns null. */
+    public Sector get(int x, int y) {
+        return activeGrid().get(x, y);
     }
 
-    public Sector get(int position){
-        return grid.get(Bits.getLeftShort(position), Bits.getRightShort(position));
+    public Sector get(int position) {
+        return activeGrid().get(Bits.getLeftShort(position), Bits.getRightShort(position));
     }
 
-    public Difficulty getDifficulty(Sector sector){
-        if(sector.difficulty == 0){
+    public Difficulty getDifficulty(Sector sector) {
+        if (sector.difficulty == 0) {
             return Difficulty.hard;
-        }else if(sector.difficulty < 4){
+        } else if (sector.difficulty < 4) {
             return Difficulty.normal;
-        }else if(sector.difficulty < 9){
+        } else if (sector.difficulty < 9) {
             return Difficulty.hard;
-        }else if(sector.difficulty < 12){
+        } else if (sector.difficulty < 12) {
             return Difficulty.insane;
         } else {
-            return Difficulty.eradication;}}
-
-    public Array<Item> getOres(int x, int y){
-        return presets.getOres(x, y) == null ? allOres : presets.getOres(x, y);
+            return Difficulty.eradication;
+        }
     }
 
-    /**Unlocks a sector. This shows nearby sectors.*/
-    public void completeSector(int x, int y){
+    public Array<Item> getOres(int x, int y) {
+        return activeGenerator().getOres(x, y, allOres);
+    }
+
+    /** Unlocks a sector. This shows nearby sectors. */
+    public void completeSector(int x, int y) {
         createSector(x, y);
         Sector sector = get(x, y);
+        if(sector == null) return;
         sector.complete = true;
 
-        for(GridPoint2 g : Geometry.d4){
+        for (GridPoint2 g : Geometry.d4) {
             createSector(x + g.x, y + g.y);
         }
     }
 
-    /**Creates a sector at a location if it is not present, but does not complete it.*/
-    public void createSector(int x, int y){
+    /** Creates a sector at a location if it is not present, but does not complete it. */
+    public void createSector(int x, int y) {
+        GridMap<Sector> grid = activeGrid();
 
-        if(grid.containsKey(x, y)) return;
+        if (grid.containsKey(x, y)) return;
 
         Sector sector = new Sector();
-        sector.x = (short)x;
-        sector.y = (short)y;
+        sector.x = (short) x;
+        sector.y = (short) y;
         sector.complete = false;
         initSector(sector);
 
         grid.put(sector.x, sector.y, sector);
 
-        if(sector.texture == null){
+        if (sector.texture == null) {
             threads.runGraphics(() -> createTexture(sector));
-        }
-
-        if(sector.missions.size == 0){
-            completeSector(sector.x, sector.y);
         }
     }
 
-    public void abandonSector(Sector sector){
-        if(sector.hasSave()){
+    public void abandonSector(Sector sector) {
+        abandonSector(sector, true);
+    }
+
+    public void abandonSector(Sector sector, boolean changeMissions) {
+        if (sector.hasSave()) {
             sector.getSave().delete();
         }
         sector.completedMissions = 0;
         sector.complete = false;
+
+        if(changeMissions){
+            if(sector.isInfectable()){
+                sector.missions.clear();
+                sector.missions.add(new BiomassInfectedMission());
+                infectNeighbors(sector, 0.5f);
+            }else if(sector.isInfected()){
+                infectNeighbors(sector, 0.8f);
+            }
+        }
+
         initSector(sector);
 
-        grid.put(sector.x, sector.y, sector);
+        activeGrid().put(sector.x, sector.y, sector);
 
         threads.runGraphics(() -> createTexture(sector));
 
         save();
     }
 
-    public void load(){
-        for(Sector sector : grid.values()){
-            sector.texture.dispose();
-        }
-        grid.clear();
+    private void infectNeighbors(Sector sector, float chance){
+        for(int x = -1; x <= 1; x++){
+            for(int y = -1; y <= 1; y++){
+                if(x == 0 && y == 0) continue;
 
-        Array<Sector> out = Settings.getObject("sector-data-2", Array.class, Array::new);
+                if(Mathf.chance(chance)){
+                    int nx = sector.x + x;
+                    int ny = sector.y + y;
 
-        for(Sector sector : out){
-            
-            createTexture(sector);
-            initSector(sector);
-            grid.put(sector.x, sector.y, sector);
-        }
+                    Sector other = get(nx, ny);
+                    if(other == null){
+                        createSector(nx, ny);
+                        other = get(nx, ny);
+                    }
 
-        if(out.size == 0){
-            createSector(0, 0);
+                    boolean alreadyInfected = false;
+                    for(Mission m : other.missions){
+                        if(m.isInfectable() || m.isInfected()){
+                            alreadyInfected = true;
+                            break;
+                        }
+                    }
+
+                    if(!alreadyInfected){
+                        other.missions.clear();
+                        other.missions.add(new BiomassInfectableMission(other.difficulty * 5 + Mathf.randomSeed(other.getSeed(), 1, 4) * 5));
+                        other.complete = false;
+                        other.completedMissions = 0;
+                        activeGenerator().initSector(other);
+                        refreshSectorPreview(other);
+                    }
+                }
+            }
         }
     }
 
-    public void clear(){
+    public void load() {
+        campaignManager.loadCampaigns();
+        setActiveCampaign(defaultCampaign);
+    }
+
+    public void clear() {
+        GridMap<Sector> grid = activeGrid();
+        for(Sector sector : grid.values()){
+            if(sector.texture != null){
+                sector.texture.dispose();
+            }
+        }
         grid.clear();
         save();
         createSector(0, 0);
     }
 
-    public void save(){
+    public void save() {
         Array<Sector> out = new Array<>();
+        GridMap<Sector> grid = activeGrid();
 
-        for(Sector sector : grid.values()){
-            if(sector != null && !out.contains(sector, true)){
+        for (Sector sector : grid.values()) {
+            if (sector != null && !out.contains(sector, true)) {
                 out.add(sector);
             }
         }
 
-        Settings.putObject("sector-data-2", out);
+        Settings.putObject(campaignSettingsKey(activeCampaign), out);
         Settings.save();
     }
 
-    private void initSector(Sector sector){
-        sector.difficulty = (int)(Mathf.dst(sector.x, sector.y));
+    public String getActiveCampaign(){
+        return activeCampaign;
+    }
 
-        if(presets.get(sector.x, sector.y) != null){
-            SectorPreset p = presets.get(sector.x, sector.y);
-            sector.missions.addAll(p.missions);
-            sector.x = (short)p.x;
-            sector.y = (short)p.y;
-        }else{
-            generate(sector);
-        }
+    public void setActiveCampaign(String campaignName){
+        activeCampaign = campaignName;
+        loadCampaignSectors(campaignName);
+    }
 
-        sector.spawns = new Array<>();
+    public void refreshSectorPreview(Sector sector){
+        if(sector == null || headless) return;
+        threads.runGraphics(() -> createTexture(sector));
+    }
 
-        for(Mission mission : sector.missions){
-            sector.spawns.addAll(mission.getWaves(sector));
-        }
-
-        //set starter items
-        if(sector.difficulty > 12){ //now with titanium
-            sector.startingItems = Array.with(new ItemStack(Items.copper, 1900), new ItemStack(Items.scrap, 1000), new ItemStack(Items.lead, 500), new ItemStack(Items.densealloy, 470), new ItemStack(Items.silicon, 460), new ItemStack(Items.titanium, 230));
-        }else if(sector.difficulty > 8){ //just more resources
-            sector.startingItems = Array.with(new ItemStack(Items.copper, 1500), new ItemStack(Items.scrap, 900), new ItemStack(Items.lead, 400), new ItemStack(Items.densealloy, 340), new ItemStack(Items.silicon, 250));
-        }else if(sector.difficulty > 5){ //now with silicon
-            sector.startingItems = Array.with(new ItemStack(Items.copper, 950), new ItemStack(Items.scrap, 800), new ItemStack(Items.lead, 300), new ItemStack(Items.densealloy, 190), new ItemStack(Items.silicon, 140));
-        }else if(sector.difficulty > 3){ //now with carbide
-            sector.startingItems = Array.with(new ItemStack(Items.copper, 700), new ItemStack(Items.scrap, 700), new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 130));
-        }else if(sector.difficulty > 2){ //more starter items for faster start
-            sector.startingItems = Array.with(new ItemStack(Items.copper, 400), new ItemStack(Items.scrap, 600), new ItemStack(Items.lead, 100));
-        }else{ //empty default
-            sector.startingItems = Array.with();
+    public void refreshActiveCampaignPreviews(){
+        if(headless) return;
+        for(Sector sector : activeGrid().values()){
+            refreshSectorPreview(sector);
         }
     }
 
-    /**Generates a mission for a sector. This is deterministic and the same for each client.*/
-    private void generate(Sector sector){
-        float rand = Mathf.randomSeed(sector.getSeed() + 7);
-
-        //5% chance for biomass infected mission
-        if(rand < 0.15){
-            sector.missions.add(new BiomassInfectedMission());
-        }else if(rand < 0.30f){ //30% chance for biomass infectable mission
-            sector.missions.add(new BiomassInfectableMission(sector.difficulty*5 + Mathf.randomSeed(sector.getSeed(), 1, 4)*5));
-        }else if(rand < 0.55f){ //40% chance to get a wave mission
-            //recipe mission (maybe)
-            addRecipeMission(sector, 3);
-            sector.missions.add(new WaveMission(sector.difficulty*5 + Mathf.randomSeed(sector.getSeed(), 1, 4)*5));
-        }else{
-            //battle missions don't get recipes
-            sector.missions.add(new BattleMission());
-        }
-
-        //possibly add another recipe mission
-        addRecipeMission(sector, 11);
-
-        Generation gen = new Generation(sector, null, sectorSize, sectorSize, null);
-
-        Array<GridPoint2> points = new Array<>();
-        for(Mission mission : sector.missions){
-            points.addAll(mission.getSpawnPoints(gen));
-        }
-
-        GenResult result = new GenResult();
-
-        for(GridPoint2 point : new ArrayIterable<>(points)){
-            world.generator.generateTile(result, sector.x, sector.y, point.x, point.y, true, null, null);
-            if(((Floor)result.floor).isLiquid || result.wall.solid){
-                sector.missions.clear();
-                break;
-            }
-        }
+    private void initSector(Sector sector) {
+        activeGenerator().initSector(sector);
     }
 
-    private void addRecipeMission(Sector sector, int offset){
-        //build list of locked recipes to add mission for obtaining it
-        if(Mathf.randomSeed(sector.getSeed() + offset) < 0.5){
-            Array<Recipe> recipes = new Array<>();
-            for(Recipe r : content.recipes()){
-                if(r.result instanceof Wall || (r.visibility != RecipeVisibility.all) || r.cost < 10f) continue;
-                recipes.add(r);
-            }
-            float maxdiff = 8f;
-            recipes.sort((r1, r2) -> Float.compare(r1.cost, r2.cost));
-            int end = (int)(Mathf.clamp(sector.difficulty / maxdiff + 0.25f) * (recipes.size - 1));
-            int start = (int)(Mathf.clamp(sector.difficulty / maxdiff) * (recipes.size / 2f));
+    private void createTexture(Sector sector) {
+        if (headless) return;
 
-            if(recipes.size > 0 && end > start){
-                Recipe recipe = recipes.get(Mathf.randomSeed(sector.getSeed() + 10, start, end));
-                sector.missions.addAll(Missions.blockRecipe(recipe.result));
-            }
-        }
-    }
-
-    private void createTexture(Sector sector){
-        if(headless) return; //obviously not created or needed on server
-
-        if(sector.texture != null){
+        if (sector.texture != null) {
             sector.texture.dispose();
         }
 
@@ -296,15 +283,28 @@ public class Sectors{
             GenResult result = new GenResult();
             GenResult secResult = new GenResult();
 
-            for(int x = 0; x < pixmap.getWidth(); x++){
-                for(int y = 0; y < pixmap.getHeight(); y++){
+            for (int x = 0; x < pixmap.getWidth(); x++) {
+                for (int y = 0; y < pixmap.getHeight(); y++) {
                     int toX = x * sectorSize / sectorImageSize;
                     int toY = y * sectorSize / sectorImageSize;
 
                     world.generator.generateTile(result, sector.x, sector.y, toX, toY, false, null, null);
-                    world.generator.generateTile(secResult, sector.x, sector.y, toX, ((y+1) * sectorSize / sectorImageSize), false, null, null);
+                    world.generator.generateTile(secResult, sector.x, sector.y, toX, ((y + 1) * sectorSize / sectorImageSize), false, null, null);
 
-                    int color = ColorMapper.colorFor(result.floor, result.wall, Team.none, result.elevation, secResult.elevation > result.elevation ? (byte)(1 << 6) : (byte)0);
+                    int color = ColorMapper.colorFor(result.floor, result.wall, Team.none, result.elevation, secResult.elevation > result.elevation ? (byte) (1 << 6) : (byte) 0);
+
+                    if(sector != null && sector.isInfected()){
+                        Block floor = result.floor;
+                        Block wall = result.wall;
+                        if(floor instanceof Floor && ((Floor) floor).infectedVariant != null){
+                            floor = ((Floor) floor).infectedVariant;
+                        }
+                        if(wall instanceof Rock && ((Rock) wall).infectedVariant != null){
+                            wall = ((Rock) wall).infectedVariant;
+                        }
+                        color = ColorMapper.colorFor(floor, wall, Team.none, result.elevation, secResult.elevation > result.elevation ? (byte) (1 << 6) : (byte) 0);
+                    }
+
                     pixmap.drawPixel(x, pixmap.getHeight() - 1 - y, color);
                 }
             }
@@ -318,5 +318,48 @@ public class Sectors{
         });
     }
 
+    private GridMap<Sector> activeGrid(){
+        GridMap<Sector> grid = campaignGrids.get(activeCampaign);
+        if(grid == null){
+            grid = new GridMap<>();
+            campaignGrids.put(activeCampaign, grid);
+        }
+        return grid;
+    }
 
+    private CampaignSectorGenerator activeGenerator(){
+        return CampaignRegistry.generator(activeCampaign);
+    }
+
+    private String campaignSettingsKey(String campaignName){
+        return "sector-data-2-" + campaignName;
+    }
+
+    private void loadCampaignSectors(String campaignName){
+        GridMap<Sector> grid = campaignGrids.get(campaignName);
+        if(grid == null){
+            grid = new GridMap<>();
+            campaignGrids.put(campaignName, grid);
+        }else{
+            for(Sector sector : grid.values()){
+                if(sector.texture != null){
+                    sector.texture.dispose();
+                }
+            }
+            grid.clear();
+        }
+
+        Array<Sector> out = Settings.getObject(campaignSettingsKey(campaignName), Array.class, Array::new);
+
+        for(Sector sector : out){
+            createTexture(sector);
+            initSector(sector);
+            grid.put(sector.x, sector.y, sector);
+        }
+
+        if(out.size == 0){
+            createSector(0, 0);
+            save();
+        }
+    }
 }

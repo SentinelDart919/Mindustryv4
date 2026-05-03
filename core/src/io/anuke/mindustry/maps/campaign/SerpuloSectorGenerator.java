@@ -10,6 +10,7 @@ import io.anuke.mindustry.maps.generation.Generation;
 import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.mindustry.maps.missions.BattleMission;
 import io.anuke.mindustry.maps.missions.BiomassInfectableMission;
+import io.anuke.mindustry.maps.missions.BiomassInfectedBattleMission;
 import io.anuke.mindustry.maps.missions.BiomassInfectedMission;
 import io.anuke.mindustry.maps.missions.Mission;
 import io.anuke.mindustry.maps.missions.Missions;
@@ -72,11 +73,13 @@ public class SerpuloSectorGenerator implements CampaignSectorGenerator{
     private void generate(Sector sector){
         float rand = Mathf.randomSeed(sector.getSeed() + 7);
 
-        if(rand < 0.15){
+        if(rand < 0.10){
             sector.missions.add(new BiomassInfectedMission());
-        }else if(rand < 0.30f){
+        }else if(rand < 0.20){
+            sector.missions.add(new BiomassInfectedBattleMission());
+        }else if(rand < 0.35f){
             sector.missions.add(new BiomassInfectableMission(sector.difficulty * 5 + Mathf.randomSeed(sector.getSeed(), 1, 4) * 5));
-        }else if(rand < 0.55f){
+        }else if(rand < 0.60f){
             addRecipeMission(sector, 3);
             sector.missions.add(new WaveMission(sector.difficulty * 5 + Mathf.randomSeed(sector.getSeed(), 1, 4) * 5));
         }else{
@@ -96,8 +99,13 @@ public class SerpuloSectorGenerator implements CampaignSectorGenerator{
             world.generator.generateTile(result, sector.x, sector.y, point.x, point.y, true, null, null);
             if(((Floor)result.floor).isLiquid || result.wall.solid){
                 sector.missions.clear();
+                sector.missions.add(new WaveMission(Math.max(1, sector.difficulty) * 5 + Mathf.randomSeed(sector.getSeed(), 1, 4) * 5));
                 break;
             }
+        }
+
+        if(sector.missions.size == 0){
+            sector.missions.add(new WaveMission(Math.max(1, sector.difficulty) * 5 + Mathf.randomSeed(sector.getSeed(), 1, 4) * 5));
         }
     }
 

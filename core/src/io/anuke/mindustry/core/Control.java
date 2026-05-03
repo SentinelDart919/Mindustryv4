@@ -135,8 +135,8 @@ public class Control extends Module{
 
         Events.on(GameOverEvent.class, event -> {
             //delete saves for game-over sectors
-            if(world.getSector() != null && world.getSector().hasSave()){
-                world.getSector().getSave().delete();
+            if(world.getSector() != null){
+                world.sectors.abandonSector(world.getSector(), false);
             }
 
             threads.runGraphics(() -> {

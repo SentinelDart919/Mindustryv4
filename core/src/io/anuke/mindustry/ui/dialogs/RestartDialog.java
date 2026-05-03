@@ -49,6 +49,9 @@ public class RestartDialog extends FloatingDialog{
         }else{
             content().add("$text.sector.gameover");
             buttons().addButton("$text.menu", () -> {
+                if(world.getSector() != null){
+                    world.sectors.abandonSector(world.getSector(), true);
+                }
                 hide();
                 state.set(State.menu);
                 logic.reset();

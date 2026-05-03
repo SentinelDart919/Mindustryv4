@@ -19,6 +19,7 @@ import static io.anuke.mindustry.Vars.world;
 public class BiomassInfectableMission extends MissionWithStartingCore{
     private final int target;
     private float hiveSpawnTime;
+    private float timer = 0;
     private boolean hiveSpawned = false;
 
     public BiomassInfectableMission(int target){
@@ -31,6 +32,17 @@ public class BiomassInfectableMission extends MissionWithStartingCore{
         super(xCorePos, yCorePos);
         this.target = target;
         this.hiveSpawnTime = Mathf.random(5f, 20f) * 60f * 60f;
+    }
+
+    @Override
+    public void reset(){
+        timer = 0;
+        hiveSpawned = false;
+    }
+
+    @Override
+    public boolean isInfectable(){
+        return true;
     }
 
     @Override
@@ -55,7 +67,8 @@ public class BiomassInfectableMission extends MissionWithStartingCore{
 
     @Override
     public void update(){
-        if(!hiveSpawned && Timers.time() >= hiveSpawnTime){
+        timer += Timers.delta();
+        if(!hiveSpawned && timer >= hiveSpawnTime){
             MassAI.spawnInitialHive();
             hiveSpawned = true;
         }

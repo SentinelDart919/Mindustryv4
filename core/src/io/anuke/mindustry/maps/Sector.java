@@ -55,6 +55,14 @@ public class Sector{
         return completedMissions >= missions.size ? victoryMission : missions.get(completedMissions);
     }
 
+    public boolean isInfectable(){
+        return currentMission().isInfectable();
+    }
+
+    public boolean isInfected(){
+        return currentMission().isInfected();
+    }
+
     public int getSeed(){
         return Bits.packInt(x, y);
     }

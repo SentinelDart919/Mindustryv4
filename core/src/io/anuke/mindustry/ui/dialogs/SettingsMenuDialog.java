@@ -135,6 +135,7 @@ public class SettingsMenuDialog extends SettingsDialog{
             game.checkPref("autotarget", true);
         }
         game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Bundles.format("setting.seconds", i));
+        game.checkPref("planet3d", true);
 
         if(!mobile){
             game.checkPref("crashreport", true);

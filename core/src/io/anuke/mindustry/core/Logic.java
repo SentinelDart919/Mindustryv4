@@ -101,6 +101,10 @@ public class Logic extends Module{
     }
 
     public void reset(){
+        if(world.getSector() != null){
+            world.sectors.refreshSectorPreview(world.getSector());
+        }
+
         state.wave = 1;
         state.wavetime = wavespace * state.difficulty.timeScaling;
         state.gameOver = false;

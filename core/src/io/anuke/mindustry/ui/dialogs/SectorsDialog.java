@@ -1,6 +1,8 @@
 package io.anuke.mindustry.ui.dialogs;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.graphics.Palette;
@@ -11,6 +13,7 @@ import io.anuke.mindustry.maps.campaign.CampaignRegistry.PlanetDefinition;
 import io.anuke.ucore.util.Log;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
+import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.scene.Element;
 import io.anuke.ucore.scene.Group;
 import io.anuke.ucore.scene.event.InputEvent;
@@ -23,6 +26,8 @@ import io.anuke.ucore.scene.utils.Cursors;
 import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.core.Core;
+import io.anuke.ucore.core.Inputs;
+import io.anuke.ucore.core.Settings;
 
 import static io.anuke.mindustry.Vars.world;
 
@@ -58,6 +63,7 @@ public class SectorsDialog extends FloatingDialog{
 
         Group container = new Group();
         container.setTouchable(Touchable.childrenOnly);
+        container.setFillParent(true);
         container.addChild(sectorTable);
         container.addChild(campaignTable);
 
@@ -67,9 +73,16 @@ public class SectorsDialog extends FloatingDialog{
         stack(content(), container, buttons()).grow();
 
         shown(this::setup);
+        hidden(() -> {
+            if(Core.scene.getScrollFocus() == view){
+                Core.scene.setScrollFocus(null);
+            }
+            teardown3dScene();
+        });
     }
 
     void setup(){
+        teardown3dScene();
         selected = null;
         selectedPlanet = CampaignRegistry.planetForCampaign(world.sectors.getActiveCampaign());
 
@@ -81,6 +94,7 @@ public class SectorsDialog extends FloatingDialog{
 
         addCloseButton();
         setupCampaigns();
+        world.sectors.refreshActiveCampaignPreviews();
         content().add(view = new SectorView()).grow();
         view.rebuildPlanetModels();
         Core.scene.setScrollFocus(view);
@@ -120,7 +134,7 @@ public class SectorsDialog extends FloatingDialog{
         sectorTable.add(Bundles.format("text.sector", sector.x + ", " + sector.y));
         sectorTable.row();
 
-        if(selected.completedMissions < selected.missions.size && !selected.complete){
+        if(selected.missions.size > 0 && selected.completedMissions < selected.missions.size && !selected.complete){
             sectorTable.labelWrap(Bundles.format("text.mission", selected.getDominantMission().menuDisplayString())).growX();
             sectorTable.row();
         }
@@ -131,21 +145,27 @@ public class SectorsDialog extends FloatingDialog{
         }
 
         sectorTable.table(t -> {
-            Cell<?> cell = t.addImageTextButton(selected.hasSave() ? "$text.sector.resume" : "$text.sector.deploy", "icon-play", 10 * 3, () -> {
-                hide();
-                Vars.ui.loadLogic(() -> world.sectors.playSector(selected));
-            }).height(60f);
+            boolean canDeploy = (selected.missions.size > 0 || selected.complete) && (view.isUnlocked(selected) || selected.hasSave());
 
-            if(selected.hasSave()){
-                t.addImageTextButton("$text.sector.abandon", "icon-cancel", 16 * 2, () ->
-                    Vars.ui.showConfirm("$text.confirm", "$text.sector.abandon.confirm", () -> {
-                        world.sectors.abandonSector(selected);
-                        selectSector(selected);
-                    })
-                ).width(sectorSize / Unit.dp.scl(1f)).height(60f);
-                cell.width(sectorSize / Unit.dp.scl(1f));
+            if(canDeploy){
+                Cell<?> cell = t.addImageTextButton(selected.hasSave() ? "$text.sector.resume" : "$text.sector.deploy", "icon-play", 10 * 3, () -> {
+                    hide();
+                    Vars.ui.loadLogic(() -> world.sectors.playSector(selected));
+                }).height(60f);
+
+                if(selected.hasSave()){
+                    t.addImageTextButton("$text.sector.abandon", "icon-cancel", 16 * 2, () ->
+                        Vars.ui.showConfirm("$text.confirm", "$text.sector.abandon.confirm", () -> {
+                            world.sectors.abandonSector(selected);
+                            selectSector(selected);
+                        })
+                    ).width(sectorSize / Unit.dp.scl(1f)).height(60f);
+                    cell.width(sectorSize / Unit.dp.scl(1f));
+                }else{
+                    cell.width(sectorSize * 2f / Unit.dp.scl(1f));
+                }
             }else{
-                cell.width(sectorSize * 2f / Unit.dp.scl(1f));
+                t.add("$text.sector.locked").color(Color.GRAY).pad(10);
             }
         }).pad(-5).growX().padTop(0);
 
@@ -157,18 +177,36 @@ public class SectorsDialog extends FloatingDialog{
         return selected;
     }
 
+    void teardown3dScene(){
+        if(view != null){
+            view.disposeScene();
+            view.remove();
+            view = null;
+        }
+        content().clear();
+        sectorTable.clear();
+        campaignTable.clear();
+    }
+
     class SectorView extends Element{
         float lastX, lastY;
-        boolean clicked = false;
         float rotLon = 0f, rotLat = 0f;
-        float zoom = 1f; // camera distance factor: higher = farther
+        float panX = 0f, panY = 0f;
+        float zoom = 1f;
         float pendingScroll = 0f;
+        float downX, downY;
+        boolean dragged;
+        boolean pendingClick;
+        Sector hoveredSector;
+        float hoveredX, hoveredY;
         final PlanetMeshRenderer mesh = new PlanetMeshRenderer();
         boolean meshFailed;
 
         void resetCamera(){
             rotLon = 0f;
             rotLat = 0f;
+            panX = 0f;
+            panY = 0f;
             zoom = 1f;
         }
 
@@ -179,19 +217,57 @@ public class SectorsDialog extends FloatingDialog{
 
         SectorView(){
             addListener(new InputListener(){
+                float lastZoomDistance = -1f;
+
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
-                    if(pointer != 0) return false;
+                    if(pointer > 1) return false;
                     lastX = x;
                     lastY = y;
+                    downX = x;
+                    downY = y;
+                    dragged = false;
+                    pendingClick = false;
+
+                    if(pointer == 1){
+                        lastZoomDistance = Vector2.dst(Gdx.input.getX(0), Gdx.input.getY(0), Gdx.input.getX(1), Gdx.input.getY(1));
+                    }
+
                     return true;
                 }
 
                 @Override
                 public void touchDragged(InputEvent event, float x, float y, int pointer){
-                    if(pointer != 0) return;
-                    rotLon += (x - lastX) * 0.01f;
-                    rotLat = Mathf.clamp(rotLat - (y - lastY) * 0.01f, -1.2f, 1.2f);
+                    if(pointer > 1) return;
+
+                    if(pointer == 1){
+                        float newDistance = Vector2.dst(Gdx.input.getX(0), Gdx.input.getY(0), Gdx.input.getX(1), Gdx.input.getY(1));
+                        if(lastZoomDistance > 0){
+                            float amount = (newDistance - lastZoomDistance) * 0.01f;
+                            if(Settings.getBool("planet3d")){
+                                pendingScroll -= amount;
+                            }else{
+                                pendingScroll += amount;
+                            }
+                        }
+                        lastZoomDistance = newDistance;
+                        dragged = true;
+                        return;
+                    }
+
+                    if(Math.abs(x - downX) > 5f || Math.abs(y - downY) > 5f){
+                        dragged = true;
+                    }
+
+                    if(Settings.getBool("planet3d")){
+                        float factor = 0.01f * zoom;
+                        rotLon += (x - lastX) * factor * (float)Math.cos(rotLat);
+                        rotLat = Mathf.clamp(rotLat - (y - lastY) * factor, -1.4f, 1.4f);
+                    }else{
+                        panX += (x - lastX);
+                        panY += (y - lastY);
+                    }
+
                     lastX = x;
                     lastY = y;
                 }
@@ -204,19 +280,35 @@ public class SectorsDialog extends FloatingDialog{
 
                 @Override
                 public void touchUp(InputEvent event, float x, float y, int pointer, int button){
-                    if(pointer != 0) return;
+                    if(pointer > 1) return;
+                    if(pointer == 0){
+                        pendingClick = !dragged;
+                    }
+                    if(pointer == 1){
+                        lastZoomDistance = -1f;
+                    }
                     Cursors.restoreCursor();
                 }
             });
-
-            clicked(() -> clicked = true);
         }
 
         @Override
         public void draw(){
+            float wheel = Inputs.scroll();
+            if(wheel != 0f){
+                pendingScroll += wheel * 0.10f;
+            }
+
             if(pendingScroll != 0f){
-                // wheel down -> farther, wheel up -> closer
-                zoom = Mathf.clamp(zoom + pendingScroll, 0.45f, 2.3f);
+                if(Settings.getBool("planet3d")){
+                    zoom = Mathf.clamp(zoom + pendingScroll, 0.45f, 2.3f);
+                }else{
+                    float lastZoom = zoom;
+                    zoom = Mathf.clamp(zoom - pendingScroll, 0.2f, 10f);
+                    
+                    float mx = Gdx.input.getX() - getX();
+                    float my = (Gdx.graphics.getHeight() - Gdx.input.getY()) - getY();
+                }
                 pendingScroll = 0f;
             }
 
@@ -226,26 +318,33 @@ public class SectorsDialog extends FloatingDialog{
 
             PlanetDefinition planet = selectedPlanet == null ? CampaignRegistry.planetForCampaign(world.sectors.getActiveCampaign()) : selectedPlanet;
             PlanetMeshRenderer.HoverData hovered;
-            try{
-                hovered = mesh.render(x, y, width, height, planet, rotLon, rotLat, zoom, selected);
-                meshFailed = false;
-            }catch(Throwable t){
-                if(!meshFailed){
-                    Log.err(t);
+            if(Settings.getBool("planet3d")){
+                try{
+                    hovered = mesh.render(x, y, width, height, planet, rotLon, rotLat, zoom, selected);
+                    meshFailed = false;
+                }catch(Throwable t){
+                    if(!meshFailed){
+                        Log.err(t);
+                    }
+                    meshFailed = true;
+                    hovered = new PlanetMeshRenderer.HoverData();
                 }
-                meshFailed = true;
-                hovered = new PlanetMeshRenderer.HoverData();
-            }
-            if(meshFailed){
-                drawSerpuloFallback(planet);
+                if(meshFailed){
+                    drawSerpuloFallback(planet);
+                }
+            }else{
+                hovered = drawClassicSectorMap(planet);
             }
 
-            if(hovered.sector != null && clicked){
+            if(pendingClick && hovered.sector != null){
                 selectedDrawX = hovered.x;
                 selectedDrawY = hovered.y;
                 selectSector(hovered.sector);
             }
-            clicked = false;
+            pendingClick = false;
+            hoveredSector = hovered.sector;
+            hoveredX = hovered.x;
+            hoveredY = hovered.y;
         }
 
         void drawSerpuloFallback(PlanetDefinition planet){
@@ -263,5 +362,153 @@ public class SectorsDialog extends FloatingDialog{
             Draw.rect("sector-select", cx, cy, radius * 2.02f, radius * 2.02f);
             Draw.reset();
         }
+
+        PlanetMeshRenderer.HoverData drawClassicSectorMap(PlanetDefinition planet){
+            PlanetMeshRenderer.HoverData out = new PlanetMeshRenderer.HoverData();
+            if(planet == null) return out;
+
+            float mapW = width * 0.85f * zoom;
+            float mapH = height * 0.85f * zoom;
+            float left = x + width / 2f - mapW / 2f + panX;
+            float bottom = y + height / 2f - mapH / 2f + panY;
+
+            Draw.color(0, 0, 0, 0.4f);
+            Fill.crect(left, bottom, mapW, mapH);
+
+            Draw.color(planet.colorR * 0.2f, planet.colorG * 0.2f, planet.colorB * 0.2f, 1f);
+            for(int i = 0; i <= planet.gridLongitude; i++){
+                Fill.crect(left + i * mapW / planet.gridLongitude - 1f, bottom, 2f, mapH);
+            }
+            for(int i = 0; i <= planet.gridLatitude; i++){
+                Fill.crect(left, bottom + i * mapH / planet.gridLatitude - 1f, mapW, 2f);
+            }
+
+            Lines.stroke(2f);
+            for(int sy = -planet.gridLatitude / 2; sy < planet.gridLatitude / 2; sy++){
+                for(int sx = -planet.gridLongitude / 2; sx < planet.gridLongitude / 2; sx++){
+                    Sector sector = world.sectors.get(sx, sy);
+                    if(sector == null || !sector.complete) continue;
+
+                    float tx = left + ((sx + planet.gridLongitude / 2f + 0.5f) / planet.gridLongitude) * mapW;
+                    float ty = bottom + ((sy + planet.gridLatitude / 2f + 0.5f) / planet.gridLatitude) * mapH;
+
+                    for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+                        Sector other = world.sectors.get(sx + g.x, sy + g.y);
+                        if(other == null || !isUnlocked(other)) continue;
+                        
+                        float ox = left + ((sx + g.x + planet.gridLongitude / 2f + 0.5f) / planet.gridLongitude) * mapW;
+                        float oy = bottom + ((sy + g.y + planet.gridLatitude / 2f + 0.5f) / planet.gridLatitude) * mapH;
+                        
+                        if(other.complete){
+                            Draw.color(Color.GRAY);
+                            Draw.alpha(0.2f);
+                        }else{
+                            Draw.color(Palette.accent);
+                            Draw.alpha(0.5f);
+                        }
+                        Lines.line(tx, ty, ox, oy);
+                    }
+                }
+            }
+            Lines.stroke(1f);
+            Draw.alpha(1f);
+
+            float mx = Gdx.input.getX();
+            float my = Gdx.graphics.getHeight() - Gdx.input.getY();
+            float best = Float.MAX_VALUE;
+
+            for(int sy = -planet.gridLatitude / 2; sy < planet.gridLatitude / 2; sy++){
+                for(int sx = -planet.gridLongitude / 2; sx < planet.gridLongitude / 2; sx++){
+                    Sector sector = world.sectors.get(sx, sy);
+                    if(sector == null) continue;
+
+                    float tx = left + ((sx + planet.gridLongitude / 2f + 0.5f) / planet.gridLongitude) * mapW;
+                    float ty = bottom + ((sy + planet.gridLatitude / 2f + 0.5f) / planet.gridLatitude) * mapH;
+                    float sw = mapW / planet.gridLongitude;
+                    float sh = mapH / planet.gridLatitude;
+
+                    boolean unlocked = isUnlocked(sector);
+
+                    if(sector.complete){
+                        Draw.color(Palette.accent);
+                    }else if(sector.hasSave()){
+                        Draw.color(Color.WHITE);
+                    }else if(unlocked){
+                        Draw.color(Color.WHITE);
+                    }else{
+                        Draw.color(Color.GRAY);
+                    }
+
+                    if(unlocked){
+                        if(sector.texture != null){
+                            Draw.color(Color.WHITE);
+                            Draw.rect(sector.texture, tx, ty, sw, sh);
+                        }else if(sector.complete){
+                            Fill.poly(tx, ty, 4, Math.min(sw, sh) * 0.45f, 45f);
+                        }
+
+                        if(!sector.complete && sector.missions.size > 0){
+                            float isize = Math.min(sw, sh) * 0.6f;
+                            Draw.color(0f, 0f, 0f, 0.4f);
+                            Fill.circle(tx, ty, isize / 2f + 2f);
+                            
+                            Color iconColor = Color.WHITE;
+                            Draw.color(iconColor);
+                            Draw.rect(sector.getDominantMission().getIcon(), tx, ty, isize - 1, isize - 1);
+                        }
+                    }else{
+                        Draw.color(Color.GRAY);
+                        Draw.alpha(0.3f);
+                        Fill.crect(tx - sw / 2f, ty - sh / 2f, sw, sh);
+                        Draw.alpha(1f);
+                    }
+
+                    if(sector == selected){
+                        Draw.color(Palette.accent);
+                        Draw.rect("sector-select", tx, ty, sw * 1.5f, sh * 1.5f);
+                    }
+
+                    float dst = Vector2.dst(mx, my, tx, ty);
+                    if(unlocked && dst < Math.max(sw, sh) && dst < best){
+                        best = dst;
+                        out.sector = sector;
+                        out.x = tx;
+                        out.y = ty;
+                    }
+                }
+            }
+
+            if(out.sector != null && out.sector != selected){
+                float sw = mapW / planet.gridLongitude;
+                float sh = mapH / planet.gridLatitude;
+                Draw.color(Color.WHITE);
+                Draw.rect("sector-select", out.x, out.y, sw * 1.2f, sh * 1.2f);
+            }
+
+            Draw.reset();
+            return out;
+        }
+
+        void disposeScene(){
+            mesh.dispose();
+        }
+
+        public boolean isUnlocked(Sector sector){
+            if(sector.complete || (sector.x == 0 && sector.y == 0)) return true;
+            for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+                Sector other = world.sectors.get(sector.x + g.x, sector.y + g.y);
+                if(other != null && other.complete) return true;
+            }
+            return false;
+        }
+    }
+
+    public static boolean isUnlockedStatic(Sector sector){
+        if(sector.complete || (sector.x == 0 && sector.y == 0)) return true;
+        for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+            Sector other = world.sectors.get(sector.x + g.x, sector.y + g.y);
+            if(other != null && other.complete) return true;
+        }
+        return false;
     }
 }
