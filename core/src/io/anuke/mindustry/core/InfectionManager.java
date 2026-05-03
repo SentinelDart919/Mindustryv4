@@ -3,6 +3,7 @@ package io.anuke.mindustry.core;
 import com.badlogic.gdx.utils.IntSet;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.modules.Module;
 import io.anuke.ucore.util.Geometry;
@@ -21,6 +22,28 @@ public class InfectionManager extends Module {
         
         infectInternal(tile);
         infectedQueue.add(tile.packedPosition());
+    }
+
+    public void infectAll(Tile[][] tiles){
+        for (Tile[] value : tiles) {
+            for (int y = 0; y < tiles[0].length; y++) {
+                Tile tile = value[y];
+                if (tile == null) continue;
+
+                if (tile.floor().infectedVariant != null) {
+                    tile.setFloor(tile.floor().infectedVariant);
+                    tile.isInfected = true;
+                }
+
+                if (tile.block() instanceof Rock) {
+                    Rock rock = (Rock) tile.block();
+                    if (rock.infectedVariant != null) {
+                        tile.setBlock(rock.infectedVariant);
+                        tile.isInfected = true;
+                    }
+                }
+            }
+        }
     }
 
     private void infectInternal(Tile tile) {
