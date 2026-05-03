@@ -195,7 +195,7 @@ public class Blocks extends BlockList implements ContentList{
             statusIntensity = 1f;
             drownTime = 140f;
             cacheLayer = CacheLayer.water;
-            minimapColor = Color.valueOf("465a96");
+            minimapColor = Color.valueOf("a91111");
         }};
 
         shrub = new Rock("shrub"){{
