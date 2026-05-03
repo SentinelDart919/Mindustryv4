@@ -2,6 +2,15 @@
 
 This is a Fan made project not aproved by the main dev, non-profit, the only objective is to edit the code of this version and have fun!
 
+### The Never Ending TO-DO list
+* Make a Launch Pad System
+* Balance the Biomass
+* Fix Biomass Units bugs
+* Add more QoL
+* Finish Tank Units
+* Add more units
+* Add Units with Shields
+
 ### Building
 
 First, make sure you have JRE 11 to run and JDK 11 installed for make your builds
