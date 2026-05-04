@@ -243,6 +243,7 @@ public class Sectors {
         }
 
         Settings.putObject(campaignSettingsKey(activeCampaign), out);
+        launchManager.save();
         Settings.save();
     }
 
@@ -318,7 +319,7 @@ public class Sectors {
         });
     }
 
-    private GridMap<Sector> activeGrid(){
+    public GridMap<Sector> activeGrid(){
         GridMap<Sector> grid = campaignGrids.get(activeCampaign);
         if(grid == null){
             grid = new GridMap<>();

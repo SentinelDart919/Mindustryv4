@@ -101,6 +101,7 @@ public class Vars{
     public static float baseControllerSpeed = 11f;
     public static boolean snapCamera = true;
 
+    public static LaunchManager launchManager;
     public static ContentLoader content;
     public static GameState state;
     public static ThreadHandler threads;
@@ -151,6 +152,7 @@ public class Vars{
         Version.init();
 
         content = new ContentLoader();
+        launchManager = new LaunchManager();
 
         playerGroup = Entities.addGroup(Player.class).enableMapping();
         tileGroup = Entities.addGroup(TileEntity.class, false);

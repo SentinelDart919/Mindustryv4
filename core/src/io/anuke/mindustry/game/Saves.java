@@ -176,6 +176,7 @@ public class Saves{
                     totalPlaytime = time;
 
                     SaveIO.saveToSlot(index);
+                    launchManager.save();
                     meta = SaveIO.getData(index);
                     if(!state.is(State.menu)){
                         current = this;

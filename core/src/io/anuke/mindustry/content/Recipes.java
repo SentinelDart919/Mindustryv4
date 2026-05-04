@@ -77,6 +77,11 @@ public class Recipes implements ContentList{
         new Recipe(effect, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
         new Recipe(effect, StorageBlocks.container, new ItemStack(Items.densealloy, 200));
         new Recipe(effect, StorageBlocks.vault, new ItemStack(Items.densealloy, 500), new ItemStack(Items.thorium, 250));
+
+        new Recipe(effect, StorageBlocks.launchPad, new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 200), new ItemStack(Items.lead, 200), new ItemStack(Items.titanium, 150))
+                .setOnlyCampaign(true);
+        new Recipe(effect, StorageBlocks.landingPad, new ItemStack(Items.copper, 200), new ItemStack(Items.silicon, 150), new ItemStack(Items.lead, 150))
+                .setOnlyCampaign(true);
         new Recipe(effect, StorageBlocks.core, new ItemStack(Items.copper, 1000), new ItemStack(Items.lead, 1000), new ItemStack(Items.densealloy, 1000), new ItemStack(Items.silicon, 1000), new ItemStack(Items.thorium, 1000), new ItemStack(Items.phasefabric, 1000), new ItemStack(Items.chromium, 1000));
 
         new Recipe(effect, DefenseBlocks.shockMine, new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 25))

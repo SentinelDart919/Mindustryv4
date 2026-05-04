@@ -36,6 +36,7 @@ public class SectorsDialog extends FloatingDialog{
     private Sector selected;
     private Table sectorTable;
     private Table campaignTable;
+    private Table exportedTable;
     private SectorView view;
     private final CampaignManager campaignManager = new CampaignManager();
     private PlanetDefinition selectedPlanet;
@@ -61,11 +62,16 @@ public class SectorsDialog extends FloatingDialog{
         campaignTable.top().left().margin(6f);
         campaignTable.update(() -> campaignTable.setPosition(10f, height - 10f, Align.topLeft));
 
+        exportedTable = new Table("button");
+        exportedTable.top().right().margin(6f);
+        exportedTable.update(() -> exportedTable.setPosition(width - 10f, height - 10f, Align.topRight));
+
         Group container = new Group();
         container.setTouchable(Touchable.childrenOnly);
         container.setFillParent(true);
         container.addChild(sectorTable);
         container.addChild(campaignTable);
+        container.addChild(exportedTable);
 
         margin(0);
         getTitleTable().clear();
@@ -88,12 +94,15 @@ public class SectorsDialog extends FloatingDialog{
 
         sectorTable.clear();
         campaignTable.clear();
+        exportedTable.clear();
         content().clear();
         buttons().clear();
         buttons().bottom().margin(15);
 
         addCloseButton();
         setupCampaigns();
+        Vars.launchManager.load();
+        setupExported();
         world.sectors.refreshActiveCampaignPreviews();
         content().add(view = new SectorView()).grow();
         view.rebuildPlanetModels();
@@ -117,12 +126,42 @@ public class SectorsDialog extends FloatingDialog{
                     sectorTable.clear();
                     view.resetCamera();
                     view.rebuildPlanetModels();
+                    Vars.launchManager.load();
+                    setupExported();
                 }
             }).width(buttonWidth);
             campaignTable.row();
         }
 
         campaignTable.pack();
+    }
+
+    void setupExported(){
+        exportedTable.clear();
+        exportedTable.defaults().pad(2f);
+        exportedTable.add("$text.exported").left().pad(4f);
+        exportedTable.row();
+
+        Table items = new Table();
+        items.left();
+        int i = 0;
+        for(io.anuke.mindustry.type.Item item : Vars.launchManager.getInventory().keys()){
+            int amount = Vars.launchManager.getAmount(item);
+            if(amount > 0){
+                items.addImage(item.region).size(8 * 3).padRight(4);
+                items.add(amount + " / " + Vars.launchManager.getCapacity()).left().padRight(10);
+                if(++i % 2 == 0) items.row();
+            }
+        }
+
+        if(i == 0){
+            items.add("$text.none").color(Color.GRAY);
+        }
+
+        exportedTable.add(items).left();
+        exportedTable.row();
+
+        exportedTable.pack();
     }
 
     void selectSector(Sector sector){

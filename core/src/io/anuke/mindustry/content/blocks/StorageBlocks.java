@@ -3,16 +3,22 @@ package io.anuke.mindustry.content.blocks;
 import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
-import io.anuke.mindustry.world.blocks.storage.CoreBlock;
-import io.anuke.mindustry.world.blocks.storage.HiveBlock;
-import io.anuke.mindustry.world.blocks.storage.SortedUnloader;
-import io.anuke.mindustry.world.blocks.storage.Vault;
+import io.anuke.mindustry.world.blocks.storage.*;
 
 public class StorageBlocks extends BlockList implements ContentList{
-    public static Block core, vault, container, unloader, hive;
+    public static Block core, vault, container, unloader, hive, launchPad, landingPad;
 
     @Override
     public void load(){
+        launchPad = new LaunchPad("launch-pad"){{
+            health = 200;
+            powerCapacity = 60f;
+        }};
+
+        landingPad = new LandingPad("landing-pad"){{
+            health = 200;
+        }};
+
         core = new CoreBlock("core"){{
             health = 1100;
             defenseDrones = true;

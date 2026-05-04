@@ -38,6 +38,7 @@ public class Mindustry extends ModuleCore{
 
     @Override
     public void postInit(){
+        launchManager.load();
         Log.info("Time to load [total]: {0}", Timers.elapsed());
         Events.fire(new GameLoadEvent());
     }

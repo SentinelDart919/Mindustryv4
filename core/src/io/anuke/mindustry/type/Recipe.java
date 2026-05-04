@@ -33,6 +33,7 @@ public class Recipe extends UnlockableContent{
     public RecipeVisibility visibility = RecipeVisibility.all;
     //the only gamemode in which the recipe shows up
     public GameMode mode;
+    public boolean onlyCampaign;
     public boolean hidden;
     public boolean alwaysUnlocked;
 
@@ -60,7 +61,7 @@ public class Recipe extends UnlockableContent{
     public static Array<Recipe> getByCategory(Category category){
         returnArray.clear();
         for(Recipe recipe : content.recipes()){
-            if(recipe.category == category && recipe.visibility.shown() && (recipe.mode == state.mode || recipe.mode == null)){
+            if(recipe.category == category && recipe.visibility.shown() && (recipe.mode == state.mode || recipe.mode == null) && (!recipe.onlyCampaign || world.getSector() != null)){
                 returnArray.add(recipe);
             }
         }
@@ -74,6 +75,11 @@ public class Recipe extends UnlockableContent{
 
     public Recipe setVisible(RecipeVisibility visibility){
         this.visibility = visibility;
+        return this;
+    }
+
+    public Recipe setOnlyCampaign(boolean onlyCampaign){
+        this.onlyCampaign = onlyCampaign;
         return this;
     }
 
