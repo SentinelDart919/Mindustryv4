@@ -45,7 +45,7 @@ public class LandingPad extends Block {
                 float px = x + Mathf.range(spread + 5f);
                 float py = y + oy + Mathf.range(spread + 5f);
                 float particleAlpha = alpha * (1f - progress) * Mathf.clamp(smokeProgress * 2f);
-                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.darkishGray, Mathf.clamp(smokeProgress * 2f));
+                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.lightishGray, Mathf.clamp(smokeProgress * 2f));
                 float tsize = 3f + progress * 5f;
 
                 Effects.effect(new Effect(60f + Mathf.random(60f), p -> {
@@ -61,7 +61,7 @@ public class LandingPad extends Block {
                 float px = x + Mathf.range(1.5f);
                 float py = y + oy + 10f + Mathf.range(3f);
                 float particleAlpha = alpha * (1f - progress) * 0.4f;
-                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.darkishGray, Mathf.clamp(smokeProgress * 3f));
+                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.lightishGray, Mathf.clamp(smokeProgress * 3f));
                 float tsize = 1f + progress * 2f;
 
                 Effects.effect(new Effect(40f + Mathf.random(40f), p -> {
@@ -81,7 +81,7 @@ public class LandingPad extends Block {
         // particle wave
         if(progress > 0.85f && progress < 1f){
             float wave = (progress - 0.85f) / 0.15f;
-            Draw.color(Palette.darkishGray);
+            Draw.color(Palette.lightishGray);
             Draw.alpha(1f - wave);
             for(int i = 0; i < 15; i++){
                 float ang = i / 15f * 360f;

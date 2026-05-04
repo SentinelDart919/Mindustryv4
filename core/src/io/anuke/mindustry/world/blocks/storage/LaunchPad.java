@@ -32,10 +32,10 @@ public class LaunchPad extends Block {
 
     public Effect launchPodEffect = new Effect(140f, e -> {
         float x = e.x, y = e.y;
-        float progress = Mathf.clamp(e.time / 100f);
+        float progress = e.fin();
         float size = 1f + progress * 2.5f;
         float rotation = Mathf.randomSeed(e.id, 0, 360) + progress * (Mathf.randomSeed(e.id + 1, 0, 100) - 50);
-        float alpha = progress < 1f ? 1f : 1f - (e.time - 100f) / 40f;
+        float alpha = progress < 0.8f ? 1f : 1f - (progress - 0.8f) / 0.2f;
 
         float ox = Mathf.sin(progress * 10f, 2f, Mathf.randomSeed(e.id + 2, 0, 10));
         float oy = progress * progress * 150f;
@@ -51,7 +51,7 @@ public class LaunchPad extends Block {
                 float px = x + (float)Math.cos(angle * 0.017453292519943295) * rad;
                 float py = y + (float)Math.sin(angle * 0.017453292519943295) * rad;
 
-                Draw.color(Palette.darkishGray);
+                Draw.color(Palette.lightishGray);
                 Draw.alpha(waveAlpha * alpha);
                 Draw.rect(Draw.region("circle"), px, py, 4f, 4f);
             }
@@ -68,7 +68,7 @@ public class LaunchPad extends Block {
                 float sy = y + (float)Math.sin(angle * 0.017453292519943295) * dist;
                 
                 float lerpVal = progress * 5f + (Mathf.randomSeed(e.id + i + 30, 0, 100) / 200f);
-                Draw.color(Color.valueOf("ff971c").cpy().lerp(Palette.darkishGray, Mathf.clamp(lerpVal)));
+                Draw.color(Color.valueOf("ff971c").cpy().lerp(Palette.lightishGray, Mathf.clamp(lerpVal)));
                 Draw.alpha(shockAlpha * alpha * (0.5f + Mathf.randomSeed(e.id + i + 40, 0, 100) / 200f));
                 float psize = 2f + (Mathf.randomSeed(e.id + i + 50, 0, 800) / 100f) + progress * 10f;
                 Draw.rect(Draw.region("circle"), sx, sy, psize, psize);
@@ -76,12 +76,12 @@ public class LaunchPad extends Block {
         }
 
         // Smoke trail
-        if(progress < 1f && (int)(e.time / 1.5f) % 2 == 0){
+        if(alpha > 0 && (int)(e.time / 1.5f) % 2 == 0){
             for(int i = 0; i < 6; i++){
                 float particleAlpha = alpha * Mathf.random(0.5f, 1f);
-                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.darkishGray, Mathf.clamp(progress * 1.5f + Mathf.random(0.4f)));
+                Color color = Color.valueOf("ff971c").cpy().lerp(Palette.lightishGray, Mathf.clamp(progress * 1.5f + Mathf.random(0.4f)));
                 float tsize = 3f + progress * 12f + Mathf.random(6f);
-                float px = x + ox + Mathf.range(size * 6f);
+                float px = x + ox + Mathf.range(size * 4f);
                 float py = y + oy - 4f * size + Mathf.range(size * 4f);
 
                 Effects.effect(new Effect(60f + Mathf.random(60f), p -> {
@@ -94,7 +94,7 @@ public class LaunchPad extends Block {
             }
         }
 
-        if (progress < 1f) {
+        if (alpha > 0) {
             Draw.color(Color.WHITE);
             Draw.alpha(alpha);
             Effects.effect(new Effect(1.1f, p -> {
