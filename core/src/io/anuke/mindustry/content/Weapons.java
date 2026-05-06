@@ -283,6 +283,7 @@ public class Weapons implements ContentList{
             ammo = AmmoTypes.unitArtillery;
             setShootSound("shootArtillery");
         }};
+        //Mass
         artilleryBiomass = new Weapon("artillery-biomass"){{
             length = 1f;
             reload = 60f;
