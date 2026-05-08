@@ -364,7 +364,7 @@ public class TurretBlocks extends BlockList implements ContentList{
         }};
 
         evilCyclone = new ItemTurret("evil-cyclone"){{
-            ammoTypes = new AmmoType[]{AmmoTypes.flakObsidian, AmmoTypes.flakExplosive, AmmoTypes.flakPlastic, AmmoTypes.flakSurge};
+            ammoTypes = new AmmoType[]{AmmoTypes.explosivebloodflak, AmmoTypes.bloodflak};
             setShootSound("shootCyclone");
             xRand = 4f;
             reload = 8f;
@@ -379,7 +379,7 @@ public class TurretBlocks extends BlockList implements ContentList{
         }};
 
         evilFuse = new ItemTurret("evil-fuse"){{
-            ammoTypes = new AmmoType[]{AmmoTypes.fuseShotgun};
+            ammoTypes = new AmmoType[]{AmmoTypes.evilFuseShotgun};
             setShootSound("shootFuse");
             reload = 50f;
             shootShake = 4f;

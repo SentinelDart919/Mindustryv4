@@ -29,7 +29,9 @@ import static io.anuke.mindustry.Vars.world;
 
 public class TurretBullets extends BulletList implements ContentList{
     public static BulletType fireball, basicFlame, lancerLaser, burstLaser, meltdownLaser,
-        fuseShot, waterShot, cryoShot, lavaShot, oilShot, lightning, driverBolt, healBullet, arc, damageLightning;
+        fuseShot, waterShot, cryoShot, lavaShot, oilShot, lightning, driverBolt, healBullet, arc, damageLightning,
+    // Mass
+    BloodFuseShot;
 
     @Override
     public void load(){
@@ -417,6 +419,44 @@ public class TurretBullets extends BulletList implements ContentList{
                 super.hit(b, hitx, hity);
                 despawned(b);
             }
+        };
+        // Mass
+        BloodFuseShot = new BulletType(0.02f, 85){
+            int rays = 5;
+            float raySpace = 2.5f;
+            float rayLength = 90f;
+            {
+                hiteffect = BulletFx.hitFuse;
+                lifetime = 13f;
+                despawneffect = Fx.none;
+                pierce = true;
+            }
+
+            @Override
+            public void init(Bullet b) {
+                for (int i = 0; i < rays; i++) {
+                    float offset = (i-rays/2)*raySpace;
+                    vector.trns(b.angle(), 0.01f, offset);
+                    Damage.collideLine(b, b.getTeam(), hiteffect, b.x, b.y, b.angle(), rayLength - Math.abs(i - (rays/2))*20f);
+                }
+            }
+
+            @Override
+            public void draw(Bullet b) {
+                super.draw(b);
+                Draw.color(Color.RED, Color.valueOf("871e1e"), b.fin());
+                for(int i = 0; i < 7; i++){
+                    vector.trns(b.angle(), i * 8f);
+                    float sl = Mathf.clamp(b.fout()-0.5f) * (80f - i *10);
+                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() + 90);
+                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() - 90);
+                }
+                Shapes.tri(b.x, b.y, 13f, (rayLength+50) * b.fout(), b.angle());
+                Shapes.tri(b.x, b.y, 13f, 10f * b.fout(), b.angle() + 180f);
+                Draw.reset();
+            }
+
+            //TODO
         };
     }
 }

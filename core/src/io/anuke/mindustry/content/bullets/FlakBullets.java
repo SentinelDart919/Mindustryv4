@@ -12,7 +12,9 @@ import io.anuke.mindustry.game.ContentList;
 import io.anuke.ucore.util.Mathf;
 
 public class FlakBullets extends BulletList implements ContentList{
-    public static BulletType scrap, lead, obsidian,plastic, explosive, surge;
+    public static BulletType scrap, lead, obsidian, plastic, explosive, surge,
+    //Mass
+    blood, explosiveblood;
 
     @Override
     public void load(){
@@ -76,6 +78,23 @@ public class FlakBullets extends BulletList implements ContentList{
                 for (int i = 0; i < 2; i++) {
                     Lightning.create(b.getTeam(), Palette.surge, damage, b.x, b.y, Mathf.random(360f), 12);
                 }
+            }
+        };
+        blood = new FlakBulletType(4.2f, 5){
+            {
+                splashDamageRadius = 40f;
+                fragBullet = ArtilleryBullets.bloodfrag;
+                fragBullets = 6;
+                hiteffect = BulletFx.flakExplosion;
+                frontColor = Color.valueOf("bc1a12");
+                backColor = Color.valueOf("8a1a14");
+            }
+        };
+
+        explosiveblood = new FlakBulletType(4.2f, 5){
+            {
+                frontColor = Color.valueOf("bc3912");
+                backColor = Color.valueOf("8a2914");
             }
         };
     }
