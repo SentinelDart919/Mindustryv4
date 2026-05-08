@@ -349,7 +349,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
         }};
         biomassGenerator = new GenericCrafter("biomass-generator"){{
             itemCapacity = 2;
-            craftTime = Mathf.random(990f , 1590f);
+            craftTime = Mathf.random(1290f , 1990f);
             hasItems = true;
             output = Items.corruptedbiomatter;
             size = 2;
