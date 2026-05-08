@@ -16,7 +16,7 @@ public class Version{
     /**Number specifying the major version, e.g. '4'*/
     public static int number = 63;
     /**Build number, e.g. '43'. set to '-1' for custom builds.*/
-    public static int build = 7;
+    public static int build = 8;
     /**Revision number. Used for hotfixes. Does not affect server compatibility.*/
     public static int revision = 2;
 
