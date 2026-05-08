@@ -1,5 +1,6 @@
 package io.anuke.mindustry.content.bullets;
 
+import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.bullet.ArtilleryBulletType;
@@ -9,7 +10,9 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
 
 public class ArtilleryBullets extends BulletList implements ContentList{
-    public static BulletType dense, plastic, plasticFrag, homing, incindiary, explosive, surge, unit;
+    public static BulletType dense, plastic, plasticFrag, homing, incindiary, explosive, surge, unit,
+    //mass
+    bloodfrag;
 
     @Override
     public void load(){
@@ -26,6 +29,17 @@ public class ArtilleryBullets extends BulletList implements ContentList{
             }
         };
 
+        plasticFrag = new BasicBulletType(2.5f, 6, "bullet"){
+            {
+                bulletWidth = 10f;
+                bulletHeight = 12f;
+                bulletShrink = 1f;
+                lifetime = 15f;
+                backColor = Palette.plastaniumBack;
+                frontColor = Palette.plastaniumFront;
+                despawneffect = Fx.none;
+            }
+        };
         plasticFrag = new BasicBulletType(2.5f, 6, "bullet"){
             {
                 bulletWidth = 10f;
@@ -111,6 +125,18 @@ public class ArtilleryBullets extends BulletList implements ContentList{
                 splashDamage = 50f;
                 backColor = Palette.bulletYellowBack;
                 frontColor = Palette.bulletYellow;
+            }
+        };
+
+        bloodfrag = new BasicBulletType(2.5f, 6, "bullet"){
+            {
+                bulletWidth = 10f;
+                bulletHeight = 12f;
+                bulletShrink = 1f;
+                lifetime = 15f;
+                backColor = Color.valueOf("8a1a14");
+                frontColor = Color.valueOf("bc1a12");
+                despawneffect = Fx.none;
             }
         };
 
