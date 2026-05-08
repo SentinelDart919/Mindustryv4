@@ -89,6 +89,7 @@ public class ContentLoader{
         new TurretBlocks(),
         new DebugBlocks(),
         new LiquidBlocks(),
+        new LogisticBlocks(),
         new StorageBlocks(),
         new UnitBlocks(),
         new PowerBlocks(),

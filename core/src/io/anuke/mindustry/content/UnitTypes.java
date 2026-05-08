@@ -19,6 +19,7 @@ public class UnitTypes implements ContentList{
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
         debugtank, nova,
+        minerDroneT1, minerDroneT2,
         evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
         /* TODO
             Add Units For Mass Team
@@ -327,6 +328,17 @@ public class UnitTypes implements ContentList{
             public boolean isHidden() {
                 return true;
             }};
+
+        minerDroneT1 = new UnitType("miner-drone-t1", MiningPostDrone.class, MiningPostDrone::new){{
+            weapon = Weapons.mineBlaster;
+            isFlying = true;
+            drag = 0.01f;
+            speed = 0.25f;
+            maxVelocity = 0.90f;
+            range = 55f;
+            health = 40;
+            spawnsInSiegeMode = false;
+        }};
         // The Mass Units
         evilDagger = new UnitType("evil-dagger", BiomassGroundUnit.class, BiomassGroundUnit::new){{
             maxVelocity = 1.1f;

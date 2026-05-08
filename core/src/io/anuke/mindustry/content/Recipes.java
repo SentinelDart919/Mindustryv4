@@ -38,6 +38,7 @@ public class Recipes implements ContentList{
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, LogisticBlocks.miningPostT1).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
 
@@ -91,6 +92,7 @@ public class Recipes implements ContentList{
         new Recipe(turret, TurretBlocks.duo, new ItemStack(Items.copper, 40)).setAlwaysUnlocked(true);
         new Recipe(turret, TurretBlocks.scatter, new ItemStack(Items.copper, 85), new ItemStack(Items.lead, 45));
         new Recipe(turret, TurretBlocks.arc, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 30), new ItemStack(Items.silicon, 20));
+        new Recipe(turret, TurretBlocks.scorch, new ItemStack(Items.copper, 60), new ItemStack(Items.densealloy, 25));
         new Recipe(turret, TurretBlocks.hail, new ItemStack(Items.copper, 60), new ItemStack(Items.densealloy, 35));
         new Recipe(turret, TurretBlocks.lancer, new ItemStack(Items.copper, 50), new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 90));
         new Recipe(turret, TurretBlocks.wave, new ItemStack(Items.densealloy, 60), new ItemStack(Items.titanium, 70), new ItemStack(Items.lead, 150));
