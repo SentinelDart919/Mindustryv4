@@ -5,6 +5,7 @@ import io.anuke.mindustry.entities.traits.MinerTrait;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.entities.units.UnitState;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.MiningPost;
@@ -93,11 +94,10 @@ public class MiningPostDrone extends FlyingUnit implements MinerTrait {
     }
 
     @Override
-    public void draw() {
-        super.draw();
+    public void drawOver(){
+        trail.draw(Palette.darkFlame, 3f);
         drawMining(this);
     }
-
     @Override
     public UnitState getStartState() {
         return mine;
