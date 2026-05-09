@@ -351,7 +351,7 @@ public class Net{
 
     public static void http(String url, String method, String body, Consumer<String> listener, Consumer<Throwable> failure){
         HttpRequest req = new HttpRequestBuilder().newRequest()
-        .method(method).url(url).content(body).build();
+        .method(method).url(url).content(body).timeout(10000).build();
 
         Gdx.net.sendHttpRequest(req, new HttpResponseListener(){
             @Override

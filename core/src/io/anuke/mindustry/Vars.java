@@ -33,7 +33,7 @@ import java.util.Locale;
 public class Vars{
     public static final String appName = "MindustryV4";
     public static final String discordURL = "https://discord.gg/mindustry";
-    public static final String releasesURL = "https://github.com/SentinelDart919/Mindustryv4/releases";
+    public static final String releasesURL = "https://api.github.com/repos/SentinelDart919/Mindustryv4/releases";
     public static final String contributorsURL = "https://github.com/SentinelDart919/Mindustryv4/contributors";
     public static final String crashReportURL = "https://github.com/SentinelDart919/Mindustryv4";
     //time between waves in frames (on normal mode)

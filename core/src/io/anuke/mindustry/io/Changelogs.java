@@ -13,16 +13,28 @@ public class Changelogs{
     public static void getChangelog(Consumer<Array<VersionInfo>> success, Consumer<Throwable> fail){
         Net.http(releasesURL, "GET", result -> {
             JsonReader reader = new JsonReader();
-            JsonValue value = reader.parse(result).child;
+            JsonValue value = reader.parse(result);
             Array<VersionInfo> out = new Array<>();
 
-            while(value != null){
-                String name = value.getString("name");
-                String description = value.getString("body").replace("\r", "");
-                int id = value.getInt("id");
-                int build = Integer.parseInt(value.getString("tag_name").substring(1));
-                out.add(new VersionInfo(name, description, id, build, value.getString("published_at")));
-                value = value.next;
+            for(JsonValue entry = value.child; entry != null; entry = entry.next){
+                String name = entry.getString("name");
+                String description = entry.getString("body").replace("\r", "");
+                int id = entry.getInt("id");
+                String tagName = entry.getString("tag_name");
+                int build = 0;
+                try{
+                    String buildString = tagName.startsWith("v") ? tagName.substring(1) : tagName;
+                    if(buildString.contains(".")){
+                        buildString = buildString.substring(0, buildString.indexOf("."));
+                    }
+                    if(buildString.contains("-")){
+                        buildString = buildString.substring(0, buildString.indexOf("-"));
+                    }
+                    build = Integer.parseInt(buildString);
+                }catch(Exception e){
+                    //ignore parsing errors
+                }
+                out.add(new VersionInfo(name, description, id, build, entry.getString("published_at")));
             }
 
             success.accept(out);
