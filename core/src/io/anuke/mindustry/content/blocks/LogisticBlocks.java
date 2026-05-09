@@ -24,6 +24,18 @@ public class LogisticBlocks extends BlockList implements ContentList {
                     Items.scrap,
             };
         }};
+        miningPostT2 = new MiningPost("mining-post-t2"){{
+            size = 3;
+            health = 320 * size;
+            postDrone = UnitTypes.minerDroneT2;
+            itemCapacity = 100 * size;
+            maxDrones = 3;
+            ItemOptions = new Item[]{
+                    Items.titanium,
+                    Items.thorium,
+                    Items.chromium,
+            };
+        }};
 
     }
 }

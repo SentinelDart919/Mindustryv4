@@ -186,6 +186,7 @@ public class UnitTypes implements ContentList{
             isHealer = true;
             healTurretOffsetX = 5f;
             healTurretOffsetY = -2f;
+            unitCost = 15;
         }};
 
         dagger = new UnitType("dagger", Dagger.class, Dagger::new){{
@@ -337,6 +338,20 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.90f;
             range = 55f;
             health = 40;
+            spawnsInSiegeMode = false;
+        }};
+
+        minerDroneT2 = new UnitType("miner-drone-t2", MiningPostDrone.class, MiningPostDrone::new){{
+            weapon = Weapons.healBlasterDrone2;
+            isFlying = true;
+            drag = 0.01f;
+            mass = 2f;
+            speed = 0.30f;
+            maxVelocity = 1.1f;
+            range = 70f;
+            itemCapacity = 70;
+            health = 220;
+            minePower = 1.2f;
             spawnsInSiegeMode = false;
         }};
         // The Mass Units

@@ -38,7 +38,6 @@ public class Recipes implements ContentList{
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, LogisticBlocks.miningPostT1).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
 
@@ -78,6 +77,10 @@ public class Recipes implements ContentList{
         new Recipe(effect, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
         new Recipe(effect, StorageBlocks.container, new ItemStack(Items.densealloy, 200));
         new Recipe(effect, StorageBlocks.vault, new ItemStack(Items.densealloy, 500), new ItemStack(Items.thorium, 250));
+        new Recipe(effect, LogisticBlocks.miningPostT1, new ItemStack(Items.densealloy, 150), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150));
+        new Recipe(effect, LogisticBlocks.miningPostT2, new ItemStack(Items.densealloy, 450), new ItemStack(Items.thorium, 200), new ItemStack(Items.silicon, 450))
+                .setDependencies(LogisticBlocks.miningPostT1);
+
 
         new Recipe(effect, StorageBlocks.launchPad, new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 200), new ItemStack(Items.lead, 200), new ItemStack(Items.titanium, 150))
                 .setOnlyCampaign(true);
