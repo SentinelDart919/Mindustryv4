@@ -360,6 +360,8 @@ public class Control extends Module{
             if(Inputs.keyTap("menu") && !ui.restart.isShown()){
                 if(ui.chatfrag.chatOpen()){
                     ui.chatfrag.hide();
+                }else if(ui.mapfrag.isOpen()){
+                    ui.mapfrag.toggle();
                 }else if(!ui.paused.isShown() && !ui.hasDialog()){
                     ui.paused.show();
                     state.set(State.paused);

@@ -147,10 +147,14 @@ public class DesktopInput extends InputHandler{
             ui.listfrag.toggle();
         }
 
+        if(Inputs.keyTap(section, "map")){
+            ui.mapfrag.toggle();
+        }
+
         int cursorX = tileX(Gdx.input.getX());
         int cursorY = tileY(Gdx.input.getY());
 
-        if(ui.chatfrag.chatOpen()) return;
+        if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
 
         if(Inputs.keyTap(section, "schematic_select")){
             ui.schematics.show();

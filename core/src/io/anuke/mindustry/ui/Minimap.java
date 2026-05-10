@@ -77,5 +77,19 @@ public class Minimap extends Table{
         });
 
         add(elem).size(140f, 140f);
+
+        elem.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button){
+                if(x >= 0 && x <= elem.getWidth() && y >= 0 && y <= elem.getHeight()){
+                    ui.mapfrag.toggle();
+                }
+            }
+        });
     }
 }

@@ -43,6 +43,7 @@ public class UI extends SceneModule{
     public final PlayerListFragment listfrag = new PlayerListFragment();
     public final BackgroundFragment backfrag = new BackgroundFragment();
     public final LoadingFragment loadfrag = new LoadingFragment();
+    public final MapFragment mapfrag = new MapFragment();
 
     public AboutDialog about;
     public RestartDialog restart;
@@ -186,6 +187,7 @@ public class UI extends SceneModule{
         chatfrag.container().build(group);
         listfrag.build(group);
         loadfrag.build(group);
+        mapfrag.build(group);
     }
 
     @Override

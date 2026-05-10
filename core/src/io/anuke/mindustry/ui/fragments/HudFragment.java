@@ -157,7 +157,7 @@ public class HudFragment extends Fragment{
 
         //minimap
         parent.fill(t -> t.top().right().add(new Minimap())
-            .visible(() -> !state.is(State.menu) && Settings.getBool("minimap")));
+            .visible(() -> !state.is(State.menu) && Settings.getBool("minimap") && !ui.mapfrag.isOpen()));
 
         //paused table
         parent.fill(t -> {
