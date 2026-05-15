@@ -1,4 +1,4 @@
-package io.anuke.mindustry.world.blocks.production;
+package io.anuke.mindustry.world.blocks.logic;
 
 import com.badlogic.gdx.utils.IntArray;
 import io.anuke.annotations.Annotations.Loc;

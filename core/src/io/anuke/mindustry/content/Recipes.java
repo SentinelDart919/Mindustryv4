@@ -38,6 +38,8 @@ public class Recipes implements ContentList{
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, LogisticBlocks.logicExporter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, LogisticBlocks.logicImporter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
 

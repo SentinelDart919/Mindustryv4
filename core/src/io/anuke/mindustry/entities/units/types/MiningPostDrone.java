@@ -8,8 +8,8 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.mindustry.world.blocks.production.MiningPost;
-import io.anuke.mindustry.world.blocks.production.MiningPost.MiningPostEntity;
+import io.anuke.mindustry.world.blocks.logic.MiningPost;
+import io.anuke.mindustry.world.blocks.logic.MiningPost.MiningPostEntity;
 
 public class MiningPostDrone extends FlyingUnit implements MinerTrait {
     private Tile mineTile;
