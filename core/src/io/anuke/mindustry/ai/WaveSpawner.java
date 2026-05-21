@@ -147,7 +147,13 @@ public class WaveSpawner{
                 }
 
                 for(int j = 0; j < spawned; j++){
-                    BaseUnit unit = group.createUnit(Team.red);
+                    Team team = Team.red;
+                    if(world.getSector() != null){
+                        Array<Team> enemies = world.getSector().currentMission().getEnemyTeams();
+                        team = enemies.get(Mathf.random(enemies.size - 1));
+                    }
+
+                    BaseUnit unit = group.createUnit(team);
                     unit.setWave();
                     unit.setSquad(squad);
                     unit.set(spawnX + Mathf.range(spread), spawnY + Mathf.range(spread));
