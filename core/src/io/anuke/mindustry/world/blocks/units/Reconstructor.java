@@ -43,12 +43,14 @@ public class Reconstructor extends Block{
         solidifes = true;
         hasPower = true;
         configurable = true;
+
+        consumes.power(powerPerTeleport / 60f);
     }
 
     protected static boolean checkValidTap(Tile tile, ReconstructorEntity entity, Player player){
         return validLink(tile, entity.link) &&
-                Math.abs(player.x - tile.drawx()) <= tile.block().size * tilesize / 2f &&
-                Math.abs(player.y - tile.drawy()) <= tile.block().size * tilesize / 2f &&
+                Math.abs(player.x - tile.drawx()) <= (tile.block().size * tilesize / 2f + 4f) &&
+                Math.abs(player.y - tile.drawy()) <= (tile.block().size * tilesize / 2f + 4f) &&
                 entity.current == null && entity.power.amount >= ((Reconstructor) tile.block()).powerPerTeleport;
     }
 
@@ -85,9 +87,8 @@ public class Reconstructor extends Block{
         entity.set(tile.drawx(), tile.drawy());
         player.rotation = 90f;
         player.baseRotation = 90f;
-        player.setDead(true);
-        // player.setRespawning(true);
-        //player.setRespawning();
+
+        player.beginRespawning(entity);
     }
 
     @Remote(targets = Loc.both, called = Loc.server, forward = true)
@@ -174,14 +175,12 @@ public class Reconstructor extends Block{
 
     @Override
     public boolean shouldShowConfigure(Tile tile, Player player){
-        ReconstructorEntity entity = tile.entity();
-        return !checkValidTap(tile, entity, player);
+        return true;
     }
 
     @Override
     public boolean shouldHideConfigure(Tile tile, Player player){
-        ReconstructorEntity entity = tile.entity();
-        return checkValidTap(tile, entity, player);
+        return false;
     }
 
     @Override
@@ -237,7 +236,8 @@ public class Reconstructor extends Block{
             if(entity.departing){
                 //force respawn if there's suddenly nothing to link to
                 if(!validLink(tile, entity.link)){
-                    //entity.current.setRespawning(false);
+                    if(entity.current instanceof Player) ((Player)entity.current).endRespawning();
+                    entity.current = null;
                     return;
                 }
 
@@ -248,15 +248,20 @@ public class Reconstructor extends Block{
                     //no power? death.
                     if(other.power.amount < powerPerTeleport){
                         entity.current.setDead(true);
-                        //entity.current.setRespawning(false);
+                        if(entity.current instanceof Player) ((Player)entity.current).endRespawning();
                         entity.current = null;
                         return;
                     }
                     other.power.amount -= powerPerTeleport;
                     other.current = entity.current;
                     other.departing = false;
-                    other.current.set(other.x, other.y);
                     other.updateTime = 1f;
+                    other.current.set(other.tile.drawx(), other.tile.drawy());
+
+                    if(entity.current instanceof Player){
+                        ((Player)entity.current).spawner = other.tile.packedPosition();
+                    }
+
                     entity.current = null;
                 }
             }else{ //else, arriving
@@ -268,6 +273,10 @@ public class Reconstructor extends Block{
 
                     Effects.effect(arriveEffect, entity.current);
 
+                    if(entity.current instanceof Player){
+                        ((Player)entity.current).endRespawning();
+                    }
+
                     entity.current = null;
                 }
             }
@@ -276,7 +285,7 @@ public class Reconstructor extends Block{
 
             if(validLink(tile, entity.link)){
                 Tile other = world.tile(entity.link);
-                if(other.entity.power.amount >= powerPerTeleport && Units.anyEntities(tile, 4f, unit -> unit.getTeam() == entity.getTeam() && unit instanceof Player) &&
+                if(other.entity.power.amount >= powerPerTeleport && Units.anyEntities(tile, 12f, unit -> unit.getTeam() == entity.getTeam() && unit instanceof Player) &&
                         entity.power.amount >= powerPerTeleport){
                     entity.solid = false;
                     stayOpen = true;
@@ -293,9 +302,9 @@ public class Reconstructor extends Block{
     public void tapped(Tile tile, Player player){
         ReconstructorEntity entity = tile.entity();
 
-        if(!checkValidTap(tile, entity, player)) return;
-
-        Call.reconstructPlayer(player, tile);
+        if(checkValidTap(tile, entity, player)){
+            Call.reconstructPlayer(player, tile);
+        }
     }
 
     @Override
@@ -320,12 +329,17 @@ public class Reconstructor extends Block{
 
         @Override
         public void updateSpawning(Unit unit){
-
+            if(current == null){
+                current = unit;
+                updateTime = 1f;
+                departing = true;
+                unit.set(tile.drawx(), tile.drawy());
+            }
         }
 
         @Override
         public float getSpawnProgress(){
-            return 0;
+            return departing ? (1f - updateTime) : updateTime;
         }
 
         @Override
