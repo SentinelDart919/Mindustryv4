@@ -17,6 +17,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
     public static Block smelter, arcsmelter, denseAlloyKiln, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter, surgeAlloyCrucible,
             pyratiteMixer, blastMixer, coalcentrifuge,
             cryofluidmixer, melter, scrapmelter, slag_centrifuge,separator, centrifuge, biomatterCompressor, pulverizer, solidifier, incinerator,
+            blueMicrochipCrafter,
             biomassGenerator;
 
     @Override
@@ -347,6 +348,18 @@ public class CraftingBlocks extends BlockList implements ContentList{
         incinerator = new Incinerator("incinerator"){{
             health = 90;
         }};
+
+        blueMicrochipCrafter = new PhaseWeaver("blue-microchip-crafter"){{
+            craftEffect = BlockFx.smeltsmoke;
+            result = Items.bluemicrochip;
+            craftTime = 145f;
+            powerCapacity = 50f;
+            size = 4;
+            setAmbientSound("loopTech", 0.02f);
+            consumes.items(new ItemStack[]{new ItemStack(Items.chromium, 4),new ItemStack(Items.silicon, 3), new ItemStack(Items.copper, 2)});
+            consumes.power(0.65f);
+        }};
+
         biomassGenerator = new GenericCrafter("biomass-generator"){{
             itemCapacity = 2;
             craftTime = Mathf.random(1290f , 1990f);
