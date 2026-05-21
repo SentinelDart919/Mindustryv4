@@ -18,6 +18,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             novaFactory,
             crawlerFactory, bombdroneFactory,
         reconstructor, highTierFactory, repairPoint, commandCenter,
+            trainCrafter,
             hiveSpawner, airHiveSpawner, heavyHiveSpawner;
 
     @Override
@@ -251,6 +252,11 @@ public class UnitBlocks extends BlockList implements ContentList{
 
         commandCenter = new CommandCenter("command-center"){{
             size = 2;
+        }};
+
+        trainCrafter = new TrainCrafter("train-crafter"){{
+            consumes.power(0.25f);
+            consumes.items(new ItemStack(Items.densealloy, 20), new ItemStack(Items.silicon, 30), new ItemStack(Items.titanium, 25));
         }};
         hiveSpawner = new UnitHiveSpawner("hive-spawner"){{
             size = 2;

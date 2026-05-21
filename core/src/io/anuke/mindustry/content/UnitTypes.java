@@ -19,7 +19,8 @@ public class UnitTypes implements ContentList{
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
         debugtank, nova,
-        minerDroneT1, minerDroneT2,
+        trainEngine,
+        minerDroneT1, minerDroneT2, logisticsDrone,
         evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
         /* TODO
             Add Units For Mass Team
@@ -330,6 +331,21 @@ public class UnitTypes implements ContentList{
                 return true;
             }};
 
+        trainEngine = new UnitType("train-engine", TrainEngine.class, TrainEngine::new){{
+            maxVelocity = 0.9f;
+            speed = 0.12f;
+            drag = 0.35f;
+            hitsize = 10f;
+            mass = 4f;
+            health = 500f;
+            weapon = Weapons.blaster;
+            spawnsInSiegeMode = false;
+        }
+            @Override
+            public boolean isHidden() {
+                return true;
+            }};
+
         minerDroneT1 = new UnitType("miner-drone-t1", MiningPostDrone.class, MiningPostDrone::new){{
             weapon = Weapons.mineBlaster;
             isFlying = true;
@@ -352,6 +368,16 @@ public class UnitTypes implements ContentList{
             itemCapacity = 70;
             health = 220;
             minePower = 1.2f;
+            spawnsInSiegeMode = false;
+        }};
+
+        logisticsDrone = new UnitType("logistics-drone", LogisticsDrone.class, LogisticsDrone::new){{
+            isFlying = true;
+            drag = 0.01f;
+            speed = 0.5f;
+            maxVelocity = 1.5f;
+            health = 100;
+            itemCapacity = 30;
             spawnsInSiegeMode = false;
         }};
         // The Mass Units
