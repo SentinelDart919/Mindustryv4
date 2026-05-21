@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.graphics.Draw;
@@ -61,7 +62,8 @@ public class MapFragment extends Fragment{
                     float worldHeight = world.height() * tilesize;
 
                     Units.getAllUnits(unit -> {
-                        if(showFog && players.length > 0 && unit.getTeam() != players[0].getTeam() && world.tileWorld(unit.x, unit.y).getVisibility() == 0) return;
+                        Tile tile = world.tileWorld(unit.x, unit.y);
+                        if(showFog && players.length > 0 && unit.getTeam() != players[0].getTeam() && (tile == null || tile.getVisibility() == 0)) return;
 
                         float rx = (unit.x / worldWidth) * displayWidth;
                         float ry = (unit.y / worldHeight) * displayHeight;

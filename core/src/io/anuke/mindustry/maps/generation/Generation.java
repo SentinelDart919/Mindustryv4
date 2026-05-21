@@ -40,7 +40,7 @@ public class Generation{
                 for(int dy = 0; dy < block.size; dy++){
                     int worldx = dx + offsetx + x;
                     int worldy = dy + offsety + y;
-                    if(!Structs.inBounds(worldx, worldy, tiles)){
+                    if(!Structs.inBounds(worldx, worldy, tiles) || tiles[worldx][worldy] == null){
                         return null;
                     }
 
@@ -56,7 +56,9 @@ public class Generation{
             }
             return result;
         }else{
-            return tiles[x][y].floor().drops == null ? null : tiles[x][y].floor().drops.item;
+            Tile tile = tiles[x][y];
+            if(tile == null) return null;
+            return tile.floor().drops == null ? null : tile.floor().drops.item;
         }
     }
 
@@ -71,19 +73,22 @@ public class Generation{
                 for(int dy = 0; dy < block.size; dy++){
                     int worldx = dx + offsetx + x;
                     int worldy = dy + offsety + y;
-                    if(!Structs.inBounds(worldx, worldy, tiles) || !tiles[worldx][worldy].block().alwaysReplace || tiles[worldx][worldy].floor().isLiquid){
+                    if(!Structs.inBounds(worldx, worldy, tiles) || tiles[worldx][worldy] == null || !tiles[worldx][worldy].block().alwaysReplace || tiles[worldx][worldy].floor().isLiquid){
                         return false;
                     }
                 }
             }
             return true;
         }else{
-            return tiles[x][y].block().alwaysReplace && !tiles[x][y].floor().isLiquid;
+            Tile tile = tiles[x][y];
+            return tile != null && tile.block().alwaysReplace && !tile.floor().isLiquid;
         }
     }
 
     public void setBlock(int x, int y, Block block, Team team){
-        tiles[x][y].setBlock(block, team);
+        Tile tile = tiles[x][y];
+        if(tile == null) return;
+        tile.setBlock(block, team);
         if(block.isMultiblock()){
             int offsetx = -(block.size - 1) / 2;
             int offsety = -(block.size - 1) / 2;

@@ -39,8 +39,7 @@ public abstract class MissionWithStartingCore extends Mission{
         }
 
         Tile startingCoreTile = gen.tiles[spawnPoints.first().x][spawnPoints.first().y];
-        startingCoreTile.setBlock(StorageBlocks.core);
-        startingCoreTile.setTeam(team);
+        gen.setBlock(spawnPoints.first().x, spawnPoints.first().y, StorageBlocks.core, team);
         state.teams.get(team).cores.add(startingCoreTile);
     }
 

@@ -24,10 +24,14 @@ public class InfectionManager extends Module {
         infectedQueue.add(tile.packedPosition());
     }
 
-    public void infectAll(Tile[][] tiles){
-        for (Tile[] value : tiles) {
-            for (int y = 0; y < tiles[0].length; y++) {
-                Tile tile = value[y];
+    public void infectAll(Tile[][] tiles) {
+        infectAll(tiles, 0, 0, tiles.length, tiles[0].length);
+    }
+
+    public void infectAll(Tile[][] tiles, int x, int y, int width, int height) {
+        for (int i = x; i < x + width; i++) {
+            for (int j = y; j < y + height; j++) {
+                Tile tile = tiles[i][j];
                 if (tile == null) continue;
 
                 if (tile.floor().infectedVariant != null) {

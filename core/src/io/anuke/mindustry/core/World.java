@@ -26,7 +26,13 @@ import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.EntityQuery;
 import io.anuke.ucore.modules.Module;
+import com.badlogic.gdx.files.FileHandle;
 import io.anuke.ucore.util.*;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -41,6 +47,7 @@ public class World extends Module{
 
     private Map currentMap;
     private Sector currentSector;
+    private Sector[][] activeSectors;
     private Tile[][] tiles;
 
     private Array<Tile> tempTiles = new ThreadArray<>();
@@ -225,18 +232,235 @@ public class World extends Module{
 
         beginMapLoad();
 
-        int width = sectorSize, height = sectorSize;
+        if("Open World".equals(world.sectors.getActiveCampaign())){
+            int grid = openWorldGridSize;
+            int width = sectorSize * grid, height = sectorSize * grid;
+            tiles = createTiles(width, height);
+            activeSectors = new Sector[grid][grid];
 
-        Tile[][] tiles = createTiles(width, height);
+            for(int sx = 0; sx < grid; sx++){
+                for(int sy = 0; sy < grid; sy++){
+                    int rx = sector.x + sx - 1;
+                    int ry = sector.y + sy - 1;
+                    Sector s = sectors.get(rx, ry);
+                    if(s == null){
+                        sectors.createSector(rx, ry);
+                        s = sectors.get(rx, ry);
+                    }
+                    activeSectors[sx][sy] = s;
+                }
+            }
 
-        Map map = new Map("Sector " + sector.x + ", " + sector.y, new MapMeta(0, new ObjectMap<>(), width, height, null), true, () -> null);
-        setMap(map);
+            for(int sx = 0; sx < grid; sx++){
+                for(int sy = 0; sy < grid; sy++){
+                    loadSectorTiles(activeSectors[sx][sy], sx * sectorSize, sy * sectorSize);
+                }
+            }
 
-        EntityQuery.resizeTree(0, 0, width * tilesize, height * tilesize);
+            currentMap = new Map("Open World", new MapMeta(0, new ObjectMap<>(), width, height, null), true, () -> null);
+            EntityQuery.resizeTree(0, 0, width * tilesize, height * tilesize);
+            
+            state.mode = sector.currentMission().getMode();
+            sector.currentMission().onBegin();
 
-        generator.generateMap(tiles, sector);
+            players[0].set(sectorSize * tilesize + (sectorSize/2f) * tilesize, sectorSize * tilesize + (sectorSize/2f) * tilesize);
+
+        }else{
+            int width = sectorSize, height = sectorSize;
+            tiles = createTiles(width, height);
+            Map map = new Map("Sector " + sector.x + ", " + sector.y, new MapMeta(0, new ObjectMap<>(), width, height, null), true, () -> null);
+            setMap(map);
+            EntityQuery.resizeTree(0, 0, width * tilesize, height * tilesize);
+            generator.generateMap(tiles, sector);
+        }
 
         endMapLoad();
+    }
+
+    public void shiftSectors(int dx, int dy){
+        if(activeSectors == null) return;
+
+        beginMapLoad(tiles);
+
+        for(int i = 0; i < openWorldGridSize; i++){
+            if(dx != 0){
+                int sx = dx > 0 ? 0 : 2;
+                saveSectorTiles(activeSectors[sx][i], sx * sectorSize, i * sectorSize);
+            }
+            if(dy != 0){
+                int sy = dy > 0 ? 0 : 2;
+                saveSectorTiles(activeSectors[i][sy], i * sectorSize, sy * sectorSize);
+            }
+        }
+
+        Sector[][] nextSectors = new Sector[3][3];
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+                int nx = x - dx;
+                int ny = y - dy;
+                if(nx >= 0 && nx < 3 && ny >= 0 && ny < 3){
+                    nextSectors[nx][ny] = activeSectors[x][y];
+                }
+            }
+        }
+        activeSectors = nextSectors;
+
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+                if(activeSectors[x][y] == null){
+                    int rx = currentSector.x + dx + x - 1;
+                    int ry = currentSector.y + dy + y - 1;
+                    Sector s = sectors.get(rx, ry);
+                    if(s == null){
+                        sectors.createSector(rx, ry);
+                        s = sectors.get(rx, ry);
+                    }
+                    activeSectors[x][y] = s;
+                }
+            }
+        }
+        currentSector = activeSectors[1][1];
+        state.mode = currentSector.currentMission().getMode();
+        currentSector.currentMission().onBegin();
+
+        Tile[][] nextTiles = new Tile[width()][height()];
+        int shiftX = dx * sectorSize;
+        int shiftY = dy * sectorSize;
+
+        for(int x = 0; x < width(); x++){
+            for(int y = 0; y < height(); y++){
+                int nx = x - shiftX;
+                int ny = y - shiftY;
+                if(nx >= 0 && nx < width() && ny >= 0 && ny < height()){
+                    Tile tile = tiles[x][y];
+                    if(tile != null){
+                        tile.x = (short)nx;
+                        tile.y = (short)ny;
+                        nextTiles[nx][ny] = tile;
+                    }
+                }
+            }
+        }
+        tiles = nextTiles;
+
+        if(renderer != null && renderer.fog != null){
+            renderer.fog.shift(dx, dy);
+        }
+
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+                if(tiles[x * sectorSize][y * sectorSize] == null){
+                    loadSectorTiles(activeSectors[x][y], x * sectorSize, y * sectorSize);
+                }
+            }
+        }
+
+        float worldShiftX = shiftX * tilesize;
+        float worldShiftY = shiftY * tilesize;
+
+        for(io.anuke.ucore.entities.EntityGroup<?> group : io.anuke.ucore.entities.Entities.getAllGroups()){
+            group.all().forEach(e -> {
+                e.set(e.getX() - worldShiftX, e.getY() - worldShiftY);
+            });
+        }
+
+        for(io.anuke.ucore.entities.EntityGroup<?> group : io.anuke.ucore.entities.Entities.getAllGroups()){
+            group.all().forEach(e -> {
+                if(e.getX() < 0 || e.getY() < 0 || e.getX() >= width() * tilesize || e.getY() >= height() * tilesize){
+                    if(!(e instanceof io.anuke.mindustry.entities.Player)){
+                        e.remove();
+                    }
+                }
+            });
+        }
+
+        EntityQuery.resizeTree(0, 0, width() * tilesize, height() * tilesize);
+        if(!headless){
+            renderer.floor.clearTiles();
+            renderer.minimap.shift(dx, dy);
+        }
+        
+        endMapLoad();
+    }
+
+    private void saveSectorTiles(Sector sector, int offsetX, int offsetY){
+        if(headless) return;
+        try{
+            FileHandle file = saveDirectory.child("openworld").child("sector_" + sector.x + "_" + sector.y + ".msav");
+            file.parent().mkdirs();
+            DataOutputStream stream = new DataOutputStream(new java.util.zip.DeflaterOutputStream(file.write(false)));
+            
+            stream.writeShort(sectorSize);
+            stream.writeShort(sectorSize);
+
+            for(int x = 0; x < sectorSize; x++){
+                for(int y = 0; y < sectorSize; y++){
+                    Tile tile = tiles[x + offsetX][y + offsetY];
+                    stream.writeByte(tile.getFloorID());
+                    stream.writeByte(tile.getBlockID());
+                    stream.writeByte(tile.getElevation());
+                    stream.writeByte(tile.link);
+                    stream.writeBoolean(tile.entity != null);
+                    if(tile.entity != null){
+                        stream.writeByte(io.anuke.ucore.util.Bits.packByte(tile.getTeamID(), tile.getRotation()));
+                        stream.writeShort((short) tile.entity.health);
+                        tile.entity.writeConfig(stream);
+                        tile.entity.write(stream);
+                    }
+                }
+            }
+            stream.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void loadSectorTiles(Sector sector, int offsetX, int offsetY){
+        FileHandle file = saveDirectory.child("openworld").child("sector_" + sector.x + "_" + sector.y + ".msav");
+        if(!file.exists()){
+            generator.generateMap(tiles, sector, offsetX, offsetY);
+            return;
+        }
+
+        try{
+            DataInputStream stream = new DataInputStream(new java.util.zip.InflaterInputStream(file.read()));
+            short width = stream.readShort();
+            short height = stream.readShort();
+            if(width != sectorSize || height != sectorSize){
+                throw new RuntimeException("Invalid open world sector dimensions: " + width + "x" + height + ", expected " + sectorSize + "x" + sectorSize);
+            }
+
+            for(int x = 0; x < width; x++){
+                for(int y = 0; y < height; y++){
+                    byte floorid = stream.readByte();
+                    byte wallid = stream.readByte();
+                    byte elevation = stream.readByte();
+                    byte link = stream.readByte();
+
+                    Tile tile = new Tile(x + offsetX, y + offsetY, floorid, wallid);
+                    tile.setElevation(elevation);
+                    tile.link = link;
+                    tiles[x + offsetX][y + offsetY] = tile;
+
+                    if(stream.readBoolean()){
+                        byte tr = stream.readByte();
+                        short health = stream.readShort();
+                        tile.setTeam(Team.all[io.anuke.ucore.util.Bits.getLeftByte(tr)]);
+                        tile.setRotation(io.anuke.ucore.util.Bits.getRightByte(tr));
+                        if(tile.entity != null){
+                            tile.entity.health = health;
+                            tile.entity.readConfig(stream);
+                            tile.entity.read(stream);
+                        }
+                    }
+                }
+            }
+            stream.close();
+        }catch(Exception e){
+            e.printStackTrace();
+            file.delete();
+            generator.generateMap(tiles, sector, offsetX, offsetY);
+        }
     }
 
     public void loadMap(Map map){

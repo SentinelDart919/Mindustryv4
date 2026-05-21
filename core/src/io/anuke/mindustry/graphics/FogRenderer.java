@@ -67,6 +67,28 @@ public class FogRenderer implements Disposable{
         }));
     }
 
+    public void shift(int dx, int dy){
+        if(buffer == null) return;
+
+        int shiftX = dx * sectorSize;
+        int shiftY = dy * sectorSize;
+
+        FrameBuffer nextBuffer = new FrameBuffer(Format.RGBA8888, world.width(), world.height(), false);
+        nextBuffer.begin();
+        Graphics.clear(0, 0, 0, 1f);
+
+        //FrameBuffer.getColorBufferTexture() is flipped vertically compared to standard pixmap coordinate system usually used in draw
+        Core.batch.getProjectionMatrix().setToOrtho2D(0, 0, buffer.getWidth() * tilesize, buffer.getHeight() * tilesize);
+        Graphics.begin();
+        Draw.rect(buffer.getColorBufferTexture(), (buffer.getWidth()/2f - shiftX) * tilesize, (buffer.getHeight()/2f - shiftY) * tilesize, buffer.getWidth() * tilesize, buffer.getHeight() * tilesize);
+        Graphics.end();
+        nextBuffer.end();
+
+        buffer.dispose();
+        buffer = nextBuffer;
+        dirty = true;
+    }
+
     public void writeFog(){
         if(buffer == null) return;
 

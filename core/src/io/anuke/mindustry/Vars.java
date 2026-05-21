@@ -52,6 +52,7 @@ public class Vars{
     public static final float itemSize = 5f;
     public static final int tilesize = 8;
     public static final int sectorSize = 256;
+    public static final int openWorldGridSize = 3;
     public static final int invalidSector = Integer.MAX_VALUE;
     public static Locale[] locales;
     public static final Color[] playerColors = {

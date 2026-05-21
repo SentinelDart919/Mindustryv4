@@ -101,7 +101,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         Damage.dynamicExplosion(player.x, player.y, flammability, explosiveness, 0f, player.getSize() / 2f, Palette.darkFlame);
 
         ScorchDecal.create(player.x, player.y);
-        Sound sound = unitExplode;
+        Sound sound = Sounds.unitExplode;
         if(Vars.soundController != null && sound != null){
             Vars.soundController.at(sound, player.x, player.y, 1f, 0.7f);}
         player.onDeath();
@@ -243,7 +243,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         }
 
         if(health <= 0 && !dead){
-            Call.onPlayerDeath(this);
+            io.anuke.mindustry.gen.Call.onPlayerDeath(this);
         }
     }
 
@@ -571,8 +571,24 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
         updateBuilding(this);
 
-        x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);
-        y = Mathf.clamp(y, tilesize, world.height() * tilesize - tilesize);
+        float worldWidth = world.width() * tilesize;
+        float worldHeight = world.height() * tilesize;
+
+        if(world.getSector() != null && "Open World".equals(world.sectors.getActiveCampaign())){
+            int dx = 0, dy = 0;
+            if(x < sectorSize * tilesize) dx = -1;
+            else if(x >= sectorSize * 2 * tilesize) dx = 1;
+
+            if(y < sectorSize * tilesize) dy = -1;
+            else if(y >= sectorSize * 2 * tilesize) dy = 1;
+
+            if(dx != 0 || dy != 0){
+                world.shiftSectors(dx, dy);
+            }
+        }else{
+            x = Mathf.clamp(x, tilesize, worldWidth - tilesize);
+            y = Mathf.clamp(y, tilesize, worldHeight - tilesize);
+        }
     }
 
     protected void updateMech(){

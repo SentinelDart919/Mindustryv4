@@ -5,13 +5,16 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public class CampaignRegistry{
     public static final String serpulo = "Serpulo";
+    public static final String openworld = "Open World";
 
     private static final ObjectMap<String, CampaignSectorGenerator> registered = new ObjectMap<>();
     private static final Array<PlanetDefinition> planets = new Array<>();
 
     static{
         register(serpulo, new SerpuloSectorGenerator());
+        register(openworld, new OpenWorldSectorGenerator());
         planets.add(new PlanetDefinition("Serpulo", serpulo, 0.22f, 0.44f, 0.85f, 48, 24, 3, 0.95f, 1.15f, 0.9f));
+        planets.add(new PlanetDefinition("Open World", openworld, 0.4f, 0.6f, 0.4f, 64, 32, 2, 1.0f, 1.0f, 1.0f));
     }
 
     public static void register(String name, CampaignSectorGenerator generator){

@@ -17,7 +17,7 @@ public class MeshBuilder{
         Array<short[]> faces = new Array<>();
         buildIcosphere(Math.max(0, divisions), verts, faces);
 
-        int maxVerts = Math.min(verts.size, 65000);
+        int maxVerts = Math.min(verts.size, 32767);
         float[] vertices = new float[maxVerts * (3 + 3 + 4)];
         Color color = new Color();
         int vptr = 0;
@@ -33,28 +33,34 @@ public class MeshBuilder{
             vptr = putVertex(vertices, vptr, p, n, color);
         }
 
-        short[] indices = new short[faces.size * 3];
         int iptr = 0;
         for(short[] f : faces){
-            if(f[0] >= maxVerts || f[1] >= maxVerts || f[2] >= maxVerts) continue;
-            short i0 = f[0], i1 = f[1], i2 = f[2];
+            int i0 = f[0] & 0xffff, i1 = f[1] & 0xffff, i2 = f[2] & 0xffff;
+            if(i0 >= maxVerts || i1 >= maxVerts || i2 >= maxVerts) continue;
+            iptr += 3;
+        }
+
+        short[] outIndices = new short[iptr];
+        int curIdx = 0;
+        for(short[] f : faces){
+            int i0 = f[0] & 0xffff, i1 = f[1] & 0xffff, i2 = f[2] & 0xffff;
+            if(i0 >= maxVerts || i1 >= maxVerts || i2 >= maxVerts) continue;
+
             Vector3 a = verts.get(i0), b = verts.get(i1), c = verts.get(i2);
             // enforce consistent outward winding to avoid missing faces with culling
             float winding = new Vector3(b).sub(a).crs(new Vector3(c).sub(a)).dot(a);
             if(winding < 0f){
-                short t = i1;
+                int t = i1;
                 i1 = i2;
                 i2 = t;
             }
-            indices[iptr++] = i0;
-            indices[iptr++] = i1;
-            indices[iptr++] = i2;
+            outIndices[curIdx++] = (short)i0;
+            outIndices[curIdx++] = (short)i1;
+            outIndices[curIdx++] = (short)i2;
         }
 
         float[] outVerts = new float[vptr];
         System.arraycopy(vertices, 0, outVerts, 0, vptr);
-        short[] outIndices = new short[iptr];
-        System.arraycopy(indices, 0, outIndices, 0, iptr);
 
         Mesh mesh = new Mesh(true, maxVerts, iptr,
             new VertexAttribute(Usage.Position, 3, "a_position"),

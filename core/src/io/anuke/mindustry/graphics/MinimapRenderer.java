@@ -22,8 +22,7 @@ import io.anuke.ucore.graphics.Pixmaps;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.util.ThreadArray;
 
-import static io.anuke.mindustry.Vars.tilesize;
-import static io.anuke.mindustry.Vars.world;
+import static io.anuke.mindustry.Vars.*;
 
 public class MinimapRenderer implements Disposable{
     private static final int baseSize = 16;
@@ -36,12 +35,20 @@ public class MinimapRenderer implements Disposable{
 
     public MinimapRenderer(){
         Events.on(WorldLoadGraphicsEvent.class, event -> {
+            if(world.getSector() != null && world.sectors.getActiveCampaign().equals("openworld") && texture != null){
+                updateAll();// this should make the minimap update when leaving regions, still buggy but works
+                return;
+            }
             reset();
             updateAll();
         });
 
-        //make sure to call on the graphics thread
-        Events.on(TileChangeEvent.class, event -> Gdx.app.postRunnable(() -> update(event.tile)));
+        Events.on(TileChangeEvent.class, event -> {
+            if(world.getSector() != null && world.sectors.getActiveCampaign().equals("openworld")){
+                //TODO refactor this
+            }
+            Gdx.app.postRunnable(() -> update(event.tile));
+        });
     }
 
     public Texture getTexture(){
@@ -103,10 +110,27 @@ public class MinimapRenderer implements Disposable{
         return region;
     }
 
+    public void shift(int dx, int dy){
+        if(pixmap == null) return;
+        
+        int shiftX = dx * sectorSize;
+        int shiftY = dy * sectorSize;
+        
+        Pixmap nextPixmap = new Pixmap(pixmap.getWidth(), pixmap.getHeight(), pixmap.getFormat());
+        nextPixmap.drawPixmap(pixmap, -shiftX, shiftY);
+        
+        pixmap.dispose();
+        pixmap = nextPixmap;
+        texture.draw(pixmap, 0, 0);
+    }
+
     public void updateAll(){
         for(int x = 0; x < world.width(); x++){
             for(int y = 0; y < world.height(); y++){
-                pixmap.drawPixel(x, pixmap.getHeight() - 1 - y, colorFor(world.tile(x, y)));
+                Tile tile = world.tile(x, y);
+                if(tile != null){
+                    pixmap.drawPixel(x, pixmap.getHeight() - 1 - y, colorFor(tile));
+                }
             }
         }
         texture.draw(pixmap, 0, 0);
@@ -114,7 +138,7 @@ public class MinimapRenderer implements Disposable{
 
     public void update(Tile tile){
         if(pixmap == null || texture == null || tile == null) return;
-        int color = colorFor(world.tile(tile.x, tile.y));
+        int color = colorFor(tile);
         pixmap.drawPixel(tile.x, pixmap.getHeight() - 1 - tile.y, color);
 
         Pixmaps.drawPixel(texture, tile.x, pixmap.getHeight() - 1 - tile.y, color);
