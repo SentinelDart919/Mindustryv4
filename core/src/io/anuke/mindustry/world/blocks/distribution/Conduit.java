@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.Autotiler;
 import io.anuke.mindustry.world.blocks.LiquidBlock;
 import io.anuke.mindustry.world.modules.LiquidModule;
 import io.anuke.ucore.graphics.Draw;
@@ -13,7 +14,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class Conduit extends LiquidBlock{
+public class Conduit extends LiquidBlock implements Autotiler{
     protected final int timerFlow = timers++;
 
     protected TextureRegion[] topRegions = new TextureRegion[7];
@@ -53,31 +54,33 @@ public class Conduit extends LiquidBlock{
         super.onProximityUpdate(tile);
 
         ConduitEntity entity = tile.entity();
+        int[] bits = buildBlending(tile, tile.getRotation(), true);
+        int mask = bits[3];
         entity.blendbits = 0;
         entity.blendshadowrot = -1;
 
-        if(blends(tile, 2) && blends(tile, 1) && blends(tile, 3)){
+        if((mask & ((1 << 2) | (1 << 1) | (1 << 3))) == ((1 << 2) | (1 << 1) | (1 << 3))){
             entity.blendbits = 3;
-        }else if(blends(tile, 1) && blends(tile, 3)){
+        }else if((mask & ((1 << 1) | (1 << 3))) == ((1 << 1) | (1 << 3))){
             entity.blendbits = 6;
-        }else if(blends(tile, 1) && blends(tile, 2)){
+        }else if((mask & ((1 << 1) | (1 << 2))) == ((1 << 1) | (1 << 2))){
             entity.blendbits = 2;
-        }else if(blends(tile, 3) && blends(tile, 2)){
+        }else if((mask & ((1 << 3) | (1 << 2))) == ((1 << 3) | (1 << 2))){
             entity.blendbits = 4;
-        }else if(blends(tile, 1)){
+        }else if((mask & (1 << 1)) != 0){
             entity.blendbits = 5;
             entity.blendshadowrot = 0;
-        }else if(blends(tile, 3)){
+        }else if((mask & (1 << 3)) != 0){
             entity.blendbits = 1;
             entity.blendshadowrot = 1;
         }
     }
 
-    private boolean blends(Tile tile, int direction){
-        Tile other = tile.getNearby(Mathf.mod(tile.getRotation() - direction, 4));
-        if(other != null) other = other.target();
-
-        return other != null && other.block().hasLiquids && other.block().outputsLiquid && ((tile.getNearby(tile.getRotation()) == other) || (!other.block().rotate || other.getNearby(other.getRotation()) == tile));
+    @Override
+    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, io.anuke.mindustry.world.Block otherblock){
+        Tile other = io.anuke.mindustry.Vars.world.tile(otherx, othery);
+        return other != null && otherblock.hasLiquids && otherblock.outputsLiquid &&
+            (facing(tile.x, tile.y, rotation, otherx, othery) || !otherblock.rotate || facing(otherx, othery, otherrot, tile.x, tile.y));
     }
 
     @Override

@@ -12,6 +12,7 @@ import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.Autotiler;
 import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
@@ -25,7 +26,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class Conveyor extends Block{
+public class Conveyor extends Block implements Autotiler{
     public static final float itemSpace = 0.135f * 2.2f;
     public static final float offsetScl = 128f * 3f;
     public static final float minmove = 1f / (Short.MAX_VALUE - 2);
@@ -110,35 +111,28 @@ public class Conveyor extends Block{
         super.onProximityUpdate(tile);
 
         ConveyorEntity entity = tile.entity();
-        entity.blendbits = 0;
-        entity.blendsclx = entity.blendscly = 1;
+        int[] bits = buildBlending(tile, tile.getRotation(), true);
+        entity.blendbits = bits[0];
+        entity.blendsclx = bits[1];
+        entity.blendscly = bits[2];
         entity.blendshadowrot = -1;
 
-        if(blends(tile, 2) && blends(tile, 1) && blends(tile, 3)){
-            entity.blendbits = 3;
-        }else if(blends(tile, 1) && blends(tile, 3)){
-            entity.blendbits = 4;
-        }else if(blends(tile, 1) && blends(tile, 2)){
-            entity.blendbits = 2;
-        }else if(blends(tile, 3) && blends(tile, 2)){
-            entity.blendbits = 2;
-            entity.blendscly = -1;
-        }else if(blends(tile, 1)){
-            entity.blendbits = 1;
-            entity.blendscly = -1;
+        if((bits[3] & (1 << 1)) != 0 && (bits[3] & (1 << 3)) == 0){
             entity.blendshadowrot = 0;
-        }else if(blends(tile, 3)){
-            entity.blendbits = 1;
+        }else if((bits[3] & (1 << 3)) != 0 && (bits[3] & (1 << 1)) == 0){
             entity.blendshadowrot = 1;
         }
     }
 
-    public boolean blends(Tile tile, int direction){
-        Tile other = tile.getNearby(Mathf.mod(tile.getRotation() - direction, 4));
-        if(other != null) other = other.target();
+    @Override
+    public boolean blends(Tile tile, int rotation, int otherx, int othery, int otherrot, Block otherblock){
+        Tile other = world.tile(otherx, othery);
+        return other != null && otherblock.outputsItems()
+            && (facing(tile.x, tile.y, rotation, otherx, othery) || !otherblock.rotate || facing(otherx, othery, otherrot, tile.x, tile.y));
+    }
 
-        return other != null && other.block().outputsItems()
-        && ((tile.getNearby(tile.getRotation()) == other) || (!other.block().rotate || other.getNearby(other.getRotation()) == tile));
+    public boolean blends(Tile tile, int direction){
+        return Autotiler.super.blends(tile, tile.getRotation(), direction);
     }
 
     @Override
