@@ -10,6 +10,8 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.blocks.BuildBlock.BuildEntity;
+import io.anuke.mindustry.world.blocks.distribution.TrainRail;
+import io.anuke.mindustry.world.blocks.units.TrainCrafter;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.util.Geometry;
 
@@ -130,6 +132,13 @@ public class Build{
         Tile tile = world.tile(x, y);
 
         if(tile == null) return false;
+
+        if(type instanceof TrainCrafter){
+            Tile front = world.tile(x + Geometry.d4[rotation].x, y + Geometry.d4[rotation].y);
+            if(front == null || !(front.target().block() instanceof TrainRail)){
+                return false;
+            }
+        }
 
         if(type.isMultiblock()){
             if(type.canReplace(tile.block()) && tile.block().size == type.size && type.canPlaceOn(tile)){
