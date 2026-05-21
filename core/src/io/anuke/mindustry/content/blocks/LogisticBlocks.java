@@ -40,14 +40,14 @@ public class LogisticBlocks extends BlockList implements ContentList {
         }};
 
         logicExporter = new LogicExporter("logic-exporter"){{
-            size = 2;
+            size = 3;
             health = 200;
             droneType = UnitTypes.logisticsDrone;
             maxDrones = 2;
         }};
 
         logicImporter = new LogicImporter("logic-importer"){{
-            size = 2;
+            size = 3;
             health = 200;
         }};
 

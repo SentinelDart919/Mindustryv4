@@ -7,7 +7,7 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 
 public class Items implements ContentList{
-    public static Item stone, obsidian, scrap, copper, lead, densealloy, chromium, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy,
+    public static Item stone, obsidian, scrap, copper, lead, densealloy, chromium, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy, bluemicrochip,
             biomatter, corruptedbiomatter, sand, blastCompound, pyratite;
 
     @Override
@@ -97,6 +97,11 @@ public class Items implements ContentList{
 
         surgealloy = new Item("surge-alloy", Color.valueOf("f3e979")){{
             type = ItemType.material;
+        }};
+
+        bluemicrochip = new Item("blue-microchip", Color.valueOf("4e85ef")){{
+            type = ItemType.material;
+            cost = 2.0f;
         }};
 
         biomatter = new Item("biomatter", Color.valueOf("648b55")){{
