@@ -58,27 +58,19 @@ public class Tile implements PosTrait, TargetTrait{
 
     public Tile(int x, int y, byte floor, byte wall){
         this(x, y);
-        this.floor = resolveFloor(floor);
+        this.floor = (Floor) content.block(floor);
         this.wall = content.block(wall);
         changed();
     }
 
     public Tile(int x, int y, byte floor, byte wall, byte rotation, byte team, byte elevation){
         this(x, y);
-        this.floor = resolveFloor(floor);
+        this.floor = (Floor) content.block(floor);
         this.wall = content.block(wall);
         this.rotation = rotation;
         this.setElevation(elevation);
         changed();
         this.team = team;
-    }
-
-    private Floor resolveFloor(int floorid){
-        Block block = content.block(floorid);
-        if(block instanceof Floor){
-            return (Floor)block;
-        }
-        return (Floor)Blocks.air;
     }
 
     public boolean discovered(){
@@ -261,7 +253,7 @@ public class Tile implements PosTrait, TargetTrait{
         Block block = block();
         Block floor = floor();
         return block.solid || getCliffs() != 0 || (floor.solid && (block == Blocks.air || block.solidifes)) || block.isSolidFor(this)
-        || (isLinked() && getLinked() != null && getLinked().block().isSolidFor(getLinked()));
+        || (isLinked() && getLinked().block().isSolidFor(getLinked()));
     }
 
     public boolean breakable(){
@@ -269,8 +261,7 @@ public class Tile implements PosTrait, TargetTrait{
         if(link == 0){
             return (block.destructible || block.breakable || block.update);
         }else{
-            Tile linked = getLinked();
-            return linked != null && linked != this && linked.getLinked() == null && linked.breakable();
+            return getLinked() != this && getLinked().getLinked() == null && getLinked().breakable();
         }
     }
 

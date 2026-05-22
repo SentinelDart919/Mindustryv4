@@ -38,8 +38,6 @@ public class Recipes implements ContentList{
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, LogisticBlocks.logicExporter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, LogisticBlocks.logicImporter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
 
@@ -82,7 +80,8 @@ public class Recipes implements ContentList{
         new Recipe(effect, LogisticBlocks.miningPostT1, new ItemStack(Items.densealloy, 150), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150));
         new Recipe(effect, LogisticBlocks.miningPostT2, new ItemStack(Items.densealloy, 450), new ItemStack(Items.thorium, 200), new ItemStack(Items.silicon, 450))
                 .setDependencies(LogisticBlocks.miningPostT1);
-
+        new Recipe(effect, LogisticBlocks.logicExporter,new ItemStack(Items.lead, 50), new ItemStack(Items.densealloy, 100), new ItemStack(Items.silicon, 175), new ItemStack(Items.thorium, 75), new ItemStack(Items.plastanium, 125));
+        new Recipe(effect, LogisticBlocks.logicImporter,new ItemStack(Items.lead, 50), new ItemStack(Items.densealloy, 100), new ItemStack(Items.silicon, 175), new ItemStack(Items.thorium, 75), new ItemStack(Items.plastanium, 125));
 
         new Recipe(effect, StorageBlocks.launchPad, new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 200), new ItemStack(Items.lead, 200), new ItemStack(Items.titanium, 150))
                 .setOnlyCampaign(true);
@@ -114,6 +113,8 @@ public class Recipes implements ContentList{
         new Recipe(distribution, DistributionBlocks.titaniumconveyor, new ItemStack(Items.copper, 2), new ItemStack(Items.titanium, 1));
         new Recipe(distribution, DistributionBlocks.thoriumconveyor,new ItemStack(Items.copper, 2), new ItemStack(Items.thorium, 2) );
         new Recipe(distribution, DistributionBlocks.phaseConveyor, new ItemStack(Items.phasefabric, 10), new ItemStack(Items.silicon, 15), new ItemStack(Items.lead, 20), new ItemStack(Items.densealloy, 20));
+        new Recipe(distribution, DistributionBlocks.stackConveyor, new ItemStack(Items.plastanium, 1), new ItemStack(Items.silicon, 1), new ItemStack(Items.silicon, 1));
+        //new Recipe(distribution, DistributionBlocks.trainRail, new ItemStack(Items.densealloy, 8), new ItemStack(Items.titanium, 6), new ItemStack(Items.copper, 6));
 
         //starter transport
         new Recipe(distribution, DistributionBlocks.junction, new ItemStack(Items.copper, 2)).setAlwaysUnlocked(true);
@@ -141,6 +142,7 @@ public class Recipes implements ContentList{
         new Recipe(crafting, CraftingBlocks.phaseWeaver, new ItemStack(Items.silicon, 260), new ItemStack(Items.lead, 240), new ItemStack(Items.thorium, 150));
         new Recipe(crafting, CraftingBlocks.alloySmelter, new ItemStack(Items.silicon, 160), new ItemStack(Items.lead, 160), new ItemStack(Items.thorium, 140));
         new Recipe(crafting, CraftingBlocks.surgeAlloyCrucible, new ItemStack(Items.silicon, 180), new ItemStack(Items.lead, 200), new ItemStack(Items.thorium, 180), new ItemStack(Items.chromium, 200), new ItemStack(Items.surgealloy, 20));
+        new Recipe(crafting, CraftingBlocks.blueMicrochipCrafter, new ItemStack(Items.silicon, 260), new ItemStack(Items.lead, 240), new ItemStack(Items.thorium, 220), new ItemStack(Items.chromium, 175), new ItemStack(Items.surgealloy, 75));
 
         //misc
         new Recipe(crafting, CraftingBlocks.pulverizer, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 50));
@@ -238,6 +240,7 @@ public class Recipes implements ContentList{
 
         new Recipe(units, UnitBlocks.repairPoint, new ItemStack(Items.lead, 30), new ItemStack(Items.copper, 30), new ItemStack(Items.silicon, 30));
         new Recipe(units, UnitBlocks.commandCenter, new ItemStack(Items.lead, 10), new ItemStack(Items.densealloy, 10), new ItemStack(Items.silicon, 20));
+        //new Recipe(units, UnitBlocks.trainCrafter, new ItemStack(Items.densealloy, 120), new ItemStack(Items.titanium, 90), new ItemStack(Items.silicon, 110), new ItemStack(Items.lead, 140));
         //LIQUIDS
         new Recipe(liquid, LiquidBlocks.conduit, new ItemStack(Items.lead, 1)).setDependencies(CraftingBlocks.smelter);
         new Recipe(liquid, LiquidBlocks.pulseConduit, new ItemStack(Items.titanium, 1), new ItemStack(Items.lead, 1));
