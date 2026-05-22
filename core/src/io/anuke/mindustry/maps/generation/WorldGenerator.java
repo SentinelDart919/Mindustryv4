@@ -252,11 +252,7 @@ public class WorldGenerator{
     }
 
     public void generateMap(Tile[][] tiles, Sector sector){
-        generateMap(tiles, sector, 0, 0);
-    }
-
-    public void generateMap(Tile[][] tiles, Sector sector, int offsetX, int offsetY){
-        int width = sectorSize, height = sectorSize;
+        int width = tiles.length, height = tiles[0].length;
         SeedRandom rnd = new SeedRandom(sector.getSeed());
         Generation gena = new Generation(sector, tiles, tiles.length, tiles[0].length, rnd);
         Array<GridPoint2> spawnpoints = sector.currentMission().getSpawnPoints(gena);
@@ -265,24 +261,22 @@ public class WorldGenerator{
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
                 GenResult result = generateTile(this.result, sector.x, sector.y, x, y, true, spawnpoints, ores);
-                Tile tile = new Tile(x + offsetX, y + offsetY, result.floor.id, result.wall.id, (byte)0, (byte)0, result.elevation);
-                tiles[x + offsetX][y + offsetY] = tile;
+                Tile tile = new Tile(x, y, result.floor.id, result.wall.id, (byte)0, (byte)0, result.elevation);
+                tiles[x][y] = tile;
             }
         }
 
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
-                Tile tile = tiles[x + offsetX][y + offsetY];
+                Tile tile = tiles[x][y];
 
                 byte elevation = tile.getElevation();
 
                 for(GridPoint2 point : Geometry.d4){
-                    int nx = x + point.x + offsetX;
-                    int ny = y + point.y + offsetY;
-                    if(!Structs.inBounds(nx, ny, tiles.length, tiles[0].length) || tiles[nx][ny] == null) continue;
-                    if(tiles[nx][ny].getElevation() < elevation){
+                    if(!Structs.inBounds(x + point.x, y + point.y, width, height)) continue;
+                    if(tiles[x + point.x][y + point.y].getElevation() < elevation){
 
-                        if(sim2.octaveNoise2D(1, 1, 1.0 / 8, x + offsetX, y + offsetY) > 0.8){
+                        if(sim2.octaveNoise2D(1, 1, 1.0 / 8, x, y) > 0.8){
                             tile.setElevation(-1);
                         }
                         break;
@@ -291,75 +285,21 @@ public class WorldGenerator{
             }
         }
 
-        for(int x = 0; x < width; x++){
-            for(int y = 0; y < height; y++){
-                Tile tile = tiles[x + offsetX][y + offsetY];
+        for(int x = 0; x < tiles.length; x++){
+            for(int y = 0; y < tiles[0].length; y++){
+                Tile tile = tiles[x][y];
+
                 tile.updateOcclusion();
             }
         }
 
         Generation gen = new Generation(sector, tiles, tiles.length, tiles[0].length, random);
 
-        Generation offsetGen = new Generation(sector, tiles, width, height, random){
-            @Override
-            public void setBlock(int x, int y, Block block, Team team){
-                if(!Structs.inBounds(x, y, width, height)) return;
-                Tile tile = tiles[x + offsetX][y + offsetY];
-                if(tile == null) return;
-                tile.setBlock(block, team);
-                if(block.isMultiblock()){
-                    int offsetx = -(block.size - 1) / 2;
-                    int offsety = -(block.size - 1) / 2;
-
-                    for(int dx = 0; dx < block.size; dx++){
-                        for(int dy = 0; dy < block.size; dy++){
-                            int worldx = dx + offsetx + x;
-                            int worldy = dy + offsety + y;
-                            if(!(worldx == x && worldy == y) && Structs.inBounds(worldx, worldy, width, height)){
-                                Tile toplace = tiles[worldx + offsetX][worldy + offsetY];
-                                if(toplace != null){
-                                    toplace.setLinked((byte) (dx + offsetx), (byte) (dy + offsety));
-                                    toplace.setTeam(team);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            @Override
-            public Tile tile(int x, int y){
-                if(!Structs.inBounds(x, y, width, height)) return null;
-                return super.tile(x + offsetX, y + offsetY);
-            }
-            @Override
-            public boolean canPlace(int x, int y, Block block){
-                if(block.isMultiblock()){
-                    int offsetx = -(block.size - 1) / 2;
-                    int offsety = -(block.size - 1) / 2;
-
-                    for(int dx = 0; dx < block.size; dx++){
-                        for(int dy = 0; dy < block.size; dy++){
-                            int worldx = dx + offsetx + x;
-                            int worldy = dy + offsety + y;
-                            if(!Structs.inBounds(worldx, worldy, width, height) || tiles[worldx + offsetX][worldy + offsetY] == null || !tiles[worldx + offsetX][worldy + offsetY].block().alwaysReplace || tiles[worldx + offsetX][worldy + offsetY].floor().isLiquid){
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                }else{
-                    if(!Structs.inBounds(x, y, width, height)) return false;
-                    Tile tile = tiles[x + offsetX][y + offsetY];
-                    return tile != null && tile.block().alwaysReplace && !tile.floor().isLiquid;
-                }
-            }
-        };
-
         for(Mission mission : sector.missions){
-            mission.generate(offsetGen);
+            mission.generate(gen);
         }
 
-        //prepareTiles(tiles); // this might be called later
+        prepareTiles(tiles);
     }
 
     public GenResult generateTile(int sectorX, int sectorY, int localX, int localY){

@@ -45,14 +45,16 @@ public class BlockRenderer{
         });
 
         Events.on(TileChangeEvent.class, event -> {
-            int avgx = Mathf.scl(camera.position.x, tilesize);
-            int avgy = Mathf.scl(camera.position.y, tilesize);
-            int rangex = (int) (camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
-            int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+            threads.runGraphics(() -> {
+                int avgx = Mathf.scl(camera.position.x, tilesize);
+                int avgy = Mathf.scl(camera.position.y, tilesize);
+                int rangex = (int) (camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
+                int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
 
-            if(Math.abs(avgx - event.tile.x) <= rangex && Math.abs(avgy - event.tile.y) <= rangey){
-                lastCamY = lastCamX = -99; //invalidate camera position so blocks get updated
-            }
+                if(Math.abs(avgx - event.tile.x) <= rangex && Math.abs(avgy - event.tile.y) <= rangey){
+                    lastCamY = lastCamX = -99; //invalidate camera position so blocks get updated
+                }
+            });
         });
     }
 

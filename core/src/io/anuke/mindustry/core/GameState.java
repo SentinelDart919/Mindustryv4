@@ -33,16 +33,7 @@ public class GameState{
     private State state = State.menu;
 
     public int enemies(){
-        if(Net.client()) return enemies;
-        int total = 0;
-        if(io.anuke.mindustry.Vars.world.getSector() != null){
-            for(io.anuke.mindustry.game.Team team : io.anuke.mindustry.Vars.world.getSector().currentMission().getEnemyTeams()){
-                total += unitGroups[team.ordinal()].size();
-            }
-        }else{
-            total = unitGroups[waveTeam.ordinal()].size();
-        }
-        return total;
+        return Net.client() ? enemies : unitGroups[waveTeam.ordinal()].size();
     }
 
     public void set(State astate){

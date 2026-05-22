@@ -1,7 +1,6 @@
 package io.anuke.mindustry.maps;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -158,14 +157,6 @@ public class Sectors {
         if (sector.hasSave()) {
             sector.getSave().delete();
         }
-
-        if("Open World".equals(getActiveCampaign())){
-            FileHandle file = saveDirectory.child("openworld").child("sector_" + sector.x + "_" + sector.y + ".msav");
-            if(file.exists()){
-                file.delete();
-            }
-        }
-
         sector.completedMissions = 0;
         sector.complete = false;
 
@@ -236,14 +227,6 @@ public class Sectors {
                 sector.texture.dispose();
             }
         }
-
-        if("Open World".equals(getActiveCampaign())){
-            FileHandle dir = saveDirectory.child("openworld");
-            if(dir.exists()){
-                dir.deleteDirectory();
-            }
-        }
-
         grid.clear();
         save();
         createSector(0, 0);

@@ -18,17 +18,6 @@ import static io.anuke.mindustry.Vars.*;
 public abstract class Mission{
     private String extraMessage;
     private boolean showComplete = true;
-    protected Array<Team> enemyTeams = Array.with(Team.red);
-
-    public Array<Team> getEnemyTeams(){
-        return enemyTeams;
-    }
-
-    public void addEnemyTeam(Team team){
-        if(!enemyTeams.contains(team, true)){
-            enemyTeams.add(team);
-        }
-    }
 
     public abstract boolean isComplete();
 

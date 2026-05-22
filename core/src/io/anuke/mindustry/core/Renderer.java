@@ -51,7 +51,6 @@ import static io.anuke.ucore.core.Core.camera;
 public class Renderer extends RendererModule{
     public final Surface effectSurface;
     public final BlockRenderer blocks = new BlockRenderer();
-    public final FloorRenderer floor = new FloorRenderer();
     public final MinimapRenderer minimap = new MinimapRenderer();
     public final OverlayRenderer overlays = new OverlayRenderer();
     public final FogRenderer fog = new FogRenderer();
