@@ -1,6 +1,8 @@
 package io.anuke.mindustry.world.blocks.power;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -8,6 +10,8 @@ import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.graphics.Palette;
+import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
 import io.anuke.mindustry.world.meta.BlockStat;
@@ -19,6 +23,7 @@ import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.util.Translator;
+import io.anuke.ucore.function.Consumer;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -28,6 +33,8 @@ public class PowerNode extends PowerBlock{
 
     //last distribution block placed
     private static int lastPlaced = -1;
+    private static final ObjectSet<PowerGraph> graphs = new ObjectSet<>();
+    private static final Array<Tile> tempTiles = new Array<>();
 
     protected Translator t1 = new Translator();
     protected Translator t2 = new Translator();
@@ -95,15 +102,27 @@ public class PowerNode extends PowerBlock{
 
     @Override
     public void playerPlaced(Tile tile){
-        Tile before = world.tile(lastPlaced);
-        if(linkValid(tile, before) && before.block() instanceof PowerNode){
-            for(Tile near : before.entity.proximity()){
-                if(near.target() == tile){
-                    lastPlaced = tile.packedPosition();
-                    return;
+        TileEntity entity = tile.entity();
+
+        if(entity != null && entity.power != null && entity.power.links.size == 0){
+            getPotentialLinks(tile, tile.getTeamID(), other -> {
+                if(entity.power.links.size < maxNodes && !entity.power.links.contains(other.packedPosition())){
+                    Call.linkPowerNodes(null, tile, other);
                 }
+            });
+        }
+
+        if(entity == null || entity.power == null || entity.power.links.size == 0){
+            Tile before = world.tile(lastPlaced);
+            if(linkValid(tile, before) && before.block() instanceof PowerNode){
+                for(Tile near : before.entity.proximity()){
+                    if(near.target() == tile){
+                        lastPlaced = tile.packedPosition();
+                        return;
+                    }
+                }
+                Call.linkPowerNodes(null, tile, before);
             }
-            Call.linkPowerNodes(null, tile, before);
         }
 
         lastPlaced = tile.packedPosition();
@@ -241,6 +260,129 @@ public class PowerNode extends PowerBlock{
             return Vector2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy())
                     <= laserRange * tilesize + (link.block().size - 1) * tilesize;
         }
+    }
+
+    protected void getPotentialLinks(Tile tile, byte team, Consumer<Tile> others){
+        tempTiles.clear();
+        graphs.clear();
+
+        for(Tile near : tile.entity.proximity()){
+            if(near.entity != null && near.entity.power != null){
+                graphs.add(near.entity.power.graph);
+            }
+        }
+
+        if(tile.entity != null && tile.entity.power != null){
+            graphs.add(tile.entity.power.graph);
+        }
+
+        int radius = (int)Math.ceil(laserRange) + 2;
+        for(int x = tile.x - radius; x <= tile.x + radius; x++){
+            for(int y = tile.y - radius; y <= tile.y + radius; y++){
+                Tile other = world.tile(x, y);
+                if(other == null) continue;
+                other = other.target();
+
+                if(other == tile || other.entity == null || other.entity.power == null) continue;
+                if(other.getTeamID() != team) continue;
+                if(!linkValid(tile, other)) continue;
+                if(isAdjacentTo(tile, other)) continue;
+                if(graphs.contains(other.entity.power.graph)) continue;
+                if(other.block() instanceof PowerNode && other.entity.power.links.size >= ((PowerNode)other.block()).maxNodes
+                    && !other.entity.power.links.contains(tile.packedPosition())) continue;
+                if(!tempTiles.contains(other, true)){
+                    tempTiles.add(other);
+                }
+            }
+        }
+
+        tempTiles.sort((a, b) -> {
+            int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
+            if(type != 0) return type;
+            return Float.compare(Vector2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Vector2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+        });
+
+        int count = 0;
+        for(Tile other : tempTiles){
+            if(count >= maxNodes) break;
+            if(graphs.contains(other.entity.power.graph)) continue;
+            graphs.add(other.entity.power.graph);
+            others.accept(other);
+            count++;
+        }
+    }
+
+    public static void getNodeLinks(Tile tile, Block block, byte team, Consumer<Tile> others){
+        tempTiles.clear();
+        graphs.clear();
+
+        if(tile.entity != null){
+            for(Tile near : tile.entity.proximity()){
+                if(near.entity != null && near.entity.power != null){
+                    graphs.add(near.entity.power.graph);
+                }
+            }
+        }
+
+        if(tile.entity != null && tile.entity.power != null){
+            graphs.add(tile.entity.power.graph);
+        }
+
+        float maxRange = 0f;
+        for(Block contentBlock : content.blocks()){
+            if(contentBlock instanceof PowerNode){
+                maxRange = Math.max(maxRange, ((PowerNode)contentBlock).laserRange);
+            }
+        }
+
+        int radius = (int)Math.ceil(maxRange) + 2;
+        for(int x = tile.x - radius; x <= tile.x + radius; x++){
+            for(int y = tile.y - radius; y <= tile.y + radius; y++){
+                Tile other = world.tile(x, y);
+                if(other == null) continue;
+                other = other.target();
+
+                if(other == tile || other.entity == null || other.entity.power == null) continue;
+                if(other.getTeamID() != team || !(other.block() instanceof PowerNode)) continue;
+
+                PowerNode node = (PowerNode)other.block();
+                if(!node.linkValid(other, tile)) continue;
+                if(other.entity.power.links.size >= node.maxNodes && !other.entity.power.links.contains(tile.packedPosition())) continue;
+                if(isAdjacentTo(tile, block.size, other)) continue;
+                if(graphs.contains(other.entity.power.graph)) continue;
+                if(!tempTiles.contains(other, true)){
+                    tempTiles.add(other);
+                }
+            }
+        }
+
+        tempTiles.sort((a, b) -> {
+            int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
+            if(type != 0) return type;
+            return Float.compare(Vector2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Vector2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+        });
+
+        for(Tile other : tempTiles){
+            if(graphs.contains(other.entity.power.graph)) continue;
+            graphs.add(other.entity.power.graph);
+            others.accept(other);
+        }
+    }
+
+    private static boolean isAdjacentTo(Tile tile, Tile other){
+        return isAdjacentTo(tile, tile.block().size, other);
+    }
+
+    private static boolean isAdjacentTo(Tile tile, int blockSize, Tile other){
+        for(com.badlogic.gdx.math.GridPoint2 point : Edges.getEdges(blockSize)){
+            Tile near = world.tile(tile.x + point.x, tile.y + point.y);
+            if(near != null && near.target() == other){
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void drawLaser(Tile tile, Tile target){
