@@ -21,6 +21,7 @@ public class BlockFx extends FxList implements ContentList{
     lava, dooropen, doorclose, dooropenlarge, doorcloselarge, purify, purifyoil, purifystone, generate, mine, mineBig, mineHuge,
     smelt, teleportActivate, teleport, teleportOut, ripple, bubble, commandSend, healBlock, healBlockFull, healWaveMend, overdriveWave,
     overdriveBlockFull, shieldBreak,
+    fissionCloud,
     biomassSpore, biomassSmoke;
 
     @Override
@@ -45,7 +46,16 @@ public class BlockFx extends FxList implements ContentList{
         nuclearcloud = new Effect(90, 200f, e -> {
             Angles.randLenVectors(e.id, 10, e.finpow() * 90f, (x, y) -> {
                 float size = e.fout() * 14f;
-                Draw.color(Color.LIME, Color.GRAY, e.fin());
+                Draw.color(Color.valueOf("bf92f9"), Color.GRAY, e.fin());
+                Draw.rect("circle", e.x + x, e.y + y, size, size);
+                Draw.reset();
+            });
+        });
+
+        fissionCloud = new Effect(180, 400f, e -> {
+            Angles.randLenVectors(e.id, 35, e.finpow() * 180f, (x, y) -> {
+                float size = e.fout() * 28f;
+                Draw.color(Color.valueOf("ffd969"), Color.GRAY, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });

@@ -11,7 +11,7 @@ import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 public class ExplosionFx extends FxList implements ContentList{
-    public static Effect shockwave, bigShockwave, nuclearShockwave, explosion, blockExplosion, blockExplosionSmoke;
+    public static Effect shockwave, bigShockwave, nuclearShockwave, explosion, blockExplosion, blockExplosionSmoke, fusionShockwave;
 
     @Override
     public void load(){
@@ -34,6 +34,13 @@ public class ExplosionFx extends FxList implements ContentList{
             Draw.color(Color.WHITE, Color.LIGHT_GRAY, e.fin());
             Lines.stroke(e.fout() * 3f + 0.2f);
             Lines.poly(e.x, e.y, 40, e.fin() * 140f);
+            Draw.reset();
+        });
+
+        fusionShockwave = new Effect(20f, 400f, e -> {
+            Draw.color(Color.LIGHT_GRAY, Color.DARK_GRAY, e.fin());
+            Lines.stroke(e.fout() * 3f + 0.2f);
+            Lines.poly(e.x, e.y, 80, e.fin() * 280f);
             Draw.reset();
         });
 

@@ -29,7 +29,7 @@ public class FusionReactor extends PowerGenerator{
     protected int plasmas = 4;
     protected float maxPowerProduced = 3f;
     protected float warmupSpeed = 0.001f;
-    protected int explosionRadius = 36;
+    protected int explosionRadius = 38;
     protected int explosionDamage = 270;
 
     protected Color plasma1 = Color.valueOf("ffd06b"), plasma2 = Color.valueOf("ff361b");
@@ -146,13 +146,13 @@ public class FusionReactor extends PowerGenerator{
 
         if(entity.warmup < 0.4f) return;
 
-        Effects.shake(6f, 16f, tile.worldx(), tile.worldy());
-        Effects.effect(ExplosionFx.nuclearShockwave, tile.worldx(), tile.worldy());
+        Effects.shake(12f, 32f, tile.worldx(), tile.worldy());
+        Effects.effect(ExplosionFx.fusionShockwave, tile.worldx(), tile.worldy());
         Sound sound = explosionReactor;
         if(Vars.soundController != null && sound != null){
             Vars.soundController.at(sound, tile.x, tile.y, 1f, 2.0f);}
-        for(int i = 0; i < 6; i++){
-            Timers.run(Mathf.random(40), () -> Effects.effect(BlockFx.nuclearcloud, tile.worldx(), tile.worldy()));
+        for(int i = 0; i < 12; i++){
+            Timers.run(Mathf.random(40), () -> Effects.effect(BlockFx.fissionCloud, tile.worldx(), tile.worldy()));
         }
 
         Damage.damage(tile.worldx(), tile.worldy(), explosionRadius * tilesize, explosionDamage * 4);
