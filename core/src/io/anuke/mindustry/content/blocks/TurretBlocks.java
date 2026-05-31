@@ -56,7 +56,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             rotatespeed = 15f;
             inaccuracy = 17f;
             shootCone = 35f;
-            health = 200 * size * size;
+            health = 20 * size * size;
         }};
 
         hail = new ArtilleryTurret("hail"){{
