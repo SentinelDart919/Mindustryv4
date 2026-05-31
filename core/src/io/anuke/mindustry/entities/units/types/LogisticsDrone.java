@@ -30,11 +30,13 @@ public class LogisticsDrone extends FlyingUnit {
         drawItems();
 
         Draw.alpha(1f);
+        float x = 5.3f;
+        float y = 5.3f;
 
-        drawProp(-3.5f,  3.45f,  propRot) ;
-        drawProp(-3.5f,  -3.45f,  propRot);
-        drawProp( 3.5f,  3.45f, -propRot);
-        drawProp( 3.5f, -3.45f , -propRot);
+        drawProp(-x,  y,  propRot);
+        drawProp(-x,  -y,  propRot);
+        drawProp( x,  y, -propRot);
+        drawProp( x, -y , -propRot);
     }
 
     void drawProp(float localX, float localY, float spin){

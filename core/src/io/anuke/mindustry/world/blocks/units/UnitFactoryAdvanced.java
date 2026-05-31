@@ -48,7 +48,7 @@ import java.util.Arrays;
 import static io.anuke.mindustry.sounds.Sounds.blockPlace;
 
 public class UnitFactoryAdvanced extends Block{
-    protected float gracePeriodMultiplier = 15f;
+    protected float gracePeriodMultiplier = 45f;
     protected float speedupTime = 60f * 60f * 20;
     protected float maxSpeedup = 2f;
 

@@ -38,7 +38,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class UnitFactory extends Block{
-    protected float gracePeriodMultiplier = 15f;
+    protected float gracePeriodMultiplier = 40f;
     protected float speedupTime = 60f * 60f * 20;
     protected float maxSpeedup = 2f;
 

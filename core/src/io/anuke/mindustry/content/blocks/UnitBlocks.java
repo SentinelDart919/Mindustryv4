@@ -169,9 +169,9 @@ public class UnitBlocks extends BlockList implements ContentList{
 
         bombdroneFactory = new UnitFactory("bomb_drone-factory"){{
             type = UnitTypes.bombDrone;
-            produceTime = 1200;
+            produceTime = 1800;
             size = 2;
-            consumes.power(0.04f);
+            consumes.power(0.06f);
             consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.coal, 10), new ItemStack(Items.lead, 20));
         }};
 
