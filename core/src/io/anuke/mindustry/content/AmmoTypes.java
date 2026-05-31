@@ -14,7 +14,7 @@ public class AmmoTypes implements ContentList{
         bulletDenseBig, bulletPyratiteBig, bulletThoriumBig,
         shock, bombExplosive, bombIncendiary, bombOil, shellCarbide, flamerThermite, weaponMissile, weaponMissileSwarm, bulletMech,
         healBlaster, bulletGlaive,
-        explode,
+        explode, explodeDrone,
         flakScrap, flakLead, flakObsidian, flakExplosive, flakPlastic, flakSurge,
         missileExplosive, missileIncindiary, missileSurge,
         artilleryDense, artilleryPlastic, artilleryHoming, artilleryIncindiary, artilleryExplosive, unitArtillery,
@@ -270,6 +270,10 @@ public class AmmoTypes implements ContentList{
 
         //special
         explode = new AmmoType(WeaponBullets.explode){{
+           shootEffect = Fx.smoke;
+           smokeEffect = ShootFx.shootBigSmoke2;
+        }};
+        explodeDrone = new AmmoType(WeaponBullets.explodeDrone){{
            shootEffect = Fx.smoke;
            smokeEffect = ShootFx.shootBigSmoke2;
         }};
