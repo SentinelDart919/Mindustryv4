@@ -23,6 +23,7 @@ import io.anuke.ucore.entities.impl.BaseEntity;
 import io.anuke.ucore.entities.trait.DrawTrait;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
+import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
 import java.io.DataInput;
@@ -43,6 +44,7 @@ public class ForceProjector extends Block {
     protected float cooldownBrokenBase = 0.35f;
     protected float powerDamage = 0.1f;
     protected TextureRegion topRegion;
+    public Color shieldColor;
 
     public ForceProjector(String name) {
         super(name);
@@ -237,7 +239,9 @@ public class ForceProjector extends Block {
 
         @Override
         public void draw(){
-            Draw.color(Palette.accent);
+            Color teamColor = entity.getTeam().color;
+            if(teamColor != null)shieldColor = teamColor; else shieldColor = Palette.accent;
+            Draw.color(shieldColor);
             Fill.poly(x, y, 6, realRadius(entity));
             Draw.color();
         }
@@ -250,6 +254,8 @@ public class ForceProjector extends Block {
             Fill.poly(x, y, 6, realRadius(entity));
             Draw.color();
         }
+
+
 
         @Override
         public EntityGroup targetGroup(){
