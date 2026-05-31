@@ -18,7 +18,7 @@ import io.anuke.ucore.util.Mathf;
 import static io.anuke.mindustry.Vars.world;
 
 public class WeaponBullets extends BulletList{
-    public static BulletType tungstenShotgun, explode ,bombExplosive, bombIncendiary, bombOil, shellCarbide;
+    public static BulletType tungstenShotgun, explode, explodeDrone ,bombExplosive, bombIncendiary, bombOil, shellCarbide;
 
     @Override
     public void load(){
@@ -47,6 +47,22 @@ public class WeaponBullets extends BulletList{
                 speed =1f;
                 splashDamageRadius = 50f;
                 splashDamage = 28f;
+            }
+            @Override
+            public void init(Bullet b){
+                if(b.getOwner() instanceof Unit){
+                    ((Unit)b.getOwner()).damage(10000f);
+                }
+                b.time(b.lifetime());
+            }
+        };
+        explodeDrone = new BombBulletType(1.8f, 2.5f, "clear"){
+            {
+                hiteffect = BlockFx.pulverize;
+                lifetime = (30f);
+                speed =1f;
+                splashDamageRadius = 40;
+                splashDamage = 24f;
             }
             @Override
             public void init(Bullet b){

@@ -8,7 +8,7 @@ import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze, lichMissiles, chaos,
+    kamikaze, kamikazeDrone, lichMissiles, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
     artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
@@ -17,6 +17,14 @@ public class Weapons implements ContentList{
     public void load(){
 
         kamikaze = new Weapon("kamikaze"){{
+            reload = 12f;
+            roundrobin = false;
+            ejectEffect = Fx.none;
+            ammo = AmmoTypes.explode;
+            setShootSound("explosionCrawler");
+        }};
+
+        kamikazeDrone = new Weapon("kamikaze"){{
             reload = 12f;
             roundrobin = false;
             ejectEffect = Fx.none;
