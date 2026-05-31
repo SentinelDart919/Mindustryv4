@@ -9,7 +9,7 @@ import io.anuke.ucore.scene.ui.layout.Table;
 import io.anuke.ucore.util.Mathf;
 
 public class MapResizeDialog extends FloatingDialog{
-    int[] validMapSizes = {200, 300, 400, 500};
+    int[] validMapSizes = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
     int width, height;
 
     public MapResizeDialog(MapEditor editor, BiConsumer<Integer, Integer> cons){
