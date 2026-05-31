@@ -22,11 +22,6 @@ public class UnitTypes implements ContentList{
         trainEngine,
         minerDroneT1, minerDroneT2, logisticsDrone,
         evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
-        /* TODO
-            Add Units For Mass Team
-            Air/Ground Kamikaze Unit, Miner Unit, Air/Ground Unit, Ground/Air Light Attack Unit, Ground Tanky Unit
-            Artillery Unit, Heavy Assault Unit, Swarm Units(for defense mostly)
-         */
 
     @Override
     public void load(){
@@ -164,13 +159,13 @@ public class UnitTypes implements ContentList{
 
         bombDrone = new UnitType("bomb_drone", BombDrone.class, BombDrone::new){{
             isFlying = true;
-            weapon = Weapons.kamikaze;
-            maxVelocity = 1.50f;
-            speed = 0.32f;
+            weapon = Weapons.kamikazeDrone;
+            maxVelocity = 1.25f;
+            speed = 0.308f;
             drag = 0.01f;
             hitsize = 7.89f;
             mass = 1.25f;
-            health = 60;
+            health = 50;
             unitCost = 30;
         }};
 
