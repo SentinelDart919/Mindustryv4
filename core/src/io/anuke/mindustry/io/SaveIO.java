@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.io.versions.Save16;
+import io.anuke.mindustry.io.versions.Save17;
 import io.anuke.mindustry.maps.campaign.Campaign;
 
 import java.io.*;
@@ -22,7 +23,8 @@ public class SaveIO{
     private static final int campaignsSaveVersion = 2;
 
     public static final Array<SaveFileVersion> versionArray = Array.with(
-        new Save16()
+        new Save16(),
+        new Save17()
     );
 
     static{

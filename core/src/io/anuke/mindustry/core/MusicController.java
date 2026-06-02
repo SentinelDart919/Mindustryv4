@@ -213,7 +213,7 @@ public class MusicController extends Module{
     }
 
     private boolean hasBossUnits(){
-        for(BaseUnit unit : Vars.unitGroups[Vars.waveTeam.ordinal()].all()){
+        for(BaseUnit unit : Vars.unitGroups[Vars.state.enemyTeam.ordinal()].all()){
             if(unit.getType() == UnitTypes.lich || unit.getType() == UnitTypes.chaosarray){
                 return true;
             }

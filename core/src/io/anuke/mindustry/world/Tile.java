@@ -7,7 +7,6 @@ import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.traits.TargetTrait;
-import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.mindustry.world.blocks.Floor;
@@ -266,8 +265,7 @@ public class Tile implements PosTrait, TargetTrait{
     }
 
     public boolean isEnemyCheat(){
-        if(state.mode != GameMode.customAttackMode) return getTeam() == waveTeam && !state.mode.isPvp;
-        else return getTeam() != Vars.defaultTeam;
+        return !state.mode.isPvp && (getTeam() == state.enemyTeam || state.teams.areEnemies(defaultTeam, getTeam()));
     }
 
     public boolean isLinked(){

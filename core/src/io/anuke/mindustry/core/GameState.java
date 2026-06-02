@@ -3,12 +3,12 @@ package io.anuke.mindustry.core;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.EventType.StateChangeEvent;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.net.Net;
 import io.anuke.ucore.core.Events;
 
 import static io.anuke.mindustry.Vars.unitGroups;
-import static io.anuke.mindustry.Vars.waveTeam;
 
 public class GameState{
     /**Current wave number, can be anything in non-wave modes.*/
@@ -29,11 +29,13 @@ public class GameState{
     public boolean allowMassInfection = false;
     /**Whether to start with present biomass (hive).*/
     public boolean startWithBiomass = false;
+    /**The team used as the enemy in waves and custom attack maps.*/
+    public Team enemyTeam = Team.red;
     /**Current game state.*/
     private State state = State.menu;
 
     public int enemies(){
-        return Net.client() ? enemies : unitGroups[waveTeam.ordinal()].size();
+        return Net.client() ? enemies : unitGroups[enemyTeam.ordinal()].size();
     }
 
     public void set(State astate){

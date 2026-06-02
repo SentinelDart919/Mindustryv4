@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.ui.BorderImage;
 import io.anuke.ucore.core.Settings;
@@ -57,13 +58,7 @@ public class CustomGameDialog extends FloatingDialog{
         }
         selmode.add(modes);
         selmode.addButton("?", this::displayGameModeHelp).width(50f).fillY().padLeft(18f);
-
-        Table options = new Table();
-        options.addCheck("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
-        options.row();
-        options.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
-
-        selmode.add(options).left();
+        selmode.addImageButton("icon-tools", this::displayGameModeRules).size(50f, 54f).padLeft(6f);
 
         content().add(selmode);
         content().row();
@@ -155,6 +150,59 @@ public class CustomGameDialog extends FloatingDialog{
             table.labelWrap("[accent]" + mode.toString() + ":[] [lightgray]" + mode.description()).width(400f);
             table.row();
         }
+
+        d.content().add(pane);
+        d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);
+        d.show();
+    }
+
+    private void displayGameModeRules(){
+        GameMode mode = state.mode;
+
+        FloatingDialog d = new FloatingDialog(mode.toString() + " rules");
+        d.setFillParent(false);
+        //TODO Replace placeholder texts with bundle localisations
+        Table table = new Table();
+        table.defaults().pad(2f).left();
+        table.add("[accent]" + mode.toString()).left();
+        table.row();
+        table.add("[lightgray]" + mode.description()).width(400f).wrap().left();
+        table.row();
+        table.row();
+        table.addCheck("Infinite resources", mode.infiniteResources, b -> mode.infiniteResources = b).left();
+        table.row();
+        table.addCheck("Disable wave timer", mode.disableWaveTimer, b -> mode.disableWaveTimer = b).left();
+        table.row();
+        table.addCheck("Disable waves", mode.disableWaves, b -> mode.disableWaves = b).left();
+        table.row();
+        table.addCheck("Show mission", mode.showMission, b -> mode.showMission = b).left();
+        table.row();
+        table.addCheck("Enemy cheat", mode.enemyCheat, b -> mode.enemyCheat = b).left();
+        table.row();
+        table.addCheck("PvP", mode.isPvp, b -> mode.isPvp = b).left();
+        table.row();
+        table.add("Enemy Selector").padTop(8f).left();
+        table.row();
+
+        Table enemies = new Table();
+        ButtonGroup<TextButton> enemyGroup = new ButtonGroup<>();
+        int j = 0;
+        for(Team team : Team.all){
+            if(team == Team.none) continue;
+
+            enemies.addButton("$team." + team.name() + ".name", "toggle", () -> state.enemyTeam = team)
+                .update(b -> b.setChecked(state.enemyTeam == team)).group(enemyGroup).size(140f, 54f);
+            if(j++ % 2 == 1) enemies.row();
+        }
+
+        table.add(enemies).left();
+        table.row();
+        table.addCheck("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
+        table.row();
+        table.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
+
+        ScrollPane pane = new ScrollPane(table);
+        pane.setFadeScrollBars(false);
 
         d.content().add(pane);
         d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);

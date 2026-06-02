@@ -303,6 +303,7 @@ public class World extends Module{
     public void applyCustomAttackFortress(){
         Tile blueCore = null;
         Array<Tile> enemyCores = new Array<>();
+        EnumSet<Team> enemyTeams = state.teams.enemiesOf(defaultTeam);
 
         for(int x = 0; x < tiles.length; x++){
             for(int y = 0; y < tiles[0].length; y++){
@@ -313,7 +314,7 @@ public class World extends Module{
                     if(blueCore == null){
                         blueCore = tile;
                     }
-                }else if(tile.getTeam() != Team.none){
+                }else if(enemyTeams.contains(tile.getTeam())){
                     enemyCores.add(tile);
                 }
             }
@@ -330,7 +331,7 @@ public class World extends Module{
                 return;
             }
 
-            placeCustomAttackEnemyCore(generation, generatedEnemyCore, Team.red);
+            placeCustomAttackEnemyCore(generation, generatedEnemyCore, state.enemyTeam);
             enemyCores.add(generatedEnemyCore);
         }
 

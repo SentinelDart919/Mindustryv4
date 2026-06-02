@@ -45,6 +45,7 @@ public class NetworkIO{
 
             stream.writeInt(state.wave); //wave
             stream.writeFloat(state.wavetime); //wave countdown
+            stream.writeByte(state.enemyTeam.ordinal());
 
             stream.writeInt(player.id);
             player.write(stream);
@@ -177,6 +178,7 @@ public class NetworkIO{
 
             int wave = stream.readInt();
             float wavetime = stream.readFloat();
+            state.enemyTeam = Team.all[stream.readByte()];
 
             state.wave = wave;
             state.wavetime = wavetime;
