@@ -3,6 +3,7 @@ package io.anuke.mindustry.entities.units.types;
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.units.FlyingUnit;
+import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.units.UnitState;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
@@ -149,6 +150,10 @@ public class LogisticsDrone extends FlyingUnit {
                 }
             }
         };
+    @Override
+    public void onCommand(UnitCommand command){
+        //no
+    }
 
     @Override
     public UnitState getStartState() {

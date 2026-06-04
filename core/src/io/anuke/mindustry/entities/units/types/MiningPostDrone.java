@@ -3,6 +3,7 @@ package io.anuke.mindustry.entities.units.types;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.traits.MinerTrait;
 import io.anuke.mindustry.entities.units.FlyingUnit;
+import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.units.UnitState;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
@@ -92,6 +93,12 @@ public class MiningPostDrone extends FlyingUnit implements MinerTrait {
             updateMining();
         }
     }
+
+    @Override
+    public void onCommand(UnitCommand command){
+        //no
+    }
+
 
     @Override
     public void drawOver(){
