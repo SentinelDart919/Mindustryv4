@@ -1,11 +1,12 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.game.EventType.UnlockEvent;
 import io.anuke.mindustry.type.ContentType;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Settings;
+import arc.Events;
+import arc.Settings;
 
 /**Stores player unlocks. Clientside only.*/
 public class Unlocks{
@@ -66,12 +67,12 @@ public class Unlocks{
     }
 
     public void load(){
-        unlocked = Settings.getObject("unlockset", ObjectMap.class, ObjectMap::new);
+        unlocked = Core.settings.getObject("unlockset", ObjectMap.class, ObjectMap::new);
     }
 
     public void save(){
-        Settings.putObject("unlockset", unlocked);
-        Settings.save();
+        Core.settings.putObject("unlockset", unlocked);
+        Core.settings.save();
     }
 
 }

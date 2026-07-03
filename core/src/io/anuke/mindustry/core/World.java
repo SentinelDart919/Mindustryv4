@@ -1,9 +1,13 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.math.geom.SeedRandom;
+import arc.modules.Module;
+
+import arc.math.Mathf;
+import arc.math.geom.Point2;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.ai.BlockIndexer;
 import io.anuke.mindustry.ai.Pathfinder;
 import io.anuke.mindustry.ai.WaveSpawner;
@@ -22,11 +26,12 @@ import io.anuke.mindustry.maps.generation.WorldGenerator;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.OreBlock;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.*;
+import arc.Events;
+import arc.util.Time;
+import arc.entities.EntityQuery;
+import arc.ApplicationListener;
+import java.util.EnumSet;
+import arc.util.*;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -43,7 +48,7 @@ public class World extends Module{
     private Sector currentSector;
     private Tile[][] tiles;
 
-    private Array<Tile> tempTiles = new ThreadArray<>();
+    private Seq<Tile> tempTiles = new Seq<>();
     private boolean generating, invalidMap;
 
     public World(){
@@ -130,11 +135,11 @@ public class World extends Module{
     }
 
     public Tile tileWorld(float x, float y){
-        return tile(Mathf.scl2(x, tilesize), Mathf.scl2(y, tilesize));
+        return tile((int)((x) / (tilesize)), (int)((y) / (tilesize)));
     }
 
     public int toTile(float coord){
-        return Mathf.scl2(coord, tilesize);
+        return (int)((coord) / (tilesize));
     }
 
     public Tile[][] getTiles(){
@@ -302,7 +307,7 @@ public class World extends Module{
 
     public void applyCustomAttackFortress(){
         Tile blueCore = null;
-        Array<Tile> enemyCores = new Array<>();
+        Seq<Tile> enemyCores = new Seq<>();
         EnumSet<Team> enemyTeams = state.teams.enemiesOf(defaultTeam);
 
         for(int x = 0; x < tiles.length; x++){
@@ -349,7 +354,7 @@ public class World extends Module{
                 continue;
             }
 
-            float dst = Vector2.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
+            float dst = Mathf.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
             if(dst >= minDistance){
                 return tile;
             }
@@ -362,7 +367,7 @@ public class World extends Module{
                     continue;
                 }
 
-                float dst = Vector2.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
+                float dst = Mathf.dst(playerCore.drawx(), playerCore.drawy(), tile.drawx(), tile.drawy());
                 if(dst >= minDistance){
                     return tile;
                 }
@@ -389,7 +394,7 @@ public class World extends Module{
             tile.setBlock(Blocks.air);
         }else{
             Tile target = tile.target();
-            Array<Tile> removals = target.getLinkedTiles(tempTiles);
+            Seq<Tile> removals = target.getLinkedTiles(tempTiles);
             for(Tile toremove : removals){
                 //note that setting a new block automatically unlinks it
                 if(toremove != null) toremove.setBlock(Blocks.air);
@@ -431,9 +436,9 @@ public class World extends Module{
     /**
      * Raycast, but with world coordinates.
      */
-    public GridPoint2 raycastWorld(float x, float y, float x2, float y2){
-        return raycast(Mathf.scl2(x, tilesize), Mathf.scl2(y, tilesize),
-                Mathf.scl2(x2, tilesize), Mathf.scl2(y2, tilesize));
+    public Point2 raycastWorld(float x, float y, float x2, float y2){
+        return raycast((int)((x) / (tilesize)), (int)((y) / (tilesize)),
+                (int)((x2) / (tilesize)), (int)((y2) / (tilesize)));
     }
 
     /**
@@ -441,7 +446,7 @@ public class World extends Module{
      *
      * @return null if no collisions found, block position otherwise.
      */
-    public GridPoint2 raycast(int x0f, int y0f, int x1, int y1){
+    public Point2 raycast(int x0f, int y0f, int x1, int y1){
         int x0 = x0f;
         int y0 = y0f;
         int dx = Math.abs(x1 - x0);
@@ -455,7 +460,7 @@ public class World extends Module{
         while(true){
 
             if(!passable(x0, y0)){
-                return Tmp.g1.set(x0, y0);
+                return Tmp.p1.set(x0, y0);
             }
             if(x0 == x1 && y0 == y1) break;
 
@@ -510,3 +515,6 @@ public class World extends Module{
         boolean accept(int x, int y);
     }
 }
+
+
+

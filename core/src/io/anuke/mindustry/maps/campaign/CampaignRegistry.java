@@ -1,13 +1,13 @@
 package io.anuke.mindustry.maps.campaign;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
 
 public class CampaignRegistry{
     public static final String serpulo = "Serpulo";
 
     private static final ObjectMap<String, CampaignSectorGenerator> registered = new ObjectMap<>();
-    private static final Array<PlanetDefinition> planets = new Array<>();
+    private static final Seq<PlanetDefinition> planets = new Seq<>();
 
     static{
         register(serpulo, new SerpuloSectorGenerator());
@@ -24,8 +24,8 @@ public class CampaignRegistry{
         return registered.get(serpulo);
     }
 
-    public static Array<String> all(){
-        Array<String> names = new Array<>();
+    public static Seq<String> all(){
+        Seq<String> names = new Seq<>();
         for(String key : registered.keys()){
             names.add(key);
         }
@@ -42,8 +42,8 @@ public class CampaignRegistry{
         }
     }
 
-    public static Array<Definition> definitions(){
-        Array<Definition> defs = new Array<>();
+    public static Seq<Definition> definitions(){
+        Seq<Definition> defs = new Seq<>();
         for(ObjectMap.Entry<String, CampaignSectorGenerator> entry : registered.entries()){
             defs.add(new Definition(entry.key, entry.value));
         }
@@ -54,7 +54,7 @@ public class CampaignRegistry{
         return registered.containsKey(name);
     }
 
-    public static Array<PlanetDefinition> planets(){
+    public static Seq<PlanetDefinition> planets(){
         return planets;
     }
 

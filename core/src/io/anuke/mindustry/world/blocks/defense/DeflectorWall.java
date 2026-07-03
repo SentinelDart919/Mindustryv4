@@ -1,17 +1,17 @@
 package io.anuke.mindustry.world.blocks.defense;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import arc.graphics.Color;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Physics;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
+;
 
 import static io.anuke.mindustry.Vars.tilesize;
 
@@ -19,8 +19,8 @@ public class DeflectorWall extends Wall{
     public static final float hitTime = 10f;
 
     protected float maxDamageDeflect = 10f;
-    protected Rectangle rect = new Rectangle();
-    protected Rectangle rect2 = new Rectangle();
+    protected Rect rect = new Rect();
+    protected Rect rect2 = new Rect();
 
     public DeflectorWall(String name){
         super(name);
@@ -34,16 +34,16 @@ public class DeflectorWall extends Wall{
 
         if(entity.hit < 0.0001f) return;
 
-        Graphics.setAdditiveBlending();
+        Gfx.setAdditiveBlending();
 
-        Draw.color(Color.WHITE);
+        Draw.color(Color.white);
         Draw.alpha(entity.hit * 0.5f);
         Draw.rect("blank", tile.drawx(), tile.drawy(), tilesize * size, tilesize * size);
         Draw.reset();
 
         entity.hit = Mathf.clamp(entity.hit - Timers.delta() / hitTime);
 
-        Graphics.setNormalBlending();
+        Gfx.setNormalBlending();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DeflectorWall extends Wall{
 
         bullet.getHitbox(rect2);
 
-        Vector2 position = Physics.raycastRect(bullet.x, bullet.y, bullet.x + bullet.getVelocity().x, bullet.y + bullet.getVelocity().y,
+        Vec2 position = Physics.raycastRect(bullet.x, bullet.y, bullet.x + bullet.getVelocity().x, bullet.y + bullet.getVelocity().y,
                 rect.setCenter(entity.x, entity.y).setSize(size * tilesize + rect2.width + rect2.height));
 
         if(position != null){
@@ -87,3 +87,4 @@ public class DeflectorWall extends Wall{
         public float hit;
     }
 }
+

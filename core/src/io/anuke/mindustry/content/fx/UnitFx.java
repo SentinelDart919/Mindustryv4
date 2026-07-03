@@ -3,12 +3,12 @@ package io.anuke.mindustry.content.fx;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class UnitFx extends FxList implements ContentList{
     public static Effect vtolHover, unitDrop, unitPickup, unitLand, pickup, healWave, heal, landShock;

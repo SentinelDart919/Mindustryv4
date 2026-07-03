@@ -11,7 +11,7 @@ public class TraceDialog extends FloatingDialog{
     public void show(Player player, SessionInfo info){
         content().clear();
 
-        Table table = new Table("clear");
+        Table table = new Table();
         table.margin(14);
         table.defaults().pad(1);
 

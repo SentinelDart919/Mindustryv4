@@ -1,6 +1,6 @@
 package io.anuke.mindustry.maps.missions;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.game.GameMode;
@@ -9,9 +9,9 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Waves;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.maps.generation.Generation;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.util.Strings;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.state;
 import static io.anuke.mindustry.Vars.world;
@@ -46,7 +46,7 @@ public class BiomassInfectableMission extends MissionWithStartingCore{
     }
 
     @Override
-    public Array<SpawnGroup> getWaves(Sector sector){
+    public Seq<SpawnGroup> getWaves(Sector sector){
         return Waves.getSpawns();
     }
 

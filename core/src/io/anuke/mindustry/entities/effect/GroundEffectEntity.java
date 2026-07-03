@@ -1,13 +1,15 @@
 package io.anuke.mindustry.entities.effect;
 
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.impl.EffectEntity;
-import io.anuke.ucore.function.EffectRenderer;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.entities.impl.EffectEntity;
+import arc.func.Cons;
+import arc.math.Mathf;
+import arc.graphics.EffectRenderer;
 
 /**
  * A ground effect contains an effect that is rendered on the ground layer as opposed to the top layer.
@@ -44,9 +46,9 @@ public class GroundEffectEntity extends EffectEntity{
         GroundEffect effect = (GroundEffect) this.effect;
 
         if(once && effect.isStatic)
-            Effects.renderEffect(id, effect, color, lifetime(), rotation, x, y, data);
+            Effects.render(id, effect, color, lifetime(), rotation, x, y, data);
         else
-            Effects.renderEffect(id, effect, color, time, rotation, x, y, data);
+            Effects.render(id, effect, color, time, rotation, x, y, data);
     }
 
     @Override
@@ -69,22 +71,24 @@ public class GroundEffectEntity extends EffectEntity{
          */
         public final boolean isStatic;
 
-        public GroundEffect(float life, float staticLife, EffectRenderer draw){
+        public GroundEffect(float life, float staticLife, Cons<Effects.EffectContainer> draw){
             super(life, draw);
             this.staticLife = staticLife;
             this.isStatic = true;
         }
 
-        public GroundEffect(boolean isStatic, float life, EffectRenderer draw){
+        public GroundEffect(boolean isStatic, float life, Cons<Effects.EffectContainer> draw){
             super(life, draw);
             this.staticLife = 0f;
             this.isStatic = isStatic;
         }
 
-        public GroundEffect(float life, EffectRenderer draw){
+        public GroundEffect(float life, Cons<Effects.EffectContainer> draw){
             super(life, draw);
             this.staticLife = 0f;
             this.isStatic = false;
         }
     }
 }
+
+

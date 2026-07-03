@@ -1,6 +1,6 @@
 package io.anuke.mindustry.graphics.mesh;
 
-import com.badlogic.gdx.utils.Disposable;
+import arc.util.Disposable;
 
 public interface GenericMesh extends Disposable{
     @Override

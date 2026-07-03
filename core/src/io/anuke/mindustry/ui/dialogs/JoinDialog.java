@@ -1,8 +1,8 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
+import arc.graphics.Color;
+import arc.math.Mathf;
+import arc.struct.Seq;
 import io.anuke.annotations.Annotations.Serialize;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.Platform;
@@ -10,20 +10,19 @@ import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.net.Host;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.style.Drawable;
-import io.anuke.ucore.scene.ui.*;
-import io.anuke.ucore.scene.ui.layout.Cell;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.utils.UIUtils;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Strings;
+import arc.Settings;
+import arc.util.Time;
+import arc.scene.style.Drawable;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.Cell;
+import arc.scene.ui.layout.Table;
+import arc.scene.utils.UIUtils;
+
 
 import static io.anuke.mindustry.Vars.*;
 
 public class JoinDialog extends FloatingDialog{
-    Array<Server> servers = new Array<>();
+    Seq<Server> servers = new Seq<>();
     Dialog add;
     Server renaming;
     Table local = new Table();
@@ -121,7 +120,7 @@ public class JoinDialog extends FloatingDialog{
 
             inner.addImageButton("icon-trash-16", "empty", 16 * 2, () -> {
                 ui.showConfirm("$text.confirm", "$text.server.delete", () -> {
-                    servers.removeValue(server, true);
+                    servers.remove(server, true);
                     saveServers();
                     setupRemote();
                     refreshRemote();
@@ -235,7 +234,7 @@ public class JoinDialog extends FloatingDialog{
 
             Cell<TextButton> cell = ((Table) pane.getParent()).getCell(button);
 
-            if(!MathUtils.isEqual(cell.getMinWidth(), pw)){
+            if(!Mathf.isEqual(cell.getMinWidth(), pw)){
                 cell.width(pw);
                 cell.padLeft(pad);
                 pane.getParent().invalidateHierarchy();
@@ -310,7 +309,7 @@ public class JoinDialog extends FloatingDialog{
     }
 
     private void loadServers(){
-        servers = Settings.getObject("server-list", Array.class, Array::new);
+        servers = Settings.getObject("server-list", Seq.class, Seq::new);
     }
 
     private void saveServers(){
@@ -350,3 +349,4 @@ public class JoinDialog extends FloatingDialog{
         public Server(){}
     }
 }
+

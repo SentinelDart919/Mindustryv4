@@ -1,8 +1,10 @@
 package io.anuke.mindustry.entities.units;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.ObjectSet;
+import arc.util.Bundles;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Weapons;
 import io.anuke.mindustry.entities.traits.TypeTrait;
@@ -12,15 +14,15 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.ui.ContentDisplay;
-import io.anuke.ucore.function.Supplier;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.func.Prov;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Strings;
 
 public class UnitType extends UnlockableContent{
-    protected final Supplier<? extends BaseUnit> constructor;
+    protected final Prov<? extends BaseUnit> constructor;
 
     public final String name;
     public final String description;
@@ -58,7 +60,7 @@ public class UnitType extends UnlockableContent{
 
     public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;
 
-    public <T extends BaseUnit> UnitType(String name, Class<T> type, Supplier<T> mainConstructor){
+    public <T extends BaseUnit> UnitType(String name, Class<T> type, Prov<T> mainConstructor){
         this.name = name;
         this.constructor = mainConstructor;
         this.description = Bundles.getOrNull("unit." + name + ".description");
@@ -88,13 +90,13 @@ public class UnitType extends UnlockableContent{
 
     @Override
     public void load(){
-        iconRegion = Draw.region("unit-icon-" + name);
-        region = Draw.region(name);
+        iconRegion = Core.atlas.find("unit-icon-" + name);
+        region = Core.atlas.find(name);
 
         if(!isFlying){
-            if(!isTank)legRegion = Draw.region(name + "-leg");
-            baseRegion = Draw.region(name + "-base");
-            if(isTank)trackRegion = Draw.region(name + "-track");
+            if(!isTank)legRegion = Core.atlas.find(name + "-leg");
+            baseRegion = Core.atlas.find(name + "-base");
+            if(isTank)trackRegion = Core.atlas.find(name + "-track");
         }
     }
 

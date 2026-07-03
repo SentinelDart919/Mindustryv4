@@ -1,9 +1,9 @@
 package io.anuke.mindustry.ui.fragments;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Vector2;
+import arc.Core;
+import arc.graphics.Color;
+import arc.math.Interp;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
@@ -18,17 +18,17 @@ import io.anuke.mindustry.ui.ImageStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.OreBlock;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.actions.Actions;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
+import arc.Events;
+import arc.Graphics;
+import arc.scene.Group;
+import arc.scene.actions.Actions;
+import arc.scene.event.Touchable;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.Image;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -111,7 +111,7 @@ public class PlacementFragment extends Fragment{
                         button.update(() -> { //color unplacable things gray
                             boolean ulock = control.unlocks.isUnlocked(recipe);
                             TileEntity core = players[0].getClosestCore();
-                            Color color = core != null && (core.items.has(recipe.requirements) || state.mode.infiniteResources) ? Color.WHITE : ulock ? Color.GRAY : Color.WHITE;
+                            Color color = core != null && (core.items.has(recipe.requirements) || state.mode.infiniteResources) ? Color.white : ulock ? Color.gray : Color.white;
                             button.forEach(elem -> elem.setColor(color));
                             button.setChecked(input.recipe == recipe);
 
@@ -149,7 +149,7 @@ public class PlacementFragment extends Fragment{
 
                             topTable.table(header -> {
                                 header.left();
-                                header.addImage("icon-copy").size(8*4);
+                                header.image("icon-copy").size(8*4);
                                 header.labelWrap(() -> lastSchematic.name()).left().width(190f).padLeft(5);
                                 header.add().growX();
                                 header.addImageButton("icon-save", "clear-partial", 8*4, () -> {
@@ -166,8 +166,8 @@ public class PlacementFragment extends Fragment{
                                 for(ItemStack stack : lastSchematic.requirements()){
                                     req.table(line -> {
                                         line.left();
-                                        line.addImage(stack.item.region).size(8*2);
-                                        line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
+                                        line.image(stack.item.region).size(8*2);
+                                        line.add(stack.item.localizedName()).color(Color.lightGray).padLeft(2).left();
                                         line.labelWrap(() -> {
                                             TileEntity core = players[0].getClosestCore();
                                             if(core == null || state.mode.infiniteResources) return "*/*";
@@ -216,8 +216,8 @@ public class PlacementFragment extends Fragment{
                                     for(ItemStack stack : recipe.requirements){
                                         req.table(line -> {
                                             line.left();
-                                            line.addImage(stack.item.region).size(8*2);
-                                            line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
+                                        line.image(stack.item.region).size(8*2);
+                                            line.add(stack.item.localizedName()).color(Color.lightGray).padLeft(2).left();
                                             line.labelWrap(() -> {
                                                 TileEntity core = players[0].getClosestCore();
                                                 if(core == null || state.mode.infiniteResources) return "*/*";
@@ -241,7 +241,7 @@ public class PlacementFragment extends Fragment{
                     });
                 }).colspan(3).fillX().visible(() -> getSelected() != null || tileDisplayBlock() != null || (control.input(0).mode == PlaceMode.schematic && control.input(0).schematic != null)).touchable(Touchable.enabled);
                 frame.row();
-                frame.addImage("blank").color(Palette.accent).colspan(3).height(3*2).growX();
+                                frame.image("blank").color(Palette.accent).colspan(3).height(3*2).growX();
                 frame.row();
                 frame.table("pane-2", blocksSelect -> {
                     blocksSelect.margin(4).marginTop(0);
@@ -276,7 +276,7 @@ public class PlacementFragment extends Fragment{
         parent.fill(hint -> {
             hint.visible(() -> !mobile && !state.is(State.menu) && (control.input(0).mode == PlaceMode.schematic || control.input(0).mode == PlaceMode.copying));
             hint.update(() -> {
-                if(mobile && Gdx.graphics.getHeight() > Gdx.graphics.getWidth()){
+                if(mobile && Core.Gfx.getHeight() > Core.Gfx.getWidth()){
                     hint.top();
                 }else{
                     hint.bottom();
@@ -284,7 +284,7 @@ public class PlacementFragment extends Fragment{
             });
             hint.table("button-edge-1", t -> {
                 t.margin(4);
-                t.label(() -> "Rotate: [accent]Scroll[] | Flip: [accent]X / Y[]").color(Color.WHITE);
+                t.label(() -> "Rotate: [accent]Scroll[] | Flip: [accent]X / Y[]").color(Color.white);
                 t.addImageButton("icon-save", "clear-partial", 8*3, () -> {
                     Schematic schematic = control.input(0).schematic;
                     if(schematic != null){
@@ -295,7 +295,7 @@ public class PlacementFragment extends Fragment{
                     }
                 }).size(8 * 4).padLeft(10).visible(() -> control.input(0).mode == PlaceMode.schematic && control.input(0).schematic != null);
             }).update(t -> {
-                boolean portrait = mobile && Gdx.graphics.getHeight() > Gdx.graphics.getWidth();
+                boolean portrait = mobile && Core.Gfx.getHeight() > Core.Gfx.getWidth();
                 t.setTranslation(0, portrait ? -20 : 0);
             }).padBottom(mobile ? 0 : 10).padTop(mobile ? 10 : 0);
         });
@@ -305,11 +305,11 @@ public class PlacementFragment extends Fragment{
     Block getSelected(){
         Block toDisplay = null;
 
-        Vector2 v = topTable.stageToLocalCoordinates(Graphics.mouse());
+        Vec2 v = topTable.stageToLocalCoordinates(Gfx.mouseWorld());
 
         //setup hovering tile
         if(!ui.hasMouse() && topTable.hit(v.x, v.y, false) == null){
-            Tile tile = world.tileWorld(Graphics.mouseWorld().x, Graphics.mouseWorld().y);
+            Tile tile = world.tileWorld(Gfx.mouseWorld().x, Gfx.mouseWorld().y);
             if(tile != null){
                 hoverTile = tile.target();
             }else{
@@ -338,7 +338,7 @@ public class PlacementFragment extends Fragment{
     }
 
     /**Show or hide the placement menu.*/
-    void toggle(float t, Interpolation ip){
+    void toggle(float t, Interp ip){
         toggler.clearActions();
         if(shown){
             shown = false;
@@ -349,3 +349,4 @@ public class PlacementFragment extends Fragment{
         }
     }
 }
+

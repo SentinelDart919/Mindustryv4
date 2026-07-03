@@ -1,29 +1,30 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.async.AsyncExecutor;
+import arc.Core;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmap.Format;
+import arc.graphics.Texture;
+import arc.struct.Seq;
+import arc.util.async.AsyncExecutor;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.ColorMapper;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.utils.Cursors;
-import io.anuke.ucore.util.GridMap;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.scene.Element;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.utils.Cursors;
+import arc.struct.GridMap;
+
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.sectorSize;
 import static io.anuke.mindustry.Vars.world;
 
 public class GenViewDialog extends FloatingDialog{
-    Array<Item> ores = Array.with(Items.copper, Items.lead, Items.coal);
+    Seq<Item> ores = Seq.with(Items.copper, Items.lead, Items.coal);
 
     public GenViewDialog(){
         super("generate view");
@@ -89,7 +90,7 @@ public class GenViewDialog extends FloatingDialog{
                                     pixmap.drawPixel(i, sectorSize - 1 - j, ColorMapper.colorFor(result.floor, result.wall, Team.none, result.elevation, (byte)0));
                                 }
                             }
-                            Gdx.app.postRunnable(() -> map.put(wx, wy, new Texture(pixmap)));
+                            Core.app.postRunnable(() -> map.put(wx, wy, new Texture(pixmap)));
                             return pixmap;
                         });
 

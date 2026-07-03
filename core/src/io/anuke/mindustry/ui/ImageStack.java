@@ -1,8 +1,8 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.layout.Stack;
+import arc.graphics.g2d.TextureRegion;
+import arc.scene.ui.Image;
+import arc.scene.ui.layout.Stack;
 
 public class ImageStack extends Stack{
 

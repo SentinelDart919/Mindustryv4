@@ -1,6 +1,6 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.utils.Pool.Poolable;
+import arc.util.pooling.Pool.Poolable;
 
 import java.nio.ByteBuffer;
 
@@ -22,3 +22,4 @@ public interface Packet extends Poolable{
         return false;
     }
 }
+

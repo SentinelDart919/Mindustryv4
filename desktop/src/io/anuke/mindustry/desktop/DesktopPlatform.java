@@ -3,9 +3,9 @@ package io.anuke.mindustry.desktop;
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
 import club.minnced.discord.rpc.DiscordRichPresence;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Base64Coder;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.util.serialization.Base64Coder;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.core.Platform;
@@ -15,9 +15,9 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.ui.dialogs.FileChooser;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.OS;
-import io.anuke.ucore.util.Strings;
+import arc.func.Cons;
+import arc.util.OS;
+import arc.util.Strings;
 
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -32,7 +32,7 @@ public class DesktopPlatform extends Platform{
     public DesktopPlatform(String[] args){
         this.args = args;
 
-        Vars.testMobile = Array.with(args).contains("-testMobile", false);
+        Vars.testMobile = Seq.with(args).contains("-testMobile", false);
 
         if(useDiscord){
             DiscordEventHandlers handlers = new DiscordEventHandlers();
@@ -41,7 +41,7 @@ public class DesktopPlatform extends Platform{
     }
 
     @Override
-    public void showFileChooser(String text, String content, Consumer<FileHandle> cons, boolean open, String filter){
+    public void showFileChooser(String text, String content, Cons<Fi> cons, boolean open, String filter){
         new FileChooser(text, file -> file.extension().equalsIgnoreCase(filter), open, cons).show();
     }
 

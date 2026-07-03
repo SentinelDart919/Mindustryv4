@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.defense;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.entities.TileEntity;
@@ -14,17 +14,19 @@ import io.anuke.mindustry.world.consumers.ConsumeLiquidFilter;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.entities.impl.BaseEntity;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.Effects;
+import arc.graphics.Gfx;
+import arc.util.Time;
+import arc.util.Timers;
+import arc.entities.EntityGroup;
+import arc.entities.EntityQuery;
+import arc.entities.impl.BaseEntity;
+import arc.entities.trait.DrawTrait;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -62,7 +64,7 @@ public class ForceProjector extends Block {
     @Override
     public void load(){
         super.load();
-        topRegion = Draw.region(name + "-top");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -97,7 +99,7 @@ public class ForceProjector extends Block {
 
         entity.radscl = Mathf.lerpDelta(entity.radscl, entity.broken ? 0f : 1f, 0.05f);
 
-        if(Mathf.chance(Timers.delta() * entity.buildup / breakage * 0.1f)){
+        if(Mathf.chance(Time.delta * entity.buildup / breakage * 0.1f)){
             Effects.effect(BlockFx.reactorsmoke, tile.drawx() + Mathf.range(tilesize/2f), tile.drawy() + Mathf.range(tilesize/2f));
         }
 
@@ -177,9 +179,9 @@ public class ForceProjector extends Block {
         if(entity.buildup <= 0f) return;
         Draw.alpha(entity.buildup / breakage * 0.75f);
 
-        Graphics.setAdditiveBlending();
+        Gfx.setAdditiveBlending();
         Draw.rect(topRegion, tile.drawx(), tile.drawy());
-        Graphics.setNormalBlending();
+        Gfx.setNormalBlending();
 
         Draw.reset();
     }
@@ -249,12 +251,11 @@ public class ForceProjector extends Block {
         public void drawOver(){
             if(entity.hit <= 0f) return;
 
-            Draw.color(Color.WHITE);
+            Draw.color(Color.white);
             Draw.alpha(entity.hit);
             Fill.poly(x, y, 6, realRadius(entity));
             Draw.color();
         }
-
 
 
         @Override
@@ -263,3 +264,4 @@ public class ForceProjector extends Block {
         }
     }
 }
+

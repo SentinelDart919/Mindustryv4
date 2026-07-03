@@ -1,13 +1,13 @@
 package io.anuke.mindustry.content.fx;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
 
 import static io.anuke.mindustry.Vars.tilesize;
 
@@ -53,7 +53,7 @@ public class Fx extends FxList implements ContentList{
         });
 
         smoke = new Effect(100, e -> {
-            Draw.color(Color.GRAY, Palette.darkishGray, e.fin());
+            Draw.color(Color.gray, Palette.darkishGray, e.fin());
             float size = 7f - e.fin() * 7f;
             Draw.rect("circle", e.x, e.y, size, size);
             Draw.reset();

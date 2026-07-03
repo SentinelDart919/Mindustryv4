@@ -1,8 +1,8 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
@@ -11,12 +11,12 @@ import io.anuke.mindustry.world.Block;
 import static io.anuke.mindustry.Vars.schematics;
 
 public class Schematic {
-    public final Array<Stile> tiles;
+    public final Seq<Stile> tiles;
     public ObjectMap<String, String> tags;
     public int width, height;
-    public FileHandle file;
+    public Fi file;
 
-    public Schematic(Array<Stile> tiles, ObjectMap<String, String> tags, int width, int height) {
+    public Schematic(Seq<Stile> tiles, ObjectMap<String, String> tags, int width, int height) {
         this.tiles = tiles;
         this.tags = tags;
         this.width = width;
@@ -70,14 +70,14 @@ public class Schematic {
     }
 
     public Schematic copy() {
-        Array<Stile> newTiles = new Array<>(tiles.size);
+        Seq<Stile> newTiles = new Seq<>(tiles.size);
         for (Stile tile : tiles) {
             newTiles.add(tile.copy());
         }
         return new Schematic(newTiles, new ObjectMap<>(tags), width, height);
     }
 
-    public Array<ItemStack> requirements() {
+    public Seq<ItemStack> requirements() {
         ObjectMap<Item, Integer> reqs = new ObjectMap<>();
         for (Stile tile : tiles) {
             Recipe recipe = Recipe.getByResult(tile.block);
@@ -87,7 +87,7 @@ public class Schematic {
                 }
             }
         }
-        Array<ItemStack> result = new Array<>();
+        Seq<ItemStack> result = new Seq<>();
         for (ObjectMap.Entry<Item, Integer> entry : reqs.entries()) {
             result.add(new ItemStack(entry.key, entry.value));
         }

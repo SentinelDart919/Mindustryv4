@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import arc.math.geom.Point2;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.game.EventType.BlockBuildBeginEvent;
@@ -12,13 +12,13 @@ import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.blocks.BuildBlock.BuildEntity;
 import io.anuke.mindustry.world.blocks.distribution.TrainRail;
 import io.anuke.mindustry.world.blocks.units.TrainCrafter;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.util.Geometry;
+import arc.Events;
+import arc.math.geom.Geometry;
 
 import static io.anuke.mindustry.Vars.*;
 
 public class Build{
-    private static final Rectangle rect = new Rectangle();
+    private static final Rect rect = new Rect();
 
     /**Returns block type that was broken, or null if unsuccesful.*/
     public static void beginBreak(Team team, int x, int y){
@@ -123,7 +123,7 @@ public class Build{
         for(Team enemy : state.teams.enemiesOf(team)){
             if(enemy == Team.themass) continue;
             for(Tile core : state.teams.get(enemy).cores){
-                if(Vector2.dst(x*tilesize + type.offset(), y*tilesize + type.offset(), core.drawx(), core.drawy()) < state.mode.enemyCoreBuildRadius + type.size*tilesize/2f){
+                if(Vec2.dst(x*tilesize + type.offset(), y*tilesize + type.offset(), core.drawx(), core.drawy()) < state.mode.enemyCoreBuildRadius + type.size*tilesize/2f){
                     return false;
                 }
             }
@@ -179,17 +179,17 @@ public class Build{
 
     private static boolean contactsGround(int x, int y, Block block){
         if(block.isMultiblock()){
-            for(GridPoint2 point : Edges.getInsideEdges(block.size)){
+            for(Point2 point : Edges.getInsideEdges(block.size)){
                 Tile tile = world.tile(x + point.x, y + point.y);
                 if(tile != null && !tile.floor().isLiquid) return true;
             }
 
-            for(GridPoint2 point : Edges.getEdges(block.size)){
+            for(Point2 point : Edges.getEdges(block.size)){
                 Tile tile = world.tile(x + point.x, y + point.y);
                 if(tile != null && !tile.floor().isLiquid) return true;
             }
         }else{
-            for(GridPoint2 point : Geometry.d4){
+            for(Point2 point : Geometry.d4){
                 Tile tile = world.tile(x + point.x, y + point.y);
                 if(tile != null && !tile.floor().isLiquid) return true;
             }

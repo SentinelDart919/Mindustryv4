@@ -1,11 +1,11 @@
 package io.anuke.mindustry.entities;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.math.geom.Point2;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.ai.MassAI;
@@ -17,7 +17,7 @@ import io.anuke.mindustry.entities.traits.TargetTrait;
 import io.anuke.mindustry.entities.units.types.BlockDefenseDrone;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
-import io.anuke.ucore.entities.trait.Entity;
+import arc.entities.trait.Entity;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
@@ -28,13 +28,13 @@ import io.anuke.mindustry.world.modules.ConsumeModule;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.modules.LiquidModule;
 import io.anuke.mindustry.world.modules.PowerModule;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.BaseEntity;
-import io.anuke.ucore.entities.trait.HealthTrait;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Timer;
+import arc.Effects;
+import arc.util.Time;
+import arc.entities.EntityGroup;
+import arc.entities.impl.BaseEntity;
+import arc.entities.trait.HealthTrait;
+import arc.math.Mathf;
+import arc.util.Timers;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -67,7 +67,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
 
 
     /**List of (cached) tiles with entities in proximity, used for outputting to*/
-    private Array<Tile> proximity = new Array<>(8);
+    private Seq<Tile> proximity = new Seq<>(8);
     private boolean dead = false;
     private boolean sleeping;
     private float sleepTime;
@@ -209,8 +209,8 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     public void removeFromProximity(){
         tile.block().onProximityRemoved(tile);
 
-        GridPoint2[] nearby = Edges.getEdges(tile.block().size);
-        for(GridPoint2 point : nearby){
+        Point2[] nearby = Edges.getEdges(tile.block().size);
+        for(Point2 point : nearby){
             Tile other = world.tile(tile.x + point.x, tile.y + point.y);
             //remove this tile from all nearby tile's proximities
             if(other != null){
@@ -218,7 +218,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
                 other.block().onProximityUpdate(other);
             }
             if(other != null && other.entity != null){
-                other.entity.proximity.removeValue(tile, true);
+                other.entity.proximity.remove(tile, true);
             }
         }
     }
@@ -227,8 +227,8 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
         tmpTiles.clear();
         proximity.clear();
 
-        GridPoint2[] nearby = Edges.getEdges(tile.block().size);
-        for(GridPoint2 point : nearby){
+        Point2[] nearby = Edges.getEdges(tile.block().size);
+        for(Point2 point : nearby){
             Tile other = world.tile(tile.x + point.x, tile.y + point.y);
 
             if(other == null) continue;
@@ -254,7 +254,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
         tile.block().onProximityUpdate(tile);
     }
 
-    public Array<Tile> proximity(){
+    public Seq<Tile> proximity(){
         return proximity;
     }
 
@@ -301,8 +301,8 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     }
 
     @Override
-    public Vector2 getVelocity(){
-        return Vector2.Zero;
+    public Vec2 getVelocity(){
+        return Vec2.ZERO;
     }
 
     @Override
@@ -341,3 +341,4 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
         }
     }
 }
+

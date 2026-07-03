@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import arc.math.geom.Point2;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.TileEntity;
@@ -15,12 +15,12 @@ import io.anuke.mindustry.world.modules.ConsumeModule;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.modules.LiquidModule;
 import io.anuke.mindustry.world.modules.PowerModule;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.trait.PosTrait;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.Bits;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.entities.trait.PosTrait;
+import arc.func.Cons;
+import arc.struct.Bits;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -282,7 +282,7 @@ public class Tile implements PosTrait, TargetTrait{
      * Returns the list of all tiles linked to this multiblock, or an empty array if it's not a multiblock.
      * This array contains all linked tiles, including this tile itself.
      */
-    public Array<Tile> getLinkedTiles(Array<Tile> tmpArray){
+    public Seq<Tile> getLinkedTiles(Seq<Tile> tmpArray){
         Block block = block();
         tmpArray.clear();
         if(block.isMultiblock()){
@@ -304,7 +304,7 @@ public class Tile implements PosTrait, TargetTrait{
      * Returns the list of all tiles linked to this multiblock if it were this block, or an empty array if it's not a multiblock.
      * This array contains all linked tiles, including this tile itself.
      */
-    public Array<Tile> getLinkedTilesAs(Block block, Array<Tile> tmpArray){
+    public Seq<Tile> getLinkedTilesAs(Block block, Seq<Tile> tmpArray){
         tmpArray.clear();
         if(block.isMultiblock()){
             int offsetx = -(block.size - 1) / 2;
@@ -332,20 +332,20 @@ public class Tile implements PosTrait, TargetTrait{
         }
     }
 
-    public void allNearby(Consumer<Tile> cons){
-        for(GridPoint2 point : Edges.getEdges(block().size)){
+    public void allNearby(Cons<Tile> cons){
+        for(Point2 point : Edges.getEdges(block().size)){
             Tile tile = world.tile(x + point.x, y + point.y);
             if(tile != null){
-                cons.accept(tile.target());
+                cons.get(tile.target());
             }
         }
     }
 
-    public void allInside(Consumer<Tile> cons){
-        for(GridPoint2 point : Edges.getInsideEdges(block().size)){
+    public void allInside(Cons<Tile> cons){
+        for(Point2 point : Edges.getInsideEdges(block().size)){
             Tile tile = world.tile(x + point.x, y + point.y);
             if(tile != null){
-                cons.accept(tile);
+                cons.get(tile);
             }
         }
     }
@@ -355,7 +355,7 @@ public class Tile implements PosTrait, TargetTrait{
         return link == null ? this : link;
     }
 
-    public Tile getNearby(GridPoint2 relative){
+    public Tile getNearby(Point2 relative){
         return world.tile(x + relative.x, y + relative.y);
     }
 
@@ -378,7 +378,7 @@ public class Tile implements PosTrait, TargetTrait{
 
         //check for occlusion
         for(int i = 0; i < 8; i++){
-            GridPoint2 point = Geometry.d8[i];
+            Point2 point = Geometry.d8[i];
             Tile tile = world.tile(x + point.x, y + point.y);
             if(tile != null && tile.solid()){
                 occluded = true;
@@ -436,7 +436,7 @@ public class Tile implements PosTrait, TargetTrait{
             }
         }else if(!(block instanceof BlockPart) && !world.isGenerating()){
             //since the entity won't update proximity for us, update proximity for all nearby tiles manually
-            for(GridPoint2 p : Geometry.d4){
+            for(Point2 p : Geometry.d4){
                 Tile tile = world.tile(x + p.x, y + p.y);
                 if(tile != null){
                     tile = tile.target();
@@ -462,8 +462,8 @@ public class Tile implements PosTrait, TargetTrait{
     }
 
     @Override
-    public Vector2 getVelocity(){
-        return Vector2.Zero;
+    public Vec2 getVelocity(){
+        return Vec2.ZERO;
     }
 
     @Override

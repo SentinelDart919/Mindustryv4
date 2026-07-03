@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.ObjectIntMap;
+import arc.graphics.Color;
+import arc.struct.IntMap;
+import arc.struct.ObjectIntMap;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.ContentType;

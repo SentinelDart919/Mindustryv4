@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.Queue;
+import arc.struct.IntSet;
+import arc.struct.ObjectSet;
+import arc.struct.Queue;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.storage.StorageBlock.StorageEntity;

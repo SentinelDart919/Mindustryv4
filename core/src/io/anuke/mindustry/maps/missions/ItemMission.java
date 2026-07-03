@@ -4,7 +4,7 @@ import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.state;
 

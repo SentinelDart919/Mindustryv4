@@ -1,6 +1,6 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.editor.DrawOperation.TileOperation;
@@ -10,9 +10,9 @@ import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.maps.MapTileData.TileDataMarker;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.util.Structs;
-import io.anuke.ucore.util.Bits;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Structs;
+import arc.struct.Bits;
+import arc.math.Mathf;
 import static io.anuke.mindustry.Vars.content;
 public class MapEditor{
     public static final int[] brushSizes = {1, 2, 3, 4, 5, 9, 15};

@@ -1,8 +1,9 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.util.Translator;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
@@ -14,12 +15,12 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterEntity;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.sounds.Sounds.explosionReactor;
@@ -104,7 +105,7 @@ public class FusionReactor extends PowerGenerator{
 
         Draw.rect(name + "-bottom", tile.drawx(), tile.drawy());
 
-        Graphics.setAdditiveBlending();
+        Gfx.setAdditiveBlending();
 
         for(int i = 0; i < plasmas; i++){
             float r = 29f + Mathf.absin(Timers.time(), 2f + i * 1f, 5f - i * 0.5f);
@@ -116,7 +117,7 @@ public class FusionReactor extends PowerGenerator{
 
         Draw.color();
 
-        Graphics.setNormalBlending();
+        Gfx.setNormalBlending();
 
         Draw.rect(region, tile.drawx(), tile.drawy());
 
@@ -130,7 +131,7 @@ public class FusionReactor extends PowerGenerator{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name + "-bottom"), Draw.region(name), Draw.region(name + "-top")};
+        return new TextureRegion[]{Core.atlas.find(name + "-bottom"), Core.atlas.find(name), Core.atlas.find(name + "-top")};
     }
 
     @Override
@@ -177,3 +178,4 @@ public class FusionReactor extends PowerGenerator{
 
     }
 }
+

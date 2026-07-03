@@ -1,13 +1,13 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.graphics.Palette;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
-import static io.anuke.ucore.core.Timers.delta;
+import static arc.util.Timers.delta;
 
 public class BombDrone extends FlyingUnit {
     float propRot;
@@ -44,6 +44,6 @@ public class BombDrone extends FlyingUnit {
     }
     @Override
     public void drawOver(){
-        trail.draw(Color.BLACK, 0f);
+        trail.draw(Color.black, 0f);
     }
 }

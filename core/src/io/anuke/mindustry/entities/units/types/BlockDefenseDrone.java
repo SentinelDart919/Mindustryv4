@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.math.Vector2;
+import arc.math.geom.Vec2;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -17,9 +18,9 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -51,9 +52,9 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
 
             target = last;
 
-            if(leader.lastDamager != null && leader.lastDamager instanceof TargetTrait && !((TargetTrait)leader.lastDamager).isDead() && distanceTo((TargetTrait)leader.lastDamager) < getWeapon().getAmmo().getRange() * 1.5f){
+            if(leader.lastDamager != null && leader.lastDamager instanceof TargetTrait && !((TargetTrait)leader.lastDamager).isDead() && dst((TargetTrait)leader.lastDamager) < getWeapon().getAmmo().getRange() * 1.5f){
                 target = (TargetTrait)leader.lastDamager;
-            }else if(distanceTo(leader) < followDistance){
+            }else if(dst(leader) < followDistance){
                 targetClosest();
             }else{
                 target = null;
@@ -63,10 +64,10 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
                 attack(50f);
                 despawnTimer = 0f;
 
-                if((Mathf.angNear(angleTo(target), rotation, 15f) && distanceTo(target) < getWeapon().getAmmo().getRange())){
+                if((Mathf.angNear(angleTo(target), rotation, 15f) && dst(target) < getWeapon().getAmmo().getRange())){
                     AmmoType ammo = getWeapon().getAmmo();
 
-                    Vector2 to = Predict.intercept(BlockDefenseDrone.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(BlockDefenseDrone.this, target, ammo.bullet.speed);
                     getWeapon().update(BlockDefenseDrone.this, to.x, to.y);
                 }
             }
@@ -78,10 +79,10 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
                 }
             }
 
-            if(target == null && distanceTo(leader) < 8f){
+            if(target == null && dst(leader) < 8f){
                 Call.onDefenseDroneFade(BlockDefenseDrone.this);
             }
-            if(distanceTo(leader) > 500f){
+            if(dst(leader) > 500f){
                 damage(99999f);
             }
         }

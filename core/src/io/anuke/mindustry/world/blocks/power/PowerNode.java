@@ -1,8 +1,9 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.util.Translator;
 
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -16,14 +17,14 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
-import io.anuke.ucore.function.Consumer;
+import arc.Settings;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
+import arc.func.Cons;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -34,7 +35,7 @@ public class PowerNode extends PowerBlock{
     //last distribution block placed
     private static int lastPlaced = -1;
     private static final ObjectSet<PowerGraph> graphs = new ObjectSet<>();
-    private static final Array<Tile> tempTiles = new Array<>();
+    private static final Seq<Tile> tempTiles = new Seq<>();
 
     protected Translator t1 = new Translator();
     protected Translator t2 = new Translator();
@@ -82,8 +83,8 @@ public class PowerNode extends PowerBlock{
         PowerGraph tg = entity.power.graph;
         tg.clear();
 
-        entity.power.links.removeValue(other.packedPosition());
-        other.entity.power.links.removeValue(tile.packedPosition());
+        entity.power.links.remove(other.packedPosition());
+        other.entity.power.links.remove(tile.packedPosition());
 
         //reflow from this point, covering all tiles on this side
         tg.reflow(tile);
@@ -252,17 +253,17 @@ public class PowerNode extends PowerBlock{
         if(link.block() instanceof PowerNode){
             TileEntity oe = link.entity();
 
-            return Vector2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy()) <= Math.max(laserRange * tilesize,
+            return Vec2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy()) <= Math.max(laserRange * tilesize,
                     ((PowerNode) link.block()).laserRange * tilesize)
                     + (link.block().size - 1) * tilesize / 2f + (tile.block().size - 1) * tilesize / 2f &&
                     (!checkMaxNodes || (oe.power.links.size < ((PowerNode) link.block()).maxNodes || oe.power.links.contains(tile.packedPosition())));
         }else{
-            return Vector2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy())
+            return Vec2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy())
                     <= laserRange * tilesize + (link.block().size - 1) * tilesize;
         }
     }
 
-    protected void getPotentialLinks(Tile tile, byte team, Consumer<Tile> others){
+    protected void getPotentialLinks(Tile tile, byte team, Cons<Tile> others){
         tempTiles.clear();
         graphs.clear();
 
@@ -299,8 +300,8 @@ public class PowerNode extends PowerBlock{
         tempTiles.sort((a, b) -> {
             int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
             if(type != 0) return type;
-            return Float.compare(Vector2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
-                    Vector2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+            return Float.compare(Vec2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Vec2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
         });
 
         int count = 0;
@@ -308,12 +309,12 @@ public class PowerNode extends PowerBlock{
             if(count >= maxNodes) break;
             if(graphs.contains(other.entity.power.graph)) continue;
             graphs.add(other.entity.power.graph);
-            others.accept(other);
+            others.get(other);
             count++;
         }
     }
 
-    public static void getNodeLinks(Tile tile, Block block, byte team, Consumer<Tile> others){
+    public static void getNodeLinks(Tile tile, Block block, byte team, Cons<Tile> others){
         tempTiles.clear();
         graphs.clear();
 
@@ -360,14 +361,14 @@ public class PowerNode extends PowerBlock{
         tempTiles.sort((a, b) -> {
             int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
             if(type != 0) return type;
-            return Float.compare(Vector2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
-                    Vector2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+            return Float.compare(Vec2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Vec2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
         });
 
         for(Tile other : tempTiles){
             if(graphs.contains(other.entity.power.graph)) continue;
             graphs.add(other.entity.power.graph);
-            others.accept(other);
+            others.get(other);
         }
     }
 
@@ -376,7 +377,7 @@ public class PowerNode extends PowerBlock{
     }
 
     private static boolean isAdjacentTo(Tile tile, int blockSize, Tile other){
-        for(com.badlogic.gdx.math.GridPoint2 point : Edges.getEdges(blockSize)){
+        for(arc.math.geom.Point2 point : Edges.getEdges(blockSize)){
             Tile near = world.tile(tile.x + point.x, tile.y + point.y);
             if(near != null && near.target() == other){
                 return true;
@@ -400,7 +401,7 @@ public class PowerNode extends PowerBlock{
         x2 += t2.x;
         y2 += t2.y;
 
-        float space = Vector2.dst(x1, y1, x2, y2);
+        float space = Vec2.dst(x1, y1, x2, y2);
         float scl = 4f, mag = 2f, tscl = 4f, segscl = 3f;
 
         int segments = Mathf.ceil(space / segscl);
@@ -420,3 +421,4 @@ public class PowerNode extends PowerBlock{
     }
 
 }
+

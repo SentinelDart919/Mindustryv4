@@ -1,11 +1,13 @@
 package io.anuke.mindustry.entities.units;
+import arc.util.Timers;
+import arc.util.Translator;
 
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.distribution.TrainRail;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
-import io.anuke.ucore.core.Timers;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
+import arc.util.Time;
 
 import static io.anuke.mindustry.Vars.world;
 

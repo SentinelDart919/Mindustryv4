@@ -1,6 +1,6 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.entities.traits.SaveTrait;
@@ -13,10 +13,10 @@ import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BlockPart;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.trait.Entity;
-import io.anuke.ucore.util.Bits;
+import arc.entities.Entities;
+import arc.entities.EntityGroup;
+import arc.entities.trait.Entity;
+import arc.struct.Bits;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -247,17 +247,17 @@ public abstract class SaveFileVersion{
     }
 
     public void writeContentHeader(DataOutputStream stream) throws IOException{
-        Array<Content>[] map = content.getContentMap();
+        Seq<Content>[] map = content.getContentMap();
 
         int mappable = 0;
-        for(Array<Content> arr : map){
+        for(Seq<Content> arr : map){
             if(arr.size > 0 && arr.first() instanceof MappableContent){
                 mappable++;
             }
         }
 
         stream.writeByte(mappable);
-        for(Array<Content> arr : map){
+        for(Seq<Content> arr : map){
             if(arr.size > 0 && arr.first() instanceof MappableContent){
                 stream.writeByte(arr.first().getContentType().ordinal());
                 stream.writeShort(arr.size);

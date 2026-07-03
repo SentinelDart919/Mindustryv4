@@ -1,28 +1,28 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Align;
+import arc.Core;
+import arc.input.KeyCode;
+import arc.files.Fi;
+import arc.util.Align;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.SettingsDialog;
-import io.anuke.ucore.scene.ui.SettingsDialog.SettingsTable.Setting;
-import io.anuke.ucore.scene.ui.Slider;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.Settings;
+import arc.func.Cons;
+import arc.scene.Element;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.ui.Image;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.SettingsDialog;
+import arc.scene.ui.SettingsDialog.SettingsTable.Setting;
+import arc.scene.ui.Slider;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import arc.math.Mathf;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +67,7 @@ public class SettingsMenuDialog extends SettingsDialog{
 
         menu = new Table();
 
-        Consumer<SettingsTable> s = table -> {
+        Cons<SettingsTable> s = table -> {
             table.row();
             table.addImageTextButton("$text.back", "icon-arrow-left", 10 * 3, this::back).size(240f, 60f).colspan(2).padTop(15f);
         };
@@ -177,11 +177,11 @@ public class SettingsMenuDialog extends SettingsDialog{
                             Settings.prefs().put(map);
                             Settings.save();
 
-                            for(FileHandle file : dataDirectory.list()){
+                            for(Fi file : dataDirectory.list()){
                                 file.deleteDirectory();
                             }
 
-                            Gdx.app.exit();
+                            Core.app.exit();
                         });
                     });
                     dialog.content().row();
@@ -195,18 +195,18 @@ public class SettingsMenuDialog extends SettingsDialog{
         graphics.sliderPref("fpscap", 125, 5, 125, 5, s -> (s > 120 ? Bundles.get("setting.fpscap.none") : Bundles.format("setting.fpscap.text", s)));
 
         if(!mobile){
-            graphics.checkPref("vsync", true, b -> Gdx.graphics.setVSync(b));
+            graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
             graphics.checkPref("fullscreen", false, b -> {
                 if(b){
-                    Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+                    Core.graphics.setFullscreenMode(Core.graphics.getDisplayMode());
                 }else{
-                    Gdx.graphics.setWindowedMode(600, 480);
+                    Core.graphics.setWindowedMode(600, 480);
                 }
             });
 
-            Gdx.graphics.setVSync(Settings.getBool("vsync"));
+            Core.graphics.setVSync(Settings.getBool("vsync"));
             if(Settings.getBool("fullscreen")){
-                Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+                Core.graphics.setFullscreenMode(Core.graphics.getDisplayMode());
             }
         }
 
@@ -237,3 +237,4 @@ public class SettingsMenuDialog extends SettingsDialog{
         });
     }
 }
+

@@ -1,7 +1,7 @@
 package io.anuke.mindustry.content;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.graphics.Color;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.entities.units.BiomassAirUnit;
 import io.anuke.mindustry.entities.units.BiomassGroundUnit;
 import io.anuke.mindustry.entities.units.TankUnit;
@@ -9,7 +9,7 @@ import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
-import io.anuke.ucore.util.Mathf;
+import arc.math.Mathf;
 
 public class UnitTypes implements ContentList{
     public static UnitType

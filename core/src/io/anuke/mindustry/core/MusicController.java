@@ -1,7 +1,10 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
+import arc.modules.Module;
+
+import arc.Core;
+import arc.audio.Music;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.UnitTypes;
 import io.anuke.mindustry.entities.units.BaseUnit;
@@ -10,11 +13,11 @@ import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.game.EventType.GameOverEvent;
 import io.anuke.mindustry.game.EventType.PlayEvent;
 import io.anuke.mindustry.game.EventType.StateChangeEvent;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Mathf;
+import arc.Events;
+import arc.Settings;
+import arc.util.Time;
+import arc.ApplicationListener;
+import arc.math.Mathf;
 
 public class MusicController extends Module{
     public static boolean MusicCurrentlyPlaying = false;
@@ -31,8 +34,8 @@ public class MusicController extends Module{
     public MusicController(){
         if(Vars.headless) return;
 
-        menu = Gdx.audio.newMusic(Gdx.files.internal("music/menu.ogg"));
-        editor = Gdx.audio.newMusic(Gdx.files.internal("music/editor.ogg"));
+        menu = Core.audio.newMusic(Core.files.internal("music/menu.ogg"));
+        editor = Core.audio.newMusic(Core.files.internal("music/editor.ogg"));
         game = loadMusic(
                 "game1",
                 "game2",
@@ -85,7 +88,7 @@ public class MusicController extends Module{
     private static Music[] loadMusic(String... names){
         Music[] music = new Music[names.length];
         for(int i = 0; i < names.length; i++){
-            music[i] = Gdx.audio.newMusic(Gdx.files.internal("music/" + names[i] + ".ogg"));
+            music[i] = Core.audio.newMusic(Core.files.internal("music/" + names[i] + ".ogg"));
         }
         return music;
     }
@@ -105,8 +108,8 @@ public class MusicController extends Module{
     }
 
     private float getVolume(){
-        if(Settings.getBool("mutemusic")) return 0f;
-        return Settings.getInt("musicvol", 10) / 10f;
+        if(Core.settings.getBool("mutemusic")) return 0f;
+        return Core.settings.getInt("musicvol", 10) / 10f;
     }
 
     private float nextGameMusicDelay(){
@@ -221,3 +224,4 @@ public class MusicController extends Module{
         return false;
     }
 }
+

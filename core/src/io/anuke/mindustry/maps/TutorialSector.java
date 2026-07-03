@@ -1,6 +1,6 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.CraftingBlocks;
 import io.anuke.mindustry.content.blocks.ProductionBlocks;
@@ -18,9 +18,9 @@ import static io.anuke.mindustry.Vars.*;
 public class TutorialSector{
     private static int droneIndex;
 
-    public static Array<Mission> getMissions(){
+    public static Seq<Mission> getMissions(){
 /*
-        Array<Mission> missions = Array.with(
+        Seq<Mission> missions = Seq.with(
             new ItemMission(Items.copper, 60).setMessage("$tutorial.begin"),
 
             new BlockMission(ProductionBlocks.mechanicalDrill).setMessage("$tutorial.drill"),
@@ -88,7 +88,7 @@ public class TutorialSector{
             }
         }*/
 
-        return Array.with(
+        return Seq.with(
             //intentionally unlocalized
             new ItemMission(Items.copper, 50).setMessage("An updated tutorial will return next build.\nFor now, you'll have to deal with... this."),
 

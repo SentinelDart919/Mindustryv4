@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.power;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
@@ -11,11 +11,11 @@ import io.anuke.mindustry.world.consumers.ConsumeItemFilter;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -43,7 +43,7 @@ public abstract class ItemGenerator extends PowerGenerator{
     @Override
     public void load(){
         super.load();
-        topRegion = Draw.region(name + "-top");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override

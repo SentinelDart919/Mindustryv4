@@ -1,9 +1,9 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.Pool.Poolable;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.ObjectSet;
+import arc.util.pooling.Pool.Poolable;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.bullets.TurretBullets;
@@ -21,14 +21,14 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Pooling;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.util.pooling.Pools;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -80,7 +80,7 @@ public class MassDriver extends Block{
         entity.reload = 1f;
         entity.power.amount = 0f;
 
-        DriverBulletData data = Pooling.obtain(DriverBulletData.class, DriverBulletData::new);
+        DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
         data.from = entity;
         data.to = other;
         int totalUsed = 0;
@@ -119,7 +119,7 @@ public class MassDriver extends Block{
     public void load(){
         super.load();
 
-        turretRegion = Draw.region(name + "-turret");
+        turretRegion = Core.atlas.find(name + "-turret");
     }
 
     @Override
@@ -305,7 +305,7 @@ public class MassDriver extends Block{
                 int amountDropped = Mathf.random(0, data.items[i]);
                 if(amountDropped > 0){
                     float angle = Mathf.range(180f);
-                    Effects.effect(EnvironmentFx.dropItem, Color.WHITE, bullet.x, bullet.y, angle, content.item(i));
+                    Effects.effect(EnvironmentFx.dropItem, Color.white, bullet.x, bullet.y, angle, content.item(i));
                 }
             }
 
@@ -334,3 +334,4 @@ public class MassDriver extends Block{
         }
     }
 }
+

@@ -1,9 +1,11 @@
 package io.anuke.mindustry.entities;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.util.Timers;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.traits.*;
@@ -15,16 +17,16 @@ import io.anuke.mindustry.type.StatusEffect;
 import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.impl.DestructibleEntity;
-import io.anuke.ucore.entities.trait.DamageTrait;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.entities.trait.SolidTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.entities.impl.DestructibleEntity;
+import arc.entities.trait.DamageTrait;
+import arc.entities.trait.DrawTrait;
+import arc.entities.trait.SolidTrait;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -41,8 +43,8 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     /**Maximum absolute value of a velocity vector component.*/
     public static final float maxAbsVelocity = 127f / velocityPercision;
 
-    private static final Rectangle queryRect = new Rectangle();
-    private static final Vector2 moveVector = new Vector2();
+    private static final Rect queryRect = new Rect();
+    private static final Vec2 moveVector = new Vec2();
 
     public final UnitInventory inventory = new UnitInventory(this);
     public float rotation;
@@ -128,7 +130,7 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     }
 
     @Override
-    public Vector2 getVelocity(){
+    public Vec2 getVelocity(){
         return velocity;
     }
 
@@ -199,7 +201,7 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
 
         Units.getNearby(queryRect, t -> {
             if(t == this || t.getCarrier() == this || getCarrier() == t || t.isFlying() != isFlying()) return;
-            float dst = distanceTo(t);
+            float dst = dst(t);
             moveVector.set(x, y).sub(t.getX(), t.getY()).setLength(1f * (1f - (dst / queryRect.getWidth())));
             applyImpulse(moveVector.x, moveVector.y);
         });
@@ -322,14 +324,14 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     }
 
     public void drawStats(){
-        Draw.color(Color.BLACK, team.color, healthf() + Mathf.absin(Timers.time(), healthf()*5f, 1f - healthf()));
+        Draw.color(Color.black, team.color, healthf() + Mathf.absin(Timers.time(), healthf()*5f, 1f - healthf()));
         Draw.alpha(hitTime);
         Draw.rect(getPowerCellRegion(), x, y, rotation - 90);
         Draw.color();
     }
 
     public TextureRegion getPowerCellRegion(){
-        return Draw.region("power-cell");
+        return Core.atlas.find("power-cell");
     }
 
     public void drawAll(){

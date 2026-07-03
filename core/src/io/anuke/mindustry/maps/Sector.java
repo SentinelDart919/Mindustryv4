@@ -1,13 +1,13 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.Array;
+import arc.graphics.Texture;
+import arc.struct.Seq;
 import io.anuke.annotations.Annotations.Serialize;
 import io.anuke.mindustry.game.Saves.SaveSlot;
 import io.anuke.mindustry.game.SpawnGroup;
 import io.anuke.mindustry.maps.missions.*;
 import io.anuke.mindustry.type.ItemStack;
-import io.anuke.ucore.util.Bits;
+import arc.struct.Bits;
 
 import static io.anuke.mindustry.Vars.control;
 import static io.anuke.mindustry.Vars.headless;
@@ -28,13 +28,13 @@ public class Sector{
     /**Display texture. Needs to be disposed.*/
     public transient Texture texture;
     /**Missions of this sector-- what needs to be accomplished to unlock it.*/
-    public transient Array<Mission> missions = new Array<>();
+    public transient Seq<Mission> missions = new Seq<>();
     /**Enemies spawned at this sector.*/
-    public transient Array<SpawnGroup> spawns;
+    public transient Seq<SpawnGroup> spawns;
     /**Difficulty of the sector, measured by calculating distance from origin and applying scaling.*/
     public transient int difficulty;
     /**Items the player starts with on this sector.*/
-    public transient Array<ItemStack> startingItems;
+    public transient Seq<ItemStack> startingItems;
 
     public Mission getDominantMission(){
         for(Mission mission : missions){

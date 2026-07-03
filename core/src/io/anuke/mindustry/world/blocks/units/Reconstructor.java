@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -15,13 +15,13 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -127,7 +127,7 @@ public class Reconstructor extends Block{
     @Override
     public void load(){
         super.load();
-        openRegion = Draw.region(name + "-open");
+        openRegion = Core.atlas.find(name + "-open");
     }
 
     @Override
@@ -205,10 +205,10 @@ public class Reconstructor extends Block{
             Shaders.build.color.set(Palette.accent);
             Shaders.build.time = -entity.time / 10f;
 
-            Graphics.shader(Shaders.build, false);
+            Gfx.shader(Shaders.build, false);
             Shaders.build.apply();
             Draw.rect(region, tile.drawx(), tile.drawy());
-            Graphics.shader();
+            Gfx.shader();
 
             Draw.color(Palette.accent);
 
@@ -353,3 +353,4 @@ public class Reconstructor extends Block{
         }
     }
 }
+

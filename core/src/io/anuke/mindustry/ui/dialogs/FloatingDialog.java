@@ -1,16 +1,16 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.utils.Align;
+import arc.Core;
+import arc.input.KeyCode;
+import arc.util.Align;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.ResizeEvent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.scene.ui.Dialog;
-import io.anuke.ucore.scene.ui.ScrollPane;
+import arc.Core;
+import arc.Events;
+import arc.scene.ui.Dialog;
+import arc.scene.ui.ScrollPane;
 
 import static io.anuke.mindustry.Vars.state;
 
@@ -43,7 +43,7 @@ public class FloatingDialog extends Dialog{
 
         boolean[] done = {false};
 
-        shown(() -> Gdx.app.postRunnable(() ->
+        shown(() -> Core.app.postRunnable(() ->
                 forEach(child -> {
                     if(done[0]) return;
 
@@ -68,8 +68,9 @@ public class FloatingDialog extends Dialog{
 
         keyDown(key -> {
             if(key == Keys.ESCAPE || key == Keys.BACK) {
-                Gdx.app.postRunnable(this::hide);
+                Core.app.postRunnable(this::hide);
             }
         });
     }
 }
+

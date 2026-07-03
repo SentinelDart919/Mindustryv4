@@ -1,10 +1,10 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.utils.Align;
+import arc.input.KeyCode;
+import arc.util.Align;
 import io.anuke.mindustry.graphics.Palette;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.KeybindDialog;
+import arc.scene.ui.Image;
+import arc.scene.ui.KeybindDialog;
 
 public class ControlsDialog extends KeybindDialog{
 
@@ -28,3 +28,4 @@ public class ControlsDialog extends KeybindDialog{
         });
     }
 }
+

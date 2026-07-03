@@ -1,10 +1,10 @@
 package io.anuke.mindustry.world.meta;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.world.BarType;
 
 public class BlockBars{
-    private Array<BlockBar> list = Array.with(new BlockBar(BarType.health, false, tile -> tile.entity.health / (float) tile.block().health));
+    private Seq<BlockBar> list = Seq.with(new BlockBar(BarType.health, false, tile -> tile.entity.health / (float) tile.block().health));
 
     public void add(BlockBar bar){
         list.add(bar);
@@ -18,14 +18,14 @@ public class BlockBars{
     public void remove(BarType type){
         for(BlockBar bar : list){
             if(bar.type == type){
-                list.removeValue(bar, true);
+                list.remove(bar, true);
                 break;
             }
         }
     }
 
     public void removeAll(BarType type){
-        Array<BlockBar> removals = new Array<>(4);
+        Seq<BlockBar> removals = new Seq<>(4);
 
         for(BlockBar bar : list){
             if(bar.type == type){
@@ -36,7 +36,8 @@ public class BlockBars{
         list.removeAll(removals, true);
     }
 
-    public Array<BlockBar> list(){
+    public Seq<BlockBar> list(){
         return list;
     }
 }
+

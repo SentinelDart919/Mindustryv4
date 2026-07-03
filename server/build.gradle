@@ -1,8 +1,4 @@
-apply plugin: "java"
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.main.java.srcDirs = ["src/"]
 
 project.ext.mainClassName = "io.anuke.mindustry.server.ServerLauncher"
 project.ext.assetsDir = new File("../core/assets")
@@ -28,24 +24,28 @@ task debug(dependsOn: classes, type: JavaExec) {
 }
 
 task dist(type: Jar) {
+    dependsOn classes
+
+    writeVersion()
+
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
+    from { configurations.runtimeClasspath.collect { zipTree(it) } }
     from files(project.assetsDir)
 
     writeVersion()
- 
+
     manifest {
         attributes 'Main-Class': project.mainClassName
     }
 }
 
-task deploy(type: Copy){
+task deploy(type: Copy) {
     dependsOn "dist"
-    
+
     from "build/libs/server-release.jar"
     into "../deploy/"
-    rename ("server-release.jar", appName + "-server-" + getVersionString() + ".jar")
+    rename("server-release.jar", appName + "-server-" + getVersionString() + ".jar")
 }
 
 dist.dependsOn classes

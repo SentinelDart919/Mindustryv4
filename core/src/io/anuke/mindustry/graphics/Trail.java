@@ -1,13 +1,14 @@
 package io.anuke.mindustry.graphics;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.FloatArray;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.Color;
+import arc.math.geom.Vec2;
+import arc.struct.FloatSeq;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
+import arc.util.Timers;
 
 /**
  * Class that renders a colored trail.
@@ -15,7 +16,7 @@ import io.anuke.ucore.util.Mathf;
 public class Trail{
     private final static float maxJump = 15f;
     private final int length;
-    private final FloatArray points = new FloatArray();
+    private final FloatSeq points = new FloatSeq();
     private float lastX, lastY;
 
     public Trail(int length){
@@ -23,7 +24,7 @@ public class Trail{
     }
 
     public void update(float curx, float cury){
-        if(Vector2.dst(curx, cury, lastX, lastY) >= maxJump){
+        if(Mathf.dst(curx, cury, lastX, lastY) >= maxJump){
             points.clear();
         }
 

@@ -1,7 +1,9 @@
 package io.anuke.mindustry.maps.missions;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.Array;
+import arc.math.geom.Point2;
+import arc.struct.Seq;
+import arc.util.Bundles;
+import arc.util.Timers;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.SpawnGroup;
@@ -9,9 +11,9 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.maps.generation.Generation;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Time;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -99,12 +101,12 @@ public abstract class Mission{
         table.add(displayString());
     }
 
-    public Array<SpawnGroup> getWaves(Sector sector){
-        return new Array<>();
+    public Seq<SpawnGroup> getWaves(Sector sector){
+        return new Seq<>();
     }
 
-    public Array<GridPoint2> getSpawnPoints(Generation gen){
-        return Array.with();
+    public Seq<Point2> getSpawnPoints(Generation gen){
+        return Seq.with();
     }
 
     public void generate(Generation gen){}

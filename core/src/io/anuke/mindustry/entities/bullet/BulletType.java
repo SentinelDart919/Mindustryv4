@@ -1,4 +1,5 @@
 package io.anuke.mindustry.entities.bullet;
+import arc.util.Translator;
 
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.fx.BulletFx;
@@ -6,10 +7,10 @@ import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.StatusEffect;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.entities.impl.BaseBulletType;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.entities.impl.BaseBulletType;
+import arc.math.geom.Vec2;
 
 public abstract class BulletType extends Content implements BaseBulletType<Bullet>{
     public float lifetime;

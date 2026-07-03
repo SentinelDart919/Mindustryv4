@@ -1,7 +1,10 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.audio.Sound;
+import arc.graphics.Gfx;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -25,13 +28,13 @@ import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.mindustry.world.meta.BlockGroup;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import java.util.EnumSet;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -125,15 +128,15 @@ public class CoreBlock extends StorageBlock{
     public void load(){
         super.load();
 
-        openRegion = Draw.region(name + "-open");
-        topRegion = Draw.region(name + "-top");
+        openRegion = Core.atlas.find(name + "-open");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
     public void draw(Tile tile){
         CoreEntity entity = tile.entity();
 
-        Draw.rect(entity.solid ? Draw.region(name) : openRegion, tile.drawx(), tile.drawy());
+        Draw.rect(entity.solid ? Core.atlas.find(name) : openRegion, tile.drawx(), tile.drawy());
 
         Draw.alpha(entity.heat);
         Draw.rect(topRegion, tile.drawx(), tile.drawy());
@@ -149,10 +152,10 @@ public class CoreBlock extends StorageBlock{
             Shaders.build.color.set(Palette.accent);
             Shaders.build.time = -entity.time / 10f;
 
-            Graphics.shader(Shaders.build, false);
+            Gfx.shader(Shaders.build, false);
             Shaders.build.apply();
             Draw.rect(region, tile.drawx(), tile.drawy());
-            Graphics.shader();
+            Gfx.shader();
 
             Draw.color(Palette.accent);
 
@@ -276,3 +279,4 @@ public class CoreBlock extends StorageBlock{
         }
     }
 }
+

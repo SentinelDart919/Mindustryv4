@@ -1,15 +1,17 @@
 package io.anuke.mindustry.type;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Bundles;
 import io.anuke.mindustry.content.Weapons;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.ui.ContentDisplay;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 public class Mech extends UnlockableContent{
     public final String name;
@@ -97,12 +99,12 @@ public class Mech extends UnlockableContent{
     @Override
     public void load(){
         if(!flying){
-            legRegion = Draw.region(name + "-leg");
-            baseRegion = Draw.region(name + "-base");
+            legRegion = Core.atlas.find(name + "-leg");
+            baseRegion = Core.atlas.find(name + "-base");
         }
 
-        region = Draw.region(name);
-        iconRegion = Draw.region("mech-icon-" + name);
+        region = Core.atlas.find(name);
+        iconRegion = Core.atlas.find("mech-icon-" + name);
     }
 
     @Override

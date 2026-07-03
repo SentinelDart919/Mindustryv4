@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -9,8 +9,8 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.SelectionTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -57,7 +57,7 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
 
         SortedUnloaderEntity entity = tile.entity();
 
-        Draw.color(entity.sortItem == null ? Color.WHITE : entity.sortItem.color);
+        Draw.color(entity.sortItem == null ? Color.white : entity.sortItem.color);
         Draw.rect("blank", tile.worldx(), tile.worldy(), 2f, 2f);
         Draw.color();
     }

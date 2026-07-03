@@ -1,18 +1,18 @@
 package io.anuke.mindustry.world.consumers;
 
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Block;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.ThreadArray;
+import arc.func.Cons;
+import arc.struct.Seq;
 
 public class Consumers{
     private ObjectMap<Class<? extends Consume>, Consume> map = new ObjectMap<>();
     private ObjectSet<Class<? extends Consume>> required = new ObjectSet<>();
-    private ThreadArray<Consume> results = new ThreadArray<>();
+    private Seq<Consume> results = new Seq<>();
 
     public void require(Class<? extends Consume> type){
         required.add(type);
@@ -21,7 +21,7 @@ public class Consumers{
     public void checkRequired(Block block){
         for(Class<? extends Consume> c : required){
             if(!map.containsKey(c)){
-                throw new RuntimeException("Missing required consumer of type \"" + c + "\" in block \"" + block.name + "\"!");
+                throw new RuntimeException("Missing required Cons of type \"" + c + "\" in block \"" + block.name + "\"!");
             }
         }
 
@@ -89,7 +89,7 @@ public class Consumers{
 
     public <T extends Consume> T get(Class<T> type){
         if(!map.containsKey(type)){
-            throw new IllegalArgumentException("Block does not contain consumer of type '" + type + "'!");
+            throw new IllegalArgumentException("Block does not contain Cons of type '" + type + "'!");
         }
         return (T) map.get(type);
     }
@@ -98,7 +98,7 @@ public class Consumers{
         return map.values();
     }
 
-    public ThreadArray<Consume> array(){
+    public Seq<Consume> array(){
         return results;
     }
 
@@ -106,9 +106,9 @@ public class Consumers{
         return map.size > 0;
     }
 
-    public void forEach(Consumer<Consume> cons){
+    public void forEach(Cons<Consume> cons){
         for(Consume c : all()){
-            cons.accept(c);
+            cons.get(c);
         }
     }
 }

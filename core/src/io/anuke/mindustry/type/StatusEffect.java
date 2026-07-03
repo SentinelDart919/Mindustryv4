@@ -1,7 +1,7 @@
 package io.anuke.mindustry.type;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.graphics.Color;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.entities.StatusController.StatusEntry;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.game.Content;
@@ -13,7 +13,7 @@ public class StatusEffect extends Content{
     public float damageMultiplier = 1f; //damage dealt
     public float armorMultiplier = 1f; //armor points
     public float speedMultiplier = 1f; //speed
-    public Color color = Color.WHITE.cpy(); //tint color
+    public Color color = Color.white; //tint color
 
     /**Set of 'opposite' effects, which will decrease the duration of this effect when applied.*/
     protected ObjectSet<StatusEffect> opposites = new ObjectSet<>();

@@ -1,6 +1,6 @@
 package io.anuke.kryonet;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import com.dosse.upnp.UPnP;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.FrameworkMessage;
@@ -16,8 +16,8 @@ import io.anuke.mindustry.net.Packets.Connect;
 import io.anuke.mindustry.net.Packets.Disconnect;
 import io.anuke.mindustry.net.Packets.StreamBegin;
 import io.anuke.mindustry.net.Packets.StreamChunk;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Log;
+import arc.util.Time;
+import arc.util.Log;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 
@@ -33,7 +33,7 @@ public class KryoServer implements ServerProvider {
     final Server server;
     final CopyOnWriteArrayList<KryoConnection> connections = new CopyOnWriteArrayList<>();
     final CopyOnWriteArraySet<Integer> missing = new CopyOnWriteArraySet<>();
-    final Array<KryoConnection> array = new Array<>();
+    final Seq<KryoConnection> array = new Seq<>();
     final LZ4Compressor compressor = LZ4Factory.fastestInstance().fastCompressor();
     Thread serverThread;
 
@@ -112,7 +112,7 @@ public class KryoServer implements ServerProvider {
     }
 
     @Override
-    public Array<KryoConnection> getConnections() {
+    public Seq<KryoConnection> getConnections() {
         array.clear();
         for(KryoConnection c : connections){
             array.add(c);

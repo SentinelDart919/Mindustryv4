@@ -1,11 +1,12 @@
 package io.anuke.mindustry.server;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.Timer.Task;
+import arc.modules.Module;
+import arc.Core;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
+import arc.util.Timer;
+import arc.util.Timer.Task;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.game.Difficulty;
@@ -23,14 +24,14 @@ import io.anuke.mindustry.net.Packets.KickReason;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.*;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.CommandHandler;
-import io.anuke.ucore.util.CommandHandler.Command;
-import io.anuke.ucore.util.CommandHandler.Response;
-import io.anuke.ucore.util.CommandHandler.ResponseType;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.*;
+import arc.ApplicationListener;
+import arc.util.CommandHandler;
+import arc.util.CommandHandler.Command;
+import arc.util.CommandHandler.Response;
+import arc.util.CommandHandler.ResponseType;
+import arc.util.Log;
+import arc.util.Strings;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -38,7 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 import static io.anuke.mindustry.Vars.*;
-import static io.anuke.ucore.util.Log.*;
+import static arc.util.Log.*;
 
 public class ServerControl extends Module{
     private static final int roundExtraTime = 12;
@@ -46,9 +47,9 @@ public class ServerControl extends Module{
     private static final int maxLogLength = 1024 * 512;
 
     private final CommandHandler handler = new CommandHandler("");
-    private final FileHandle logFolder = Gdx.files.local("logs/");
+    private final Fi logFolder = Core.files.local("logs/");
 
-    private FileHandle currentLogFile;
+    private Fi currentLogFile;
     private int gameOvers;
     private boolean inExtraRound;
     private Task lastTask;
@@ -96,14 +97,14 @@ public class ServerControl extends Module{
             }
         });
 
-        Timers.setDeltaProvider(() -> Gdx.graphics.getDeltaTime() * 60f);
+        Timers.setDeltaProvider(() -> Core.graphics.getDeltaTime() * 60f);
         Effects.setScreenShakeProvider((a, b) -> {});
         Effects.setEffectProvider((a, b, c, d, e, f) -> {});
         Sounds.setHeadless(true);
 
         registerCommands();
 
-        Gdx.app.postRunnable(() -> {
+        Core.app.postRunnable(() -> {
             String[] commands = {};
 
             if(args.length > 0){
@@ -151,7 +152,7 @@ public class ServerControl extends Module{
             if(Settings.getBool("shuffle")){
                 if(world.getSector() == null){
                     if(world.maps.all().size > 0){
-                        Array<Map> maps = world.maps.customMaps().size == 0 ? world.maps.defaultMaps() : world.maps.customMaps();
+                        Seq<Map> maps = world.maps.customMaps().size == 0 ? world.maps.defaultMaps() : world.maps.customMaps();
 
                         Map previous = world.getMap();
                         Map map = previous;
@@ -209,7 +210,7 @@ public class ServerControl extends Module{
         handler.register("exit", "Exit the server application.", arg -> {
             info("Shutting down server.");
             Net.dispose();
-            Gdx.app.exit();
+            Core.app.exit();
         });
 
         handler.register("stop", "Stop hosting the server.", arg -> {
@@ -306,7 +307,7 @@ public class ServerControl extends Module{
                 }
 
                 info("  &ly{0} FPS.", (int) (60f / Timers.delta()));
-                info("  &ly{0} MB used.", Gdx.app.getJavaHeap() / 1024 / 1024);
+                info("  &ly{0} MB used.", Core.app.getJavaHeap() / 1024 / 1024);
 
                 if(playerGroup.size() > 0){
                     info("  &lyPlayers: {0}", playerGroup.size());
@@ -469,7 +470,7 @@ public class ServerControl extends Module{
         });
 
         handler.register("bans", "List all banned IPs and IDs.", arg -> {
-            Array<PlayerInfo> bans = netServer.admins.getBanned();
+            Seq<PlayerInfo> bans = netServer.admins.getBanned();
 
             if(bans.size == 0){
                 info("No ID-banned players have been found.");
@@ -480,7 +481,7 @@ public class ServerControl extends Module{
                 }
             }
 
-            Array<String> ipbans = netServer.admins.getBannedIPs();
+            Seq<String> ipbans = netServer.admins.getBannedIPs();
 
             if(ipbans.size == 0){
                 info("No IP-banned players have been found.");
@@ -548,7 +549,7 @@ public class ServerControl extends Module{
         });
 
         handler.register("admins", "List all admins.", arg -> {
-            Array<PlayerInfo> admins = netServer.admins.getAdmins();
+            Seq<PlayerInfo> admins = netServer.admins.getAdmins();
 
             if(admins.size == 0){
                 info("No admins have been found.");
@@ -627,7 +628,7 @@ public class ServerControl extends Module{
                 Tile tile = world.tile(x, y);
                 if(tile != null){
                     if(tile.entity != null){
-                        Array<Object> arr = tile.block().getDebugInfo(tile);
+                        Seq<Object> arr = tile.block().getDebugInfo(tile);
                         StringBuilder result = new StringBuilder();
                         for(int i = 0; i < arr.size / 2; i++){
                             result.append(arr.get(i * 2));
@@ -675,7 +676,7 @@ public class ServerControl extends Module{
         while(scan.hasNext()){
             String line = scan.nextLine();
 
-            Gdx.app.postRunnable(() -> {
+            Core.app.postRunnable(() -> {
                 Response response = handler.handleMessage(line);
 
                 if(response.type == ResponseType.unknownCommand){
@@ -726,7 +727,7 @@ public class ServerControl extends Module{
         inExtraRound = true;
         Runnable r = () -> {
 
-            Array<Player> players = new Array<>();
+            Seq<Player> players = new Seq<>();
             for(Player p : playerGroup.all()){
                 players.add(p);
                 p.setDead(true);

@@ -1,8 +1,4 @@
-apply plugin: "java"
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.main.java.srcDirs = ["src/"]
 
 project.ext.mainClassName = "io.anuke.mindustry.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../core/assets")
@@ -34,7 +30,7 @@ task run(dependsOn: classes, type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
-    if(System.getProperty("os.name").toLowerCase().contains("mac")){
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
         jvmArgs "-XstartOnFirstThread"
     }
     ignoreExitValue = true
@@ -42,7 +38,7 @@ task run(dependsOn: classes, type: JavaExec) {
         args Eval.me(project.getProperties()["args"])
     }
 
-    if(args.contains("debug")){
+    if (args.contains("debug")) {
         main = "io.anuke.mindustry.DebugLauncher"
     }
 }
@@ -58,12 +54,12 @@ task debug(dependsOn: classes, type: JavaExec) {
 
 task dist(type: Jar) {
     dependsOn classes
-    
+
     writeVersion()
 
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
+    from { configurations.runtimeClasspath.collect { zipTree(it) } }
     from files(project.assetsDir)
 
     manifest {
@@ -71,24 +67,20 @@ task dist(type: Jar) {
     }
 }
 
-task clearOut(type: Delete){
+task clearOut(type: Delete) {
     doLast {
         delete "packr-out/"
     }
 }
 
-//note: call desktop:dist beforehand
 task packrCmd() {
-
     doLast {
-
         copy {
             into PACKR_DIR
             from "build/libs/desktop-release.jar"
         }
 
         exec {
-
             commandLine("java", "-jar", PACKR_DIR + "packr.jar",
                     "--verbose",
                     "--bundle", getPackage() + ".mac",
@@ -105,28 +97,28 @@ task packrCmd() {
     }
 }
 
-task fixMac (type: Copy){
+task fixMac(type: Copy) {
     dependsOn "packrCmd"
 
     into "packr-out/" + appName + ".app/Contents/"
     from "packr-out/Contents/"
 
-    doLast{
-        delete{
+    doLast {
+        delete {
             delete "packr-out/Contents/"
         }
     }
 }
 
-task fixWindows32 (type: Copy){
+task fixWindows32(type: Copy) {
     dependsOn "packrCmd"
 
     into "packr-out/jre/bin/"
     from PACKR_DIR + "zip.dll"
-    rename ("zip.dll", "ojdkbuild_zlib.dll")
+    rename("zip.dll", "ojdkbuild_zlib.dll")
 
-    doLast{
-        copy{
+    doLast {
+        copy {
             into "packr-out/jre/bin/"
             from PACKR_DIR + "zip.dll"
         }
@@ -137,8 +129,7 @@ task packrZip() {
     dependsOn "packrCmd"
     finalizedBy "clearOut"
 
-    if(project.hasProperty("platform")) {
-
+    if (project.hasProperty("platform")) {
         if (getPlatform() == "mac") {
             dependsOn "fixMac"
         }
@@ -147,7 +138,7 @@ task packrZip() {
             dependsOn "fixWindows32"
         }
 
-        task zip (type: Zip){
+        task zip(type: Zip) {
             from "packr-out/"
             archiveName "$appName-${getPlatform()}-${getVersionString()}.zip"
             destinationDir(file("packr-export"))

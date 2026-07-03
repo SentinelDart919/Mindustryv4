@@ -1,6 +1,6 @@
 package io.anuke.mindustry.content.bullets;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.entities.bullet.BasicBulletType;
 import io.anuke.mindustry.entities.bullet.Bullet;
@@ -9,7 +9,7 @@ import io.anuke.mindustry.entities.bullet.FlakBulletType;
 import io.anuke.mindustry.entities.effect.Lightning;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.util.Mathf;
+import arc.math.Mathf;
 
 public class FlakBullets extends BulletList implements ContentList{
     public static BulletType scrap, lead, obsidian, plastic, explosive, surge,
@@ -46,7 +46,7 @@ public class FlakBullets extends BulletList implements ContentList{
             fragBullet = StandardBullets.obsidianFrag;
             fragBullets = 6;
             backColor = Palette.lightishGray;
-            frontColor = Color.LIGHT_GRAY;
+            frontColor = Color.lightGray;
         }};
 
         plastic = new FlakBulletType(4f, 5){

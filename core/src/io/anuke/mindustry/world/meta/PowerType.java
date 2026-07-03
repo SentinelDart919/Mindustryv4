@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.meta;
 
 public enum PowerType{
-    consumer,
+    Cons,
     producer,
     bridge
 }

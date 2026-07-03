@@ -1,6 +1,6 @@
 package io.anuke.mindustry.ai;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.Squad;
@@ -13,27 +13,28 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Waves;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.util.GridBits;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Structs;
+import arc.Events;
+import arc.struct.IntSet;
+import arc.math.Mathf;
+import arc.util.Structs;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
+import arc.struct.GridBits;
 
 public class WaveSpawner{
     private static final int quadsize = 4;
 
     private GridBits quadrants;
 
-    private Array<SpawnGroup> groups;
+    private Seq<SpawnGroup> groups;
     private boolean dynamicSpawn;
 
-    private Array<FlyerSpawn> flySpawns = new Array<>();
-    private Array<GroundSpawn> groundSpawns = new Array<>();
+    private Seq<FlyerSpawn> flySpawns = new Seq<>();
+    private Seq<GroundSpawn> groundSpawns = new Seq<>();
 
     public WaveSpawner(){
         Events.on(WorldLoadEvent.class, this::reset);
@@ -158,7 +159,7 @@ public class WaveSpawner{
     }
 
     private void spawnSiegeModeEnemies(){
-        Array<UnitType> picked = pickExtraSurvivalUnits();
+        Seq<UnitType> picked = pickExtraSurvivalUnits();
         if(picked.size == 0){
             return;
         }
@@ -230,12 +231,12 @@ public class WaveSpawner{
         }
     }
 
-    private Array<UnitType> pickExtraSurvivalUnits(){
-        Array<UnitType> result = new Array<>();
+    private Seq<UnitType> pickExtraSurvivalUnits(){
+        Seq<UnitType> result = new Seq<>();
         int funds = WaveExtraMission.displayedFunds;
 
         while(funds > 0){
-            Array<UnitType> affordable = new Array<>();
+            Seq<UnitType> affordable = new Seq<>();
             int cheapest = Integer.MAX_VALUE;
 
             for(UnitType type : content.<UnitType>getBy(ContentType.unit)){
@@ -375,3 +376,5 @@ public class WaveSpawner{
         int x, y;
     }
 }
+
+

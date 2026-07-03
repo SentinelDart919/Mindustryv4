@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.sounds.Sounds;
@@ -14,9 +14,9 @@ import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
 import io.anuke.mindustry.graphics.Layer;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -57,11 +57,11 @@ public class StackConveyor extends Block implements Autotiler{
     @Override
     public void load(){
         super.load();
-        baseRegion = Draw.region(name + "-0", Draw.region("clear"));
+        baseRegion = Core.atlas.find(name + "-0", Core.atlas.find("clear"));
         for(int i = 0; i < regions.length; i++){
-            regions[i] = Draw.region(name + "-" + i, baseRegion);
+            regions[i] = Core.atlas.find(name + "-" + i, baseRegion);
         }
-        stackRegion = Draw.region(name + "-stack", Draw.region("clear"));
+        stackRegion = Core.atlas.find(name + "-stack", Core.atlas.find("clear"));
     }
 
     @Override

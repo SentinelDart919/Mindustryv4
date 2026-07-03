@@ -1,9 +1,11 @@
 package io.anuke.mindustry;
+import arc.util.Translator;
 
-import com.badlogic.gdx.Application.ApplicationType;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
+import arc.Application;
+import arc.Application.ApplicationType;
+import arc.Core;
+import arc.files.Fi;
+import arc.graphics.Color;
 import io.anuke.mindustry.core.*;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
@@ -18,13 +20,13 @@ import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.gen.Serialization;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.blocks.defense.ForceProjector.ShieldEntity;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.EffectEntity;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Translator;
+import arc.Settings;
+import arc.entities.Entities;
+import arc.entities.EntityGroup;
+import arc.entities.impl.EffectEntity;
+import arc.entities.trait.DrawTrait;
+import arc.scene.ui.layout.Scl;
+import arc.math.geom.Vec2;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -81,15 +83,15 @@ public class Vars{
     public static boolean ios;
     public static boolean android;
     //main data directory
-    public static FileHandle dataDirectory;
+    public static Fi dataDirectory;
     //subdirectory for screenshots
-    public static FileHandle screenshotDirectory;
+    public static Fi screenshotDirectory;
     //directory for user-created map data
-    public static FileHandle customMapDirectory;
+    public static Fi customMapDirectory;
     //directory for schematics
-    public static FileHandle schematicDirectory;
+    public static Fi schematicDirectory;
     //save file directory
-    public static FileHandle saveDirectory;
+    public static Fi saveDirectory;
     public static String mapExtension = "mmap";
     public static String saveExtension = "msav";
     //camera zoom displayed on startup
@@ -137,7 +139,7 @@ public class Vars{
         Serialization.init();
 
         //load locales
-        String[] stra = Gdx.files.internal("locales").readString().split("\n");
+        String[] stra = Core.files.internal("locales").readString().split("\n");
         locales = new Locale[stra.length];
         for(int i = 0; i < locales.length; i++){
             String code = stra[i];
@@ -180,16 +182,16 @@ public class Vars{
         threads = new ThreadHandler();
         infection = new InfectionManager();
 
-        mobile = Gdx.app.getType() == ApplicationType.Android || Gdx.app.getType() == ApplicationType.iOS || testMobile;
-        ios = Gdx.app.getType() == ApplicationType.iOS;
-        android = Gdx.app.getType() == ApplicationType.Android;
+        mobile = Core.app.getType() == Application.ApplicationType.android || Core.app.getType() == Application.ApplicationType.iOS || testMobile;
+        ios = Core.app.getType() == Application.ApplicationType.iOS;
+        android = Core.app.getType() == Application.ApplicationType.android;
 
-        dataDirectory = Settings.getDataDirectory(appName);
+        dataDirectory = Core.settings.getDataDirectory();
         screenshotDirectory = dataDirectory.child("screenshots/");
         customMapDirectory = dataDirectory.child("maps/");
         schematicDirectory = dataDirectory.child("schematics/");
         saveDirectory = dataDirectory.child("saves/");
-        baseCameraScale = Math.round(Unit.dp.scl(4));
+        baseCameraScale = Math.round(Scl.scl(4));
 
         schematics = new Schematics();
     }

@@ -9,9 +9,9 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.SelectionTrait;
 import io.anuke.mindustry.world.meta.BlockGroup;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
 import io.anuke.mindustry.gen.Call;
 
 import java.io.DataInput;

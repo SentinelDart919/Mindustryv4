@@ -1,6 +1,6 @@
 package io.anuke.mindustry.io.versions;
 
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.util.Time;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
@@ -63,7 +63,7 @@ public class Save17 extends SaveFileVersion{
     public void write(DataOutputStream stream) throws IOException{
         //--META--
         stream.writeInt(version); //version id
-        stream.writeLong(TimeUtils.millis()); //last saved
+        stream.writeLong(Time.millis()); //last saved
         stream.writeLong(headless ? 0 : control.saves.getTotalPlaytime()); //playtime
         stream.writeInt(Version.build); //build
         stream.writeInt(world.getSector() == null ? invalidSector : world.getSector().packedPosition()); //sector ID

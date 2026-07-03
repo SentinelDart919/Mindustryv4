@@ -1,7 +1,7 @@
 package io.anuke.mindustry.sounds;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.audio.Sound;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.type.ContentType;
@@ -14,80 +14,74 @@ import io.anuke.mindustry.world.blocks.units.UnitFactory;
 import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 
 public class Sounds{
+
+    public interface SoundPlayer{
+        void play(Sound sound, float volume);
+    }
     private static final ObjectMap<String, Sound> all = new ObjectMap<>();
 
     public static final Sound none = new Sound(){
         @Override
-        public long play(){
-            return 0L;
+        public int play(){
+            return 0;
         }
 
         @Override
-        public long play(float volume){
-            return 0L;
+        public int play(float volume){
+            return 0;
         }
 
         @Override
-        public long play(float volume, float pitch, float pan){
-            return 0L;
+        public int play(float volume, float pitch, float pan){
+            return 0;
         }
 
         @Override
-        public long loop(){
-            return 0L;
+        public int loop(){
+            return 0;
         }
 
         @Override
-        public long loop(float volume){
-            return 0L;
+        public int loop(float volume){
+            return 0;
         }
 
         @Override
-        public long loop(float volume, float pitch, float pan){
-            return 0L;
+        public int loop(float volume, float pitch, float pan){
+            return 0;
         }
 
-        @Override
         public void stop(){
-        }
-
-        @Override
-        public void pause(){
-        }
-
-        @Override
-        public void resume(){
         }
 
         @Override
         public void dispose(){
         }
 
-        @Override
+        public void pause(){
+        }
+
+        public void resume(){
+        }
+
         public void stop(long soundId){
         }
 
-        @Override
         public void pause(long soundId){
         }
 
-        @Override
         public void resume(long soundId){
         }
 
-        @Override
         public void setLooping(long soundId, boolean looping){
         }
 
-        @Override
         public void setPitch(long soundId, float pitch){
         }
 
-        @Override
         public void setVolume(long soundId, float volume){
         }
 
-        @Override
         public void setPan(long soundId, float pan, float volume){
         }
     };
@@ -144,6 +138,17 @@ public class Sounds{
     public static Sound blockPlace;
     public static Sound unitCreate;
     public static Sound unitCreateBig;
+
+    private static float falloff = 1000f;
+    private static SoundPlayer player = (sound, volume) -> sound.play(volume);
+
+    public static void setFalloff(float f){
+        falloff = f;
+    }
+
+    public static void setPlayer(SoundPlayer p){
+        player = p;
+    }
 
     public static void init(){
         if(Vars.headless || Vars.soundController == null) return;
@@ -359,79 +364,69 @@ public class Sounds{
     private static Sound randomGroup(String group){
         return new Sound(){
             @Override
-            public long play(){
-                return Vars.soundController == null ? -1L : Vars.soundController.playRandom(group);
+            public int play(){
+                return Vars.soundController == null ? -1 : (int)Vars.soundController.playRandom(group);
             }
 
             @Override
-            public long play(float volume){
-                return Vars.soundController == null ? -1L : Vars.soundController.playRandom(group, volume);
+            public int play(float volume){
+                return Vars.soundController == null ? -1 : (int)Vars.soundController.playRandom(group, volume);
             }
 
             @Override
-            public long play(float volume, float pitch, float pan){
-                return Vars.soundController == null ? -1L : Vars.soundController.playRandom(group, volume, pitch, pan);
+            public int play(float volume, float pitch, float pan){
+                return Vars.soundController == null ? -1 : (int)Vars.soundController.playRandom(group, volume, pitch, pan);
             }
 
             @Override
-            public long loop(){
+            public int loop(){
                 Sound sound = Vars.soundController == null ? null : Vars.soundController.random(group);
-                return sound == null ? -1L : sound.loop();
+                return sound == null ? -1 : sound.loop();
             }
 
             @Override
-            public long loop(float volume){
+            public int loop(float volume){
                 Sound sound = Vars.soundController == null ? null : Vars.soundController.random(group);
-                return sound == null ? -1L : sound.loop(volume);
+                return sound == null ? -1 : sound.loop(volume);
             }
 
             @Override
-            public long loop(float volume, float pitch, float pan){
+            public int loop(float volume, float pitch, float pan){
                 Sound sound = Vars.soundController == null ? null : Vars.soundController.random(group);
-                return sound == null ? -1L : sound.loop(volume, pitch, pan);
+                return sound == null ? -1 : sound.loop(volume, pitch, pan);
             }
 
-            @Override
             public void stop(){
-            }
-
-            @Override
-            public void pause(){
-            }
-
-            @Override
-            public void resume(){
             }
 
             @Override
             public void dispose(){
             }
 
-            @Override
+            public void pause(){
+            }
+
+            public void resume(){
+            }
+
             public void stop(long soundId){
             }
 
-            @Override
             public void pause(long soundId){
             }
 
-            @Override
             public void resume(long soundId){
             }
 
-            @Override
             public void setLooping(long soundId, boolean looping){
             }
 
-            @Override
             public void setPitch(long soundId, float pitch){
             }
 
-            @Override
             public void setVolume(long soundId, float volume){
             }
 
-            @Override
             public void setPan(long soundId, float pan, float volume){
             }
         };

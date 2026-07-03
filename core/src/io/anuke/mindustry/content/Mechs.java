@@ -1,8 +1,10 @@
 package io.anuke.mindustry.content;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
+import arc.graphics.Color;
+import arc.graphics.Gfx;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
+import arc.util.Timers;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.content.fx.UnitFx;
 import io.anuke.mindustry.entities.Player;
@@ -17,14 +19,14 @@ import io.anuke.mindustry.maps.TutorialSector;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Mech;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Shapes;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.Effects;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Shapes;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.unitGroups;
 
@@ -112,7 +114,7 @@ public class Mechs implements ContentList{
             float healRange = 90f;
             float healAmount = 0.3f;
             float healReload = 160f;
-            Rectangle rect = new Rectangle();
+            Rect rect = new Rect();
             boolean wasHealed;
             TextureRegion turretRegion;
 
@@ -137,7 +139,7 @@ public class Mechs implements ContentList{
             @Override
             public void load(){
                 super.load();
-                turretRegion = Draw.region("repair-point-turret");
+                turretRegion = Core.atlas.find("repair-point-turret");
             }
 
             @Override
@@ -148,7 +150,7 @@ public class Mechs implements ContentList{
 
                     rect.setSize(healRange*2f).setCenter(player.x, player.y);
                     Units.getNearby(player.getTeam(), rect, unit -> {
-                        if(unit.distanceTo(player) <= healRange){
+                        if(unit.dst(player) <= healRange){
                             if(unit.health < unit.maxHealth()){
                                 Effects.effect(UnitFx.heal, unit);
                                 wasHealed = true;
@@ -162,7 +164,7 @@ public class Mechs implements ContentList{
                     }
                 }
 
-                if(player.healTarget != null && (player.healTarget.isDead() || player.distanceTo(player.healTarget) > healRange ||
+                if(player.healTarget != null && (player.healTarget.isDead() || player.dst(player.healTarget) > healRange ||
                         player.healTarget.health >= player.healTarget.maxHealth())){
                     player.healTarget = null;
                 }else if(player.healTarget != null){
@@ -241,7 +243,7 @@ public class Mechs implements ContentList{
             @Override
             public void load(){
                 super.load();
-                armorRegion = Draw.region(name + "-armor");
+                armorRegion = Core.atlas.find(name + "-armor");
             }
 
             @Override
@@ -259,15 +261,15 @@ public class Mechs implements ContentList{
             public void draw(Player player){
                 if(player.shootHeat <= 0.01f) return;
 
-                float alpha = Core.batch.getColor().a;
+                float alpha = Draw.getColor().a;
                 Shaders.build.progress = player.shootHeat;
                 Shaders.build.region = armorRegion;
                 Shaders.build.time = Timers.time() / 10f;
                 Shaders.build.color.set(Palette.accent).a = player.shootHeat;
-                Graphics.shader(Shaders.build);
+                Gfx.shader(Shaders.build);
                 Draw.alpha(1f);
                 Draw.rect(armorRegion, player.snappedX(), player.snappedY(), player.rotation);
-                Graphics.shader(Shaders.mix);
+                Gfx.shader(Shaders.mix);
                 Draw.color(1f, 1f, 1f, alpha);
             }
         };
@@ -303,7 +305,7 @@ public class Mechs implements ContentList{
             @Override
             public void load(){
                 super.load();
-                shield = Draw.region(name + "-shield");
+                shield = Core.atlas.find(name + "-shield");
             }
 
             @Override
@@ -325,14 +327,14 @@ public class Mechs implements ContentList{
             public void draw(Player player){
                 float scl = scld(player);
                 if(scl < 0.01f) return;
-                float alpha = Core.batch.getColor().a;
-                Graphics.shader();
-                Graphics.setAdditiveBlending();
+                float alpha = Draw.getColor().a;
+                Gfx.shader();
+                Gfx.setAdditiveBlending();
                 Draw.color(Palette.lancerLaser);
                 Draw.alpha(scl/2f);
                 Draw.rect(shield, player.snappedX() + Mathf.range(scl/2f), player.snappedY() + Mathf.range(scl/2f), player.rotation - 90);
-                Graphics.setNormalBlending();
-                Graphics.shader(Shaders.mix);
+                Gfx.setNormalBlending();
+                Gfx.shader(Shaders.mix);
                 Draw.color();
                 Draw.alpha(alpha);
             }
@@ -386,3 +388,4 @@ public class Mechs implements ContentList{
         return ContentType.mech;
     }
 }
+

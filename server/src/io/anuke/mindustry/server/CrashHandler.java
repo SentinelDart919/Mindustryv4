@@ -1,14 +1,14 @@
 package io.anuke.mindustry.server;
 
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
-import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import arc.util.serialization.JsonValue;
+import arc.util.serialization.JsonValue.ValueType;
+import arc.util.serialization.JsonWriter.OutputType;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.OS;
+import arc.Settings;
+import arc.util.Log;
+import arc.util.OS;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

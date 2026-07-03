@@ -1,6 +1,10 @@
 package io.anuke.mindustry.entities.units;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.util.Translator;
 
-import com.badlogic.gdx.math.Vector2;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
@@ -13,9 +17,9 @@ import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.*;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.util.*;
 
 import static io.anuke.mindustry.Vars.world;
 
@@ -62,7 +66,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             if(health < maxHealth() * 0.5f){
                 Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
                 Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != FlyingUnit.this);
-                if(repair != null && distanceTo(repair) < getType().healRange){
+                if(repair != null && dst(repair) < getType().healRange){
                     setState(retreat);
                     return;
                 }else if(healer != null){
@@ -89,9 +93,9 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                 attack(type.attackLength);
 
                 if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity) //bombers and such don't care about rotation
-                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
+                        && dst(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
                     getWeapon().update(FlyingUnit.this, to.x, to.y);
                 }
             } else {
@@ -124,16 +128,16 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
     pursue = new UnitState(){
         public void update(){
-            if(Units.invalidateTarget(target, team, x, y) || distanceTo(target) > getType().pursueRange){
+            if(Units.invalidateTarget(target, team, x, y) || dst(target) > getType().pursueRange){
                 target = null;
                 onCommand(getCommand());
             }else{
                 attack(type.attackLength);
 
                 if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)
-                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
+                        && dst(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
                     getWeapon().update(FlyingUnit.this, to.x, to.y);
                 }
             }
@@ -224,9 +228,9 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                 targetClosest();
             }
             if(target != null && !Units.invalidateTarget(target, team, x, y)
-            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+            && dst(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
                 AmmoType ammo = getWeapon().getAmmo();
-                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                Vec2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
                 getWeapon().update(FlyingUnit.this, to.x, to.y);
             }
 
@@ -248,9 +252,9 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             }
 
             if(target != null && !Units.invalidateTarget(target, team, x, y)
-            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+            && dst(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
                 AmmoType ammo = getWeapon().getAmmo();
-                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                Vec2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
                 getWeapon().update(FlyingUnit.this, to.x, to.y);
             }
 
@@ -274,9 +278,9 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             }
 
             if(target != null && !Units.invalidateTarget(target, team, x, y)
-            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+            && dst(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
                 AmmoType ammo = getWeapon().getAmmo();
-                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                Vec2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
                 getWeapon().update(FlyingUnit.this, to.x, to.y);
             }
 
@@ -372,7 +376,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
         vec.set(target.getX() - x, target.getY() - y);
 
-        float length = circleLength <= 0.001f ? 1f : Mathf.clamp((distanceTo(target) - circleLength) / 100f, -1f, 1f);
+        float length = circleLength <= 0.001f ? 1f : Mathf.clamp((dst(target) - circleLength) / 100f, -1f, 1f);
 
         vec.setLength(type.speed * Timers.delta() * length);
         if(length < 0) vec.rotate(180f);

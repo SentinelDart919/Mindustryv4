@@ -1,31 +1,33 @@
 package io.anuke.mindustry.entities.effect;
 
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Vector2;
+import arc.graphics.g2d.Interpolation;
+import arc.math.Interp;
+import arc.math.geom.Vec2;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.TimedEntity;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.entities.trait.PosTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Pooling;
+import arc.util.Time;
+import arc.entities.EntityGroup;
+import arc.entities.impl.TimedEntity;
+import arc.entities.trait.DrawTrait;
+import arc.entities.trait.PosTrait;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
+import arc.util.pooling.Pools;
 
 import static io.anuke.mindustry.Vars.effectGroup;
 import static io.anuke.mindustry.Vars.threads;
 
 public class ItemTransfer extends TimedEntity implements DrawTrait{
-    private Vector2 from = new Vector2();
-    private Vector2 current = new Vector2();
-    private Vector2 tovec = new Vector2();
+    private Vec2 from = new Vec2();
+    private Vec2 current = new Vec2();
+    private Vec2 tovec = new Vec2();
     private Item item;
     private float seed;
     private PosTrait to;
@@ -58,7 +60,7 @@ public class ItemTransfer extends TimedEntity implements DrawTrait{
     }
 
     public static void create(Item item, float fromx, float fromy, PosTrait to, Runnable done){
-        ItemTransfer tr = Pooling.obtain(ItemTransfer.class, ItemTransfer::new);
+        ItemTransfer tr = Pools.obtain(ItemTransfer.class, ItemTransfer::new);
         tr.item = item;
         tr.from.set(fromx, fromy);
         tr.to = to;
@@ -88,7 +90,7 @@ public class ItemTransfer extends TimedEntity implements DrawTrait{
         if(done != null){
             threads.run(done);
         }
-        Pooling.free(this);
+        Pools.free(this);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class ItemTransfer extends TimedEntity implements DrawTrait{
         }
 
         super.update();
-        current.set(from).interpolate(tovec.set(to.getX(), to.getY()), fin(), Interpolation.pow3);
+        current.set(from).interpolate(tovec.set(to.getX(), to.getY()), fin(), Interp.pow3);
         current.add(tovec.set(to.getX(), to.getY()).sub(from).nor().rotate90(1).scl(seed * fslope() * 10f));
         set(current.x, current.y);
     }
@@ -126,3 +128,4 @@ public class ItemTransfer extends TimedEntity implements DrawTrait{
         return effectGroup;
     }
 }
+

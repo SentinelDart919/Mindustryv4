@@ -1,16 +1,16 @@
 package io.anuke.mindustry.content.fx;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.graphics.Shapes;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.Shapes;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class ShootFx extends FxList implements ContentList{
     public static Effect shootSmall, shootHeal, shootSmallSmoke, shootBig, shootBig2, shootBigSmoke, shootBigSmoke2, shootSmallFlame, shootLiquid, shellEjectSmall, shellEjectMedium, shellEjectBig, lancerLaserShoot, lancerLaserShootSmoke, lancerLaserCharge, lancerLaserChargeBegin, lightningCharge, lightningShoot;
@@ -21,21 +21,21 @@ public class ShootFx extends FxList implements ContentList{
         shootSmall = new Effect(8, e -> {
             Draw.color(Palette.lighterOrange, Palette.lightOrange, e.fin());
             float w = 1f + 5 * e.fout();
-            Shapes.tri(e.x, e.y, w, 15f * e.fout(), e.rotation);
-            Shapes.tri(e.x, e.y, w, 3f * e.fout(), e.rotation + 180f);
+            Shapes.arc(e.x, e.y, w, 15f * e.fout(), e.rotation);
+            Shapes.arc(e.x, e.y, w, 3f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
 
         shootHeal = new Effect(8, e -> {
             Draw.color(Palette.heal);
             float w = 1f + 5 * e.fout();
-            Shapes.tri(e.x, e.y, w, 17f * e.fout(), e.rotation);
-            Shapes.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);
+            Shapes.arc(e.x, e.y, w, 17f * e.fout(), e.rotation);
+            Shapes.arc(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
 
         shootSmallSmoke = new Effect(20f, e -> {
-            Draw.color(Palette.lighterOrange, Color.LIGHT_GRAY, Color.GRAY, e.fin());
+            Draw.color(Palette.lighterOrange, Color.lightGray, Color.gray, e.fin());
 
             Angles.randLenVectors(e.id, 5, e.finpow() * 6f, e.rotation, 20f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 1.5f);
@@ -47,21 +47,21 @@ public class ShootFx extends FxList implements ContentList{
         shootBig = new Effect(9, e -> {
             Draw.color(Palette.lighterOrange, Palette.lightOrange, e.fin());
             float w = 1.2f + 7 * e.fout();
-            Shapes.tri(e.x, e.y, w, 25f * e.fout(), e.rotation);
-            Shapes.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);
+            Shapes.arc(e.x, e.y, w, 25f * e.fout(), e.rotation);
+            Shapes.arc(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
 
         shootBig2 = new Effect(10, e -> {
-            Draw.color(Palette.lightOrange, Color.GRAY, e.fin());
+            Draw.color(Palette.lightOrange, Color.gray, e.fin());
             float w = 1.2f + 8 * e.fout();
-            Shapes.tri(e.x, e.y, w, 29f * e.fout(), e.rotation);
-            Shapes.tri(e.x, e.y, w, 5f * e.fout(), e.rotation + 180f);
+            Shapes.arc(e.x, e.y, w, 29f * e.fout(), e.rotation);
+            Shapes.arc(e.x, e.y, w, 5f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
 
         shootBigSmoke = new Effect(17f, e -> {
-            Draw.color(Palette.lighterOrange, Color.LIGHT_GRAY, Color.GRAY, e.fin());
+            Draw.color(Palette.lighterOrange, Color.lightGray, Color.gray, e.fin());
 
             Angles.randLenVectors(e.id, 8, e.finpow() * 19f, e.rotation, 10f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 2f + 0.2f);
@@ -71,7 +71,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shootBigSmoke2 = new Effect(18f, e -> {
-            Draw.color(Palette.lightOrange, Color.LIGHT_GRAY, Color.GRAY, e.fin());
+            Draw.color(Palette.lightOrange, Color.lightGray, Color.gray, e.fin());
 
             Angles.randLenVectors(e.id, 9, e.finpow() * 23f, e.rotation, 20f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 2.4f + 0.2f);
@@ -81,7 +81,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shootSmallFlame = new Effect(30f, e -> {
-            Draw.color(Palette.lightFlame, Palette.darkFlame, Color.GRAY, e.fin());
+            Draw.color(Palette.lightFlame, Palette.darkFlame, Color.gray, e.fin());
 
             Angles.randLenVectors(e.id, 8, e.finpow() * 36f, e.rotation, 10f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, 0.65f + e.fout() * 1.5f);
@@ -91,7 +91,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shootLiquid = new Effect(40f, e -> {
-            Draw.color(e.color, Color.WHITE, e.fout() / 6f + Mathf.randomSeedRange(e.id, 0.1f));
+            Draw.color(e.color, Color.white, e.fout() / 6f + Mathf.randomSeedRange(e.id, 0.1f));
 
             Angles.randLenVectors(e.id, 6, e.finpow() * 60f, e.rotation, 11f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, 0.5f + e.fout() * 2.5f);
@@ -101,7 +101,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shellEjectSmall = new GroundEffect(30f, 400f, e -> {
-            Draw.color(Palette.lightOrange, Color.LIGHT_GRAY, Palette.lightishGray, e.fin());
+            Draw.color(Palette.lightOrange, Color.lightGray, Palette.lightishGray, e.fin());
             float rot = Math.abs(e.rotation) + 90f;
 
             int i = Mathf.sign(e.rotation);
@@ -117,7 +117,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shellEjectMedium = new GroundEffect(34f, 400f, e -> {
-            Draw.color(Palette.lightOrange, Color.LIGHT_GRAY, Palette.lightishGray, e.fin());
+            Draw.color(Palette.lightOrange, Color.lightGray, Palette.lightishGray, e.fin());
             float rot = e.rotation + 90f;
             for(int i : Mathf.signs){
                 float len = (2f + e.finpow() * 10f) * i;
@@ -128,7 +128,7 @@ public class ShootFx extends FxList implements ContentList{
                         2f, 3f, rot);
             }
 
-            Draw.color(Color.LIGHT_GRAY, Color.GRAY, e.fin());
+            Draw.color(Color.lightGray, Color.gray, e.fin());
 
             for(int i : Mathf.signs){
                 Angles.randLenVectors(e.id, 4, 1f + e.finpow() * 11f, e.rotation + 90f * i, 20f, (x, y) -> {
@@ -140,7 +140,7 @@ public class ShootFx extends FxList implements ContentList{
         });
 
         shellEjectBig = new GroundEffect(22f, 400f, e -> {
-            Draw.color(Palette.lightOrange, Color.LIGHT_GRAY, Palette.lightishGray, e.fin());
+            Draw.color(Palette.lightOrange, Color.lightGray, Palette.lightishGray, e.fin());
             float rot = e.rotation + 90f;
             for(int i : Mathf.signs){
                 float len = (4f + e.finpow() * 8f) * i;
@@ -152,7 +152,7 @@ public class ShootFx extends FxList implements ContentList{
                         rot + e.fin() * 30f * i + Mathf.randomSeedRange(e.id + i + 9, 40f * e.fin()));
             }
 
-            Draw.color(Color.LIGHT_GRAY);
+            Draw.color(Color.lightGray);
 
             for(int i : Mathf.signs){
                 Angles.randLenVectors(e.id, 4, -e.finpow() * 15f, e.rotation + 90f * i, 25f, (x, y) -> {
@@ -167,7 +167,7 @@ public class ShootFx extends FxList implements ContentList{
             Draw.color(Palette.lancerLaser);
 
             for(int i : Mathf.signs){
-                Shapes.tri(e.x, e.y, 4f * e.fout(), 29f, e.rotation + 90f * i);
+                Shapes.arc(e.x, e.y, 4f * e.fout(), 29f, e.rotation + 90f * i);
             }
 
             Draw.reset();
@@ -205,14 +205,14 @@ public class ShootFx extends FxList implements ContentList{
             Draw.color(Palette.lancerLaser);
 
             Angles.randLenVectors(e.id, 2, 1f + 20f * e.fout(), e.rotation, 120f, (x, y) -> {
-                Shapes.tri(e.x + x, e.y + y, e.fslope() * 3f + 1, e.fslope() * 3f + 1, Mathf.atan2(x, y));
+                Shapes.arc(e.x + x, e.y + y, e.fslope() * 3f + 1, e.fslope() * 3f + 1, Mathf.atan2(x, y));
             });
 
             Draw.reset();
         });
 
         lightningShoot = new Effect(12f, e -> {
-            Draw.color(Color.WHITE, Palette.lancerLaser, e.fin());
+            Draw.color(Color.white, Palette.lancerLaser, e.fin());
             Lines.stroke(e.fout() * 1.2f + 0.5f);
 
             Angles.randLenVectors(e.id, 7, 25f * e.finpow(), e.rotation, 50f, (x, y) -> {

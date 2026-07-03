@@ -1,12 +1,12 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BiomassGroundUnit;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class BiomassArtillery extends BiomassGroundUnit {
 
@@ -19,7 +19,7 @@ public class BiomassArtillery extends BiomassGroundUnit {
         Floor floor = getFloorOn();
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, 0.5f);
+            Draw.tint(Color.white, floor.liquidColor, 0.5f);
         }
 
         for(int i : Mathf.signs){
@@ -30,9 +30,9 @@ public class BiomassArtillery extends BiomassGroundUnit {
         }
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, drownTime * 0.4f);
+            Draw.tint(Color.white, floor.liquidColor, drownTime * 0.4f);
         }else{
-            Draw.tint(Color.WHITE);
+            Draw.tint(Color.white);
         }
 
         Draw.rect(type.baseRegion, x, y, baseRotation - 90);

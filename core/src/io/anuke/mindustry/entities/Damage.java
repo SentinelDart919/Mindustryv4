@@ -1,8 +1,11 @@
 package io.anuke.mindustry.entities;
+import arc.util.Physics;
+import arc.util.Timers;
+import arc.util.Translator;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import arc.graphics.Color;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.content.bullets.TurretBullets;
 import io.anuke.mindustry.content.fx.ExplosionFx;
 import io.anuke.mindustry.content.fx.Fx;
@@ -13,21 +16,21 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Physics;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.func.Cons;
+import arc.func.Boolf;
+import arc.math.Mathf;
+;
+import arc.math.geom.Vec2;
 
 import static io.anuke.mindustry.Vars.*;
 
 /**Utility class for damaging in an area.*/
 public class Damage{
-    private static Rectangle rect = new Rectangle();
-    private static Rectangle hitrect = new Rectangle();
+    private static Rect rect = new Rect();
+    private static Rect hitrect = new Rect();
     private static Translator tr = new Translator();
 
     /**Creates a dynamic explosion based on specified parameters.*/
@@ -111,15 +114,15 @@ public class Damage{
         rect.width += expand * 2;
         rect.height += expand * 2;
 
-        Consumer<Unit> cons = e -> {
+        Cons<Unit> cons = e -> {
             e.getHitbox(hitrect);
-            Rectangle other = hitrect;
+            Rect other = hitrect;
             other.y -= expand;
             other.x -= expand;
             other.width += expand * 2;
             other.height += expand * 2;
 
-            Vector2 vec = Physics.raycastRect(x, y, x2, y2, other);
+            Vec2 vec = Physics.raycastRect(x, y, x2, y2, other);
 
             if(vec != null){
                 Effects.effect(effect, vec.x, vec.y);
@@ -132,16 +135,16 @@ public class Damage{
     }
 
     /**Damages all entities and blocks in a radius that are enemies of the team.*/
-    public static void damageUnits(Team team, float x, float y, float size, float damage, Predicate<Unit> predicate, Consumer<Unit> acceptor){
-        Consumer<Unit> cons = entity -> {
-            if(!predicate.test(entity)) return;
+    public static void damageUnits(Team team, float x, float y, float size, float damage, Boolf<Unit> Boolf, Cons<Unit> acceptor){
+        Cons<Unit> cons = entity -> {
+            if(!Boolf.get(entity)) return;
 
             entity.getHitbox(hitrect);
             if(!hitrect.overlaps(rect)){
                 return;
             }
             entity.damage(damage);
-            acceptor.accept(entity);
+            acceptor.get(entity);
         };
 
         rect.setSize(size * 2).setCenter(x, y);
@@ -159,7 +162,7 @@ public class Damage{
 
     /**Damages all entities and blocks in a radius that are enemies of the team.*/
     public static void damage(Team team, float x, float y, float radius, float damage){
-        Consumer<Unit> cons = entity -> {
+        Cons<Unit> cons = entity -> {
             if(entity.team == team || entity.distanceTo(x, y) > radius){
                 return;
             }
@@ -180,8 +183,8 @@ public class Damage{
         int trad = (int) (radius / tilesize);
         for(int dx = -trad; dx <= trad; dx++){
             for(int dy = -trad; dy <= trad; dy++){
-                Tile tile = world.tile(Mathf.scl2(x, tilesize) + dx, Mathf.scl2(y, tilesize) + dy);
-                if(tile != null && tile.entity != null && (team == null || state.teams.areEnemies(team, tile.getTeam())) && Vector2.dst(dx, dy, 0, 0) <= trad){
+                Tile tile = world.tile((int)((x) / (tilesize)) + dx, (int)((y) / (tilesize)) + dy);
+                if(tile != null && tile.entity != null && (team == null || state.teams.areEnemies(team, tile.getTeam())) && Vec2.dst2(dx, dy, 0, 0) <= trad){
                     float amount = calculateDamage(x, y, tile.worldx(), tile.worldy(), radius, damage);
                     tile.entity.damage(amount);
                 }
@@ -191,9 +194,10 @@ public class Damage{
     }
 
     private static float calculateDamage(float x, float y, float tx, float ty, float radius, float damage){
-        float dist = Vector2.dst(x, y, tx, ty);
+        float dist = Vec2.dst2(x, y, tx, ty);
         float falloff = 0.4f;
         float scaled = Mathf.lerp(1f - dist / radius, 1f, falloff);
         return damage * scaled;
     }
 }
+

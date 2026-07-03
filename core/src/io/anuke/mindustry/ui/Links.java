@@ -1,7 +1,8 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.Color;
-import io.anuke.ucore.util.Bundles;
+import arc.graphics.Color;
+import arc.util.Bundles;
+import arc.util.Strings;
 
 public class Links{
     private static LinkEntry[] links;

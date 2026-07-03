@@ -1,10 +1,10 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 
 public class OperationStack{
     private final static int maxSize = 10;
-    private Array<DrawOperation> stack = new Array<>();
+    private Seq<DrawOperation> stack = new Seq<>();
     private int index = 0;
 
     public OperationStack(){

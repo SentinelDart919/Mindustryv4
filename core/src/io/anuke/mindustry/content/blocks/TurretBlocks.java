@@ -1,7 +1,8 @@
 package io.anuke.mindustry.content.blocks;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.AmmoTypes;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.ShootFx;
@@ -9,9 +10,9 @@ import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.defense.turrets.*;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class TurretBlocks extends BlockList implements ContentList{
     public static Block duo, scatter,
@@ -77,7 +78,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             @Override
             public void load(){
                 super.load();
-                shootRegion = Draw.region(name + "-shoot");
+                shootRegion = Core.atlas.find(name + "-shoot");
             }
 
             {
@@ -131,7 +132,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             smokeEffect = ShootFx.lancerLaserShootSmoke;
             chargeEffect = ShootFx.lancerLaserCharge;
             chargeBeginEffect = ShootFx.lancerLaserChargeBegin;
-            heatColor = Color.RED;
+            heatColor = Color.red;
             size = 2;
             health = 320;
             targetAir = false;
@@ -148,7 +149,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             range = 150f;
             setShootSound("shootArc");
             shootEffect = ShootFx.lightningShoot;
-            heatColor = Color.RED;
+            heatColor = Color.red;
             recoil = 1f;
             size = 1;
             targetAir = false;
@@ -173,8 +174,8 @@ public class TurretBlocks extends BlockList implements ContentList{
             @Override
             public void load() {
                 super.load();
-                panels[0] = Draw.region(name + "-panel-left");
-                panels[1] = Draw.region(name + "-panel-right");
+                panels[0] = Core.atlas.find(name + "-panel-left");
+                panels[1] = Core.atlas.find(name + "-panel-right");
             }
 
             {
@@ -194,8 +195,8 @@ public class TurretBlocks extends BlockList implements ContentList{
 
                 drawer = (tile, entity) -> {
                     Draw.rect(region, tile.drawx() + tr2.x, tile.drawy() + tr2.y, entity.rotation - 90);
-                    float offsetx = (int) (Mathf.abscurve(Mathf.curve(entity.reload / reload, 0.3f, 0.2f)) * 3f);
-                    float offsety = -(int) (Mathf.abscurve(Mathf.curve(entity.reload / reload, 0.3f, 0.2f)) * 2f);
+                    float offsetx = (int) (Math.abs(Mathf.curve(entity.reload / reload, 0.3f, 0.2f)) * 3f);
+                    float offsety = -(int) (Math.abs(Mathf.curve(entity.reload / reload, 0.3f, 0.2f)) * 2f);
 
                     for(int i : Mathf.signs){
                         float rot = entity.rotation + 90 * i;

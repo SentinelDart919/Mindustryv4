@@ -1,10 +1,11 @@
 package io.anuke.mindustry.ui.fragments;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.math.geom.Vec2;
+import arc.util.Align;
+import arc.struct.ObjectSet;
+import arc.struct.Seq;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.graphics.Palette;
@@ -14,10 +15,10 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 import io.anuke.mindustry.world.consumers.Consume;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.Graphics;
+import arc.scene.Element;
+import arc.scene.Group;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -34,7 +35,7 @@ public class BlockConsumeFragment extends Fragment{
 
         parent.addChild(new Element(){{update(() -> {
             if(!ui.hasMouse()){
-                Tile tile = world.tileWorld(Graphics.mouseWorld().x, Graphics.mouseWorld().y);
+                Tile tile = world.tileWorld(Gfx.mouseWorld().x, Gfx.mouseWorld().y);
                 if(tile == null) return;
                 tile = tile.target();
 
@@ -89,12 +90,12 @@ public class BlockConsumeFragment extends Fragment{
                 rebuild(block, entity);
             }
 
-            Vector2 v = Graphics.screen(tile.drawx() - tile.block().size * tilesize / 2f + 0.25f, tile.drawy() + tile.block().size * tilesize / 2f);
+            Vec2 v = Graphics.screen(tile.drawx() - tile.block().size * tilesize / 2f + 0.25f, tile.drawy() + tile.block().size * tilesize / 2f);
             table.pack();
             table.setPosition(v.x, v.y, Align.topRight);
         });
 
-        table.act(Gdx.graphics.getDeltaTime());
+        table.act(Core.graphics.getDeltaTime());
     }
 
     public void hide(){
@@ -118,9 +119,9 @@ public class BlockConsumeFragment extends Fragment{
                 }).get().act(0);
 
                 Table result = table.table(out -> {
-                    out.addImage(c.getIcon()).size(10 * scale).color(Color.DARK_GRAY).padRight(-10 * scale).padBottom(-scale * 2);
-                    out.addImage(c.getIcon()).size(10 * scale).color(Palette.accent);
-                    out.addImage("icon-missing").size(10 * scale).color(Palette.remove).padLeft(-10 * scale);
+                    out.image(c.getIcon()).size(10 * scale).color(Color.darkGray).padRight(-10 * scale).padBottom(-scale * 2);
+                    out.image(c.getIcon()).size(10 * scale).color(Palette.accent);
+                    out.image("icon-missing").size(10 * scale).color(Palette.remove).padLeft(-10 * scale);
                 }).size(10 * scale).get();
 
                 result.hovered(() -> hovered[0] = true);
@@ -146,3 +147,5 @@ public class BlockConsumeFragment extends Fragment{
         }
     }
 }
+
+

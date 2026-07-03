@@ -1,14 +1,13 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Strings;
+import arc.Settings;
+import arc.util.Time;
+import arc.scene.ui.ImageButton;
+
 
 import java.io.IOException;
 

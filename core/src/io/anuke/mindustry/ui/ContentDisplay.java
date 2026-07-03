@@ -1,7 +1,7 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.OrderedMap;
+import arc.graphics.Color;
+import arc.struct.OrderedMap;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
@@ -13,10 +13,9 @@ import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.BlockStats;
 import io.anuke.mindustry.world.meta.StatCategory;
 import io.anuke.mindustry.world.meta.StatValue;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Strings;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+
 
 public class ContentDisplay{
 
@@ -26,13 +25,13 @@ public class ContentDisplay{
         table.table(title -> {
             int size = 8 * 6;
 
-            title.addImage(Draw.region("block-icon-" + block.name)).size(size);
+            title.addImage(Core.atlas.find("block-icon-" + block.name)).size(size);
             title.add("[accent]" + block.formalName).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -40,7 +39,7 @@ public class ContentDisplay{
             table.add(block.fullDescription).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -74,7 +73,7 @@ public class ContentDisplay{
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -82,7 +81,7 @@ public class ContentDisplay{
             table.add(item.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -107,7 +106,7 @@ public class ContentDisplay{
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -115,7 +114,7 @@ public class ContentDisplay{
             table.add(liquid.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -141,7 +140,7 @@ public class ContentDisplay{
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -149,7 +148,7 @@ public class ContentDisplay{
             table.add(mech.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -184,7 +183,7 @@ public class ContentDisplay{
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -192,7 +191,7 @@ public class ContentDisplay{
             table.add(unit.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.LIGHT_GRAY).pad(15).padLeft(0).padRight(0).fillX();
+            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 

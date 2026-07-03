@@ -7,10 +7,10 @@ import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeLiquidFilter;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.tilesize;
 

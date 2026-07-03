@@ -1,8 +1,10 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
+import arc.modules.Module;
+
+import arc.Core;
+import arc.audio.Sound;
+import arc.graphics.Color;
 import io.anuke.mindustry.content.Mechs;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -11,6 +13,7 @@ import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.game.EventType.*;
 import io.anuke.mindustry.game.Saves;
 import io.anuke.mindustry.game.Unlocks;
+import io.anuke.mindustry.entities.Timer;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.input.DefaultKeybinds;
 import io.anuke.mindustry.input.DesktopInput;
@@ -21,10 +24,13 @@ import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
-import io.anuke.ucore.core.*;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.*;
+import arc.*;
+import arc.entities.EntityQuery;
+import arc.ApplicationListener;
+import arc.graphics.g2d.TextureAtlas;
+import arc.input.KeyBinds;
+import arc.util.*;
+import io.anuke.mindustry.sounds.Sounds;
 
 import java.io.IOException;
 
@@ -40,7 +46,7 @@ public class Control extends Module{
     public final Saves saves;
     public final Unlocks unlocks;
 
-    private Timer timerRPC= new Timer(), timerUnlock = new Timer();
+    private Timer timerRPC= new Timer(1), timerUnlock = new Timer(1);
     private boolean hiscore = false;
     private boolean wasPaused = false;
     private InputHandler[] inputs = {};
@@ -52,12 +58,12 @@ public class Control extends Module{
 
         Inputs.useControllers(true);
 
-        Gdx.input.setCatchBackKey(true);
+        Core.input.setCatchBackKey(true);
 
         Effects.setShakeFalloff(10000f);
 
         content.initialize(Content::init);
-        Core.atlas = new Atlas("sprites.atlas");
+        Core.atlas = new TextureAtlas("sprites.atlas");
         Core.atlas.setErrorRegion("error");
         content.initialize(Content::load);
 
@@ -74,7 +80,7 @@ public class Control extends Module{
 
         DefaultKeybinds.load();
 
-        Settings.defaultList(
+        Core.settings.defaultList(
             "ip", "localhost",
             "color-0", Color.rgba8888(playerColors[8]),
             "color-1", Color.rgba8888(playerColors[11]),
@@ -106,7 +112,7 @@ public class Control extends Module{
 
         Events.on(WorldLoadGraphicsEvent.class, event -> {
             if(mobile){
-                Gdx.app.postRunnable(() -> Core.camera.position.set(players[0].x, players[0].y, 0));
+                Core.app.post(() -> Core.camera.position.set(players[0].x, players[0].y, 0));
             }
         });
 
@@ -122,11 +128,11 @@ public class Control extends Module{
 
         Events.on(WaveEvent.class, event -> {
 
-            int last = Settings.getInt("hiscore" + world.getMap().name, 0);
+            int last = Core.settings.getInt("hiscore" + world.getMap().name, 0);
 
             if(state.wave > last && !state.mode.infiniteResources && !state.mode.disableWaveTimer && world.getSector() == null){
-                Settings.putInt("hiscore" + world.getMap().name, state.wave);
-                Settings.save();
+                Core.settings.putInt("hiscore" + world.getMap().name, state.wave);
+                Core.settings.save();
                 hiscore = true;
             }
 
@@ -178,9 +184,9 @@ public class Control extends Module{
         Player setTo = (index == 0 ? null : players[0]);
 
         Player player = new Player();
-        player.name = Settings.getString("name");
+        player.name = Core.settings.getString("name");
         player.mech = mobile ? Mechs.starterMobile : Mechs.starterDesktop;
-        player.color.set(Settings.getInt("color-" + index));
+        player.color.set(Core.settings.getInt("color-" + index));
         player.isLocal = true;
         player.playerIndex = index;
         player.isMobile = mobile;
@@ -294,14 +300,14 @@ public class Control extends Module{
 
         Platform.instance.updateRPC();
 
-        if(!Settings.getBool("4.0-warning-2", false)){
+        if(!Core.settings.getBool("4.0-warning-2", false)){
 
             Timers.run(5f, () -> {
                 FloatingDialog dialog = new FloatingDialog("[accent]WARNING![]");
-                dialog.buttons().addButton("$text.ok", () -> {
+                dialog.buttons().button("$text.ok", () -> {
                     dialog.hide();
-                    Settings.putBool("4.0-warning-2", true);
-                    Settings.save();
+                    Core.settings.putBool("4.0-warning-2", true);
+                    Core.settings.save();
                 }).size(100f, 60f);
                 dialog.content().add("Reminder: This is a[accent] Modded Version of the Build 63[]\n\n " +
                         "\nThere is currently[yellow] a Sound System and Music system implemented[]\n" +
@@ -379,3 +385,4 @@ public class Control extends Module{
         }
     }
 }
+

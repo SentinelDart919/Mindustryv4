@@ -1,17 +1,17 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.scene.ui.Dialog;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.input.KeyCode;
+import arc.graphics.Color;
+import arc.func.Cons;
+import arc.scene.ui.Dialog;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.playerColors;
 import static io.anuke.mindustry.Vars.players;
 
 public class ColorPickDialog extends Dialog{
-    private Consumer<Color> cons;
+    private Cons<Color> cons;
 
     public ColorPickDialog(){
         super("", "dialog");
@@ -26,7 +26,7 @@ public class ColorPickDialog extends Dialog{
             Color color = playerColors[i];
 
             ImageButton button = table.addImageButton("white", "clear-toggle", 34, () -> {
-                cons.accept(color);
+                cons.get(color);
                 hide();
             }).size(48).get();
             button.setChecked(players[0].color.equals(color));
@@ -44,7 +44,7 @@ public class ColorPickDialog extends Dialog{
 
     }
 
-    public void show(Consumer<Color> cons){
+    public void show(Cons<Color> cons){
         this.cons = cons;
         show();
     }

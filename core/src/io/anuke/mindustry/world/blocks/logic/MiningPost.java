@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.logic;
 
-import com.badlogic.gdx.utils.IntArray;
+import arc.struct.IntSeq;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -14,12 +14,12 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.style.TextureRegionDrawable;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.EnumSet;
+import arc.util.Time;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
+import java.util.EnumSet;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -61,7 +61,7 @@ public class MiningPost extends Block {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         MiningPostEntity entity = tile.entity();
-        entity.droneIDs.removeValue(unit.id);
+        entity.droneIDs.remove(unit.id);
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
@@ -110,7 +110,7 @@ public class MiningPost extends Block {
 
     public static class MiningPostEntity extends TileEntity {
         public Item selectedItem;
-        public IntArray droneIDs = new IntArray();
+        public IntSeq droneIDs = new IntSeq();
         public float spawnTimer;
 
         @Override
@@ -138,3 +138,5 @@ public class MiningPost extends Block {
         }
     }
 }
+
+

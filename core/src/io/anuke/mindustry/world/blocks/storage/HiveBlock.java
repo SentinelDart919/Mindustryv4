@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Unit;
@@ -8,12 +8,12 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.entities.TileEntity;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
+import arc.graphics.g2d.TextureRegion;
 
 public class HiveBlock extends CoreBlock {
 
@@ -44,7 +44,7 @@ public class HiveBlock extends CoreBlock {
 
         float pulse = 1f + Mathf.absin(Timers.time(), 4f, 0.05f);
 
-        Draw.rect(entity.solid ? Draw.region(name) : openRegion, tile.drawx(), tile.drawy(), pulse * size * 8f, pulse * size * 8f);
+        Draw.rect(entity.solid ? Core.atlas.find(name) : openRegion, tile.drawx(), tile.drawy(), pulse * size * 8f, pulse * size * 8f);
 
         Draw.alpha(entity.heat);
         Draw.rect(topRegion, tile.drawx(), tile.drawy(), pulse * size * 8f, pulse * size * 8f);
@@ -61,10 +61,10 @@ public class HiveBlock extends CoreBlock {
             Shaders.build.color.set(Color.valueOf("d30000"));
             Shaders.build.time = -time / 10f;
 
-            Graphics.shader(Shaders.build, false);
+            Gfx.shader(Shaders.build, false);
             Shaders.build.apply();
             Draw.rect(region, tile.drawx(), tile.drawy());
-            Graphics.shader();
+            Gfx.shader();
 
             Draw.color(Color.valueOf("d30000"));
 
@@ -88,3 +88,4 @@ public class HiveBlock extends CoreBlock {
         public float biomassGoal = 60f * 60f * 3.5f;
     }
 }
+

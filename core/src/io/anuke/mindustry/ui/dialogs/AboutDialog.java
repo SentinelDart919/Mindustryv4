@@ -1,28 +1,28 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.io.Contributors;
 import io.anuke.mindustry.io.Contributors.Contributor;
 import io.anuke.mindustry.ui.Links;
 import io.anuke.mindustry.ui.Links.LinkEntry;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.layout.Cell;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.utils.UIUtils;
-import io.anuke.ucore.util.OS;
-import io.anuke.ucore.util.Strings;
+import arc.Core;
+import arc.util.Time;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.layout.Cell;
+import arc.scene.ui.layout.Table;
+import arc.scene.utils.UIUtils;
+import arc.util.OS;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.ios;
 import static io.anuke.mindustry.Vars.ui;
 
 public class AboutDialog extends FloatingDialog{
-    //private Array<Contributor> contributors = new Array<>();
+    //private Seq<Contributor> contributors = new Seq<>();
     private static ObjectSet<String> bannedItems = ObjectSet.with("google-play", "itch.io", "dev-builds", "trello");
 
     public AboutDialog(){
@@ -48,7 +48,7 @@ public class AboutDialog extends FloatingDialog{
                 continue;
             }
 
-            Table table = new Table("underline-2");
+            Table table = new Table();
             table.margin(0);
             table.table(img -> {
                 img.addImage("white").height(h - 5).width(40f).color(link.color);
@@ -64,13 +64,13 @@ public class AboutDialog extends FloatingDialog{
             table.table(inset -> {
                 inset.add("[accent]" + Strings.capitalize(link.name.replace("-", " "))).growX().left();
                 inset.row();
-                inset.labelWrap(link.description).width(w - 100f).color(Color.LIGHT_GRAY).growX();
+                inset.labelWrap(link.description).width(w - 100f).color(Color.lightGray).growX();
             }).padLeft(8);
 
             table.addImageButton("icon-link", 14 * 3, () -> {
-                if(!Gdx.net.openURI(link.link)){
+                if(!Core.net.openURI(link.link)){
                     ui.showError("$text.linkfail");
-                    Gdx.app.getClipboard().setContents(link.link);
+                    Core.app.getClipboard().setContents(link.link);
                 }
             }).size(h - 5, h);
 

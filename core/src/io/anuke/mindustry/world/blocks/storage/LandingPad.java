@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.core.UI;
@@ -12,13 +12,13 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeLiquid;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -52,7 +52,7 @@ public class LandingPad extends Block {
                     Draw.color(color);
                     Draw.alpha(p.fout() * particleAlpha);
                     float s = tsize * (1f + p.fin() * 0.5f);
-                    Draw.rect(Draw.region("circle"), p.x, p.y, s, s);
+                    Draw.rect(Core.atlas.find("circle"), p.x, p.y, s, s);
                 }), px, py);
             }
 
@@ -68,15 +68,15 @@ public class LandingPad extends Block {
                     Draw.color(color);
                     Draw.alpha(p.fout() * particleAlpha);
                     float s = tsize * (1f + p.fin() * 0.5f);
-                    Draw.rect(Draw.region("circle"), p.x, p.y, s, s);
+                    Draw.rect(Core.atlas.find("circle"), p.x, p.y, s, s);
                 }), px, py);
             }
         }
 
         if (progress < 1f) {
-            Draw.color(Color.WHITE);
+            Draw.color(Color.white);
             Draw.alpha(alpha);
-            Draw.rect(pod, x, y + oy, pod.getRegionWidth() * size, pod.getRegionHeight() * size, rotation);
+            Draw.rect(pod, x, y + oy, pod.width * size, pod.height * size, rotation);
         }
         // particle wave
         if(progress > 0.85f && progress < 1f){
@@ -85,7 +85,7 @@ public class LandingPad extends Block {
             Draw.alpha(1f - wave);
             for(int i = 0; i < 15; i++){
                 float ang = i / 15f * 360f;
-                Draw.rect(Draw.region("circle"), x + Mathf.sin(ang, 10f, 40f * wave), y + Mathf.cos(ang, 10f, 40f * wave), 5f, 5f);
+                Draw.rect(Core.atlas.find("circle"), x + Mathf.sin(ang, 10f, 40f * wave), y + Mathf.cos(ang, 10f, 40f * wave), 5f, 5f);
             }
         }
 
@@ -114,7 +114,7 @@ public class LandingPad extends Block {
     @Override
     public void load() {
         super.load();
-        pod = Draw.region("launchpod"); // Use same pod texture
+        pod = Core.atlas.find("launchpod"); // Use same pod texture
     }
 
     @Override
@@ -134,7 +134,7 @@ public class LandingPad extends Block {
                 alpha = entity.items.total() / threshold;
             }
             
-            Draw.color(Color.WHITE);
+            Draw.color(Color.white);
             Draw.alpha(alpha);
             Draw.rect(pod, tile.drawx(), tile.drawy());
             Draw.reset();
@@ -156,7 +156,7 @@ public class LandingPad extends Block {
             ImageButton button = table.addImageButton("white", "clear-toggle", 24, () -> {
                 entity.targetItem = item;
             }).size(44, 44).pad(4).get();
-            button.getStyle().imageUp = new io.anuke.ucore.scene.style.TextureRegionDrawable(item.region);
+            button.getStyle().imageUp = new arc.scene.style.TextureRegionDrawable(item.region);
             button.setChecked(entity.targetItem == item);
 
             if (i % 4 == 0) table.row();

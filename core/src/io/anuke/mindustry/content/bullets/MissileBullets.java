@@ -1,6 +1,7 @@
 package io.anuke.mindustry.content.bullets;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
+import arc.util.Timers;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.bullet.BulletType;
@@ -8,8 +9,8 @@ import io.anuke.mindustry.entities.bullet.MissileBulletType;
 import io.anuke.mindustry.entities.effect.Lightning;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.math.Mathf;
 
 public class MissileBullets extends BulletList implements ContentList{
     public static BulletType explosive, incindiary, surge, javelin, swarm;
@@ -107,7 +108,7 @@ public class MissileBullets extends BulletList implements ContentList{
                 splashDamageRadius = 25f;
                 splashDamage = 10f;
                 lifetime = 120f;
-                trailColor = Color.GRAY;
+                trailColor = Color.gray;
                 backColor = Palette.bulletYellowBack;
                 frontColor = Palette.bulletYellow;
                 hiteffect = BulletFx.blastExplosion;

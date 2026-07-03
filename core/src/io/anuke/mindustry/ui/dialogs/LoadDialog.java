@@ -1,21 +1,21 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
+import arc.Core;
+import arc.files.Fi;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.io.SaveIO;
 import io.anuke.mindustry.game.Saves.SaveSlot;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.TextButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.Core;
+import arc.util.Time;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.TextButton;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Strings;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ public class LoadDialog extends FloatingDialog{
 
         Timers.runTask(2f, () -> Core.scene.setScrollFocus(pane));
 
-        Array<SaveSlot> array = control.saves.getSaveSlots();
+        Seq<SaveSlot> array = control.saves.getSaveSlots();
 
         for(SaveSlot slot : array){
             if(slot.isHidden()) continue;
@@ -98,7 +98,7 @@ public class LoadDialog extends FloatingDialog{
                         }, false, saveExtension);
                     }else{
                         try{
-                            FileHandle file = Gdx.files.local("save-" + slot.getName() + "." + Vars.saveExtension);
+                            Fi file = Core.files.local("save-" + slot.getName() + "." + Vars.saveExtension);
                             slot.exportFile(file);
                             Platform.instance.shareFile(file);
                         }catch(Exception e){

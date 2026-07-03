@@ -1,38 +1,38 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Align;
+import arc.Core;
+import arc.graphics.Color;
+import arc.math.geom.Vec2;
+import arc.util.Align;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.maps.campaign.CampaignManager;
 import io.anuke.mindustry.maps.campaign.CampaignRegistry;
 import io.anuke.mindustry.maps.campaign.CampaignRegistry.PlanetDefinition;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.layout.Cell;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.scene.utils.Cursors;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Inputs;
-import io.anuke.ucore.core.Settings;
+import arc.util.Log;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.scene.Element;
+import arc.scene.Group;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.event.Touchable;
+import arc.scene.ui.layout.Cell;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.Scl;
+import arc.scene.utils.Cursors;
+import arc.util.Strings;
+import arc.math.Mathf;
+import arc.Core;
+import arc.Input;
+import arc.Settings;
 
 import static io.anuke.mindustry.Vars.world;
 
 public class SectorsDialog extends FloatingDialog{
-    private static final float sectorSize = Unit.dp.scl(32 * 5);
+    private static final float sectorSize = Scl.scl(32 * 5);
     private Sector selected;
     private Table sectorTable;
     private Table campaignTable;
@@ -58,11 +58,11 @@ public class SectorsDialog extends FloatingDialog{
             }
         });
 
-        campaignTable = new Table("button");
+        campaignTable = new Table();
         campaignTable.top().left().margin(6f);
         campaignTable.update(() -> campaignTable.setPosition(10f, height - 10f, Align.topLeft));
 
-        exportedTable = new Table("button");
+        exportedTable = new Table();
         exportedTable.top().right().margin(6f);
         exportedTable.update(() -> exportedTable.setPosition(width - 10f, height - 10f, Align.topRight));
 
@@ -155,7 +155,7 @@ public class SectorsDialog extends FloatingDialog{
         }
 
         if(i == 0){
-            items.add("$text.none").color(Color.GRAY);
+            items.add("$text.none").color(Color.gray);
         }
 
         exportedTable.add(items).left();
@@ -198,18 +198,18 @@ public class SectorsDialog extends FloatingDialog{
                             world.sectors.abandonSector(selected);
                             selectSector(selected);
                         })
-                    ).width(sectorSize / Unit.dp.scl(1f)).height(60f);
-                    cell.width(sectorSize / Unit.dp.scl(1f));
+                    ).width(sectorSize / Scl.scl(1f)).height(60f);
+                    cell.width(sectorSize / Scl.scl(1f));
                 }else{
-                    cell.width(sectorSize * 2f / Unit.dp.scl(1f));
+                    cell.width(sectorSize * 2f / Scl.scl(1f));
                 }
             }else{
-                t.add("$text.sector.locked").color(Color.GRAY).pad(10);
+                t.add("$text.sector.locked").color(Color.gray).pad(10);
             }
         }).pad(-5).growX().padTop(0);
 
         sectorTable.pack();
-        sectorTable.act(Gdx.graphics.getDeltaTime());
+        sectorTable.act(Core.graphics.getDeltaTime());
     }
 
     public Sector getSelected(){
@@ -269,7 +269,7 @@ public class SectorsDialog extends FloatingDialog{
                     pendingClick = false;
 
                     if(pointer == 1){
-                        lastZoomDistance = Vector2.dst(Gdx.input.getX(0), Gdx.input.getY(0), Gdx.input.getX(1), Gdx.input.getY(1));
+                        lastZoomDistance = Vec2.dst(Core.input.getX(0), Core.input.getY(0), Core.input.getX(1), Core.input.getY(1));
                     }
 
                     return true;
@@ -280,7 +280,7 @@ public class SectorsDialog extends FloatingDialog{
                     if(pointer > 1) return;
 
                     if(pointer == 1){
-                        float newDistance = Vector2.dst(Gdx.input.getX(0), Gdx.input.getY(0), Gdx.input.getX(1), Gdx.input.getY(1));
+                        float newDistance = Vec2.dst(Core.input.getX(0), Core.input.getY(0), Core.input.getX(1), Core.input.getY(1));
                         if(lastZoomDistance > 0){
                             float amount = (newDistance - lastZoomDistance) * 0.01f;
                             if(Settings.getBool("planet3d")){
@@ -345,8 +345,8 @@ public class SectorsDialog extends FloatingDialog{
                     float lastZoom = zoom;
                     zoom = Mathf.clamp(zoom - pendingScroll, 0.2f, 10f);
                     
-                    float mx = Gdx.input.getX() - getX();
-                    float my = (Gdx.graphics.getHeight() - Gdx.input.getY()) - getY();
+                    float mx = Core.input.getX() - getX();
+                    float my = (Core.Gfx.getHeight() - Core.input.getY()) - getY();
                 }
                 pendingScroll = 0f;
             }
@@ -431,7 +431,7 @@ public class SectorsDialog extends FloatingDialog{
                     float tx = left + ((sx + planet.gridLongitude / 2f + 0.5f) / planet.gridLongitude) * mapW;
                     float ty = bottom + ((sy + planet.gridLatitude / 2f + 0.5f) / planet.gridLatitude) * mapH;
 
-                    for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+                    for(arc.math.geom.Point2 g : arc.math.geom.Geometry.d4){
                         Sector other = world.sectors.get(sx + g.x, sy + g.y);
                         if(other == null || !isUnlocked(other)) continue;
                         
@@ -439,7 +439,7 @@ public class SectorsDialog extends FloatingDialog{
                         float oy = bottom + ((sy + g.y + planet.gridLatitude / 2f + 0.5f) / planet.gridLatitude) * mapH;
                         
                         if(other.complete){
-                            Draw.color(Color.GRAY);
+                            Draw.color(Color.gray);
                             Draw.alpha(0.2f);
                         }else{
                             Draw.color(Palette.accent);
@@ -452,8 +452,8 @@ public class SectorsDialog extends FloatingDialog{
             Lines.stroke(1f);
             Draw.alpha(1f);
 
-            float mx = Gdx.input.getX();
-            float my = Gdx.graphics.getHeight() - Gdx.input.getY();
+            float mx = Core.input.getX();
+            float my = Core.Gfx.getHeight() - Core.input.getY();
             float best = Float.MAX_VALUE;
 
             for(int sy = -planet.gridLatitude / 2; sy < planet.gridLatitude / 2; sy++){
@@ -471,16 +471,16 @@ public class SectorsDialog extends FloatingDialog{
                     if(sector.complete){
                         Draw.color(Palette.accent);
                     }else if(sector.hasSave()){
-                        Draw.color(Color.WHITE);
+                        Draw.color(Color.white);
                     }else if(unlocked){
-                        Draw.color(Color.WHITE);
+                        Draw.color(Color.white);
                     }else{
-                        Draw.color(Color.GRAY);
+                        Draw.color(Color.gray);
                     }
 
                     if(unlocked){
                         if(sector.texture != null){
-                            Draw.color(Color.WHITE);
+                            Draw.color(Color.white);
                             Draw.rect(sector.texture, tx, ty, sw, sh);
                         }else if(sector.complete){
                             Fill.poly(tx, ty, 4, Math.min(sw, sh) * 0.45f, 45f);
@@ -491,12 +491,12 @@ public class SectorsDialog extends FloatingDialog{
                             Draw.color(0f, 0f, 0f, 0.4f);
                             Fill.circle(tx, ty, isize / 2f + 2f);
                             
-                            Color iconColor = Color.WHITE;
+                            Color iconColor = Color.white;
                             Draw.color(iconColor);
                             Draw.rect(sector.getDominantMission().getIcon(), tx, ty, isize - 1, isize - 1);
                         }
                     }else{
-                        Draw.color(Color.GRAY);
+                        Draw.color(Color.gray);
                         Draw.alpha(0.3f);
                         Fill.crect(tx - sw / 2f, ty - sh / 2f, sw, sh);
                         Draw.alpha(1f);
@@ -507,7 +507,7 @@ public class SectorsDialog extends FloatingDialog{
                         Draw.rect("sector-select", tx, ty, sw * 1.5f, sh * 1.5f);
                     }
 
-                    float dst = Vector2.dst(mx, my, tx, ty);
+                    float dst = Vec2.dst(mx, my, tx, ty);
                     if(unlocked && dst < Math.max(sw, sh) && dst < best){
                         best = dst;
                         out.sector = sector;
@@ -520,7 +520,7 @@ public class SectorsDialog extends FloatingDialog{
             if(out.sector != null && out.sector != selected){
                 float sw = mapW / planet.gridLongitude;
                 float sh = mapH / planet.gridLatitude;
-                Draw.color(Color.WHITE);
+                Draw.color(Color.white);
                 Draw.rect("sector-select", out.x, out.y, sw * 1.2f, sh * 1.2f);
             }
 
@@ -534,7 +534,7 @@ public class SectorsDialog extends FloatingDialog{
 
         public boolean isUnlocked(Sector sector){
             if(sector.complete || (sector.x == 0 && sector.y == 0)) return true;
-            for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+            for(arc.math.geom.Point2 g : arc.math.geom.Geometry.d4){
                 Sector other = world.sectors.get(sector.x + g.x, sector.y + g.y);
                 if(other != null && other.complete) return true;
             }
@@ -544,10 +544,12 @@ public class SectorsDialog extends FloatingDialog{
 
     public static boolean isUnlockedStatic(Sector sector){
         if(sector.complete || (sector.x == 0 && sector.y == 0)) return true;
-        for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+        for(arc.math.geom.Point2 g : arc.math.geom.Geometry.d4){
             Sector other = world.sectors.get(sector.x + g.x, sector.y + g.y);
             if(other != null && other.complete) return true;
         }
         return false;
     }
 }
+
+

@@ -1,4 +1,4 @@
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.ContentLoader;
 import io.anuke.mindustry.maps.SectorPresets;
@@ -31,7 +31,7 @@ public class SectorTests{
     }
 
     /** Returns true if at least one mission provides a spawn point. */
-    private boolean spawnPointIsDefined(Array<Mission> missions){
+    private boolean spawnPointIsDefined(Seq<Mission> missions){
         for(Mission mission : missions){
             if(mission.getSpawnPoints(this.fakeGen).size > 0){
                 return true;

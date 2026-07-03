@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.modules;
 
-import com.badlogic.gdx.utils.IntArray;
+import arc.struct.IntSeq;
 import io.anuke.mindustry.world.blocks.power.PowerGraph;
 
 import java.io.DataInput;
@@ -10,7 +10,7 @@ import java.io.IOException;
 public class PowerModule extends BlockModule{
     public float amount;
     public PowerGraph graph = new PowerGraph();
-    public IntArray links = new IntArray();
+    public IntSeq links = new IntSeq();
 
     @Override
     public void write(DataOutput stream) throws IOException{
@@ -39,3 +39,4 @@ public class PowerModule extends BlockModule{
         }
     }
 }
+

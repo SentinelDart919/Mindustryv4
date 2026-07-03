@@ -1,16 +1,16 @@
 package io.anuke.mindustry.world.blocks.defense;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.input.CursorType;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -19,7 +19,7 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.threads;
 
 public class Door extends Wall{
-    protected final Rectangle rect = new Rectangle();
+    protected final Rect rect = new Rect();
 
     protected Effect openfx = BlockFx.dooropen;
     protected Effect closefx = BlockFx.doorclose;
@@ -36,7 +36,7 @@ public class Door extends Wall{
     @Override
     public void load(){
         super.load();
-        openRegion = Draw.region(name + "-open");
+        openRegion = Core.atlas.find(name + "-open");
     }
 
     @Override

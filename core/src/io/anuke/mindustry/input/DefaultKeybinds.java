@@ -1,12 +1,15 @@
 package io.anuke.mindustry.input;
 
-import com.badlogic.gdx.Application.ApplicationType;
-import com.badlogic.gdx.Gdx;
-import io.anuke.ucore.core.Inputs.Axis;
-import io.anuke.ucore.core.Inputs.DeviceType;
-import io.anuke.ucore.core.KeyBinds;
-import io.anuke.ucore.core.KeyBinds.Category;
-import io.anuke.ucore.input.Input;
+import arc.Application;
+import arc.Application.ApplicationType;
+import arc.Core;
+
+
+import arc.input.KeyBind;
+import arc.input.KeyBinds;
+import arc.input.KeyBinds.Category;
+import arc.Input;
+import arc.scene.ui.DeviceType;
 
 public class DefaultKeybinds{
 
@@ -15,21 +18,21 @@ public class DefaultKeybinds{
 
         for(String section : sections){
 
-            KeyBinds.defaultSection(section, DeviceType.keyboard,
+            KeyBinds.defaultSection(section, DeviceType.desktop,
                 new Category("general"),
-                "move_x", new Axis(Input.A, Input.D),
-                "move_y", new Axis(Input.S, Input.W),
+                "move_x", new KeyBind.Axis(Input.A, Input.D),
+                "move_y", new KeyBind.Axis(Input.S, Input.W),
                 "select", Input.MOUSE_LEFT,
                 "deselect", Input.MOUSE_RIGHT,
                 "break", Input.MOUSE_RIGHT,
-                "rotate", new Axis(Input.SCROLL),
+                "rotate", new KeyBind.Axis(Input.SCROLL),
                 "dash", Input.SHIFT_LEFT,
                 "drop_unit", Input.SHIFT_LEFT,
                 new Category("view"),
                 "zoom_hold", Input.CONTROL_LEFT,
-                "zoom", new Axis(Input.SCROLL),
-                "zoom_minimap", new Axis(Input.MINUS, Input.PLUS),
-                "menu", Gdx.app.getType() == ApplicationType.Android ? Input.BACK : Input.ESCAPE,
+                "zoom", new KeyBind.Axis(Input.SCROLL),
+                "zoom_minimap", new KeyBind.Axis(Input.MINUS, Input.PLUS),
+                "menu", Core.app.getType() == Application.ApplicationType.android ? Input.BACK : Input.ESCAPE,
                 "pause", Input.SPACE,
                 "toggle_menus", Input.C,
                 "screenshot", Input.P,
@@ -72,3 +75,4 @@ public class DefaultKeybinds{
         KeyBinds.setSectionAlias("default", "player_1");
     }
 }
+

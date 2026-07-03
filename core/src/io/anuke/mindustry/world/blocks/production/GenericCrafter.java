@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.TileEntity;
@@ -12,11 +12,11 @@ import io.anuke.mindustry.world.consumers.ConsumeItem;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -77,7 +77,7 @@ public class GenericCrafter extends Block{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name)};
+        return new TextureRegion[]{Core.atlas.find(name)};
     }
 
     @Override

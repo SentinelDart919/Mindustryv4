@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
 
+import arc.util.Timers;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.entities.units.UnitType;
@@ -9,10 +10,10 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -74,7 +75,6 @@ public class Lich extends FlyingUnit{
         drawItems();
 
         Draw.alpha(1f);
-
 
 
         for(int i : Mathf.signs){

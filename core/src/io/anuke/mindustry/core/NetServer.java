@@ -1,13 +1,15 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Colors;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.modules.Module;
+
+import arc.graphics.Color;
+import arc.graphics.Colors;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.IntMap;
+import arc.struct.ObjectSet;
+import arc.util.*;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.Mechs;
@@ -25,18 +27,16 @@ import io.anuke.mindustry.net.*;
 import io.anuke.mindustry.net.Administration.PlayerInfo;
 import io.anuke.mindustry.net.Packets.*;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.entities.trait.Entity;
-import io.anuke.ucore.io.ByteBufferOutput;
-import io.anuke.ucore.io.CountableByteArrayOutputStream;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Structs;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Mathf;
+import arc.Events;
+import arc.util.Time;
+import arc.entities.Entities;
+import arc.entities.EntityGroup;
+import arc.entities.EntityQuery;
+import arc.entities.trait.Entity;
+import arc.util.io.ByteBufferOutput;
+import arc.util.io.CountableByteArrayOutputStream;
+import arc.ApplicationListener;
+import arc.math.Mathf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,9 +57,9 @@ public class NetServer extends Module{
 
     private final static byte[] reusableSnapArray = new byte[maxSnapshotSize];
     private final static float serverSyncTime = 4, kickDuration = 30 * 1000;
-    private final static Vector2 vector = new Vector2();
-    private final static Rectangle viewport = new Rectangle();
-    private final static Array<Entity> returnArray = new Array<>();
+    private final static Vec2 vector = new Vec2();
+    private final static Rect viewport = new Rect();
+    private final static Seq<Entity> returnArray = new Seq<>();
     /**If a player goes away of their server-side coordinates by this distance, they get teleported back.*/
     private final static float correctDist = 16f;
 
@@ -122,7 +122,7 @@ public class NetServer extends Module{
                 return;
             }
 
-            if(TimeUtils.millis() - info.lastKicked < kickDuration){
+            if(Time.millis() - info.lastKicked < kickDuration){
                 kick(id, KickReason.recentKick);
                 return;
             }
@@ -310,14 +310,14 @@ public class NetServer extends Module{
 
         boolean verifyPosition = !player.isDead() && netServer.admins.getStrict() && headless && player.getCarrier() == null;
 
-        if(connection.lastRecievedClientTime == 0) connection.lastRecievedClientTime = TimeUtils.millis() - 16;
+        if(connection.lastRecievedClientTime == 0) connection.lastRecievedClientTime = Time.millis() - 16;
 
         connection.viewX = viewX;
         connection.viewY = viewY;
         connection.viewWidth = viewWidth;
         connection.viewHeight = viewHeight;
 
-        long elapsed = TimeUtils.timeSinceMillis(connection.lastRecievedClientTime);
+        long elapsed = Time.timeSinceMillis(connection.lastRecievedClientTime);
 
         float maxSpeed = boosting && !player.mech.flying ? player.mech.boostSpeed : player.mech.speed;
         float maxMove = elapsed / 1000f * 60f * Math.min(compound(maxSpeed, player.mech.drag) * 1.25f, player.mech.maxSpeed * 1.1f);
@@ -356,7 +356,7 @@ public class NetServer extends Module{
             player.y = prevy;
             newx = x;
             newy = y;
-        }else if(Vector2.dst(x, y, newx, newy) > correctDist){
+        }else if(Mathf.dst(x, y, newx, newy) > correctDist){
             Call.onPositionSet(player.con.id, newx, newy); //teleport and correct position when necessary
         }
 
@@ -369,7 +369,7 @@ public class NetServer extends Module{
         player.getVelocity().set(xVelocity, yVelocity); //only for visual calculation purposes, doesn't actually update the player
 
         connection.lastRecievedClientSnapshot = snapshotID;
-        connection.lastRecievedClientTime = TimeUtils.millis();
+        connection.lastRecievedClientTime = Time.millis();
     }
 
     @Remote(targets = Loc.client, called = Loc.server)
@@ -468,7 +468,7 @@ public class NetServer extends Module{
         if(player != null && (reason == KickReason.kick || reason == KickReason.banned) && player.uuid != null){
             PlayerInfo info = admins.getInfo(player.uuid);
             info.timesKicked++;
-            info.lastKicked = TimeUtils.millis();
+            info.lastKicked = Time.millis();
         }
 
         Call.onKick(connection, reason);
@@ -497,7 +497,7 @@ public class NetServer extends Module{
         }
 
         //write timestamp
-        dataStream.writeLong(TimeUtils.millis());
+        dataStream.writeLong(Time.millis());
 
         int totalGroups = 0;
 
@@ -638,3 +638,4 @@ public class NetServer extends Module{
         }
     }
 }
+

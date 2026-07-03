@@ -1,7 +1,7 @@
 package io.anuke.mindustry;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
@@ -10,8 +10,8 @@ import io.anuke.mindustry.type.Mech;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.OreBlock;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Hue;
+import arc.graphics.g2d.Draw;
+import arc.graphics.Color;
 import static io.anuke.mindustry.Vars.*;
 
 public class Generators {

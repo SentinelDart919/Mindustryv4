@@ -1,6 +1,11 @@
 package io.anuke.mindustry.content.bullets;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.Shapes;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -18,11 +23,11 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BuildBlock;
 import io.anuke.mindustry.world.blocks.distribution.MassDriver.DriverBulletData;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.*;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.graphics.*;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.world;
@@ -63,7 +68,7 @@ public class TurretBullets extends BulletList implements ContentList{
                 Draw.color(Palette.heal);
                 Lines.stroke(2f);
                 Lines.lineAngleCenter(b.x, b.y, b.angle(), 7f);
-                Draw.color(Color.WHITE);
+                Draw.color(Color.white);
                 Lines.lineAngleCenter(b.x, b.y, b.angle(), 3f);
                 Draw.reset();
             }
@@ -98,7 +103,7 @@ public class TurretBullets extends BulletList implements ContentList{
             @Override
             public void draw(Bullet b){
                 //TODO add color to the bullet depending on the color of the flame it came from
-                Draw.color(Palette.lightFlame, Palette.darkFlame, Color.GRAY, b.fin());
+                Draw.color(Palette.lightFlame, Palette.darkFlame, Color.gray, b.fin());
                 Fill.circle(b.x, b.y, 3f * b.fout());
                 Draw.reset();
             }
@@ -139,7 +144,7 @@ public class TurretBullets extends BulletList implements ContentList{
         };
 
         lancerLaser = new BulletType(0.001f, 140){
-            Color[] colors = {Palette.lancerLaser.cpy().mul(1f, 1f, 1f, 0.4f), Palette.lancerLaser, Color.WHITE};
+            Color[] colors = {Palette.lancerLaser.cpy().mul(1f, 1f, 1f, 0.4f), Palette.lancerLaser, Color.white};
             float[] tscales = {1f, 0.7f, 0.5f, 0.2f};
             float[] lenscales = {1f, 1.1f, 1.13f, 1.14f};
             float length = 100f;
@@ -176,7 +181,7 @@ public class TurretBullets extends BulletList implements ContentList{
 
         meltdownLaser = new BulletType(0.001f, 26){
             Color tmpColor = new Color();
-            Color[] colors = {Color.valueOf("ec745855"), Color.valueOf("ec7458aa"), Color.valueOf("ff9c5a"), Color.WHITE};
+            Color[] colors = {Color.valueOf("ec745855"), Color.valueOf("ec7458aa"), Color.valueOf("ff9c5a"), Color.white};
             float[] tscales = {1f, 0.7f, 0.5f, 0.2f};
             float[] strokes = {2f, 1.5f, 1f, 0.3f};
             float[] lenscales = {1f, 1.12f, 1.15f, 1.17f};
@@ -217,7 +222,7 @@ public class TurretBullets extends BulletList implements ContentList{
                     for(int i = 0; i < tscales.length; i++){
                         vector.trns(b.angle() + 180f, (lenscales[i] - 1f) * 35f);
                         Lines.stroke((9f + Mathf.absin(Timers.time(), 0.8f, 1.5f)) * b.fout() * strokes[s] * tscales[i]);
-                        Lines.lineAngle(b.x + vector.x, b.y + vector.y, b.angle(), baseLen * lenscales[i], CapStyle.none);
+                        Lines.lineAngle(b.x + vector.x, b.y + vector.y, b.angle(), baseLen * lenscales[i], CapStyle.None.ordinal());
                     }
                 }
                 Draw.reset();
@@ -247,15 +252,15 @@ public class TurretBullets extends BulletList implements ContentList{
             @Override
             public void draw(Bullet b) {
                 super.draw(b);
-                Draw.color(Color.WHITE, Palette.surge, b.fin());
+                Draw.color(Color.white, Palette.surge, b.fin());
                 for(int i = 0; i < 7; i++){
                     vector.trns(b.angle(), i * 8f);
                     float sl = Mathf.clamp(b.fout()-0.5f) * (80f - i *10);
-                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() + 90);
-                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() - 90);
+                    Shapes.arc(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() + 90);
+                    Shapes.arc(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() - 90);
                 }
-                Shapes.tri(b.x, b.y, 13f, (rayLength+50) * b.fout(), b.angle());
-                Shapes.tri(b.x, b.y, 13f, 10f * b.fout(), b.angle() + 180f);
+                Shapes.arc(b.x, b.y, 13f, (rayLength+50) * b.fout(), b.angle());
+                Shapes.arc(b.x, b.y, 13f, 10f * b.fout(), b.angle() + 180f);
                 Draw.reset();
             }
 
@@ -367,9 +372,9 @@ public class TurretBullets extends BulletList implements ContentList{
                     return;
                 }
 
-                float baseDst = data.from.distanceTo(data.to);
-                float dst1 = b.distanceTo(data.from);
-                float dst2 = b.distanceTo(data.to);
+                float baseDst = data.from.dst(data.to);
+                float dst1 = b.dst(data.from);
+                float dst2 = b.dst(data.to);
 
                 boolean intersect = false;
 
@@ -379,7 +384,7 @@ public class TurretBullets extends BulletList implements ContentList{
                     float baseAngle = data.to.angleTo(data.from);
 
                     //if angles are nearby, then yes, it did
-                    if(Mathf.angNear(angleTo, baseAngle, 2f)){
+                    if(Angles.angleDist(angleTo, baseAngle)< 2f){
                         intersect = true;
                         //snap bullet position back; this is used for low-FPS situations
                         b.set(data.to.x + Angles.trnsx(baseAngle, hitDst), data.to.y + Angles.trnsy(baseAngle, hitDst));
@@ -409,7 +414,7 @@ public class TurretBullets extends BulletList implements ContentList{
                     int amountDropped = Mathf.random(0, data.items[i]);
                     if(amountDropped > 0){
                         float angle = b.angle() + Mathf.range(100f);
-                        Effects.effect(EnvironmentFx.dropItem, Color.WHITE, b.x, b.y, angle, content.item(i));
+                        Effects.effect(EnvironmentFx.dropItem, Color.white, b.x, b.y, angle, content.item(i));
                     }
                 }
             }
@@ -444,15 +449,15 @@ public class TurretBullets extends BulletList implements ContentList{
             @Override
             public void draw(Bullet b) {
                 super.draw(b);
-                Draw.color(Color.RED, Color.valueOf("871e1e"), b.fin());
+                Draw.color(Color.red, Color.valueOf("871e1e"), b.fin());
                 for(int i = 0; i < 7; i++){
                     vector.trns(b.angle(), i * 8f);
                     float sl = Mathf.clamp(b.fout()-0.5f) * (80f - i *10);
-                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() + 90);
-                    Shapes.tri(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() - 90);
+                    Shapes.arc(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() + 90);
+                    Shapes.arc(b.x + vector.x, b.y + vector.y, 4f, sl, b.angle() - 90);
                 }
-                Shapes.tri(b.x, b.y, 13f, (rayLength+50) * b.fout(), b.angle());
-                Shapes.tri(b.x, b.y, 13f, 10f * b.fout(), b.angle() + 180f);
+                Shapes.arc(b.x, b.y, 13f, (rayLength+50) * b.fout(), b.angle());
+                Shapes.arc(b.x, b.y, 13f, 10f * b.fout(), b.angle() + 180f);
                 Draw.reset();
             }
 

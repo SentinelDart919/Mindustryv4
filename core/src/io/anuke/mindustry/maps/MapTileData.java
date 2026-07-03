@@ -1,11 +1,12 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.utils.IntIntMap;
+import arc.struct.IntIntMap;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.world.Block;
-import io.anuke.ucore.util.Bits;
-import io.anuke.ucore.util.Structs;
+import arc.struct.Bits;
+import arc.util.Structs;
 
 import java.nio.ByteBuffer;
 

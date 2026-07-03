@@ -1,20 +1,20 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
+import arc.struct.Seq;
+import arc.util.serialization.JsonReader;
+import arc.util.serialization.JsonValue;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.function.Consumer;
+import arc.func.Cons;
 
 import static io.anuke.mindustry.Vars.contributorsURL;
 
 public class Contributors{
 
-    public static void getContributors(Consumer<Array<Contributor>> success, Consumer<Throwable> fail){
+    public static void getContributors(Cons<Seq<Contributor>> success, Cons<Throwable> fail){
         Net.http(contributorsURL, "GET", result -> {
             JsonReader reader = new JsonReader();
             JsonValue value = reader.parse(result).child;
-            Array<Contributor> out = new Array<>();
+            Seq<Contributor> out = new Seq<>();
 
             while(value != null){
                 String login = value.getString("login");
@@ -22,7 +22,7 @@ public class Contributors{
                 value = value.next;
             }
 
-            success.accept(out);
+            success.get(out);
         }, fail);
     }
 

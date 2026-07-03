@@ -1,18 +1,17 @@
 package io.anuke.mindustry;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.iosrobovm.IOSApplication;
-import com.badlogic.gdx.backends.iosrobovm.IOSApplicationConfiguration;
-import com.badlogic.gdx.files.FileHandle;
+import arc.Core;
+import arc.backends.ios.IOSApplication;
+import arc.backends.ios.IOSApplicationConfiguration;
+import arc.files.Fi;
 import io.anuke.kryonet.KryoClient;
 import io.anuke.kryonet.KryoServer;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.game.Saves.SaveSlot;
 import io.anuke.mindustry.io.SaveIO;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Strings;
+import arc.scene.ui.layout.Unit;
+
 import org.robovm.apple.foundation.NSAutoreleasePool;
 import org.robovm.apple.foundation.NSURL;
 import org.robovm.apple.uikit.*;
@@ -38,8 +37,8 @@ public class IOSLauncher extends IOSApplication.Delegate {
         Platform.instance = new Platform() {
 
             @Override
-            public void shareFile(FileHandle file){
-                FileHandle to = Gdx.files.absolute(getDocumentsDirectory()).child(file.name());
+            public void shareFile(Fi file){
+                Fi to = Core.files.absolute(getDocumentsDirectory()).child(file.name());
                 file.copyTo(to);
 
                 NSURL url = new NSURL(to.file());
@@ -47,7 +46,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
                 p.getPopoverPresentationController().setSourceView(UIApplication.getSharedApplication().getKeyWindow().getRootViewController().getView());
 
                 UIApplication.getSharedApplication().getKeyWindow().getRootViewController()
-                .presentViewController(p, true, () -> io.anuke.ucore.util.Log.info("Success! Presented {0}", to));
+                .presentViewController(p, true, () -> arc.util.Log.info("Success! Presented {0}", to));
             }
 
             @Override
@@ -91,9 +90,9 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     void openURL(NSURL url){
 
-        Gdx.app.postRunnable(() -> {
-            FileHandle file = Gdx.files.absolute(getDocumentsDirectory()).child(url.getLastPathComponent());
-            Gdx.files.absolute(url.getPath()).copyTo(file);
+        Core.app.post(() -> {
+            Fi file = Core.files.absolute(getDocumentsDirectory()).child(url.getLastPathComponent());
+            Core.files.absolute(url.getPath()).copyTo(file);
 
             if(file.extension().equalsIgnoreCase(saveExtension)){ //open save
 
@@ -109,7 +108,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
                 }
 
             }else if(file.extension().equalsIgnoreCase(mapExtension)){ //open map
-                Gdx.app.postRunnable(() -> {
+                Core.app.post(() -> {
                     if (!ui.editor.isShown()) {
                         ui.editor.show();
                     }

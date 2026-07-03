@@ -1,15 +1,15 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Texture.TextureFilter;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.graphics.Shaders;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.Core;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.scene.Element;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -50,9 +50,9 @@ public class Minimap extends Table{
                     r.setU2(px2 / (world.width() + pad*2f));
                     r.setV2(1f - py2 / (world.height() + pad*2f));
 
-                    Graphics.shader(Shaders.fog);
+                    Gfx.shader(Shaders.fog);
                     Draw.crect(r, x, y, width, height);
-                    Graphics.shader();
+                    Gfx.shader();
 
                     renderer.fog.getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
                 }
@@ -68,7 +68,7 @@ public class Minimap extends Table{
 
         elem.update(() -> {
 
-            Element e = Core.scene.hit(Graphics.mouse().x, Graphics.mouse().y, true);
+            Element e = Core.scene.hit(Gfx.mouseWorld().x, Gfx.mouseWorld().y, true);
             if(e != null && e.isDescendantOf(this)){
                 Core.scene.setScrollFocus(this);
             }else if(Core.scene.getScrollFocus() == this){
@@ -93,3 +93,4 @@ public class Minimap extends Table{
         });
     }
 }
+

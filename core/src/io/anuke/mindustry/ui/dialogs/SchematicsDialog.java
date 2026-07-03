@@ -2,8 +2,8 @@ package io.anuke.mindustry.ui.dialogs;
 
 import io.anuke.mindustry.game.Schematic;
 import io.anuke.mindustry.input.PlaceMode;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.*;
 

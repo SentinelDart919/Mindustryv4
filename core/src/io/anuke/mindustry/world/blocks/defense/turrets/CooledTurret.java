@@ -4,10 +4,10 @@ import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeLiquidFilter;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.tilesize;
 

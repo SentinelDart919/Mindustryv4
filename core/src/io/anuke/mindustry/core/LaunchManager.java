@@ -1,10 +1,10 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.utils.ObjectIntMap;
+import arc.struct.ObjectIntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.type.Item;
-import io.anuke.ucore.core.Settings;
+import arc.Core;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.world;
@@ -16,7 +16,7 @@ public class LaunchManager {
         inventory.clear();
         String prefix = getPrefix();
         for (Item item : content.items()) {
-            int amount = Settings.getInt(prefix + item.name, 0);
+            int amount = Core.settings.getInt(prefix + item.name, 0);
             if (amount > 0) {
                 inventory.put(item, amount);
             }
@@ -28,10 +28,10 @@ public class LaunchManager {
         for (Item item : content.items()) {
             int amount = inventory.get(item, 0);
             if (amount > 0) {
-                Settings.putInt(prefix + item.name, amount);
+                Core.settings.put(prefix + item.name, amount);
             }
         }
-        Settings.save();
+        Core.settings.manualSave();
     }
 
     private String getPrefix() {

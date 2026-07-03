@@ -1,6 +1,7 @@
 package io.anuke.mindustry.content.blocks;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.StatusEffects;
@@ -10,10 +11,10 @@ import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.*;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 public class Blocks extends BlockList implements ContentList{
     public static Block air, blockpart, spawn, space, metalfloor, deepwater, water, lava, tar, stone, blackstone, dirt, sand, ice, snow, grass, shrub, rock, icerock, blackrock, infectedGrass, infectedSand, infectedDirt, infectedWater, infectedDeepWater, infectedShrub;
@@ -39,7 +40,7 @@ public class Blocks extends BlockList implements ContentList{
             public void drawShadow(Tile tile){}
 
             public void draw(Tile tile){
-                Draw.color(Color.SCARLET);
+                Draw.color(Color.scarlet);
                 Lines.circle(tile.worldx(), tile.worldy(), 4f +Mathf.absin(Timers.time(), 6f, 6f));
                 Draw.color();
             }

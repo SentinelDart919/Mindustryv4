@@ -1,6 +1,6 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.Mechs;
@@ -12,21 +12,22 @@ import io.anuke.mindustry.content.blocks.UpgradeBlocks;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.maps.missions.*;
 import io.anuke.mindustry.type.Item;
-import io.anuke.ucore.util.GridMap;
-import io.anuke.ucore.util.Structs;
+import arc.struct.GridMap;
+
+import arc.util.Structs;
 
 import static io.anuke.mindustry.Vars.mobile;
 
 public class SectorPresets{
     private final GridMap<SectorPreset> presets = new GridMap<>();
-    private final GridMap<Array<Item>> orePresets = new GridMap<>();
+    private final GridMap<Seq<Item>> orePresets = new GridMap<>();
 
     public SectorPresets(){
 
         //base tutorial mission
         add(new SectorPreset(0, 0,
             TutorialSector.getMissions(),
-            Array.with(Items.copper, Items.scrap, Items.coal, Items.lead)));
+            Seq.with(Items.copper, Items.scrap, Items.coal, Items.lead)));
 
         //command center mission
         add(new SectorPreset(0, 1,
@@ -38,7 +39,7 @@ public class SectorPresets{
                 new CommandMission(UnitCommand.attack),
                 new BattleMission()
             ),
-            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal)));
+            Seq.with(Items.copper, Items.scrap, Items.lead, Items.coal)));
 
         //pad mission
         add(new SectorPreset(0, -2,
@@ -47,7 +48,7 @@ public class SectorPresets{
                 new MechMission(mobile ? Mechs.alpha : Mechs.dart),
                 new WaveMission(15)
             ),
-            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
+            Seq.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
 
         //oil mission
         add(new SectorPreset(-2, 0,
@@ -59,10 +60,10 @@ public class SectorPresets{
                 new ContentMission(Liquids.oil),
                 new BattleMission()
             ),
-            Array.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
+            Seq.with(Items.copper, Items.scrap, Items.lead, Items.coal, Items.titanium)));
     }
 
-    public Array<Item> getOres(int x, int y){
+    public Seq<Item> getOres(int x, int y){
         return orePresets.get(x, y);
     }
 
@@ -78,11 +79,11 @@ public class SectorPresets{
     }
 
     public static class SectorPreset{
-        public final Array<Mission> missions;
-        public final Array<Item> ores;
+        public final Seq<Mission> missions;
+        public final Seq<Item> ores;
         public final int x, y;
 
-        public SectorPreset(int x, int y, Array<Mission> missions, Array<Item> ores){
+        public SectorPreset(int x, int y, Seq<Mission> missions, Seq<Item> ores){
             this.missions = missions;
             this.x = x;
             this.y = y;

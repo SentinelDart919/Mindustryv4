@@ -6,7 +6,7 @@ import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Events;
+import arc.Events;
 
 import static io.anuke.mindustry.Vars.unitGroups;
 

@@ -1,12 +1,14 @@
 package io.anuke.mindustry.world.consumers;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.Core;
+import arc.func.Cons;
+import arc.graphics.Color;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.meta.BlockStats;
-import io.anuke.ucore.scene.ui.Tooltip;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.scene.ui.Tooltip;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.mobile;
 
@@ -33,17 +35,17 @@ public abstract class Consume{
     }
 
     public void build(Table table){
-        Table t = new Table("flat");
+        Table t = new Table();
         t.margin(4);
         buildTooltip(t);
 
         int scale = mobile ? 4 : 3;
 
-        table.table(out -> {
-            out.addImage(getIcon()).size(10 * scale).color(Color.DARK_GRAY).padRight(-10 * scale).padBottom(-scale * 2);
-            out.addImage(getIcon()).size(10 * scale).color(Palette.accent);
-            out.addImage("icon-missing").size(10 * scale).color(Palette.remove).padLeft(-10 * scale);
-        }).size(10 * scale).get().addListener(new Tooltip<>(t));
+        table.table((Cons<Table>)out -> {
+            out.image(Core.atlas.find(getIcon())).size(10 * scale).color(Color.darkGray).padRight(-10 * scale).padBottom(-scale * 2);
+            out.image(Core.atlas.find(getIcon())).size(10 * scale).color(Palette.accent);
+            out.image(Core.atlas.find("icon-missing")).size(10 * scale).color(Palette.remove).padLeft(-10 * scale);
+        }).size(10 * scale).get().addListener(new Tooltip((Cons<Table>)tooltip -> tooltip.add(t)));
     }
 
     public abstract void buildTooltip(Table table);

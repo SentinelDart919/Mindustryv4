@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.defense.turrets;
 
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.type.AmmoEntry;
 import io.anuke.mindustry.type.AmmoType;
@@ -10,7 +10,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.values.ItemFilterValue;
-import io.anuke.ucore.util.Mathf;
+import arc.math.Mathf;
 
 public class ItemTurret extends CooledTurret{
     protected int maxAmmo = 50;

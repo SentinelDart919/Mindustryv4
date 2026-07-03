@@ -1,10 +1,10 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.ThreadSet;
+import java.util.EnumSet;
+import arc.struct.ObjectSet;
 
 /**
  * Class for various team-based utilities.
@@ -19,7 +19,9 @@ public class Teams{
      * @param enemies The array of enemies of this team. Any team not in this array is considered neutral.
      */
     public void add(Team team, Team... enemies){
-        map[team.ordinal()] = new TeamData(team, EnumSet.of(enemies));
+        java.util.EnumSet<Team> set = java.util.EnumSet.noneOf(Team.class);
+        java.util.Collections.addAll(set, enemies);
+        map[team.ordinal()] = new TeamData(team, set);
     }
 
     /**Returns team data by type.*/
@@ -52,7 +54,7 @@ public class Teams{
     }
 
     public class TeamData{
-        public final ObjectSet<Tile> cores = new ThreadSet<>();
+        public final ObjectSet<Tile> cores = new ObjectSet<>();
         public final EnumSet<Team> enemies;
         public final Team team;
         public io.anuke.mindustry.ai.RtsAI rtsAI;

@@ -1,14 +1,14 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 public class PhaseWeaver extends PowerSmelter{
     protected TextureRegion bottomRegion;
@@ -22,14 +22,14 @@ public class PhaseWeaver extends PowerSmelter{
     public void load(){
         super.load();
 
-        bottomRegion = Draw.region(name + "-bottom");
-        weaveRegion = Draw.region(name + "-weave");
+        bottomRegion = Core.atlas.find(name + "-bottom");
+        weaveRegion = Core.atlas.find(name + "-weave");
     }
 
     @Override
     public TextureRegion[] getIcon(){
         if(icon == null){
-            icon = new TextureRegion[]{Draw.region(name + "-bottom"), Draw.region(name)};
+            icon = new TextureRegion[]{Core.atlas.find(name + "-bottom"), Core.atlas.find(name)};
         }
         return icon;
     }
@@ -48,10 +48,10 @@ public class PhaseWeaver extends PowerSmelter{
         Shaders.build.color.a = entity.heat;
         Shaders.build.time = -entity.time / 10f;
 
-        Graphics.shader(Shaders.build, false);
+        Gfx.shader(Shaders.build, false);
         Shaders.build.apply();
         Draw.rect(weaveRegion, tile.drawx(), tile.drawy(), entity.time);
-        Graphics.shader();
+        Gfx.shader();
 
         Draw.color(Palette.accent);
         Draw.alpha(entity.heat);
@@ -67,3 +67,4 @@ public class PhaseWeaver extends PowerSmelter{
         Draw.rect(region, tile.drawx(), tile.drawy());
     }
 }
+

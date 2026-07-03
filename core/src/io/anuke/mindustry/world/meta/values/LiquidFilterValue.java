@@ -1,27 +1,27 @@
 package io.anuke.mindustry.world.meta.values;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.ui.LiquidDisplay;
 import io.anuke.mindustry.world.meta.StatValue;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.func.Boolf;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.content;
 
 public class LiquidFilterValue implements StatValue{
-    private final Predicate<Liquid> filter;
+    private final Boolf<Liquid> filter;
 
-    public LiquidFilterValue(Predicate<Liquid> filter){
+    public LiquidFilterValue(Boolf<Liquid> filter){
         this.filter = filter;
     }
 
     @Override
     public void display(Table table){
-        Array<Liquid> list = new Array<>();
+        Seq<Liquid> list = new Seq<>();
 
         for(Liquid item : content.liquids()){
-            if(!item.isHidden() && filter.test(item)) list.add(item);
+            if(!item.isHidden() && filter.get(item)) list.add(item);
         }
 
         for(int i = 0; i < list.size; i++){

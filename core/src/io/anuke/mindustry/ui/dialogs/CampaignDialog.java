@@ -1,6 +1,6 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.maps.campaign.Campaign;
 import io.anuke.mindustry.maps.campaign.CampaignManager;
 
@@ -9,7 +9,7 @@ import static io.anuke.mindustry.Vars.world;
 
 public class CampaignDialog extends FloatingDialog {
     private final CampaignManager campaignManager;
-    private final Array<Campaign> allCampaigns = new Array<>();
+    private final Seq<Campaign> allCampaigns = new Seq<>();
 
     public CampaignDialog() {
         super("$text.campaigns");

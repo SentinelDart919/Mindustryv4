@@ -1,9 +1,9 @@
 package io.anuke.mindustry.ui.fragments;
 
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.IntSet;
+import arc.math.Interp;
+import arc.math.geom.Vec2;
+import arc.util.Align;
+import arc.struct.IntSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.core.GameState.State;
@@ -13,19 +13,19 @@ import io.anuke.mindustry.input.InputHandler;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.ui.ItemImage;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.function.BooleanProvider;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.actions.Actions;
-import io.anuke.ucore.scene.event.HandCursorListener;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Strings;
+import arc.Graphics;
+import arc.util.Time;
+import arc.func.Boolp;
+import arc.scene.Group;
+import arc.scene.actions.Actions;
+import arc.scene.event.HandCursorListener;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.event.Touchable;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -80,7 +80,7 @@ public class BlockInventoryFragment extends Fragment{
     }
 
     public void hide(){
-        table.actions(Actions.scaleTo(0f, 1f, 0.06f, Interpolation.pow3Out), Actions.visible(false), Actions.run(() -> {
+        table.actions(Actions.scaleTo(0f, 1f, 0.06f, Interp.pow3Out), Actions.visible(false), Actions.run(() -> {
             itemTable.clear();
             table.update(null);
         }));
@@ -186,7 +186,7 @@ public class BlockInventoryFragment extends Fragment{
         if(actions){
             table.setTransform(true);
             table.actions(Actions.scaleTo(0f, 1f), Actions.visible(true),
-                    Actions.scaleTo(1f, 1f, 0.07f, Interpolation.pow3Out), Actions.run(() -> table.setTransform(false)));
+                    Actions.scaleTo(1f, 1f, 0.07f, Interp.pow3Out), Actions.run(() -> table.setTransform(false)));
         }
     }
 
@@ -202,8 +202,9 @@ public class BlockInventoryFragment extends Fragment{
     }
 
     private void updateTablePosition(){
-        Vector2 v = Graphics.screen(tile.drawx() + tile.block().size * tilesize / 2f, tile.drawy() + tile.block().size * tilesize / 2f);
+        Vec2 v = Graphics.screen(tile.drawx() + tile.block().size * tilesize / 2f, tile.drawy() + tile.block().size * tilesize / 2f);
         table.pack();
         table.setPosition(v.x, v.y, Align.topLeft);
     }
 }
+

@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
@@ -11,16 +11,16 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.graphics.Shapes;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.Shapes;
+import arc.math.Angles;
+import java.util.EnumSet;
+import arc.math.Mathf;
 
 public class RepairPoint extends Block{
-    private static Rectangle rect = new Rectangle();
+    private static Rect rect = new Rect();
 
     protected int timerTarget = timers++;
 
@@ -45,7 +45,7 @@ public class RepairPoint extends Block{
     public void load(){
         super.load();
 
-        topRegion = Draw.region(name + "-turret");
+        topRegion = Core.atlas.find(name + "-turret");
     }
 
     @Override

@@ -1,13 +1,15 @@
 package io.anuke.mindustry.type;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Bundles;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.ui.ContentDisplay;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 public class Liquid extends UnlockableContent{
     public final Color color;
@@ -45,7 +47,7 @@ public class Liquid extends UnlockableContent{
 
     @Override
     public void load(){
-        iconRegion = Draw.region("liquid-icon-" + name);
+        iconRegion = Core.atlas.find("liquid-icon-" + name);
     }
 
     @Override

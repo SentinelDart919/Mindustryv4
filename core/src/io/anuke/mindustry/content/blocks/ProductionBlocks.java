@@ -1,7 +1,9 @@
 package io.anuke.mindustry.content.blocks;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -12,9 +14,9 @@ import io.anuke.mindustry.world.blocks.production.Cultivator;
 import io.anuke.mindustry.world.blocks.production.Drill;
 import io.anuke.mindustry.world.blocks.production.Fracker;
 import io.anuke.mindustry.world.blocks.production.SolidPump;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.content.blocks.Blocks.infectedGrass;
 
@@ -145,7 +147,7 @@ public class ProductionBlocks extends BlockList implements ContentList{
         }
         @Override
             public TextureRegion[] getIcon(){
-            return new TextureRegion[]{Draw.region(name), Draw.region(name + "-top")};
+            return new TextureRegion[]{Core.atlas.find(name), Core.atlas.find(name + "-top")};
         }
         @Override
             public void draw(Tile tile){

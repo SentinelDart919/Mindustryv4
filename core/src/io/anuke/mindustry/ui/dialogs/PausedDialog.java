@@ -1,11 +1,11 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Input.Keys;
+import arc.input.KeyCode;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.scene.style.Drawable;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
+import arc.scene.style.Drawable;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 

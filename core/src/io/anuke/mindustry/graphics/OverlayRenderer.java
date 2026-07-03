@@ -1,10 +1,10 @@
 package io.anuke.mindustry.graphics;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import arc.graphics.Color;
+import arc.math.Mathf;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.Player;
@@ -14,21 +14,21 @@ import io.anuke.mindustry.input.InputHandler;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockBar;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Tmp;
+import arc.Core;
+import arc.Graphics;
+import arc.Settings;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
+import arc.util.Tmp;
 
 import static io.anuke.mindustry.Vars.*;
 
 public class OverlayRenderer{
     private static final float indicatorLength = 14f;
-    private static final Rectangle rect = new Rectangle();
+    private static final Rect rect = new Rect();
     private float buildFadeTime;
 
     public void drawBottom(){
@@ -54,7 +54,7 @@ public class OverlayRenderer{
 
         for(Player player : playerGroup.all()){
             if(Settings.getBool("indicators") && player != players[0] && player.getTeam() == players[0].getTeam()){
-                if(!rect.setSize(Core.camera.viewportWidth * Core.camera.zoom * 0.9f, Core.camera.viewportHeight * Core.camera.zoom * 0.9f)
+                if(!rect.setSize(Core.camera.width * Core.camera.zoom * 0.9f, Core.camera.height * Core.camera.zoom * 0.9f)
                 .setCenter(Core.camera.position.x, Core.camera.position.y).contains(player.x, player.y)){
 
                     Tmp.v1.set(player.x, player.y).sub(Core.camera.position.x, Core.camera.position.y).setLength(indicatorLength);
@@ -89,9 +89,9 @@ public class OverlayRenderer{
                 for(Team enemy : state.teams.enemiesOf(player.getTeam())){
                     if(enemy == Team.themass) continue;
                     for(Tile core : state.teams.get(enemy).cores){
-                        float dst = Vector2.dst(player.x, player.y, core.drawx(), core.drawy());
+                        float dst = Vec2.dst(player.x, player.y, core.drawx(), core.drawy());
                         if(dst < state.mode.enemyCoreBuildRadius * 1.5f){
-                            Draw.color(Color.DARK_GRAY);
+                            Draw.color(Color.darkGray);
                             Lines.poly(core.drawx(), core.drawy() - 2, 200, state.mode.enemyCoreBuildRadius);
                             Draw.color(Palette.accent, enemy.color, 0.5f + Mathf.absin(Timers.time(), 10f, 0.5f));
                             Lines.poly(core.drawx(), core.drawy(), 200, state.mode.enemyCoreBuildRadius);
@@ -104,7 +104,7 @@ public class OverlayRenderer{
 
             //draw selected block bars and info
             if(input.recipe == null && !ui.hasMouse()){
-                Vector2 vec = Graphics.world(input.getMouseX(), input.getMouseY());
+                Vec2 vec = Graphics.world(input.getMouseX(), input.getMouseY());
                 Tile tile = world.tileWorld(vec.x, vec.y);
 
                 if(tile != null && tile.block() != Blocks.air && tile.target().getTeam() == players[0].getTeam()){
@@ -113,11 +113,11 @@ public class OverlayRenderer{
                     if(showBlockDebug && target.entity != null){
                         Draw.color(Color.RED);
                         Lines.crect(target.drawx(), target.drawy(), target.block().size * tilesize, target.block().size * tilesize);
-                        Vector2 v = new Vector2();
+                        Vec2 v = new Vec2();
 
                         Draw.tcolor(Color.YELLOW);
                         Draw.tscl(0.25f);
-                        Array<Object> arr = target.block().getDebugInfo(target);
+                        Seq<Object> arr = target.block().getDebugInfo(target);
                         StringBuilder result = new StringBuilder();
                         for(int i = 0; i < arr.size / 2; i++){
                             result.append(arr.get(i * 2));
@@ -146,7 +146,7 @@ public class OverlayRenderer{
 
                                 float value = bar.value.get(target);
 
-                                if(MathUtils.isEqual(value, -1f)) continue;
+                                if(Mathf.isEqual(value, -1f)) continue;
 
                                 if(doDraw[0]){
                                     drawBar(bar.type.color, target.drawx(), target.drawy() + offset, value);
@@ -183,7 +183,7 @@ public class OverlayRenderer{
             }
 
             if(input.isDroppingItem()){
-                Vector2 v = Graphics.world(input.getMouseX(), input.getMouseY());
+                Vec2 v = Graphics.world(input.getMouseX(), input.getMouseY());
                 float size = 8;
                 Draw.rect(player.inventory.getItem().item.region, v.x, v.y, size, size);
                 Draw.color(Palette.accent);
@@ -212,7 +212,7 @@ public class OverlayRenderer{
 
         float w = (int) (len * 2 * finion);
 
-        Draw.color(Color.BLACK);
+        Draw.color(Color.black);
         Fill.crect(x - len, y, len * 2f, 1);
         if(finion > 0){
             Draw.color(color);

@@ -1,17 +1,18 @@
 package io.anuke.mindustry.type;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.ui.ContentDisplay;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Strings;
 
 public class Item extends UnlockableContent implements Comparable<Item>{
     public final String name;
@@ -46,16 +47,16 @@ public class Item extends UnlockableContent implements Comparable<Item>{
     public Item(String name, Color color){
         this.name = name;
         this.color = color;
-        this.description = Bundles.getOrNull("item." + this.name + ".description");
+        this.description = Core.bundle.getOrNull("item." + this.name + ".description");
 
-        if(!Bundles.has("item." + this.name + ".name")){
+        if(!Core.bundle.has("item." + this.name + ".name")){
             Log.err("Warning: item '" + name + "' is missing a localized name. Add the following to bundle.properties:");
             Log.err("item." + this.name + ".name=" + Strings.capitalize(name.replace('-', '_')));
         }
     }
 
     public void load(){
-        this.region = Draw.region("item-" + name);
+        this.region = Core.atlas.find("item-" + name);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class Item extends UnlockableContent implements Comparable<Item>{
 
     @Override
     public String localizedName(){
-        return Bundles.get("item." + this.name + ".name");
+        return Core.bundle.get("item." + this.name + ".name");
     }
 
     @Override
@@ -98,8 +99,8 @@ public class Item extends UnlockableContent implements Comparable<Item>{
         return ContentType.item;
     }
 
-    public static Array<Item> getAllOres(){
-        Array<Item> arr = new Array<>();
+    public static Seq<Item> getAllOres(){
+        Seq<Item> arr = new Seq<>();
         for(Item item : Vars.content.items()){
             if(item.genOre) arr.add(item);
         }

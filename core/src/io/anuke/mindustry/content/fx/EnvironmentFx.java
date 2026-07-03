@@ -1,15 +1,15 @@
 package io.anuke.mindustry.content.fx;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class EnvironmentFx extends FxList implements ContentList{
     public static Effect burning, fire, smoke, steam, fireballsmoke, ballfire, freezing, melting, wet, oily, overdriven, dropItem, acidSteam;
@@ -38,7 +38,7 @@ public class EnvironmentFx extends FxList implements ContentList{
         });
 
         smoke = new Effect(35f, e -> {
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 1, 2f + e.fin() * 7f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);
@@ -48,7 +48,7 @@ public class EnvironmentFx extends FxList implements ContentList{
         });
 
         steam = new Effect(35f, e -> {
-            Draw.color(Color.LIGHT_GRAY);
+            Draw.color(Color.lightGray);
 
             Angles.randLenVectors(e.id, 2, 2f + e.fin() * 7f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, 0.2f + e.fslope() * 1.5f);
@@ -58,7 +58,7 @@ public class EnvironmentFx extends FxList implements ContentList{
         });
 
         fireballsmoke = new Effect(25f, e -> {
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 1, 2f + e.fin() * 7f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, 0.2f + e.fout() * 1.5f);
@@ -88,7 +88,7 @@ public class EnvironmentFx extends FxList implements ContentList{
         });
 
         melting = new Effect(40f, e -> {
-            Draw.color(Liquids.lava.color, Color.WHITE, e.fout() / 5f + Mathf.randomSeedRange(e.id, 0.12f));
+            Draw.color(Liquids.lava.color, Color.white, e.fout() / 5f + Mathf.randomSeedRange(e.id, 0.12f));
 
             Angles.randLenVectors(e.id, 2, 1f + e.fin() * 3f, (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, .2f + e.fout() * 1.2f);

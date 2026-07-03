@@ -1,16 +1,16 @@
 package io.anuke.mindustry.maps.campaign;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.maps.Sector;
 
 public class Campaign {
     public String name;
-    private final Array<Sector> sectors;
+    private final Seq<Sector> sectors;
     private int completedSectors;
 
     public Campaign(String name) {
         this.name = name;
-        this.sectors = new Array<>();
+        this.sectors = new Seq<>();
     }
 
     public void addSector(Sector sector) {
@@ -41,7 +41,7 @@ public class Campaign {
         this.completedSectors = completedSectors;
     }
 
-    public Array<Sector> getSectors() {
+    public Seq<Sector> getSectors() {
         return sectors;
     }
 }

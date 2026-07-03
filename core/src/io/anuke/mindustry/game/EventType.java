@@ -3,7 +3,8 @@ package io.anuke.mindustry.game;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.traits.BuilderTrait;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.function.Event;
+import arc.Event;
+import arc.func.Cons;
 
 public class EventType{
 

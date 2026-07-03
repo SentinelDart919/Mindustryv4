@@ -1,6 +1,6 @@
 package io.anuke.mindustry;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 
 public class GenRegion extends TextureRegion {
     public String name;

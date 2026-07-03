@@ -1,11 +1,12 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.Core;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.scene.ui.TextArea;
-import io.anuke.ucore.scene.ui.TextField;
+import arc.Settings;
+import arc.scene.ui.TextArea;
+import arc.scene.ui.TextField;
 
 public class MapInfoDialog extends FloatingDialog{
     private final MapEditor editor;
@@ -45,7 +46,7 @@ public class MapInfoDialog extends FloatingDialog{
 
         content().add("$text.editor.description").padRight(8).left();
 
-        description = content().addArea(tags.get("description", ""), "textarea", text -> {
+        description = content().area(tags.get("description", ""), "textarea", text -> {
             tags.put("description", text);
         }).size(400f, 140f).get();
 
@@ -53,17 +54,17 @@ public class MapInfoDialog extends FloatingDialog{
 
         content().add("$text.editor.author").padRight(8).left();
 
-        author = content().addField(tags.get("author", Settings.getString("mapAuthor", "")), text -> {
+        author = content().addField(tags.get("author", Core.settings.getString("mapAuthor", "")),text -> {
             tags.put("author", text);
-            Settings.putString("mapAuthor", text);
-            Settings.save();
+            Core.settings.put("mapAuthor", text);
+            Core.settings.save();
         }).size(400, 55f).get();
         author.setMessageText("$text.unknown");
 
         content().row();
 
         content().add().padRight(8).left();
-        content().addCheck("$text.editor.oregen", enabled -> {
+        content().addButton("$text.editor.oregen", enabled -> {
             tags.put("oregen", enabled ? "1" : "0");
         }).update(c -> c.setChecked(!tags.get("oregen", "0").equals("0"))).left();
 

@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.consumers;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Block;
@@ -8,32 +8,32 @@ import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.BlockStats;
 import io.anuke.mindustry.world.meta.StatUnit;
 import io.anuke.mindustry.world.meta.values.LiquidFilterValue;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.func.Boolf;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.content;
 
 public class ConsumeLiquidFilter extends Consume{
-    private final Predicate<Liquid> filter;
+    private final Boolf<Liquid> filter;
     private final float use;
     private final boolean isFuel;
 
-    public ConsumeLiquidFilter(Predicate<Liquid> liquid, float amount, boolean isFuel){
+    public ConsumeLiquidFilter(Boolf<Liquid> liquid, float amount, boolean isFuel){
         this.filter = liquid;
         this.use = amount;
         this.isFuel = isFuel;
     }
 
-    public ConsumeLiquidFilter(Predicate<Liquid> liquid, float amount){
+    public ConsumeLiquidFilter(Boolf<Liquid> liquid, float amount){
         this(liquid, amount, false);
     }
 
     @Override
     public void buildTooltip(Table table){
-        Array<Liquid> list = new Array<>();
+        Seq<Liquid> list = new Seq<>();
 
         for(Liquid item : content.liquids()){
-            if(!item.isHidden() && filter.test(item)) list.add(item);
+            if(!item.isHidden() && filter.get(item)) list.add(item);
         }
 
         for(int i = 0; i < list.size; i++){
@@ -57,7 +57,7 @@ public class ConsumeLiquidFilter extends Consume{
 
     @Override
     public boolean valid(Block block, TileEntity entity){
-        return entity.liquids != null && filter.test(entity.liquids.current()) && entity.liquids.currentAmount() >= use(block, entity);
+        return entity.liquids != null && filter.get(entity.liquids.current()) && entity.liquids.currentAmount() >= use(block, entity);
     }
 
     @Override

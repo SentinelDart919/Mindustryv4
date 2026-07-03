@@ -1,13 +1,16 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.utils.IntSet;
+import arc.modules.Module;
+
+import arc.struct.IntSet;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.ApplicationListener;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 public class InfectionManager extends Module {
     private IntSet infectedQueue = new IntSet();
@@ -145,3 +148,4 @@ public class InfectionManager extends Module {
         timer = 0;
     }
 }
+

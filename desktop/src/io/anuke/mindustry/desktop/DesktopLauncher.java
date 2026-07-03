@@ -1,23 +1,23 @@
 package io.anuke.mindustry.desktop;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import arc.ApplicationListener;
+import arc.backends.sdl.SdlApplication;
+import arc.backends.sdl.SdlApplicationConfiguration;
 import io.anuke.kryonet.KryoClient;
 import io.anuke.kryonet.KryoServer;
 import io.anuke.mindustry.Mindustry;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.net.Net;
 
-public class DesktopLauncher extends Lwjgl3Application{
+public class DesktopLauncher extends SdlApplication{
 
-    public DesktopLauncher(ApplicationListener listener, Lwjgl3ApplicationConfiguration config){
+    public DesktopLauncher(ApplicationListener listener, SdlApplicationConfiguration config){
         super(listener, config);
     }
 
     public static void main(String[] arg){
         try{
-            Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+            SdlApplicationConfiguration config = new SdlApplicationConfiguration();
             config.setTitle("MindustryV4Modded");
             config.setMaximized(true);
             config.setWindowedMode(960, 540);

@@ -1,7 +1,7 @@
 package io.anuke.mindustry.input;
 
 import io.anuke.mindustry.world.Block;
-import io.anuke.ucore.util.Mathf;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.tilesize;
 
@@ -10,7 +10,7 @@ public class PlaceUtils{
     private static final NormalizeDrawResult drawResult = new NormalizeDrawResult();
 
     /**
-     * Normalizes a placement area and returns the result, ready to be used for drawing a rectangle.
+     * Normalizes a placement area and returns the result, ready to be used for drawing a Rect.
      * Returned x2 and y2 will <i>always</i> be greater than x and y.
      *
      * @param block block that will be drawn

@@ -1,13 +1,17 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.async.AsyncExecutor;
+import arc.Core;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmap.Format;
+import arc.graphics.Texture;
+import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.math.geom.Point2;
+import arc.struct.Seq;
+import arc.struct.GridMap;
+import arc.struct.Bits;
+
+import arc.util.async.AsyncExecutor;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.Team;
@@ -25,17 +29,18 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.Rock;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.util.*;
+import arc.Settings;
+import arc.util.*;
 
 import static io.anuke.mindustry.Vars.*;
+import arc.struct.ObjectMap;
 
 public class Sectors {
     public static final int sectorImageSize = 32;
     public static final String defaultCampaign = CampaignRegistry.serpulo;
 
     private final ObjectMap<String, GridMap<Sector>> campaignGrids = new ObjectMap<>();
-    private final Array<Item> allOres = Item.getAllOres();
+    private final Seq<Item> allOres = Item.getAllOres();
     private final AsyncExecutor executor = new AsyncExecutor(6);
     private CampaignManager campaignManager;
     private String activeCampaign = defaultCampaign;
@@ -114,7 +119,7 @@ public class Sectors {
         }
     }
 
-    public Array<Item> getOres(int x, int y) {
+    public Seq<Item> getOres(int x, int y) {
         return activeGenerator().getOres(x, y, allOres);
     }
 
@@ -125,7 +130,7 @@ public class Sectors {
         if(sector == null) return;
         sector.complete = true;
 
-        for (GridPoint2 g : Geometry.d4) {
+        for (Point2 g : Geometry.d4) {
             createSector(x + g.x, y + g.y);
         }
     }
@@ -233,7 +238,7 @@ public class Sectors {
     }
 
     public void save() {
-        Array<Sector> out = new Array<>();
+        Seq<Sector> out = new Seq<>();
         GridMap<Sector> grid = activeGrid();
 
         for (Sector sector : grid.values()) {
@@ -242,9 +247,9 @@ public class Sectors {
             }
         }
 
-        Settings.putObject(campaignSettingsKey(activeCampaign), out);
+        Core.settings.put(campaignSettingsKey(activeCampaign), out);
         launchManager.save();
-        Settings.save();
+        Core.settings.save();
     }
 
     public String getActiveCampaign(){
@@ -310,12 +315,10 @@ public class Sectors {
                 }
             }
 
-            Gdx.app.postRunnable(() -> {
+            Core.app.post(() -> {
                 sector.texture = new Texture(pixmap);
                 pixmap.dispose();
             });
-
-            return null;
         });
     }
 
@@ -350,7 +353,7 @@ public class Sectors {
             grid.clear();
         }
 
-        Array<Sector> out = Settings.getObject(campaignSettingsKey(campaignName), Array.class, Array::new);
+        Seq<Sector> out = Core.settings.getObject(campaignSettingsKey(campaignName), Seq.class, Seq::new);
 
         for(Sector sector : out){
             createTexture(sector);
@@ -364,3 +367,5 @@ public class Sectors {
         }
     }
 }
+
+

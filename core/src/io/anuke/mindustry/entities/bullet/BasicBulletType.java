@@ -1,16 +1,18 @@
 package io.anuke.mindustry.entities.bullet;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Timers;
 import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.traits.TargetTrait;
 import io.anuke.mindustry.graphics.Palette;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 /**
  * A BulletType for most ammo-based bullets shot from turrets and units.
@@ -47,8 +49,8 @@ public class BasicBulletType extends BulletType{
 
     @Override
     public void load(){
-        backRegion = Draw.region(bulletSprite + "-back");
-        frontRegion = Draw.region(bulletSprite);
+        backRegion = Core.atlas.find(bulletSprite + "-back");
+        frontRegion = Core.atlas.find(bulletSprite);
     }
 
     @Override

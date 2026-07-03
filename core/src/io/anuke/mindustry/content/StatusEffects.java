@@ -1,14 +1,15 @@
 package io.anuke.mindustry.content;
 
+import arc.util.Timers;
 import io.anuke.mindustry.content.fx.EnvironmentFx;
 import io.anuke.mindustry.entities.StatusController.StatusEntry;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.StatusEffect;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.util.Time;
+import arc.math.Mathf;
 
 public class StatusEffects implements ContentList{
     public static StatusEffect none, burning, freezing, wet, melting, tarred, overdrive, shielded, acid;

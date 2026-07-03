@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
@@ -8,7 +8,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockGroup;
-import io.anuke.ucore.core.Timers;
+import arc.util.Time;
 
 public class Router extends Block{
     protected float speed = 8f;
@@ -67,7 +67,7 @@ public class Router extends Block{
     }
 
     Tile getTileTarget(Tile tile, Item item, Tile from, boolean set){
-        Array<Tile> proximity = tile.entity.proximity();
+        Seq<Tile> proximity = tile.entity.proximity();
         int counter = tile.getDump();
         for(int i = 0; i < proximity.size; i++){
             Tile other = proximity.get((i + counter) % proximity.size);

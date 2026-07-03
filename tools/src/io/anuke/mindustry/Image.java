@@ -1,8 +1,8 @@
 package io.anuke.mindustry;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import io.anuke.ucore.util.Structs;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Structs;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

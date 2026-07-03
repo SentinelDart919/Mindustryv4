@@ -1,11 +1,12 @@
 package io.anuke.mindustry.input;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntSet;
+import arc.Core;
+import arc.Input;
+import arc.input.Input.Buttons;
+import arc.input.KeyCode;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Vec2;
+import arc.struct.IntSet;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -24,15 +25,13 @@ import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Inputs;
-import io.anuke.ucore.core.KeyBinds;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.input.Input;
-import io.anuke.ucore.util.Mathf;
+import arc.Graphics;
+import arc.input.KeyBinds;
+import arc.Settings;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 import static io.anuke.mindustry.input.CursorType.*;
@@ -50,8 +49,8 @@ public class DesktopInput extends InputHandler{
     private float selectScale;
     private final IntSet selectedUnits = new IntSet();
     private boolean selectingUnits;
-    private final Vector2 unitSelectStart = new Vector2();
-    private final Vector2 unitSelectEnd = new Vector2();
+    private final Vec2 unitSelectStart = new Vec2();
+    private final Vec2 unitSelectEnd = new Vec2();
     private boolean leftWasDown, rightWasDown;
     private UnitOrderType activeOrderType = UnitOrderType.move;
 
@@ -70,7 +69,7 @@ public class DesktopInput extends InputHandler{
 
             for(TextureRegion region : regions){
                 Draw.rect(region, x * tilesize + block.offset(), y * tilesize + block.offset(),
-                        region.getRegionWidth() * selectScale, region.getRegionHeight() * selectScale, block.rotate ? rotation * 90 : 0);
+                        region.width * selectScale, region.height * selectScale, block.rotate ? rotation * 90 : 0);
             }
         }else{
             Draw.color(Palette.removeBack);
@@ -87,8 +86,8 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public void drawOutlined(){
-        int cursorX = tileX(Gdx.input.getX());
-        int cursorY = tileY(Gdx.input.getY());
+        int cursorX = tileX(Core.input.getX());
+        int cursorY = tileY(Core.input.getY());
 
         //draw selection(s)
         if(mode == placing && recipe != null){
@@ -168,8 +167,8 @@ public class DesktopInput extends InputHandler{
             ui.mapfrag.toggle();
         }
 
-        int cursorX = tileX(Gdx.input.getX());
-        int cursorY = tileY(Gdx.input.getY());
+        int cursorX = tileX(Core.input.getX());
+        int cursorY = tileY(Core.input.getY());
 
         if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
 
@@ -181,8 +180,8 @@ public class DesktopInput extends InputHandler{
             recipe = null;
             mode = copying;
             schematic = null;
-            cursorX = tileX(Gdx.input.getX());
-            cursorY = tileY(Gdx.input.getY());
+            cursorX = tileX(Core.input.getX());
+            cursorY = tileY(Core.input.getY());
             selectX = cursorX;
             selectY = cursorY;
         }
@@ -244,7 +243,7 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        Tile cursor = tileAt(Gdx.input.getX(), Gdx.input.getY());
+        Tile cursor = tileAt(Core.input.getX(), Core.input.getY());
 
         if(player.isDead()){
             cursorType = normal;
@@ -261,7 +260,7 @@ public class DesktopInput extends InputHandler{
                 cursorType = drill;
             }
 
-            if(canTapPlayer(Graphics.mouseWorld().x, Graphics.mouseWorld().y)){
+            if(canTapPlayer(Gfx.mouseWorld().x, Gfx.mouseWorld().y)){
                 cursorType = unload;
             }
         }
@@ -274,12 +273,12 @@ public class DesktopInput extends InputHandler{
     }
 
     void pollInput(){
-        Tile selected = tileAt(Gdx.input.getX(), Gdx.input.getY());
-        int cursorX = tileX(Gdx.input.getX());
-        int cursorY = tileY(Gdx.input.getY());
-        Vector2 mouseWorld = Graphics.mouseWorld();
-        boolean leftDown = Gdx.input.isButtonPressed(Buttons.LEFT);
-        boolean rightDown = Gdx.input.isButtonPressed(Buttons.RIGHT);
+        Tile selected = tileAt(Core.input.getX(), Core.input.getY());
+        int cursorX = tileX(Core.input.getX());
+        int cursorY = tileY(Core.input.getY());
+        Vec2 mouseWorld = Gfx.mouseWorld();
+        boolean leftDown = Core.input.isButtonPressed(Buttons.LEFT);
+        boolean rightDown = Core.input.isButtonPressed(Buttons.RIGHT);
         boolean leftJustPressed = leftDown && !leftWasDown;
         boolean rightJustPressed = rightDown && !rightWasDown;
 
@@ -288,9 +287,9 @@ public class DesktopInput extends InputHandler{
             selectedUnits.clear();
         }
 
-        boolean shift = Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
-        boolean rtsModifier = Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT)
-            || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
+        boolean shift = Core.input.isKeyPressed(Keys.SHIFT_LEFT) || Core.input.isKeyPressed(Keys.SHIFT_RIGHT);
+        boolean rtsModifier = Core.input.isKeyPressed(Keys.ALT_LEFT) || Core.input.isKeyPressed(Keys.ALT_RIGHT)
+            || Core.input.isKeyPressed(Keys.CONTROL_LEFT) || Core.input.isKeyPressed(Keys.CONTROL_RIGHT);
         boolean unitCommandMode = hasSelectedUnits();
         if((rtsModifier || unitCommandMode) && !ui.hasMouse() && leftJustPressed){
             selectingUnits = true;
@@ -353,7 +352,7 @@ public class DesktopInput extends InputHandler{
                 mode = placing;
             }else if(selected != null){
                 //only begin shooting if there's no cursor event
-                if (!tileTapped(selected) && !tryTapPlayer(Graphics.mouseWorld().x, Graphics.mouseWorld().y) && player.getPlaceQueue().size == 0 && !droppingItem &&
+                if (!tileTapped(selected) && !tryTapPlayer(Gfx.mouseWorld().x, Gfx.mouseWorld().y) && player.getPlaceQueue().size == 0 && !droppingItem &&
                         !tryBeginMine(selected) && player.getMineTile() == null) {
                     player.isShooting = true;
                 }
@@ -371,8 +370,8 @@ public class DesktopInput extends InputHandler{
         }else if(Inputs.keyTap(section, "break") && !ui.hasMouse()){
             //is recalculated because setting the mode to breaking removes potential multiblock cursor offset
             mode = breaking;
-            selectX = tileX(Gdx.input.getX());
-            selectY = tileY(Gdx.input.getY());
+            selectX = tileX(Core.input.getX());
+            selectY = tileY(Core.input.getY());
         }
 
 
@@ -406,7 +405,7 @@ public class DesktopInput extends InputHandler{
             }
 
             if(selected != null){
-                tryDropItems(selected.target(), Graphics.mouseWorld().x, Graphics.mouseWorld().y);
+                tryDropItems(selected.target(), Gfx.mouseWorld().x, Gfx.mouseWorld().y);
             }
 
             if(mode != PlaceMode.schematic) mode = none;
@@ -607,12 +606,12 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public float getMouseX(){
-        return !controlling ? Gdx.input.getX() : controlx;
+        return !controlling ? Core.input.getX() : controlx;
     }
 
     @Override
     public float getMouseY(){
-        return !controlling ? Gdx.input.getY() : controly;
+        return !controlling ? Core.input.getY() : controly;
     }
 
     @Override
@@ -624,7 +623,7 @@ public class DesktopInput extends InputHandler{
     public void updateController(){
         //TODO no controller support
         //TODO move controller input to new class, ControllerInput
-        boolean mousemove = Gdx.input.getDeltaX() > 1 || Gdx.input.getDeltaY() > 1;
+        boolean mousemove = Core.input.getDeltaX() > 1 || Core.input.getDeltaY() > 1;
 
         if(state.is(State.menu)){
             droppingItem = false;
@@ -645,23 +644,24 @@ public class DesktopInput extends InputHandler{
                 controlling = true;
 
                 if(player.playerIndex == 0){
-                    Gdx.input.setCursorCatched(true);
+                    Core.input.setCursorCatched(true);
                 }
 
                 Inputs.getProcessor().touchDragged((int) getMouseX(), (int) getMouseY(), player.playerIndex);
             }
 
-            controlx = Mathf.clamp(controlx, 0, Gdx.graphics.getWidth());
-            controly = Mathf.clamp(controly, 0, Gdx.graphics.getHeight());
+            controlx = Mathf.clamp(controlx, 0, Core.Gfx.getWidth());
+            controly = Mathf.clamp(controly, 0, Core.Gfx.getHeight());
         }else{
             controlling = false;
-            Gdx.input.setCursorCatched(false);
+            Core.input.setCursorCatched(false);
         }
 
         if(!controlling){
-            controlx = Gdx.input.getX();
-            controly = Gdx.input.getY();
+            controlx = Core.input.getX();
+            controly = Core.input.getY();
         }
     }
 
 }
+

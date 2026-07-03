@@ -1,8 +1,9 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -16,13 +17,13 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.EnumSet;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
+import java.util.EnumSet;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -61,7 +62,7 @@ public class CommandCenter extends Block{
         super.load();
 
         for(UnitCommand cmd : UnitCommand.values()){
-            commandRegions[cmd.ordinal()] = Draw.region("command-" + cmd.name());
+            commandRegions[cmd.ordinal()] = Core.atlas.find("command-" + cmd.name());
         }
     }
 

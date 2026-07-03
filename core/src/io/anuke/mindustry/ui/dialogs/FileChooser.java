@@ -1,48 +1,48 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
+import arc.Core;
+import arc.files.Fi;
+import arc.graphics.g2d.GlyphLayout;
+import arc.util.Align;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.Platform;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.*;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.scene.utils.UIUtils;
-import io.anuke.ucore.util.OS;
-import io.anuke.ucore.util.Pooling;
+import arc.Core;
+import arc.util.Time;
+import arc.func.Cons;
+import arc.func.Boolf;
+import arc.scene.event.Touchable;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.Scl;
+import arc.scene.utils.UIUtils;
+import arc.util.OS;
+import arc.util.pooling.Pools;
 
 import java.util.Arrays;
 
 public class FileChooser extends FloatingDialog{
-    public static Predicate<FileHandle> pngFilter = file -> file.extension().equalsIgnoreCase("png");
-    public static Predicate<FileHandle> mapFilter = file -> file.extension().equalsIgnoreCase(Vars.mapExtension);
-    public static Predicate<FileHandle> jpegFilter = file -> file.extension().equalsIgnoreCase("png") || file.extension().equalsIgnoreCase("jpg") || file.extension().equalsIgnoreCase("jpeg");
-    public static Predicate<FileHandle> defaultFilter = file -> true;
+    public static Boolf<Fi> pngFilter = file -> file.extension().equalsIgnoreCase("png");
+    public static Boolf<Fi> mapFilter = file -> file.extension().equalsIgnoreCase(Vars.mapExtension);
+    public static Boolf<Fi> jpegFilter = file -> file.extension().equalsIgnoreCase("png") || file.extension().equalsIgnoreCase("jpg") || file.extension().equalsIgnoreCase("jpeg");
+    public static Boolf<Fi> defaultFilter = file -> true;
     private Table files;
-    private FileHandle homeDirectory = Gdx.files.absolute(OS.isMac ? OS.getProperty("user.home") + "/Downloads/" :
-            Gdx.files.getExternalStoragePath());
-    private FileHandle directory = homeDirectory;
+    private Fi homeDirectory = Core.files.absolute(OS.isMac ? OS.getProperty("user.home") + "/Downloads/" :
+            Core.files.getExternalStoragePath());
+    private Fi directory = homeDirectory;
     private ScrollPane pane;
     private TextField navigation, filefield;
     private TextButton ok;
     private FileHistory stack = new FileHistory();
-    private Predicate<FileHandle> filter;
-    private Consumer<FileHandle> selectListener;
+    private Boolf<Fi> filter;
+    private Cons<Fi> selectListener;
     private boolean open;
 
-    public FileChooser(String title, boolean open, Consumer<FileHandle> result){
+    public FileChooser(String title, boolean open, Cons<Fi> result){
         this(title, defaultFilter, open, result);
     }
 
-    public FileChooser(String title, Predicate<FileHandle> filter, boolean open, Consumer<FileHandle> result){
+    public FileChooser(String title, Boolf<Fi> filter, boolean open, Cons<Fi> result){
         super(title);
         this.open = open;
         this.filter = filter;
@@ -64,7 +64,7 @@ public class FileChooser extends FloatingDialog{
         ok.clicked(() -> {
             if(ok.isDisabled()) return;
             if(selectListener != null)
-                selectListener.accept(directory.child(filefield.getText()));
+                selectListener.get(directory.child(filefield.getText()));
             hide();
         });
 
@@ -86,7 +86,7 @@ public class FileChooser extends FloatingDialog{
 
         pane = new ScrollPane(files){
             public float getPrefHeight(){
-                return Gdx.graphics.getHeight();
+                return Core.Gfx.getHeight();
             }
         };
         pane.setOverscroll(false, false);
@@ -146,7 +146,7 @@ public class FileChooser extends FloatingDialog{
         content.add(icontable).expandX().fillX();
         content.row();
 
-        content.center().add(pane).width(UIUtils.portrait() ? Gdx.graphics.getWidth() / Unit.dp.scl(1) : Gdx.graphics.getWidth() / Unit.dp.scl(2)).colspan(3).grow();
+        content.center().add(pane).width(UIUtils.portrait() ? Core.Gfx.getWidth() / Scl.scl(1) : Core.Gfx.getWidth() / Scl.scl(2)).colspan(3).grow();
         content.row();
 
         if(!open){
@@ -167,8 +167,8 @@ public class FileChooser extends FloatingDialog{
         }
     }
 
-    private FileHandle[] getFileNames(){
-        FileHandle[] handles = directory.list(file -> !file.getName().startsWith("."));
+    private Fi[] getFileNames(){
+        Fi[] handles = directory.list(file -> !file.getName().startsWith("."));
 
         Arrays.sort(handles, (a, b) -> {
             if(a.isDirectory() && !b.isDirectory()) return -1;
@@ -183,7 +183,7 @@ public class FileChooser extends FloatingDialog{
         //if is mac, don't display extra info since you can only ever go to downloads
         navigation.setText(OS.isMac ? directory.name() : directory.toString());
 
-        GlyphLayout layout = Pooling.obtain(GlyphLayout.class, GlyphLayout::new);
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
 
         layout.setText(Core.font, navigation.getText());
 
@@ -193,11 +193,11 @@ public class FileChooser extends FloatingDialog{
             navigation.setCursorPosition(navigation.getText().length());
         }
 
-        Pooling.free(layout);
+        Pools.free(layout);
 
         files.clearChildren();
         files.top().left();
-        FileHandle[] names = getFileNames();
+        Fi[] names = getFileNames();
 
         //macs are confined to the Downloads/ directory
         if(!OS.isMac){
@@ -219,8 +219,8 @@ public class FileChooser extends FloatingDialog{
         ButtonGroup<TextButton> group = new ButtonGroup<>();
         group.setMinCheckCount(0);
 
-        for(FileHandle file : names){
-            if(!file.isDirectory() && !filter.test(file)) continue; //skip non-filtered files
+        for(Fi file : names){
+            if(!file.isDirectory() && !filter.get(file)) continue; //skip non-filtered files
 
             String filename = file.name();
 
@@ -277,23 +277,23 @@ public class FileChooser extends FloatingDialog{
         return this;
     }
 
-    public void fileSelected(Consumer<FileHandle> listener){
+    public void fileSelected(Cons<Fi> listener){
         this.selectListener = listener;
     }
 
     public interface FileHandleFilter{
-        boolean accept(FileHandle file);
+        boolean accept(Fi file);
     }
 
     public class FileHistory{
-        private Array<FileHandle> history = new Array<>();
+        private Seq<Fi> history = new Seq<>();
         private int index;
 
         public FileHistory(){
 
         }
 
-        public void push(FileHandle file){
+        public void push(Fi file){
             if(index != history.size) history.truncate(index);
             history.add(file);
             index++;
@@ -325,7 +325,7 @@ public class FileChooser extends FloatingDialog{
 
             System.out.println("\n\n\n\n\n\n");
             int i = 0;
-            for(FileHandle file : history){
+            for(Fi file : history){
                 i++;
                 if(index == i){
                     System.out.println("[[" + file.toString() + "]]");
@@ -336,3 +336,5 @@ public class FileChooser extends FloatingDialog{
         }
     }
 }
+
+

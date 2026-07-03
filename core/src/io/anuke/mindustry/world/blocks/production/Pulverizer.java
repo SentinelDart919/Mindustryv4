@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.graphics.Draw;
+import arc.graphics.g2d.Draw;
 
 public class Pulverizer extends GenericCrafter{
     protected TextureRegion rotatorRegion;
@@ -16,7 +16,7 @@ public class Pulverizer extends GenericCrafter{
     public void load(){
         super.load();
 
-        rotatorRegion = Draw.region(name + "-rotator");
+        rotatorRegion = Core.atlas.find(name + "-rotator");
     }
 
     @Override
@@ -29,6 +29,6 @@ public class Pulverizer extends GenericCrafter{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name), Draw.region(name + "-rotator")};
+        return new TextureRegion[]{Core.atlas.find(name), Core.atlas.find(name + "-rotator")};
     }
 }

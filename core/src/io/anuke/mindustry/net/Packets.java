@@ -1,9 +1,10 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.utils.Base64Coder;
+import arc.util.Bundles;
+import arc.util.serialization.Base64Coder;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.io.TypeIO;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 import java.nio.ByteBuffer;
 

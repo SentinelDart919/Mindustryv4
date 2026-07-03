@@ -1,6 +1,6 @@
 package io.anuke.mindustry.content;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Liquid;
@@ -61,7 +61,7 @@ public class Liquids implements ContentList{
             }
         };
 
-        cryofluid = new Liquid("cryofluid", Color.SKY){
+        cryofluid = new Liquid("cryofluid", Color.sky){
             {
                 heatCapacity = 0.9f;
                 temperature = 0.25f;

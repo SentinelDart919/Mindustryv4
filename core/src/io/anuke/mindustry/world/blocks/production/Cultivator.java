@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.Fx;
@@ -9,15 +9,16 @@ import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockStat;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.SeedRandom;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
+import arc.math.Random;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import arc.math.geom.SeedRandom;
 
 public class Cultivator extends Drill{
     protected Color plantColor = Color.valueOf("648b55");
@@ -51,8 +52,8 @@ public class Cultivator extends Drill{
     public void load(){
         super.load();
 
-        middleRegion = Draw.region(name + "-middle");
-        topRegion = Draw.region(name + "-top");
+        middleRegion = Core.atlas.find(name + "-middle");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -93,7 +94,7 @@ public class Cultivator extends Drill{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name), Draw.region(name + "-top"),};
+        return new TextureRegion[]{Core.atlas.find(name), Core.atlas.find(name + "-top"),};
     }
 
     @Override
@@ -125,3 +126,4 @@ public class Cultivator extends Drill{
         }
     }
 }
+

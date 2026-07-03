@@ -1,40 +1,49 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Colors;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.utils.Align;
+import arc.Core;
+import arc.input.KeyCode.Keys;
+import arc.graphics.Color;
+import arc.graphics.Colors;
+import arc.graphics.g2d.Font;
+import arc.graphics.g2d.BitmapFont;
+import arc.freetype.FreeTypeFontGenerator;
+import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
+import arc.math.Interp;
+import arc.util.Align;
+
+import static arc.Core.*;
 import io.anuke.mindustry.editor.MapEditorDialog;
 import io.anuke.mindustry.game.EventType.ResizeEvent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.InputHandler;
 import io.anuke.mindustry.ui.dialogs.*;
-import io.anuke.ucore.core.Core;
+import arc.Core;
 import io.anuke.mindustry.ui.fragments.*;
-import io.anuke.ucore.core.*;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.modules.SceneModule;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.Skin;
-import io.anuke.ucore.scene.actions.Actions;
-import io.anuke.ucore.scene.ui.Dialog;
-import io.anuke.ucore.scene.ui.TextField;
-import io.anuke.ucore.scene.ui.TextField.TextFieldFilter;
-import io.anuke.ucore.scene.ui.TooltipManager;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Strings;
+import arc.*;
+import arc.func.Cons;
+import arc.graphics.g2d.Draw;
+import arc.ApplicationListener;
+import arc.scene.Group;
+import arc.scene.Skin;
+import arc.scene.actions.Actions;
+import arc.graphics.g2d.Interpolation;
+import arc.scene.ui.TooltipManager;
+import arc.util.Timers;
+import arc.scene.SceneModule;
+import arc.scene.ui.Dialog;
+import arc.scene.ui.TextField;
+import arc.scene.ui.TextField.TextFieldFilter;
+import arc.scene.ui.TooltipManager;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.Scl;
+import arc.util.Strings;
+import arc.graphics.Gfx;
 
 import static io.anuke.mindustry.Vars.*;
-import static io.anuke.ucore.scene.actions.Actions.*;
+import static arc.scene.actions.Actions.*;
 
 public class UI extends SceneModule{
+    public Skin skin;
     private FreeTypeFontGenerator generator;
 
     public final MenuFragment menufrag = new MenuFragment();
@@ -74,7 +83,7 @@ public class UI extends SceneModule{
         Dialog.setShowAction(() -> sequence(
             alpha(0f),
             originCenter(),
-            moveToAligned(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, Align.center),
+            moveToAligned(Core.Gfx.getWidth() / 2f, Core.Gfx.getHeight() / 2f, Align.center),
             scaleTo(0.0f, 1f),
             parallel(
                 scaleTo(1f, 1f, 0.1f, Interpolation.fade),
@@ -91,7 +100,7 @@ public class UI extends SceneModule{
 
         TooltipManager.getInstance().animations = false;
 
-        Settings.setErrorHandler(() -> Timers.run(1f, () -> showError("[crimson]Failed to access local storage.\nSettings will not be saved.")));
+        Core.settings.setErrorHandler(e -> Timers.run(1f, () -> showError("[crimson]Failed to access local storage.\nSettings will not be saved.")));
 
         Dialog.closePadR = -1;
         Dialog.closePadT = 5;
@@ -100,10 +109,10 @@ public class UI extends SceneModule{
     }
     
     void generateFonts(){
-        generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/pixel.ttf"));
+        generator = new FreeTypeFontGenerator(Core.files.internal("fonts/pixel.ttf"));
         FreeTypeFontParameter param = new FreeTypeFontParameter();
-        param.size = (int)(14*2 * Math.max(Unit.dp.scl(1f), 0.5f));
-        param.shadowColor = Color.DARK_GRAY;
+        param.size = (int)(14*2 * Math.max(Scl.scl(1f), 0.5f));
+        param.shadowColor = Color.darkGray;
         param.shadowOffsetY = 2;
         param.incremental = true;
 
@@ -117,7 +126,7 @@ public class UI extends SceneModule{
     protected void loadSkin(){
         skin = new Skin(Core.atlas);
         generateFonts();
-        skin.load(Gdx.files.internal("ui/uiskin.json"));
+        skin.load(Core.files.internal("ui/uiskin.json"));
 
         for(BitmapFont font : skin.getAll(BitmapFont.class).values()){
             font.setUseIntegerPositions(true);
@@ -129,11 +138,11 @@ public class UI extends SceneModule{
     public void update(){
         if(disableUI) return;
 
-        if(Graphics.drawing()) Graphics.end();
+        if(Graphics.drawing()) Gfx.end();
 
         act();
 
-        Graphics.begin();
+        Gfx.begin();
 
         for(int i = 0; i < players.length; i++){
             InputHandler input = control.input(i);
@@ -141,13 +150,13 @@ public class UI extends SceneModule{
             if(input.isCursorVisible()){
                 Draw.color();
 
-                float scl = Unit.dp.scl(3f);
+                float scl = Scl.scl(3f);
 
-                Draw.rect("controller-cursor", input.getMouseX(), Gdx.graphics.getHeight() - input.getMouseY(), 16 * scl, 16 * scl);
+                Draw.rect("controller-cursor", input.getMouseX(), Core.Gfx.getHeight() - input.getMouseY(), 16 * scl, 16 * scl);
             }
         }
 
-        Graphics.end();
+        Gfx.end();
         Draw.color();
     }
 
@@ -228,7 +237,11 @@ public class UI extends SceneModule{
             }));
     }
 
-    public void showTextInput(String title, String text, String def, TextFieldFilter filter, Consumer<String> confirmed){
+    public boolean hasDialog(){
+        return Core.scene.hasDialog();
+    }
+
+    public void showTextInput(String title, String text, String def, TextFieldFilter filter, Cons<String> confirmed){
         new Dialog(title, "dialog"){{
             content().margin(30).add(text).padRight(6f);
             TextField field = content().addField(def, t -> {
@@ -237,14 +250,14 @@ public class UI extends SceneModule{
             Platform.instance.addDialog(field);
             buttons().defaults().size(120, 54).pad(4);
             buttons().addButton("$text.ok", () -> {
-                confirmed.accept(field.getText());
+                confirmed.get(field.getText());
                 hide();
             }).disabled(b -> field.getText().isEmpty());
             buttons().addButton("$text.cancel", this::hide);
         }}.show();
     }
 
-    public void showTextInput(String title, String text, String def, Consumer<String> confirmed){
+    public void showTextInput(String title, String text, String def, Cons<String> confirmed){
         showTextInput(title, text, def, (field, c) -> true, confirmed);
     }
 
@@ -316,3 +329,6 @@ public class UI extends SceneModule{
         }
     }
 }
+
+
+

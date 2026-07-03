@@ -1,15 +1,15 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.type.ItemStack;
-import io.anuke.ucore.function.Supplier;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.layout.Stack;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.func.Prov;
+import arc.scene.ui.Image;
+import arc.scene.ui.layout.Stack;
+import arc.scene.ui.layout.Table;
 
 public class ItemImage extends Stack{
 
-    public ItemImage(TextureRegion region, Supplier<CharSequence> text){
+    public ItemImage(TextureRegion region, Prov<CharSequence> text){
         Table t = new Table().left().bottom();
         t.label(text);
 

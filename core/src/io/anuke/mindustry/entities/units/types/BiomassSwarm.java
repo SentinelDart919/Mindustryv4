@@ -1,10 +1,12 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
+import arc.util.Timers;
 
 public class BiomassSwarm extends BlockDefenseDrone{
     @Override
@@ -15,17 +17,17 @@ public class BiomassSwarm extends BlockDefenseDrone{
 
         float scale = 1f + Mathf.sin(Timers.time() * frequency, 2f, amplitude);
 
-        Draw.color(Color.BLACK, team.color, hf + Mathf.absin(Timers.time(), hf * 5f, 1f - hf));
+        Draw.color(Color.black, team.color, hf + Mathf.absin(Timers.time(), hf * 5f, 1f - hf));
         Draw.alpha(hitTime);
         Draw.rect(getPowerCellRegion(), x, y,
-                getPowerCellRegion().getRegionWidth() * scale,
-                getPowerCellRegion().getRegionHeight() * scale,
+                getPowerCellRegion().width * scale,
+                getPowerCellRegion().height * scale,
                 rotation - 90);
         Draw.color();
     }
 
     @Override
     public TextureRegion getPowerCellRegion(){
-        return Draw.region("small-biomass-heart");
+        return Core.atlas.find("small-biomass-heart");
     }
 }

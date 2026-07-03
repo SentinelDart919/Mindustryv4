@@ -1,6 +1,6 @@
 package io.anuke.mindustry.maps.missions;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.SpawnGroup;
@@ -8,7 +8,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Waves;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.maps.generation.Generation;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -39,7 +39,7 @@ public class WaveExtraMission extends MissionWithStartingCore{
     }
 
     @Override
-    public Array<SpawnGroup> getWaves(Sector sector){
+    public Seq<SpawnGroup> getWaves(Sector sector){
         return Waves.getSpawns();
     }
 

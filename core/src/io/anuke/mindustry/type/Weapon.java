@@ -1,7 +1,9 @@
 package io.anuke.mindustry.type;
+import arc.Core;
+import arc.util.Translator;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.audio.Sound;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -13,12 +15,12 @@ import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 public class Weapon extends Content{
     public final String name;
@@ -115,8 +117,8 @@ public class Weapon extends Content{
 
     @Override
     public void load(){
-        equipRegion = Draw.region(name + "-equip");
-        region = Draw.region(name);
+        equipRegion = Core.atlas.find(name + "-equip");
+        region = Core.atlas.find(name);
     }
 
     @Override

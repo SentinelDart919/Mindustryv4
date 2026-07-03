@@ -1,14 +1,15 @@
 package io.anuke.mindustry.world.meta;
 
-import com.badlogic.gdx.utils.ObjectMap.Entry;
-import com.badlogic.gdx.utils.OrderedMap;
+import arc.struct.ObjectMap;
+import arc.struct.OrderedMap;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.meta.values.*;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Bundles;
 
 import java.util.Locale;
 
@@ -100,7 +101,7 @@ public class BlockStats{
         //sort stats by index if they've been modified
         if(dirty){
             map.orderedKeys().sort();
-            for(Entry<StatCategory, OrderedMap<BlockStat, StatValue>> entry : map.entries()){
+            for(var entry : map.entries()){
                 entry.value.orderedKeys().sort();
             }
 

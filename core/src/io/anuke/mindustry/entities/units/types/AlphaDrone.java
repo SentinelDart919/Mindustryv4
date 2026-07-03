@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.math.Vector2;
+import arc.math.Angles;
+import arc.math.geom.Vec2;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -15,8 +16,8 @@ import io.anuke.mindustry.entities.units.UnitState;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.AmmoType;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -45,7 +46,7 @@ public class AlphaDrone extends FlyingUnit {
             }
 
             target = last;
-            if(distanceTo(leader) < followDistance){
+            if(dst(leader) < followDistance){
                 targetClosest();
             }else{
                 target = null;
@@ -54,15 +55,15 @@ public class AlphaDrone extends FlyingUnit {
             if(target != null){
                 attack(50f);
 
-                if((Mathf.angNear(angleTo(target), rotation, 15f) && distanceTo(target) < getWeapon().getAmmo().getRange())){
+                if((Angles.angleDist(angleTo(target), rotation)< 15f) && dst(target) < getWeapon().getAmmo().getRange()){
                     AmmoType ammo = getWeapon().getAmmo();
 
-                    Vector2 to = Predict.intercept(AlphaDrone.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(AlphaDrone.this, target, ammo.bullet.speed);
                     getWeapon().update(AlphaDrone.this, to.x, to.y);
                 }
             }
 
-            if(!leader.isShooting && distanceTo(leader) < 8f){
+            if(!leader.isShooting && dst(leader) < 8f){
                 Call.onAlphaDroneFade(AlphaDrone.this);
             }
         }

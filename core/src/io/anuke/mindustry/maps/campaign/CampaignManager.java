@@ -1,10 +1,10 @@
 package io.anuke.mindustry.maps.campaign;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.io.SaveIO;
 
 public class CampaignManager{
-    public Array<Campaign> campaigns = new Array<>();
+    public Seq<Campaign> campaigns = new Seq<>();
     private static final SaveIO saveIO = new SaveIO();
 
     public Campaign getCampaign(int index){
@@ -16,11 +16,11 @@ public class CampaignManager{
     }
 
     public void loadCampaigns(){
-        Array<Campaign> savedCampaigns = saveIO.loadCampaigns();
+        Seq<Campaign> savedCampaigns = saveIO.loadCampaigns();
         campaigns.clear();
 
         if(savedCampaigns == null){
-            savedCampaigns = new Array<>();
+            savedCampaigns = new Seq<>();
         }
 
         for(String campaignName : CampaignRegistry.all()){
@@ -45,11 +45,11 @@ public class CampaignManager{
         saveIO.saveCampaigns(this.campaigns);
     }
 
-    public void saveCampaigns(Array<Campaign> campaigns){
+    public void saveCampaigns(Seq<Campaign> campaigns){
         saveIO.saveCampaigns(campaigns);
     }
 
-    public Array<Campaign> getAllCampaigns(){
+    public Seq<Campaign> getAllCampaigns(){
         return campaigns;
     }
 

@@ -12,9 +12,9 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Structs;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.util.Structs;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,7 +29,6 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
 
 
     public final UnitState
-
 
 
             mine = new UnitState(){
@@ -73,7 +72,7 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
                 if(target instanceof Tile){
                     moveTo(type.range / 1.5f);
 
-                    if(distanceTo(target) < type.range && mineTile != target){
+                    if(dst(target) < type.range && mineTile != target){
                         setMineTile((Tile) target);
                     }
 
@@ -111,7 +110,7 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
 
                     TileEntity tile = (TileEntity) target;
 
-                    if(distanceTo(target) < type.range){
+                    if(dst(target) < type.range){
                         if(tile.tile.block().acceptStack(inventory.getItem().item, inventory.getItem().amount, tile.tile, DroneMiner.this) == inventory.getItem().amount){
                             Call.transferItemTo(inventory.getItem().item, inventory.getItem().amount, x, y, tile.tile);
                             inventory.clearItem();
@@ -136,8 +135,6 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
             }
         }
     };*/
-
-
 
 
     @Override
@@ -183,7 +180,6 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
     }
 
 
-
     @Override
     public UnitState getStartState(){
         return mine;
@@ -225,7 +221,7 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
     }
     @Override
     protected void updateRotation(){
-        if(mineTile != null && shouldRotate() && mineTile.distanceTo(this) < type.range){
+        if(mineTile != null && shouldRotate() && mineTile.dst(this) < type.range){
             rotation = Mathf.slerpDelta(rotation, angleTo(target), 0.3f);
         }else{
             rotation = Mathf.slerpDelta(rotation, velocity.angle(), 0.3f);

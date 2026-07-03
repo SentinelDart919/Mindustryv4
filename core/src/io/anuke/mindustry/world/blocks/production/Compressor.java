@@ -1,11 +1,11 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterEntity;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 public class Compressor extends PowerCrafter{
     protected TextureRegion liquidRegion, topRegion;
@@ -22,11 +22,11 @@ public class Compressor extends PowerCrafter{
 
         frameRegions = new TextureRegion[3];
         for(int i = 0; i < 3; i++){
-            frameRegions[i] = Draw.region(name + "-frame" + i);
+            frameRegions[i] = Core.atlas.find(name + "-frame" + i);
         }
 
-        liquidRegion = Draw.region(name + "-liquid");
-        topRegion = Draw.region(name + "-top");
+        liquidRegion = Core.atlas.find(name + "-liquid");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -35,7 +35,7 @@ public class Compressor extends PowerCrafter{
 
         Draw.rect(region, tile.drawx(), tile.drawy());
         Draw.rect(frameRegions[(int) Mathf.absin(entity.totalProgress, 5f, 2.999f)], tile.drawx(), tile.drawy());
-        Draw.color(Color.CLEAR, tile.entity.liquids.current().color, tile.entity.liquids.total() / liquidCapacity);
+        Draw.color(Color.clear, tile.entity.liquids.current().color, tile.entity.liquids.total() / liquidCapacity);
         Draw.rect(liquidRegion, tile.drawx(), tile.drawy());
         Draw.color();
         Draw.rect(topRegion, tile.drawx(), tile.drawy());
@@ -43,6 +43,6 @@ public class Compressor extends PowerCrafter{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name), Draw.region(name + "-top")};
+        return new TextureRegion[]{Core.atlas.find(name), Core.atlas.find(name + "-top")};
     }
 }

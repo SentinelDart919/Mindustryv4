@@ -1,7 +1,7 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Scaling;
+import arc.graphics.Color;
+import arc.util.Scaling;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.io.MapIO;
@@ -9,15 +9,15 @@ import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.ui.BorderImage;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.TextButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.utils.UIUtils;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.scene.event.Touchable;
+import arc.scene.ui.Image;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.TextButton;
+import arc.scene.ui.layout.Table;
+import arc.scene.utils.UIUtils;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Strings;
 
 import java.io.DataInputStream;
 
@@ -91,11 +91,11 @@ public class MapsDialog extends FloatingDialog{
             button.margin(9);
             button.add(map.meta.tags.get("name", map.name)).growX().center().get().setEllipsis(true);
             button.row();
-            button.addImage("white").growX().pad(4).color(Color.GRAY);
+            button.addImage("white").growX().pad(4).color(Color.gray);
             button.row();
             button.stack(new Image(map.texture).setScaling(Scaling.fit), new BorderImage(map.texture).setScaling(Scaling.fit)).size(mapsize - 20f);
             button.row();
-            button.add(map.custom ? "$text.custom" : "$text.builtin").color(Color.GRAY).padTop(3);
+            button.add(map.custom ? "$text.custom" : "$text.builtin").color(Color.gray).padTop(3);
 
             i++;
         }
@@ -127,19 +127,19 @@ public class MapsDialog extends FloatingDialog{
             t.top();
             t.defaults().padTop(10).left();
 
-            t.add("$text.editor.name").padRight(10).color(Color.GRAY).padTop(0);
+            t.add("$text.editor.name").padRight(10).color(Color.gray).padTop(0);
             t.row();
             t.add(map.meta.tags.get("name", map.name)).growX().wrap().padTop(2);
             t.row();
-            t.add("$text.editor.author").padRight(10).color(Color.GRAY);
+            t.add("$text.editor.author").padRight(10).color(Color.gray);
             t.row();
             t.add(map.meta.author()).growX().wrap().padTop(2);
             t.row();
-            t.add("$text.editor.description").padRight(10).color(Color.GRAY).top();
+            t.add("$text.editor.description").padRight(10).color(Color.gray).top();
             t.row();
             t.add(map.meta.description()).growX().wrap().padTop(2);
             t.row();
-            t.add("$text.editor.oregen.info").padRight(10).color(Color.GRAY);
+            t.add("$text.editor.oregen.info").padRight(10).color(Color.gray);
             t.row();
             t.add(map.meta.hasOreGen() ? "$text.on" : "$text.off").padTop(2);
         }).height(mapsize).width(mapsize);
@@ -168,3 +168,4 @@ public class MapsDialog extends FloatingDialog{
         dialog.show();
     }
 }
+

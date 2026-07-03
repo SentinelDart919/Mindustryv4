@@ -1,7 +1,8 @@
 package io.anuke.mindustry.world.blocks;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.audio.Sound;
+import arc.graphics.g2d.TextureRegion;
+import arc.util.Bundles;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -26,11 +27,11 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.modules.ItemModule;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.util.Strings;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;

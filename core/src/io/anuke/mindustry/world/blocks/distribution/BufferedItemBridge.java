@@ -4,7 +4,7 @@ import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.ItemBuffer;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.util.Mathf;
+import arc.math.Mathf;
 
 public class BufferedItemBridge extends ExtendingItemBridge{
     protected int timerAccept = timers++;
@@ -23,7 +23,7 @@ public class BufferedItemBridge extends ExtendingItemBridge{
         BufferedItemBridgeEntity entity = tile.entity();
 
         if(entity.buffer.accepts() && entity.items.total() > 0){
-            entity.buffer.accept(entity.items.take());
+            entity.buffer.get(entity.items.take());
         }
 
         Item item = entity.buffer.poll();

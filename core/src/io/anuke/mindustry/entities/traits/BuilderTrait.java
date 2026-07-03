@@ -1,8 +1,10 @@
 package io.anuke.mindustry.entities.traits;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Queue;
+import arc.Core;
+import arc.graphics.Color;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.struct.Queue;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -19,15 +21,15 @@ import io.anuke.mindustry.world.Build;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BuildBlock;
 import io.anuke.mindustry.world.blocks.BuildBlock.BuildEntity;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.trait.Entity;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.graphics.Shapes;
-import io.anuke.ucore.util.*;
+import arc.Effects;
+import arc.Events;
+import arc.util.Time;
+import arc.entities.trait.Entity;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.Shapes;
+import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -181,7 +183,7 @@ public interface BuilderTrait extends Entity{
 
         Tile tile = world.tile(current.x, current.y);
 
-        if(unit.distanceTo(tile) > placeDistance){
+        if(unit.dst(tile) > placeDistance){
             return;
         }
 
@@ -211,7 +213,7 @@ public interface BuilderTrait extends Entity{
             return;
         }
 
-        if(unit.distanceTo(tile) <= placeDistance){
+        if(unit.dst(tile) <= placeDistance){
             unit.rotation = Mathf.slerpDelta(unit.rotation, unit.angleTo(entity), 0.4f);
         }
 
@@ -230,7 +232,7 @@ public interface BuilderTrait extends Entity{
         }
 
         if(!current.initialized){
-            Gdx.app.postRunnable(() -> Events.fire(new BuildSelectEvent(tile, unit.getTeam(), this, current.breaking)));
+            Core.app.post(() -> Events.fire(new BuildSelectEvent(tile, unit.getTeam(), this, current.breaking)));
             current.initialized = true;
         }
     }
@@ -240,7 +242,7 @@ public interface BuilderTrait extends Entity{
         Tile tile = getMineTile();
         TileEntity core = unit.getClosestCore();
 
-        if(core == null || tile.block() != Blocks.air || unit.distanceTo(tile.worldx(), tile.worldy()) > mineDistance
+        if(core == null || tile.block() != Blocks.air || unit.dst(tile.worldx(), tile.worldy()) > mineDistance
                 || tile.floor().drops == null || !unit.inventory.canAcceptItem(tile.floor().drops.item) || !canMine(tile.floor().drops.item)){
             setMineTile(null);
         }else{
@@ -249,7 +251,7 @@ public interface BuilderTrait extends Entity{
 
             if(Mathf.chance(Timers.delta() * (0.06 - item.hardness * 0.01) * getMinePower())){
 
-                if(unit.distanceTo(core) < mineTransferRange && core.tile.block().acceptStack(item, 1, core.tile, unit) == 1){
+                if(unit.dst(core) < mineTransferRange && core.tile.block().acceptStack(item, 1, core.tile, unit) == 1){
                     Call.transferItemTo(item, 1,
                         tile.worldx() + Mathf.range(tilesize / 2f),
                         tile.worldy() + Mathf.range(tilesize / 2f), core.tile);
@@ -283,7 +285,7 @@ public interface BuilderTrait extends Entity{
 
         Tile tile = world.tile(request.x, request.y);
 
-        if(unit.distanceTo(tile) > placeDistance){
+        if(unit.dst(tile) > placeDistance){
             return;
         }
 
@@ -332,7 +334,7 @@ public interface BuilderTrait extends Entity{
         float ex = tile.worldx() + Mathf.sin(Timers.time() + 48, swingScl, swingMag);
         float ey = tile.worldy() + Mathf.sin(Timers.time() + 48, swingScl + 2f, swingMag);
 
-        Draw.color(Color.LIGHT_GRAY, Color.WHITE, 1f - flashScl + Mathf.absin(Timers.time(), 0.5f, flashScl));
+        Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Timers.time(), 0.5f, flashScl));
         Shapes.laser("minelaser", "minelaser-end", px, py, ex, ey);
 
         if(unit instanceof Player && ((Player) unit).isLocal){

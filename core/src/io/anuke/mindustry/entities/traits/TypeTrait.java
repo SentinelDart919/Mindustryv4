@@ -1,23 +1,23 @@
 package io.anuke.mindustry.entities.traits;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectIntMap;
-import io.anuke.ucore.function.Supplier;
+import arc.struct.Seq;
+import arc.struct.ObjectIntMap;
+import arc.func.Prov;
 
 public interface TypeTrait{
     int[] lastRegisteredID = {0};
-    Array<Supplier<? extends TypeTrait>> registeredTypes = new Array<>();
+    Seq<Prov<? extends TypeTrait>> registeredTypes = new Seq<>();
     ObjectIntMap<Class<? extends TypeTrait>> typeToID = new ObjectIntMap<>();
 
     /**
-     * Register and return a type ID. The supplier should return a fresh instace of that type.
+     * Register and return a type ID. The Prov should return a fresh instace of that type.
      */
-    static <T extends TypeTrait> void registerType(Class<T> type, Supplier<T> supplier){
+    static <T extends TypeTrait> void registerType(Class<T> type, Prov<T> Prov){
         if(typeToID.get(type, -1) != -1){
             return; //already registered
         }
 
-        registeredTypes.add(supplier);
+        registeredTypes.add(Prov);
         int result = lastRegisteredID[0];
         typeToID.put(type, result);
         lastRegisteredID[0]++;
@@ -26,7 +26,7 @@ public interface TypeTrait{
     /**
      * Registers a syncable type by ID.
      */
-    static Supplier<? extends TypeTrait> getTypeByID(int id){
+    static Prov<? extends TypeTrait> getTypeByID(int id){
         if(id == -1){
             throw new IllegalArgumentException("Attempt to retrieve invalid entity type ID! Did you forget to set it in ContentLoader.registerTypes()?");
         }

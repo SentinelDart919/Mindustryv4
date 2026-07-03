@@ -1,15 +1,15 @@
 package io.anuke.mindustry.entities.units;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
+import arc.graphics.Color;
+import arc.math.geom.Vec2;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class TankUnit extends GroundUnit {
     protected float weaponRotation;
@@ -38,10 +38,10 @@ public class TankUnit extends GroundUnit {
             setState(retreat);
         }
 
-        if(!Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+        if(!Units.invalidateTarget(target, this) && dst(target) < getWeapon().getAmmo().getRange()){
             if(Mathf.angNear(angleTo(target), weaponRotation, 13f)){
                 AmmoType ammo = getWeapon().getAmmo();
-                Vector2 to = Predict.intercept(this, target, ammo.bullet.speed);
+                Vec2 to = Predict.intercept(this, target, ammo.bullet.speed);
                 getWeapon().update(this, to.x, to.y);
             }
         }
@@ -56,7 +56,7 @@ public class TankUnit extends GroundUnit {
         Floor floor = getFloorOn();
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, 0.5f);
+            Draw.tint(Color.white, floor.liquidColor, 0.5f);
         }
 
         for(int i : Mathf.signs){
@@ -67,9 +67,9 @@ public class TankUnit extends GroundUnit {
         }
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, drownTime * 0.4f);
+            Draw.tint(Color.white, floor.liquidColor, drownTime * 0.4f);
         }else{
-            Draw.tint(Color.WHITE);
+            Draw.tint(Color.white);
         }
 
         //Draw.rect(type.baseRegion, x, y, baseRotation - 90);

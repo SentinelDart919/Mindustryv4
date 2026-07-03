@@ -1,17 +1,17 @@
 package io.anuke.mindustry.world.blocks.power;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.Queue;
+import arc.struct.Seq;
+import arc.struct.IntSet;
+import arc.struct.ObjectSet;
+import arc.struct.Queue;
 import io.anuke.mindustry.world.Tile;
 
 import static io.anuke.mindustry.Vars.threads;
 
 public class PowerGraph{
     private final static Queue<Tile> queue = new Queue<>();
-    private final static Array<Tile> outArray1 = new Array<>();
-    private final static Array<Tile> outArray2 = new Array<>();
+    private final static Seq<Tile> outArray1 = new Seq<>();
+    private final static Seq<Tile> outArray2 = new Seq<>();
     private final static IntSet closedSet = new IntSet();
 
     private final ObjectSet<Tile> producers = new ObjectSet<>();
@@ -51,11 +51,11 @@ public class PowerGraph{
 
         float maxOutput = 0f;
         float bufferOutput = 0f;
-        for(Tile consumer : consumers){
-            if(consumer.block().outputsPower){
-                bufferOutput += consumer.block().powerCapacity - consumer.entity.power.amount;
+        for(Tile Cons : consumers){
+            if(Cons.block().outputsPower){
+                bufferOutput += Cons.block().powerCapacity - Cons.entity.power.amount;
             }else{
-                maxOutput += consumer.block().powerCapacity - consumer.entity.power.amount;
+                maxOutput += Cons.block().powerCapacity - Cons.entity.power.amount;
             }
         }
 
@@ -86,14 +86,14 @@ public class PowerGraph{
         }
 
         float outputSatisfied = charge ? 1f : Math.min((totalInput + bufferInput) / maxOutput, 1f);
-        for(Tile consumer : consumers){
-            if(consumer.block().outputsPower){
+        for(Tile Cons : consumers){
+            if(Cons.block().outputsPower){
                 if(charge){
-                    consumer.entity.power.amount += (consumer.block().powerCapacity - consumer.entity.power.amount) * bufferUsed;
+                    Cons.entity.power.amount += (Cons.block().powerCapacity - Cons.entity.power.amount) * bufferUsed;
                 }
                 continue;
             }
-            consumer.entity.power.amount += (consumer.block().powerCapacity - consumer.entity.power.amount) * outputSatisfied;
+            Cons.entity.power.amount += (Cons.block().powerCapacity - Cons.entity.power.amount) * outputSatisfied;
         }
     }
 

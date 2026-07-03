@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.bullet;
 
-import com.badlogic.gdx.math.Vector2;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Unit;
@@ -10,15 +11,16 @@ import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.entities.traits.TeamTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.BulletEntity;
-import io.anuke.ucore.entities.trait.Entity;
-import io.anuke.ucore.entities.trait.SolidTrait;
-import io.anuke.ucore.entities.trait.VelocityTrait;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Pooling;
-import io.anuke.ucore.util.Timer;
+import arc.util.Timers;
+import arc.util.Time;
+import arc.entities.EntityGroup;
+import arc.entities.impl.BulletEntity;
+import arc.entities.trait.Entity;
+import arc.entities.trait.SolidTrait;
+import arc.entities.trait.VelocityTrait;
+import arc.math.Mathf;
+import arc.util.pooling.Pools;
+import io.anuke.mindustry.entities.Timer;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,7 +29,7 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncTrait, AbsorbTrait{
-    private static Vector2 vector = new Vector2();
+    private static Vec2 vector = new Vec2();
     public Timer timer = new Timer(3);
     private float lifeScl;
     private Team team;
@@ -55,14 +57,14 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     }
 
     public static Bullet create(BulletType type, Entity owner, Team team, float x, float y, float angle, float velocityScl, float lifetimeScl, Object data){
-        Bullet bullet = Pooling.obtain(Bullet.class, Bullet::new);
+        Bullet bullet = Pools.obtain(Bullet.class, Bullet::new);
         bullet.type = type;
         bullet.owner = owner;
         bullet.data = data;
 
         bullet.velocity.set(0, type.speed).setAngle(angle).scl(velocityScl);
         if(type.keepVelocity){
-            bullet.velocity.add(owner instanceof VelocityTrait ? ((VelocityTrait) owner).getVelocity() : Vector2.Zero);
+            bullet.velocity.add(owner instanceof VelocityTrait ? ((VelocityTrait) owner).getVelocity() : Vec2.ZERO);
         }
 
         bullet.team = team;
@@ -246,9 +248,14 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     }
 
     @Override
+    public void getHitbox(Rect out){
+        out.setCentered(x, y, type.hitsize);
+    }
+
+    @Override
     public void reset(){
         super.reset();
-        timer.clear();
+        timer.reset();
         lifeScl = 1f;
         team = null;
         data = null;
@@ -259,7 +266,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
     @Override
     public void removed(){
-        Pooling.free(this);
+        Pools.free(this);
     }
 
     @Override
@@ -267,3 +274,4 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
         return bulletGroup;
     }
 }
+

@@ -1,8 +1,8 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.audio.Sound;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -29,16 +29,16 @@ import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
 import io.anuke.mindustry.world.modules.ItemModule;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.style.TextureRegionDrawable;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
+import java.util.EnumSet;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -126,7 +126,7 @@ public class UnitFactoryAdvanced extends Block{
     public void load(){
         super.load();
 
-        topRegion = Draw.region(name + "-top");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -191,8 +191,8 @@ public class UnitFactoryAdvanced extends Block{
     @Override
     public TextureRegion[] getIcon(){
         return new TextureRegion[]{
-            Draw.region(name),
-            Draw.region(name + "-top")
+            Core.atlas.find(name),
+            Core.atlas.find(name + "-top")
         };
     }
 
@@ -213,10 +213,10 @@ public class UnitFactoryAdvanced extends Block{
         Shaders.build.color.a = entity.speedScl;
         Shaders.build.time = -entity.time / 10f;
 
-        Graphics.shader(Shaders.build, false);
+        Gfx.shader(Shaders.build, false);
         Shaders.build.apply();
         Draw.rect(region, tile.drawx(), tile.drawy());
-        Graphics.shader();
+        Gfx.shader();
 
         Draw.color(Palette.accent);
         Draw.alpha(entity.speedScl);
@@ -448,3 +448,4 @@ public class UnitFactoryAdvanced extends Block{
         }
     }
 }
+

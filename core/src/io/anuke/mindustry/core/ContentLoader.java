@@ -1,8 +1,8 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.content.*;
 import io.anuke.mindustry.content.blocks.*;
 import io.anuke.mindustry.content.bullets.*;
@@ -24,9 +24,9 @@ import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.LegacyColorMapper;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.ThreadArray;
+import arc.func.Cons;
+import arc.util.Log;
+import arc.struct.Seq;
 
 /**
  * Loads all game content.
@@ -38,9 +38,9 @@ public class ContentLoader{
     private boolean verbose = true;
 
     private ObjectMap<String, MappableContent>[] contentNameMap = new ObjectMap[ContentType.values().length];
-    private Array<Content>[] contentMap = new Array[ContentType.values().length];
+    private Seq<Content>[] contentMap = new Seq[ContentType.values().length];
     private MappableContent[][] temporaryMapper;
-    private ObjectSet<Consumer<Content>> initialization = new ObjectSet<>();
+    private ObjectSet<Cons<Content>> initialization = new ObjectSet<>();
     private ContentList[] content = {
         //effects
         new BlockFx(),
@@ -115,7 +115,7 @@ public class ContentLoader{
         registerTypes();
 
         for(ContentType type : ContentType.values()){
-            contentMap[type.ordinal()] = new ThreadArray<>();
+            contentMap[type.ordinal()] = new Seq<>();
             contentNameMap[type.ordinal()] =  new ObjectMap<>();
         }
 
@@ -140,7 +140,7 @@ public class ContentLoader{
         }
 
         //set up ID mapping
-        for(Array<Content> arr : contentMap){
+        for(Seq<Content> arr : contentMap){
             for(int i = 0; i < arr.size; i++){
                 int id = arr.get(i).id;
                 if(id < 0) id += 256;
@@ -167,12 +167,12 @@ public class ContentLoader{
     }
 
     /**Initializes all content with the specified function.*/
-    public void initialize(Consumer<Content> callable){
+    public void initialize(Cons<Content> callable){
         if(initialization.contains(callable)) return;
 
         for(ContentType type : ContentType.values()){
             for(Content content : contentMap[type.ordinal()]){
-                callable.accept(content);
+                callable.get(content);
             }
         }
 
@@ -195,7 +195,7 @@ public class ContentLoader{
         this.temporaryMapper = temporaryMapper;
     }
 
-    public Array<Content>[] getContentMap(){
+    public Seq<Content>[] getContentMap(){
         return contentMap;
     }
 
@@ -223,13 +223,13 @@ public class ContentLoader{
         return (T)contentMap[type.ordinal()].get(id);
     }
 
-    public <T extends Content> Array<T> getBy(ContentType type){
-        return (Array<T>) contentMap[type.ordinal()];
+    public <T extends Content> Seq<T> getBy(ContentType type){
+        return (Seq<T>) contentMap[type.ordinal()];
     }
 
     //utility methods, just makes things a bit shorter
 
-    public Array<Block> blocks(){
+    public Seq<Block> blocks(){
         return getBy(ContentType.block);
     }
 
@@ -237,7 +237,7 @@ public class ContentLoader{
         return (Block) getByID(ContentType.block, id);
     }
 
-    public Array<Recipe> recipes(){
+    public Seq<Recipe> recipes(){
         return getBy(ContentType.recipe);
     }
 
@@ -245,7 +245,7 @@ public class ContentLoader{
         return (Recipe) getByID(ContentType.recipe, id);
     }
 
-    public Array<Item> items(){
+    public Seq<Item> items(){
         return getBy(ContentType.item);
     }
 
@@ -253,7 +253,7 @@ public class ContentLoader{
         return (Item) getByID(ContentType.item, id);
     }
 
-    public Array<Liquid> liquids(){
+    public Seq<Liquid> liquids(){
         return getBy(ContentType.liquid);
     }
 
@@ -261,7 +261,7 @@ public class ContentLoader{
         return (Liquid) getByID(ContentType.liquid, id);
     }
 
-    public Array<BulletType> bullets(){
+    public Seq<BulletType> bullets(){
         return getBy(ContentType.bullet);
     }
 

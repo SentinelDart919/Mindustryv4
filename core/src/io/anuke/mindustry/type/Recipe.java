@@ -1,9 +1,10 @@
 package io.anuke.mindustry.type;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.OrderedMap;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
+import arc.struct.OrderedMap;
+import arc.util.Bundles;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.UnlockableContent;
@@ -12,10 +13,10 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.ContentStatValue;
 import io.anuke.mindustry.world.meta.StatValue;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Strings;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.Strings;
 
 import java.util.Arrays;
 
@@ -23,7 +24,7 @@ import static io.anuke.mindustry.Vars.*;
 
 public class Recipe extends UnlockableContent{
     private static ObjectMap<Block, Recipe> recipeMap = new ObjectMap<>();
-    private static Array<Recipe> returnArray = new Array<>();
+    private static Seq<Recipe> returnArray = new Seq<>();
 
     public final Block result;
     public final ItemStack[] requirements;
@@ -58,7 +59,7 @@ public class Recipe extends UnlockableContent{
     }
 
     /**Returns all non-hidden recipes in a category.*/
-    public static Array<Recipe> getByCategory(Category category){
+    public static Seq<Recipe> getByCategory(Category category){
         returnArray.clear();
         for(Recipe recipe : content.recipes()){
             if(recipe.category == category && recipe.visibility.shown() && (recipe.mode == state.mode || recipe.mode == null) && (!recipe.onlyCampaign || world.getSector() != null)){

@@ -1,6 +1,6 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.UnitTypes;
@@ -9,8 +9,8 @@ import io.anuke.mindustry.type.ItemStack;
 
 public class Waves{
 
-    public static Array<SpawnGroup> getSpawns(){
-        return Array.with(
+    public static Seq<SpawnGroup> getSpawns(){
+        return Seq.with(
             new SpawnGroup(UnitTypes.dagger){{
                 end = 8;
                 unitScaling = 3;
@@ -310,7 +310,7 @@ public class Waves{
     }
 
     public static void testWaves(int from, int to){
-        Array<SpawnGroup> spawns = getSpawns();
+        Seq<SpawnGroup> spawns = getSpawns();
         for(int i = from; i <= to; i++){
             System.out.print(i + ": ");
             int total = 0;

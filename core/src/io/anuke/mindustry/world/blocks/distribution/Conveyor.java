@@ -1,9 +1,10 @@
 package io.anuke.mindustry.world.blocks.distribution;
+import arc.util.Translator;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.LongArray;
+import arc.audio.Sound;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
+import arc.struct.LongSeq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
@@ -16,15 +17,16 @@ import io.anuke.mindustry.world.blocks.Autotiler;
 import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.*;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
+import arc.struct.LongArray;
 
 public class Conveyor extends Block implements Autotiler{
     public static final float itemSpace = 0.135f * 2.2f;
@@ -74,7 +76,7 @@ public class Conveyor extends Block implements Autotiler{
         super.load();
         for(int i = 0; i < regions.length; i++){
             for(int j = 0; j < 4; j++){
-                regions[i][j] = Draw.region(name + "-" + i + "-" + j);
+                regions[i][j] = Core.atlas.find(name + "-" + i + "-" + j);
             }
         }
     }
@@ -138,7 +140,7 @@ public class Conveyor extends Block implements Autotiler{
     @Override
     public TextureRegion[] getIcon(){
         if(icon == null){
-            icon = new TextureRegion[]{Draw.region(name + "-0-0")};
+            icon = new TextureRegion[]{Core.atlas.find(name + "-0-0")};
         }
         return super.getIcon();
     }
@@ -207,7 +209,7 @@ public class Conveyor extends Block implements Autotiler{
 
             //..this should never happen, but in case it does, remove it and stop here
             if(pos.item == null){
-                entity.convey.removeValue(value);
+                entity.convey.remove(value);
                 break;
             }
 
@@ -283,7 +285,7 @@ public class Conveyor extends Block implements Autotiler{
                 long val = entity.convey.get(i);
                 ItemPos pos = pos1.set(val, ItemPos.drawShorts);
                 if(pos.item == item){
-                    entity.convey.removeValue(val);
+                    entity.convey.remove(val);
                     entity.items.remove(item, 1);
                     removed++;
                     break;
@@ -355,10 +357,10 @@ public class Conveyor extends Block implements Autotiler{
     }
 
     @Override
-    public Array<Object> getDebugInfo(Tile tile){
+    public Seq<Object> getDebugInfo(Tile tile){
         ConveyorEntity entity = tile.entity();
-        Array<Object> arr = super.getDebugInfo(tile);
-        arr.addAll(Array.with(
+        Seq<Object> arr = super.getDebugInfo(tile);
+        arr.addAll(Seq.with(
                 "clogHeat", entity.clogHeat,
                 "sleeping", entity.isSleeping()
         ));
@@ -505,3 +507,5 @@ public class Conveyor extends Block implements Autotiler{
         }
     }
 }
+
+

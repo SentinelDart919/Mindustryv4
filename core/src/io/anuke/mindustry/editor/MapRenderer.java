@@ -1,21 +1,21 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.IntSet.IntSetIterator;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Point2;
+import arc.util.Disposable;
+import arc.struct.IntSet;
+import arc.struct.IntSet.IntSetIterator;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.world.Block;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.IndexedRenderer;
-import io.anuke.ucore.util.Structs;
-import io.anuke.ucore.util.Bits;
-import io.anuke.ucore.util.Geometry;
+import arc.Core;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.IndexedRenderer;
+import arc.util.Structs;
+import arc.struct.Bits;
+import arc.math.geom.Geometry;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.tilesize;
@@ -27,7 +27,7 @@ public class MapRenderer implements Disposable{
     private IntSet delayedUpdates = new IntSet();
     private MapEditor editor;
     private int width, height;
-    private Color tmpColor = Color.WHITE.cpy();
+    private Color tmpColor = Color.white.cpy();
 
     public MapRenderer(MapEditor editor){
         this.editor = editor;
@@ -56,7 +56,7 @@ public class MapRenderer implements Disposable{
 
 
     public void draw(float tx, float ty, float tw, float th){
-        Graphics.end();
+        Gfx.end();
 
         IntSetIterator it = updates.iterator();
         while(it.hasNext){
@@ -87,7 +87,7 @@ public class MapRenderer implements Disposable{
             }
         }
 
-        Graphics.begin();
+        Gfx.begin();
     }
 
     public void updatePoint(int x, int y){
@@ -125,12 +125,12 @@ public class MapRenderer implements Disposable{
             if(wall.rotate){
                 mesh.draw((wx % chunksize) + (wy % chunksize) * chunksize, region,
                         wx * tilesize + wall.offset(), wy * tilesize + wall.offset(),
-                        region.getRegionWidth(), region.getRegionHeight(), rotation * 90 - 90);
+                        region.width, region.height, rotation * 90 - 90);
             }else{
                 mesh.draw((wx % chunksize) + (wy % chunksize) * chunksize, region,
-                        wx * tilesize + wall.offset() + (tilesize - region.getRegionWidth())/2f,
-                        wy * tilesize + wall.offset() + (tilesize - region.getRegionHeight())/2f,
-                        region.getRegionWidth(), region.getRegionHeight());
+                        wx * tilesize + wall.offset() + (tilesize - region.width)/2f,
+                        wy * tilesize + wall.offset() + (tilesize - region.height)/2f,
+                        region.width, region.height);
             }
         }else{
             region = floor.getEditorIcon();
@@ -142,24 +142,24 @@ public class MapRenderer implements Disposable{
 
         if(wall.update || wall.destructible){
             mesh.setColor(team.color);
-            region = Draw.region("block-border");
+            region = Core.atlas.find("block-border");
         }else if(elev > 0 && check){
             mesh.setColor(tmpColor.fromHsv((360f * elev / 127f * 4f) % 360f, 0.5f + (elev / 4f) % 0.5f, 1f));
-            region = Draw.region("block-elevation");
+            region = Core.atlas.find("block-elevation");
         }else if(elev == -1){
-            region = Draw.region("block-slope");
+            region = Core.atlas.find("block-slope");
         }else{
-            region = Draw.region("clear");
+            region = Core.atlas.find("clear");
         }
 
         mesh.draw((wx % chunksize) + (wy % chunksize) * chunksize + chunksize * chunksize, region,
                 wx * tilesize - (wall.size/3) * tilesize, wy * tilesize - (wall.size/3) * tilesize,
-                region.getRegionWidth(), region.getRegionHeight());
-        mesh.setColor(Color.WHITE);
+                region.width, region.height);
+        mesh.setColor(Color.white);
     }
 
     private boolean checkElevation(byte elev, int x, int y){
-        for(GridPoint2 p : Geometry.d4){
+        for(Point2 p : Geometry.d4){
             int wx = x + p.x, wy = y + p.y;
             if(!Structs.inBounds(wx, wy, editor.getMap().width(), editor.getMap().height())){
                 return true;
@@ -189,3 +189,4 @@ public class MapRenderer implements Disposable{
         }
     }
 }
+

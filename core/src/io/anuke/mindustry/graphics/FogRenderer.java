@@ -1,24 +1,24 @@
 package io.anuke.mindustry.graphics;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.GL20;
+import arc.graphics.Pixmap.Format;
+import arc.graphics.Texture;
+import arc.graphics.g2d.TextureRegion;
+import arc.graphics.gl.FrameBuffer;
+import arc.struct.Seq;
+import arc.util.Disposable;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.entities.EntityDraw;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
+import arc.Core;
+import arc.Events;
+import arc.Graphics;
+import arc.entities.EntityDraw;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
 
 import java.nio.ByteBuffer;
 
@@ -29,7 +29,7 @@ public class FogRenderer implements Disposable{
     private TextureRegion region = new TextureRegion();
     private FrameBuffer buffer;
     private ByteBuffer pixelBuffer;
-    private Array<Tile> changeQueue = new Array<>();
+    private Seq<Tile> changeQueue = new Seq<>();
     private int shadowPadding;
     private boolean dirty;
 
@@ -44,7 +44,7 @@ public class FogRenderer implements Disposable{
 
             //clear buffer to black
             buffer.begin();
-            Graphics.clear(0, 0, 0, 1f);
+            Gfx.clear(0, 0, 0, 1f);
             buffer.end();
 
             for(int x = 0; x < world.width(); x++){
@@ -72,8 +72,8 @@ public class FogRenderer implements Disposable{
 
         buffer.begin();
         pixelBuffer.position(0);
-        Gdx.gl.glPixelStorei(GL20.GL_PACK_ALIGNMENT, 1);
-        Gdx.gl.glReadPixels(0, 0, world.width(), world.height(), GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixelBuffer);
+        Core.gl.glPixelStorei(GL20.GL_PACK_ALIGNMENT, 1);
+        Core.gl.glReadPixels(0, 0, world.width(), world.height(), GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixelBuffer);
 
         pixelBuffer.position(0);
         for(int i = 0; i < world.width() * world.height(); i++){
@@ -93,8 +93,8 @@ public class FogRenderer implements Disposable{
     public void draw(){
         if(buffer == null) return;
 
-        float vw = Core.camera.viewportWidth * Core.camera.zoom;
-        float vh = Core.camera.viewportHeight * Core.camera.zoom;
+        float vw = Core.camera.width * Core.camera.zoom;
+        float vh = Core.camera.height * Core.camera.zoom;
 
         float px = Core.camera.position.x - vw / 2f;
         float py = Core.camera.position.y - vh / 2f;
@@ -107,13 +107,13 @@ public class FogRenderer implements Disposable{
 
         Core.batch.getProjectionMatrix().setToOrtho2D(0, 0, buffer.getWidth() * tilesize, buffer.getHeight() * tilesize);
 
-        Draw.color(Color.WHITE);
+        Draw.color(Color.white);
 
         buffer.begin();
 
-        Graphics.beginClip((-shadowPadding), (-shadowPadding), (world.width() + shadowPadding*2), (world.height() + shadowPadding*2));
+        Gfx.beginClip((-shadowPadding), (-shadowPadding), (world.width() + shadowPadding*2), (world.height() + shadowPadding*2));
 
-        Graphics.begin();
+        Gfx.begin();
         EntityDraw.setClip(false);
 
         renderer.drawAndInterpolate(playerGroup, player -> !player.isDead() && player.getTeam() == players[0].getTeam(), Unit::drawView);
@@ -138,28 +138,28 @@ public class FogRenderer implements Disposable{
         }
 
         EntityDraw.setClip(true);
-        Graphics.end();
+        Gfx.end();
         buffer.end();
 
-        Graphics.endClip();
+        Gfx.endClip();
 
         region.setTexture(buffer.getColorBufferTexture());
         region.setRegion(u, v2, u2, v);
 
         Core.batch.setProjectionMatrix(Core.camera.combined);
-        Graphics.shader(Shaders.fog);
+        Gfx.shader(Shaders.fog);
         renderer.pixelSurface.getBuffer().begin();
-        Graphics.begin();
+        Gfx.begin();
 
         Core.batch.draw(region, px, py, vw, vh);
 
-        Graphics.end();
+        Gfx.end();
         renderer.pixelSurface.getBuffer().end();
-        Graphics.shader();
+        Gfx.shader();
 
         Graphics.setScreen();
-        Core.batch.draw(renderer.pixelSurface.texture(), 0, Gdx.graphics.getHeight(), Gdx.graphics.getWidth(), -Gdx.graphics.getHeight());
-        Graphics.end();
+        Core.batch.draw(renderer.pixelSurface.texture(), 0, Core.Gfx.getHeight(), Core.Gfx.getWidth(), -Core.Gfx.getHeight());
+        Gfx.end();
     }
 
     public Texture getTexture(){
@@ -171,3 +171,4 @@ public class FogRenderer implements Disposable{
         if(buffer != null) buffer.dispose();
     }
 }
+

@@ -1,23 +1,24 @@
 package io.anuke.mindustry.graphics;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.Sort;
+import arc.struct.Seq;
+import arc.struct.IntSet;
+import java.util.Arrays;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Surface;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.Events;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.gl.FrameBuffer;
+import arc.graphics.Surface;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
-import static io.anuke.ucore.core.Core.camera;
+import static arc.Core.camera;
 
 public class BlockRenderer{
     private final static int initialRequests = 32 * 32;
@@ -25,13 +26,13 @@ public class BlockRenderer{
 
     private FloorRenderer floorRenderer;
 
-    private Array<BlockRequest> requests = new Array<>(true, initialRequests, BlockRequest.class);
+    private Seq<BlockRequest> requests = new Seq<>(true, initialRequests, BlockRequest.class);
     private IntSet teamChecks = new IntSet();
     private int lastCamX, lastCamY, lastRangeX, lastRangeY;
     private Layer lastLayer;
     private int requestidx = 0;
     private int iterateidx = 0;
-    private Surface shadows = Graphics.createSurface().setSize(2, 2);
+    private Surface shadows = new Surface().setSize(2, 2);
 
     public BlockRenderer(){
         floorRenderer = new FloorRenderer();
@@ -48,8 +49,8 @@ public class BlockRenderer{
             threads.runGraphics(() -> {
                 int avgx = Mathf.scl(camera.position.x, tilesize);
                 int avgy = Mathf.scl(camera.position.y, tilesize);
-                int rangex = (int) (camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
-                int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+                int rangex = (int) (camera.width * camera.zoom / tilesize / 2) + 2;
+                int rangey = (int) (camera.height * camera.zoom / tilesize / 2) + 2;
 
                 if(Math.abs(avgx - event.tile.x) <= rangex && Math.abs(avgy - event.tile.y) <= rangey){
                     lastCamY = lastCamX = -99; //invalidate camera position so blocks get updated
@@ -79,8 +80,8 @@ public class BlockRenderer{
         int avgx = Mathf.scl(camera.position.x, tilesize);
         int avgy = Mathf.scl(camera.position.y, tilesize);
 
-        int rangex = (int) (camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
-        int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+        int rangex = (int) (camera.width * camera.zoom / tilesize / 2) + 2;
+        int rangey = (int) (camera.height * camera.zoom / tilesize / 2) + 2;
 
         if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
             return;
@@ -91,12 +92,12 @@ public class BlockRenderer{
         teamChecks.clear();
         requestidx = 0;
 
-        Graphics.end();
+        Gfx.end();
         if(shadows.width() != shadowW || shadows.height() != shadowH){
             shadows.setSize(shadowW, shadowH);
         }
         Core.batch.getProjectionMatrix().setToOrtho2D(Mathf.round(Core.camera.position.x, tilesize)-shadowW/2f, Mathf.round(Core.camera.position.y, tilesize)-shadowH/2f, shadowW, shadowH);
-        Graphics.surface(shadows);
+        Gfx.surface(shadows);
 
         int minx = Math.max(avgx - rangex - expandr, 0);
         int miny = Math.max(avgy - rangey - expandr, 0);
@@ -136,10 +137,10 @@ public class BlockRenderer{
             }
         }
 
-        Graphics.surface();
-        Graphics.end();
+        Gfx.surface();
+        Gfx.end();
         Core.batch.setProjectionMatrix(camera.combined);
-        Graphics.begin();
+        Gfx.begin();
 
         Sort.instance().sort(requests.items, 0, requestidx);
 
@@ -262,3 +263,6 @@ public class BlockRenderer{
         }
     }
 }
+
+
+

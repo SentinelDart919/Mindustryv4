@@ -1,6 +1,9 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.utils.Array;
+import arc.modules.Module;
+
+import arc.struct.Seq;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -18,13 +21,13 @@ import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Mathf;
+import arc.Events;
+import arc.util.Time;
+import arc.entities.Entities;
+import arc.entities.EntityGroup;
+import arc.entities.EntityQuery;
+import arc.ApplicationListener;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -84,7 +87,7 @@ public class Logic extends Module{
 
         for(Tile tile : state.teams.get(defaultTeam).cores){
             if(world.getSector() != null){
-                Array<ItemStack> items = world.getSector().startingItems;
+                Seq<ItemStack> items = world.getSector().startingItems;
                 for(ItemStack stack : items){
                     tile.entity.items.add(stack.item, stack.amount);
                 }
@@ -280,3 +283,4 @@ public class Logic extends Module{
         }
     }
 }
+

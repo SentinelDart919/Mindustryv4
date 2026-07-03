@@ -1,15 +1,15 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.geom.Geometry;
+import arc.util.Log;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 import static io.anuke.mindustry.Vars.itemSize;
 import static io.anuke.mindustry.Vars.tilesize;
@@ -33,7 +33,7 @@ public class Veins extends Conveyor{//Conveinsyors now exist
         super.load();
         for(int i = 0; i < variantRegions.length; i++){
             for(int j = 0; j < 4; j++){
-                variantRegions[i][j] = Draw.region(name + "-" + i + "-" + j);
+                variantRegions[i][j] = Core.atlas.find(name + "-" + i + "-" + j);
             }
         }
     }

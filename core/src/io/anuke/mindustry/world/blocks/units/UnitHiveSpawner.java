@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.TileEntity;
@@ -12,12 +12,12 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import java.util.EnumSet;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 /* TODO
 *   make units spawns if the core has X amount of X materials - done but Needs Polishing
@@ -41,9 +41,9 @@ public class UnitHiveSpawner extends Block {
     public void spawn(Tile tile, Tile core) {
         UnitHiveSpawnerEntity entity = tile.entity();
         int random = Mathf.random(0, types.length - 1);
-        ItemStack[] consumer = consumerStacks[Math.min(random, consumerStacks.length - 1)];
-        if(core.entity.items.has(consumer)){
-            for (ItemStack itemStack : consumer) core.entity.items.remove(itemStack);
+        ItemStack[] Cons = consumerStacks[Math.min(random, consumerStacks.length - 1)];
+        if(core.entity.items.has(Cons)){
+            for (ItemStack itemStack : Cons) core.entity.items.remove(itemStack);
             BaseUnit unit = types[random].create(tile.getTeam());
             unit.setSpawner(tile);
             unit.set(tile.drawx() + Mathf.range(Vars.tilesize * 2), tile.drawy() + Mathf.range(Vars.tilesize * 2));

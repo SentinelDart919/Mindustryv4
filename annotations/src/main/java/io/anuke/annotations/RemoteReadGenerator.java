@@ -10,8 +10,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +32,7 @@ public class RemoteReadGenerator{
      * @param needsPlayer Whether this read method requires a reference to the player sender.
      */
     public void generateFor(List<MethodEntry> entries, String className, String packageName, boolean needsPlayer)
-            throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException, IOException{
+            throws IOException{
 
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className).addModifiers(Modifier.PUBLIC);
 
@@ -46,12 +44,7 @@ public class RemoteReadGenerator{
                 .returns(void.class);
 
         if(needsPlayer){
-            //since the player type isn't loaded yet, creating a type def is necessary
-            //this requires reflection since the TypeName constructor is private for some reason
-            Constructor<TypeName> cons = TypeName.class.getDeclaredConstructor(String.class);
-            cons.setAccessible(true);
-
-            TypeName playerType = cons.newInstance("io.anuke.mindustry.entities.Player");
+            TypeName playerType = ClassName.bestGuess("io.anuke.mindustry.entities.Player");
             //add player parameter
             readMethod.addParameter(playerType, "player");
         }

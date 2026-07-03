@@ -1,9 +1,11 @@
 package io.anuke.mindustry.entities.units;
+import arc.util.Timers;
+import arc.util.Translator;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntIntMap;
+import arc.graphics.Color;
+import arc.math.geom.Vec2;
+import arc.struct.IntSeq;
+import arc.struct.IntIntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.TileEntity;
@@ -14,11 +16,11 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,7 +29,7 @@ import java.io.IOException;
 import io.anuke.mindustry.content.blocks.UnitBlocks;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.util.Geometry;
+import arc.math.geom.Geometry;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -40,7 +42,7 @@ public abstract class GroundUnit extends BaseUnit{
     protected float stuckTime;
     protected float baseRotation;
     protected Weapon weapon;
-    protected IntArray orderPath = new IntArray();
+    protected IntSeq orderPath = new IntSeq();
     protected int orderPathCursor = 0;
     protected int orderPathRepath = 0;
 
@@ -55,7 +57,7 @@ public abstract class GroundUnit extends BaseUnit{
             if(health < maxHealth() * 0.5f){
                 Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
                 Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != GroundUnit.this);
-                if(repair != null && distanceTo(repair) < getType().healRange){
+                if(repair != null && dst(repair) < getType().healRange){
                     state.set(retreat);
                     return;
                 }else if(healer != null){
@@ -65,7 +67,7 @@ public abstract class GroundUnit extends BaseUnit{
             }
 
             TileEntity core = getClosestEnemyCore();
-            float dst = core == null ? 0 : distanceTo(core);
+            float dst = core == null ? 0 : dst(core);
 
             if(core != null && dst < getWeapon().getAmmo().getRange() / 1.1f){
                 target = core;
@@ -80,7 +82,7 @@ public abstract class GroundUnit extends BaseUnit{
         public void update(){
             TileEntity target = getClosestCore();
             if(target != null){
-                if(distanceTo(target) > 400f){
+                if(dst(target) > 400f){
                     moveAwayFromCore();
                 }else{
                     patrol();
@@ -112,7 +114,7 @@ public abstract class GroundUnit extends BaseUnit{
             }
 
             if(target != null){
-                float dst = distanceTo(target);
+                float dst = dst(target);
                 if(dst > 7f){
                     if(target instanceof TileEntity && ((TileEntity)target).getTile() != null && ((TileEntity)target).getTile().target().block().flags != null && ((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair)){
                         moveTo(target.getX(), target.getY());
@@ -219,7 +221,7 @@ public abstract class GroundUnit extends BaseUnit{
         float arrivalDst = orderArrivalDst(getOrderX(), getOrderY());
 
         if(getOrderType() == UnitOrderType.move){
-            float dst = distanceTo(getOrderX(), getOrderY());
+            float dst = dst(getOrderX(), getOrderY());
             if(dst <= arrivalDst){
                 clearOrder();
                 clearOrderPath();
@@ -237,16 +239,16 @@ public abstract class GroundUnit extends BaseUnit{
                 targetClosest();
             }
 
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(target != null && !Units.invalidateTarget(target, this) && dst(target) < getWeapon().getAmmo().getRange()){
                 rotate(angleTo(target));
                 if(Mathf.angNear(angleTo(target), rotation, 13f)){
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
                     getWeapon().update(GroundUnit.this, to.x, to.y);
                 }
             }
 
-            float dst = distanceTo(getOrderX(), getOrderY());
+            float dst = dst(getOrderX(), getOrderY());
             if(dst <= arrivalDst){
                 clearOrder();
                 clearOrderPath();
@@ -269,11 +271,11 @@ public abstract class GroundUnit extends BaseUnit{
             orderX = target.getX();
             orderY = target.getY();
 
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(target != null && !Units.invalidateTarget(target, this) && dst(target) < getWeapon().getAmmo().getRange()){
                 rotate(angleTo(target));
                 if(Mathf.angNear(angleTo(target), rotation, 13f)){
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
                     getWeapon().update(GroundUnit.this, to.x, to.y);
                 }
             }
@@ -369,7 +371,7 @@ public abstract class GroundUnit extends BaseUnit{
             return;
         }
 
-        IntArray open = new IntArray();
+        IntSeq open = new IntSeq();
         IntIntMap cameFrom = new IntIntMap();
         IntIntMap gScore = new IntIntMap();
         IntIntMap fScore = new IntIntMap();
@@ -451,7 +453,7 @@ public abstract class GroundUnit extends BaseUnit{
     }
 
     protected void reconstructOrderPath(IntIntMap cameFrom, int current, int startPos){
-        IntArray rev = new IntArray();
+        IntSeq rev = new IntSeq();
         rev.add(current);
 
         while(cameFrom.containsKey(current)){
@@ -492,7 +494,7 @@ public abstract class GroundUnit extends BaseUnit{
         Floor floor = getFloorOn();
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, 0.5f);
+            Draw.tint(Color.white, floor.liquidColor, 0.5f);
         }
 
         for(int i : Mathf.signs){
@@ -503,9 +505,9 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, drownTime * 0.4f);
+            Draw.tint(Color.white, floor.liquidColor, drownTime * 0.4f);
         }else{
-            Draw.tint(Color.WHITE);
+            Draw.tint(Color.white);
         }
 
         Draw.rect(type.baseRegion, x, y, baseRotation - 90);
@@ -533,13 +535,13 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         if(!Units.invalidateTarget(target, this)){
-            if(distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(dst(target) < getWeapon().getAmmo().getRange()){
                 rotate(angleTo(target));
 
                 if(Mathf.angNear(angleTo(target), rotation, 13f)){
                     AmmoType ammo = getWeapon().getAmmo();
 
-                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
+                    Vec2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
 
                     getWeapon().update(GroundUnit.this, to.x, to.y);
                 }
@@ -661,3 +663,4 @@ public abstract class GroundUnit extends BaseUnit{
         moveToHome();
     }
 }
+

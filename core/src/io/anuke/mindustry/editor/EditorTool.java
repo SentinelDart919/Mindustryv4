@@ -1,15 +1,15 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.utils.IntArray;
+import arc.struct.IntSeq;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.maps.MapTileData.TileDataMarker;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.function.IntPositionConsumer;
-import io.anuke.ucore.util.Structs;
-import io.anuke.ucore.util.Bits;
+import arc.func.Intc2;
+import arc.util.Structs;
+import arc.struct.Bits;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.ui;
@@ -78,7 +78,7 @@ public enum EditorTool{
             edit = true;
         }
 
-        IntArray stack = new IntArray();
+        IntSeq stack = new IntSeq();
         int width;
         byte be, dest;
         boolean floor;
@@ -120,7 +120,7 @@ public enum EditorTool{
 
             stack.add(asi(x, y));
 
-            IntPositionConsumer writer = (px, py) -> {
+            Intc2 writer = (px, py) -> {
                 TileDataMarker prev = editor.getPrev(px, py, false);
 
                 if(floor){
@@ -146,7 +146,7 @@ public enum EditorTool{
                 x1++;
                 spanAbove = spanBelow = false;
                 while(x1 < width && eq(x1, y)){
-                    writer.accept(x1, y);
+                    writer.get(x1, y);
 
                     if(!spanAbove && y > 0 && eq(x1, y - 1)){
                         stack.add(asi(x1, y - 1));
@@ -186,3 +186,4 @@ public enum EditorTool{
 
     }
 }
+

@@ -1,6 +1,6 @@
 package io.anuke.mindustry.ui.fragments;
 
-import com.badlogic.gdx.Gdx;
+import arc.Core;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.game.EventType.ResizeEvent;
@@ -8,10 +8,10 @@ import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.ui.MenuButton;
 import io.anuke.mindustry.ui.MobileButton;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Strings;
+import arc.Events;
+import arc.scene.Group;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -33,24 +33,24 @@ public class MenuFragment extends Fragment{
         });
 
         //discord icon in top right
-        parent.fill(c -> c.top().right().addButton("", "discord", ui.discord::show).size(84, 45)
+        parent.fill(c -> c.top().right().addImageButton("icon-discord", "clear", 84f, ui.discord::show).size(84, 45)
                 .visible(() -> state.is(State.menu)));
 
         //info icon
         if(mobile){
-            parent.fill(c -> c.top().left().addButton("", "info", ui.about::show).size(84, 45)
+            parent.fill(c -> c.top().left().addImageButton("icon-info", "clear", 84f, ui.about::show).size(84, 45)
                     .visible(() -> state.is(State.menu)));
         }
 
         //version info
-        parent.fill(c -> c.bottom().left().add(Strings.formatArgs("Mindustry v{0} {1}-{2} {3}{4}", Version.number, Version.modifier, Version.type,
+        parent.fill(c -> c.bottom().left().add(Strings.format("Mindustry v{0} {1}-{2} {3}{4}", Version.number, Version.modifier, Version.type,
                 (Version.build == -1 ? "custom build" : "build " + Version.build), Version.revision == 0 ? "" : "." + Version.revision))
                 .visible(() -> state.is(State.menu)));
     }
 
     private void buildMobile(){
         container.clear();
-        container.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        container.setSize(Core.Gfx.getWidth(), Core.Gfx.getHeight());
 
         float size = 120f;
         float isize = 14f * 4;
@@ -66,7 +66,7 @@ public class MenuFragment extends Fragment{
             unlocks = new MobileButton("icon-unlocks", isize, "$text.unlocks", ui.unlocks::show),
             donate = new MobileButton("icon-donate", isize, "$text.donate", Platform.instance::openDonations);
 
-        if(Gdx.graphics.getWidth() > Gdx.graphics.getHeight()){
+        if(Core.Gfx.getWidth() > Core.Gfx.getHeight()){
             container.add(play);
             container.add(join);
             container.add(load);
@@ -134,7 +134,7 @@ public class MenuFragment extends Fragment{
 
             out.row();
 
-            out.add(new MenuButton("icon-exit", "$text.quit", Gdx.app::exit)).width(bw).colspan(2);
+            out.add(new MenuButton("icon-exit", "$text.quit", Core.app::exit)).width(bw).colspan(2);
         });
     }
 
@@ -172,3 +172,4 @@ public class MenuFragment extends Fragment{
         dialog.show();
     }
 }
+

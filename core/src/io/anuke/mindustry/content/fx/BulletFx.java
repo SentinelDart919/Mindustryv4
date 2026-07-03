@@ -1,14 +1,14 @@
 package io.anuke.mindustry.content.fx;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 public class BulletFx extends FxList implements ContentList{
     public static Effect hitBulletSmall, hitFuse, hitBulletBig, hitFlameSmall, hitLiquid, hitLaser, hitLancer, hitMeltdown, despawn, flakExplosion, blastExplosion, plasticExplosion,
@@ -18,7 +18,7 @@ public class BulletFx extends FxList implements ContentList{
     public void load(){
 
         hitBulletSmall = new Effect(14, e -> {
-            Draw.color(Color.WHITE, Palette.lightOrange, e.fin());
+            Draw.color(Color.white, Palette.lightOrange, e.fin());
 
             e.scaled(7f, s -> {
                 Lines.stroke(0.5f + s.fout());
@@ -37,7 +37,7 @@ public class BulletFx extends FxList implements ContentList{
         });
 
         hitFuse = new Effect(14, e -> {
-            Draw.color(Color.WHITE, Palette.surge, e.fin());
+            Draw.color(Color.white, Palette.surge, e.fin());
 
             e.scaled(7f, s -> {
                 Lines.stroke(0.5f + s.fout());
@@ -56,7 +56,7 @@ public class BulletFx extends FxList implements ContentList{
         });
 
         hitBulletBig = new Effect(13, e -> {
-            Draw.color(Color.WHITE, Palette.lightOrange, e.fin());
+            Draw.color(Color.white, Palette.lightOrange, e.fin());
             Lines.stroke(0.5f + e.fout() * 1.5f);
 
             Angles.randLenVectors(e.id, 8, e.finpow() * 30f, e.rotation, 50f, (x, y) -> {
@@ -90,7 +90,7 @@ public class BulletFx extends FxList implements ContentList{
         });
 
         hitLancer = new Effect(12, e -> {
-            Draw.color(Color.WHITE);
+            Draw.color(Color.white);
             Lines.stroke(e.fout() * 1.5f);
 
             Angles.randLenVectors(e.id, 8, e.finpow() * 17f, e.rotation, 360f, (x, y) -> {
@@ -114,14 +114,14 @@ public class BulletFx extends FxList implements ContentList{
         });
 
         hitLaser = new Effect(8, e -> {
-            Draw.color(Color.WHITE, Palette.heal, e.fin());
+            Draw.color(Color.white, Palette.heal, e.fin());
             Lines.stroke(0.5f + e.fout());
             Lines.circle(e.x, e.y, e.fin()*5f);
             Draw.reset();
         });
 
         despawn = new Effect(12, e -> {
-            Draw.color(Palette.lighterOrange, Color.GRAY, e.fin());
+            Draw.color(Palette.lighterOrange, Color.gray, e.fin());
             Lines.stroke(e.fout());
 
             Angles.randLenVectors(e.id, 7, e.fin() * 7f, e.rotation, 40f, (x, y) -> {
@@ -140,7 +140,7 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.circle(e.x, e.y, 3f + i.fin() * 10f);
             });
 
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 5, 2f + 23f * e.finpow(), (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 3f + 0.5f);
@@ -164,7 +164,7 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.circle(e.x, e.y, 3f + i.fin() * 24f);
             });
 
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 7, 2f + 28f * e.finpow(), (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);
@@ -188,7 +188,7 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.circle(e.x, e.y, 3f + i.fin() * 34f);
             });
 
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 7, 2f + 30f * e.finpow(), (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);
@@ -212,7 +212,7 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.circle(e.x, e.y, 3f + i.fin() * 15f);
             });
 
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 5, 2f + 23f * e.finpow(), (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);
@@ -261,7 +261,7 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.circle(e.x, e.y, 3f + i.fin() * 25f);
             });
 
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
 
             Angles.randLenVectors(e.id, 6, 2f + 23f * e.finpow(), (x, y) -> {
                 Fill.circle(e.x + x, e.y + y, e.fout() * 4f + 0.5f);

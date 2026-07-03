@@ -2,9 +2,9 @@ package io.anuke.mindustry.ui.dialogs;
 
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Saves.SaveSlot;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.scene.ui.TextButton;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Time;
+import arc.scene.ui.TextButton;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 

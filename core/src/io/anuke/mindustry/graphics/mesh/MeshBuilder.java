@@ -1,20 +1,21 @@
 package io.anuke.mindustry.graphics.mesh;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.LongMap;
+import arc.graphics.Color;
+import arc.graphics.Mesh;
+import arc.graphics.VertexAttribute;
+import arc.graphics.VertexAttributes.Usage;
+import arc.math.Mathf;
+import arc.math.geom.Vec3;
+import arc.struct.Seq;
+import arc.struct.LongMap;
+import arc.math.geom.Vector3;
 
 // this is just a Copy paste of the ARC meshBuilder. for now useless
 public class MeshBuilder{
     /** Builds a smooth subdivided icosphere planet mesh with per-vertex height + color. */
     public static Mesh buildPlanet(HexMesher mesher, int divisions, float radius, float intensity){
-        Array<Vector3> verts = new Array<>();
-        Array<short[]> faces = new Array<>();
+        Seq<Vector3> verts = new Seq<>();
+        Seq<short[]> faces = new Seq<>();
         buildIcosphere(Math.max(0, divisions), verts, faces);
 
         int maxVerts = Math.min(verts.size, 65000);
@@ -93,12 +94,12 @@ public class MeshBuilder{
 
             Vector3 tangent = orthogonal(n).nor();
             Vector3 bitangent = new Vector3(n).crs(tangent).nor();
-            float ring = Math.max(0.02f, (MathUtils.PI2 * h) / Math.max(36f, grid.cells.length / 8f));
+            float ring = Math.max(0.02f, (Mathf.PI2 * h) / Math.max(36f, grid.cells.length / 8f));
 
             short centerIdx = base;
             for(int i = 0; i < 6; i++){
-                float a = MathUtils.PI2 * i / 6f;
-                Vector3 off = new Vector3(tangent).scl(MathUtils.cos(a) * ring).add(new Vector3(bitangent).scl(MathUtils.sin(a) * ring));
+                float a = Mathf.PI2 * i / 6f;
+                Vector3 off = new Vector3(tangent).scl(Mathf.cos(a) * ring).add(new Vector3(bitangent).scl(Mathf.sin(a) * ring));
                 Vector3 p = new Vector3(center).add(off).nor().scl(h);
                 vptr = putVertex(vertices, vptr, p, n, color);
             }
@@ -159,7 +160,7 @@ public class MeshBuilder{
         return Math.abs(n.y) < 0.99f ? new Vector3(0, 1, 0).crs(n) : new Vector3(1, 0, 0).crs(n);
     }
 
-    private static void buildIcosphere(int subdivisions, Array<Vector3> vertices, Array<short[]> faces){
+    private static void buildIcosphere(int subdivisions, Seq<Vector3> vertices, Seq<short[]> faces){
         float t = (1f + (float)Math.sqrt(5f)) / 2f;
         addVertex(vertices, -1, t, 0); addVertex(vertices, 1, t, 0); addVertex(vertices, -1, -t, 0); addVertex(vertices, 1, -t, 0);
         addVertex(vertices, 0, -1, t); addVertex(vertices, 0, 1, t); addVertex(vertices, 0, -1, -t); addVertex(vertices, 0, 1, -t);
@@ -175,7 +176,7 @@ public class MeshBuilder{
 
         for(int s = 0; s < subdivisions; s++){
             LongMap<Short> cache = new LongMap<>();
-            Array<short[]> newFaces = new Array<>();
+            Seq<short[]> newFaces = new Seq<>();
             for(short[] f : faces){
                 short a = midpoint(vertices, cache, f[0], f[1]);
                 short b = midpoint(vertices, cache, f[1], f[2]);
@@ -190,7 +191,7 @@ public class MeshBuilder{
         }
     }
 
-    private static short midpoint(Array<Vector3> verts, LongMap<Short> cache, short i1, short i2){
+    private static short midpoint(Seq<Vector3> verts, LongMap<Short> cache, short i1, short i2){
         int a = Math.min(i1, i2), b = Math.max(i1, i2);
         long key = (((long)a) << 32) | (b & 0xffffffffL);
         Short idx = cache.get(key);
@@ -201,7 +202,8 @@ public class MeshBuilder{
         return out;
     }
 
-    private static void addVertex(Array<Vector3> verts, float x, float y, float z){
+    private static void addVertex(Seq<Vector3> verts, float x, float y, float z){
         verts.add(new Vector3(x, y, z).nor());
     }
 }
+

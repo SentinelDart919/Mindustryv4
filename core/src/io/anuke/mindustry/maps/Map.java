@@ -1,8 +1,8 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.ObjectMap;
-import io.anuke.ucore.function.Supplier;
+import arc.graphics.Texture;
+import arc.struct.ObjectMap;
+import arc.func.Prov;
 
 import java.io.InputStream;
 
@@ -14,11 +14,11 @@ public class Map{
     /** Metadata. Author description, display name, etc.*/
     public final MapMeta meta;
     /** Supplies a new input stream with the data of this map.*/
-    public final Supplier<InputStream> stream;
+    public final Prov<InputStream> stream;
     /** Preview texture.*/
     public Texture texture;
 
-    public Map(String name, MapMeta meta, boolean custom, Supplier<InputStream> streamSupplier){
+    public Map(String name, MapMeta meta, boolean custom, Prov<InputStream> streamSupplier){
         this.name = name;
         this.custom = custom;
         this.meta = meta;

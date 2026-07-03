@@ -3,7 +3,7 @@ package io.anuke.mindustry.ui.dialogs;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Sector;
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 

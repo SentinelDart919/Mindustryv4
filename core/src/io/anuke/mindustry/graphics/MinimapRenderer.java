@@ -1,37 +1,37 @@
 package io.anuke.mindustry.graphics;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
+import arc.Core;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmap.Format;
+import arc.graphics.Texture;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
+import arc.struct.Seq;
+import arc.util.Disposable;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Pixmaps;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.ThreadArray;
+import arc.Core;
+import arc.Events;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.Pixmap;
+import arc.math.Mathf;
+import arc.struct.Seq;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.Vars.world;
 
 public class MinimapRenderer implements Disposable{
     private static final int baseSize = 16;
-    private final Array<Unit> units = new ThreadArray<>();
+    private final Seq<Unit> units = new Seq<>();
     private Pixmap pixmap;
     private Texture texture;
     private TextureRegion region;
-    private Rectangle rect = new Rectangle();
+    private Rect rect = new Rect();
     private int zoom = 4;
 
     public MinimapRenderer(){
@@ -41,7 +41,7 @@ public class MinimapRenderer implements Disposable{
         });
 
         //make sure to call on the graphics thread
-        Events.on(TileChangeEvent.class, event -> Gdx.app.postRunnable(() -> update(event.tile)));
+        Events.on(TileChangeEvent.class, event -> Core.app.postRunnable(() -> update(event.tile)));
     }
 
     public Texture getTexture(){
@@ -75,7 +75,7 @@ public class MinimapRenderer implements Disposable{
         dy = Mathf.clamp(dy, sz, world.height() - sz);
 
         rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);
-        Graphics.beginClip(x, y, w, h);
+        Gfx.beginClip(x, y, w, h);
 
         for(Unit unit : units){
             float rx = (unit.x - rect.x) / rect.width * w, ry = (unit.y - rect.y) / rect.width * h;
@@ -85,7 +85,7 @@ public class MinimapRenderer implements Disposable{
 
         Draw.color();
 
-        Graphics.endClip();
+        Gfx.endClip();
     }
 
     public TextureRegion getRegion(){
@@ -146,3 +146,4 @@ public class MinimapRenderer implements Disposable{
         pixmap = null;
     }
 }
+

@@ -1,22 +1,22 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Array;
+import arc.Core;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.io.Changelogs;
 import io.anuke.mindustry.io.Changelogs.VersionInfo;
 import io.anuke.mindustry.game.Version;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.OS;
+import arc.Settings;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.layout.Table;
+import arc.util.Log;
+import arc.util.OS;
 
 import static io.anuke.mindustry.Vars.ios;
 
 public class ChangelogDialog extends FloatingDialog{
     private final float vw = 600;
-    private Array<VersionInfo> versions;
+    private Seq<VersionInfo> versions;
 
     public ChangelogDialog(){
         super("$text.changelog.title");
@@ -28,10 +28,10 @@ public class ChangelogDialog extends FloatingDialog{
         if(!ios && !OS.isMac){
             Changelogs.getChangelog(result -> {
                 versions = result;
-                Gdx.app.postRunnable(this::setup);
+                Core.app.postRunnable(this::setup);
             }, t -> {
                 Log.err(t);
-                Gdx.app.postRunnable(this::setup);
+                Core.app.postRunnable(this::setup);
             });
         }
     }
@@ -60,7 +60,7 @@ public class ChangelogDialog extends FloatingDialog{
 
                 desc = desc.replace("Android", "Mobile");
 
-                Table in = new Table("underline");
+                Table in = new Table();
                 in.top().left().margin(10);
 
                 in.add("[accent]" + info.name + "[LIGHT_GRAY]  | " + info.date);

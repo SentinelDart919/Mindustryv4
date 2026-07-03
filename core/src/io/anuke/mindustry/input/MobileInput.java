@@ -1,16 +1,16 @@
 package io.anuke.mindustry.input;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.input.GestureDetector.GestureListener;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.input.GestureDetector;
+import arc.input.GestureDetector.GestureListener;
+import arc.math.Interp;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.util.Align;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.core.GameState.State;
@@ -28,11 +28,11 @@ import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.*;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
+import arc.*;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 import static io.anuke.mindustry.input.PlaceMode.*;
@@ -40,12 +40,12 @@ import static io.anuke.mindustry.input.PlaceMode.*;
 public class MobileInput extends InputHandler implements GestureListener{
     /** Maximum speed the player can pan. */
     private static final float maxPanSpeed = 1.3f;
-    private static Rectangle r1 = new Rectangle(), r2 = new Rectangle();
+    private static Rect r1 = new Rect(), r2 = new Rect();
     /** Distance to edge of screen to start panning. */
-    private final float edgePan = io.anuke.ucore.scene.ui.layout.Unit.dp.scl(60f);
+    private final float edgePan = arc.scene.ui.layout.Scl.scl(60f);
 
     //gesture data
-    private Vector2 vector = new Vector2();
+    private Vec2 vector = new Vec2();
     private boolean canPan;
     private boolean zoomed = false;
     /** Set of completed guides. */
@@ -61,9 +61,9 @@ public class MobileInput extends InputHandler implements GestureListener{
     private TargetTrait lastTarget;
 
     /** List of currently selected tiles to place. */
-    private Array<PlaceRequest> selection = new Array<>();
+    private Seq<PlaceRequest> selection = new Seq<>();
     /** Place requests to be removed. */
-    private Array<PlaceRequest> removals = new Array<>();
+    private Seq<PlaceRequest> removals = new Seq<>();
     /** Whether or not the player is currently shifting all placed tiles. */
     private boolean selecting;
     /** Whether the player is currently in line-place mode. */
@@ -157,7 +157,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     void removeRequest(PlaceRequest request){
-        selection.removeValue(request, true);
+        selection.remove(request, true);
         removals.add(request);
     }
 
@@ -170,7 +170,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
             for(TextureRegion region : regions){
                 Draw.rect(region, x * tilesize + block.offset(), y * tilesize + block.offset(),
-                        region.getRegionWidth(), region.getRegionHeight(), block.rotate ? rotation * 90 : 0);
+                        region.width, region.height, block.rotate ? rotation * 90 : 0);
             }
         }else{
             Draw.color(Palette.removeBack);
@@ -189,11 +189,11 @@ public class MobileInput extends InputHandler implements GestureListener{
             TextureRegion[] regions = request.recipe.result.getBlockIcon();
 
             Draw.alpha(Mathf.clamp((1f - request.scale) / 0.5f));
-            Draw.tint(Color.WHITE, Palette.breakInvalid, request.redness);
+            Draw.tint(Color.white, Palette.breakInvalid, request.redness);
 
             for(TextureRegion region : regions){
                 Draw.rect(region, tile.worldx() + offset, tile.worldy() + offset,
-                        region.getRegionWidth() * request.scale, region.getRegionHeight() * request.scale,
+                        region.width * request.scale, region.height * request.scale,
                         request.recipe.result.rotate ? request.rotation * 90 : 0);
             }
         }else{
@@ -311,7 +311,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         Lines.stroke(1f);
 
         Shaders.mix.color.set(Palette.accent);
-        Graphics.shader(Shaders.mix);
+        Gfx.shader(Shaders.mix);
 
         //draw removals
         for(PlaceRequest request : removals){
@@ -349,14 +349,14 @@ public class MobileInput extends InputHandler implements GestureListener{
             }
         }
 
-        Graphics.shader();
+        Gfx.shader();
 
         Draw.color(Palette.accent);
 
         //Draw lines
         if(lineMode){
-            int tileX = tileX(Gdx.input.getX());
-            int tileY = tileY(Gdx.input.getY());
+            int tileX = tileX(Core.input.getX());
+            int tileY = tileY(Core.input.getY());
 
             //draw placing
             if(mode == placing && recipe != null){
@@ -378,7 +378,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
                         for(TextureRegion region : regions){
                             Draw.rect(region, x * tilesize + recipe.result.offset(), y * tilesize + recipe.result.offset(),
-                                    region.getRegionWidth() * lineScale, region.getRegionHeight() * lineScale, recipe.result.rotate ? result.rotation * 90 : 0);
+                                    region.width * lineScale, region.height * lineScale, recipe.result.rotate ? result.rotation * 90 : 0);
                         }
                     }else{
                         Draw.color(Palette.removeBack);
@@ -426,8 +426,8 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         if(mode == PlaceMode.schematic && schematic != null){
-            int tileX = tileX(Gdx.input.getX());
-            int tileY = tileY(Gdx.input.getY());
+            int tileX = tileX(Core.input.getX());
+            int tileY = tileY(Core.input.getY());
 
             for(Schematic.Stile tile : schematic.tiles){
                 int ox = tileX + tile.x + (tile.block.size - 1) / 2;
@@ -716,8 +716,8 @@ public class MobileInput extends InputHandler implements GestureListener{
             lineScale = Mathf.lerpDelta(lineScale, 1f, 0.1f);
 
             //When in line mode, pan when near screen edges automatically
-            if(Gdx.input.isTouched(0) && lineMode){
-                float screenX = Graphics.mouse().x, screenY = Graphics.mouse().y;
+            if(Core.input.isTouched(0) && lineMode){
+                float screenX = Gfx.mouseWorld().x, screenY = Gfx.mouseWorld().y;
 
                 float panX = 0, panY = 0;
 
@@ -725,19 +725,19 @@ public class MobileInput extends InputHandler implements GestureListener{
                     panX = -(edgePan - screenX);
                 }
 
-                if(screenX >= Gdx.graphics.getWidth() - edgePan){
-                    panX = (screenX - Gdx.graphics.getWidth()) + edgePan;
+                if(screenX >= Core.Gfx.getWidth() - edgePan){
+                    panX = (screenX - Core.Gfx.getWidth()) + edgePan;
                 }
 
                 if(screenY <= edgePan){
                     panY = -(edgePan - screenY);
                 }
 
-                if(screenY >= Gdx.graphics.getHeight() - edgePan){
-                    panY = (screenY - Gdx.graphics.getHeight()) + edgePan;
+                if(screenY >= Core.Gfx.getHeight() - edgePan){
+                    panY = (screenY - Core.Gfx.getHeight()) + edgePan;
                 }
 
-                vector.set(panX, panY).scl((Core.camera.viewportWidth * Core.camera.zoom) / Gdx.graphics.getWidth());
+                vector.set(panX, panY).scl((Core.camera.width * Core.camera.zoom) / Core.Gfx.getWidth());
                 vector.limit(maxPanSpeed);
 
                 //pan view
@@ -764,7 +764,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         if(!canPan) return false;
 
         //can't pan in line mode with one finger or while dropping items!
-        if((lineMode && !Gdx.input.isTouched(1)) || droppingItem){
+        if((lineMode && !Core.input.isTouched(1)) || droppingItem){
             return false;
         }
 
@@ -797,16 +797,16 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2){
+    public boolean pinch(Vec2 initialPointer1, Vec2 initialPointer2, Vec2 pointer1, Vec2 pointer2){
         return false;
     }
 
     @Override
     public boolean zoom(float initialDistance, float distance){
 
-        if(Math.abs(distance - initialDistance) > io.anuke.ucore.scene.ui.layout.Unit.dp.scl(100f) && !zoomed){
+        if(Math.abs(distance - initialDistance) > arc.scene.ui.layout.Scl.scl(100f) && !zoomed){
             int amount = (distance > initialDistance ? 1 : -1);
-            renderer.scaleCamera(Math.round(io.anuke.ucore.scene.ui.layout.Unit.dp.scl(amount)));
+            renderer.scaleCamera(Math.round(arc.scene.ui.layout.Scl.scl(amount)));
             zoomed = true;
             return true;
         }
@@ -861,3 +861,5 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
     }
 }
+
+

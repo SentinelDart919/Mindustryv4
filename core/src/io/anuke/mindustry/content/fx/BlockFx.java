@@ -1,17 +1,18 @@
 package io.anuke.mindustry.content.fx;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
+import arc.graphics.Hue;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Hue;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Tmp;
+import arc.Effects.Effect;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.Color;
+import arc.graphics.g2d.Lines;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.util.Tmp;
 
 import static io.anuke.mindustry.Vars.tilesize;
 
@@ -30,7 +31,7 @@ public class BlockFx extends FxList implements ContentList{
         reactorsmoke = new Effect(17, e -> {
             Angles.randLenVectors(e.id, 4, e.fin() * 8f, (x, y) -> {
                 float size = 1f + e.fout() * 5f;
-                Draw.color(Color.LIGHT_GRAY, Color.GRAY, e.fin());
+                Draw.color(Color.lightGray, Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -38,7 +39,7 @@ public class BlockFx extends FxList implements ContentList{
         nuclearsmoke = new Effect(40, e -> {
             Angles.randLenVectors(e.id, 4, e.fin() * 13f, (x, y) -> {
                 float size = e.fslope() * 4f;
-                Draw.color(Color.LIGHT_GRAY, Color.GRAY, e.fin());
+                Draw.color(Color.lightGray, Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -46,7 +47,7 @@ public class BlockFx extends FxList implements ContentList{
         nuclearcloud = new Effect(90, 200f, e -> {
             Angles.randLenVectors(e.id, 10, e.finpow() * 90f, (x, y) -> {
                 float size = e.fout() * 14f;
-                Draw.color(Color.valueOf("bf92f9"), Color.GRAY, e.fin());
+                Draw.color(Color.valueOf("bf92f9"), Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -55,7 +56,7 @@ public class BlockFx extends FxList implements ContentList{
         fissionCloud = new Effect(180, 400f, e -> {
             Angles.randLenVectors(e.id, 35, e.finpow() * 180f, (x, y) -> {
                 float size = e.fout() * 28f;
-                Draw.color(Color.valueOf("ffd969"), Color.GRAY, e.fin());
+                Draw.color(Color.valueOf("ffd969"), Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -63,7 +64,7 @@ public class BlockFx extends FxList implements ContentList{
         redgeneratespark = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 5, e.fin() * 8f, (x, y) -> {
                 float len = e.fout() * 4f;
-                Draw.color(Palette.redSpark, Color.GRAY, e.fin());
+                Draw.color(Palette.redSpark, Color.gray, e.fin());
                 //Draw.alpha(e.fout());
                 Draw.rect("circle", e.x + x, e.y + y, len, len);
                 Draw.reset();
@@ -72,7 +73,7 @@ public class BlockFx extends FxList implements ContentList{
         generatespark = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 5, e.fin() * 8f, (x, y) -> {
                 float len = e.fout() * 4f;
-                Draw.color(Palette.orangeSpark, Color.GRAY, e.fin());
+                Draw.color(Palette.orangeSpark, Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, len, len);
                 Draw.reset();
             });
@@ -80,14 +81,14 @@ public class BlockFx extends FxList implements ContentList{
         fuelburn = new Effect(23, e -> {
             Angles.randLenVectors(e.id, 5, e.fin() * 9f, (x, y) -> {
                 float len = e.fout() * 4f;
-                Draw.color(Color.LIGHT_GRAY, Color.GRAY, e.fin());
+                Draw.color(Color.lightGray, Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, len, len);
                 Draw.reset();
             });
         });
         plasticburn = new Effect(40, e -> {
             Angles.randLenVectors(e.id, 5, 3f + e.fin() * 5f, (x, y) -> {
-                Draw.color(Color.valueOf("e9ead3"), Color.GRAY, e.fin());
+                Draw.color(Color.valueOf("e9ead3"), Color.gray, e.fin());
                 Fill.circle(e.x + x, e.y + y, e.fout() * 1f);
                 Draw.reset();
             });
@@ -129,7 +130,7 @@ public class BlockFx extends FxList implements ContentList{
         });
         producesmoke = new Effect(12, e -> {
             Angles.randLenVectors(e.id, 8, 4f + e.fin() * 18f, (x, y) -> {
-                Draw.color(Color.WHITE, Palette.accent, e.fin());
+                Draw.color(Color.white, Palette.accent, e.fin());
                 Fill.square(e.x + x, e.y + y, 1f + e.fout() * 3f, 45);
                 Draw.reset();
             });
@@ -143,14 +144,14 @@ public class BlockFx extends FxList implements ContentList{
         });
         smeltsmoke = new Effect(15, e -> {
             Angles.randLenVectors(e.id, 6, 4f + e.fin() * 5f, (x, y) -> {
-                Draw.color(Color.WHITE, e.color, e.fin());
+                Draw.color(Color.white, e.color, e.fin());
                 Fill.square(e.x + x, e.y + y, 0.5f + e.fout() * 2f, 45);
                 Draw.reset();
             });
         });
         formsmoke = new Effect(40, e -> {
             Angles.randLenVectors(e.id, 6, 5f + e.fin() * 8f, (x, y) -> {
-                Draw.color(Palette.plasticSmoke, Color.LIGHT_GRAY, e.fin());
+                Draw.color(Palette.plasticSmoke, Color.lightGray, e.fin());
                 Fill.square(e.x + x, e.y + y, 0.2f + e.fout() * 2f, 45);
                 Draw.reset();
             });
@@ -158,7 +159,7 @@ public class BlockFx extends FxList implements ContentList{
         blastsmoke = new Effect(26, e -> {
             Angles.randLenVectors(e.id, 12, 1f + e.fin() * 23f, (x, y) -> {
                 float size = 2f + e.fout() * 6f;
-                Draw.color(Color.LIGHT_GRAY, Color.DARK_GRAY, e.fin());
+                Draw.color(Color.lightGray, Color.darkGray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -166,7 +167,7 @@ public class BlockFx extends FxList implements ContentList{
         lava = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 3, 1f + e.fin() * 10f, (x, y) -> {
                 float size = e.fslope() * 4f;
-                Draw.color(Color.ORANGE, Color.GRAY, e.fin());
+                Draw.color(Color.orange, Color.gray, e.fin());
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
@@ -200,53 +201,53 @@ public class BlockFx extends FxList implements ContentList{
             Draw.reset();
         });
         purify = new Effect(10, e -> {
-            Draw.color(Color.ROYAL, Color.GRAY, e.fin());
+            Draw.color(Color.royal, Color.gray, e.fin());
             Lines.stroke(2f);
             Lines.spikes(e.x, e.y, e.fin() * 4f, 2, 6);
             Draw.reset();
         });
         purifyoil = new Effect(10, e -> {
-            Draw.color(Color.BLACK, Color.GRAY, e.fin());
+            Draw.color(Color.black, Color.gray, e.fin());
             Lines.stroke(2f);
             Lines.spikes(e.x, e.y, e.fin() * 4f, 2, 6);
             Draw.reset();
         });
         purifystone = new Effect(10, e -> {
-            Draw.color(Color.ORANGE, Color.GRAY, e.fin());
+            Draw.color(Color.orange, Color.gray, e.fin());
             Lines.stroke(2f);
             Lines.spikes(e.x, e.y, e.fin() * 4f, 2, 6);
             Draw.reset();
         });
         generate = new Effect(11, e -> {
-            Draw.color(Color.ORANGE, Color.YELLOW, e.fin());
+            Draw.color(Color.orange, Color.yellow, e.fin());
             Lines.stroke(1f);
             Lines.spikes(e.x, e.y, e.fin() * 5f, 2, 8);
             Draw.reset();
         });
         mine = new Effect(20, e -> {
             Angles.randLenVectors(e.id, 6, 3f + e.fin() * 6f, (x, y) -> {
-                Draw.color(e.color, Color.LIGHT_GRAY, e.fin());
+                Draw.color(e.color, Color.lightGray, e.fin());
                 Fill.square(e.x + x, e.y + y, e.fout() * 2f, 45);
                 Draw.reset();
             });
         });
         mineBig = new Effect(30, e -> {
             Angles.randLenVectors(e.id, 6, 4f + e.fin() * 8f, (x, y) -> {
-                Draw.color(e.color, Color.LIGHT_GRAY, e.fin());
+                Draw.color(e.color, Color.lightGray, e.fin());
                 Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.2f, 45);
                 Draw.reset();
             });
         });
         mineHuge = new Effect(40, e -> {
             Angles.randLenVectors(e.id, 8, 5f + e.fin() * 10f, (x, y) -> {
-                Draw.color(e.color, Color.LIGHT_GRAY, e.fin());
+                Draw.color(e.color, Color.lightGray, e.fin());
                 Fill.square(e.x + x, e.y + y, e.fout() * 2f + 0.5f, 45);
                 Draw.reset();
             });
         });
         smelt = new Effect(20, e -> {
             Angles.randLenVectors(e.id, 6, 2f + e.fin() * 5f, (x, y) -> {
-                Draw.color(Color.WHITE, e.color, e.fin());
+                Draw.color(Color.white, e.color, e.fin());
                 Fill.square(e.x + x, e.y + y, 0.5f + e.fout() * 2f, 45);
                 Draw.reset();
             });

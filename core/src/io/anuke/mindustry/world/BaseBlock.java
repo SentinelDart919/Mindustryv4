@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world;
+import arc.util.Translator;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.fx.EnvironmentFx;
 import io.anuke.mindustry.entities.TileEntity;
@@ -13,10 +14,12 @@ import io.anuke.mindustry.world.consumers.ConsumeItem;
 import io.anuke.mindustry.world.consumers.ConsumeLiquid;
 import io.anuke.mindustry.world.consumers.Consumers;
 import io.anuke.mindustry.world.meta.Producers;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.Core;
+import arc.util.Time;
+import arc.util.Timers;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 public abstract class BaseBlock extends MappableContent{
     public boolean hasItems;
@@ -71,7 +74,7 @@ public abstract class BaseBlock extends MappableContent{
     }
 
     /**Returns offset for stack placement.*/
-    public void getStackOffset(Item item, Tile tile, Translator trns){
+    public void getStackOffset(Item item, Tile tile, Vec2 trns){
 
     }
 
@@ -112,7 +115,7 @@ public abstract class BaseBlock extends MappableContent{
     }
 
     public void tryDumpLiquid(Tile tile, Liquid liquid){
-        Array<Tile> proximity = tile.entity.proximity();
+        Seq<Tile> proximity = tile.entity.proximity();
         int dump = tile.getDump();
 
         for(int i = 0; i < proximity.size; i++){
@@ -164,15 +167,15 @@ public abstract class BaseBlock extends MappableContent{
                     Liquid other = next.entity.liquids.current();
                     if((other.flammability > 0.3f && liquid.temperature > 0.7f) ||
                             (liquid.flammability > 0.3f && other.temperature > 0.7f)){
-                        tile.entity.damage(1 * Timers.delta());
-                        next.entity.damage(1 * Timers.delta());
-                        if(Mathf.chance(0.1 * Timers.delta())){
+                        tile.entity.damage(1 * Time.delta);
+                        next.entity.damage(1 * Time.delta);
+                        if(Mathf.chance(0.1 * Time.delta)){
                             Effects.effect(EnvironmentFx.fire, (tile.worldx() + next.worldx()) / 2f, (tile.worldy() + next.worldy()) / 2f);
                         }
                     }else if((liquid.temperature > 0.7f && other.temperature < 0.55f) ||
                             (other.temperature > 0.7f && liquid.temperature < 0.55f)){
-                        tile.entity.liquids.remove(liquid, Math.min(tile.entity.liquids.get(liquid), 0.7f * Timers.delta()));
-                        if(Mathf.chance(0.2f * Timers.delta())){
+                        tile.entity.liquids.remove(liquid, Math.min(tile.entity.liquids.get(liquid), 0.7f * Time.delta));
+                        if(Mathf.chance(0.2f * Time.delta)){
                             Effects.effect(EnvironmentFx.steam, (tile.worldx() + next.worldx()) / 2f, (tile.worldy() + next.worldy()) / 2f);
                         }
                     }
@@ -191,7 +194,7 @@ public abstract class BaseBlock extends MappableContent{
      * containers, it gets added to the block's inventory.
      */
     public void offloadNear(Tile tile, Item item){
-        Array<Tile> proximity = tile.entity.proximity();
+        Seq<Tile> proximity = tile.entity.proximity();
         int dump = tile.getDump();
 
         for(int i = 0; i < proximity.size; i++){
@@ -224,7 +227,7 @@ public abstract class BaseBlock extends MappableContent{
         if(entity == null || !hasItems || tile.entity.items.total() == 0 || (todump != null && !entity.items.has(todump)))
             return false;
 
-        Array<Tile> proximity = entity.proximity();
+        Seq<Tile> proximity = entity.proximity();
         int dump = tile.getDump();
 
         if(proximity.size == 0) return false;

@@ -1,10 +1,10 @@
 package io.anuke.mindustry.maps.campaign;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.type.Item;
 
 public interface CampaignSectorGenerator{
-    Array<Item> getOres(int x, int y, Array<Item> defaultOres);
+    Seq<Item> getOres(int x, int y, Seq<Item> defaultOres);
     void initSector(Sector sector);
 }

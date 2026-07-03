@@ -1,26 +1,26 @@
 package io.anuke.mindustry.world.blocks;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.type.Item;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.function.Supplier;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.style.TextureRegionDrawable;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.func.Cons;
+import arc.func.Prov;
+import arc.graphics.g2d.Draw;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.*;
 
 public interface SelectionTrait{
 
-    default void buildItemTable(Table table, Supplier<Item> holder, Consumer<Item> consumer){
-        buildItemTable(table, false, holder, consumer);
+    default void buildItemTable(Table table, Prov<Item> holder, Cons<Item> Cons){
+        buildItemTable(table, false, holder, Cons);
     }
 
-    default void buildItemTable(Table table, boolean nullItem, Supplier<Item> holder, Consumer<Item> consumer){
+    default void buildItemTable(Table table, boolean nullItem, Prov<Item> holder, Cons<Item> Cons){
 
-        Array<Item> items = content.items();
+        Seq<Item> items = content.items();
 
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         Table cont = new Table();
@@ -29,8 +29,8 @@ public interface SelectionTrait{
         int i = 0;
 
         if(nullItem){
-            ImageButton button = cont.addImageButton("white", "clear-toggle", 24, () -> consumer.accept(null)).group(group).get();
-            button.getStyle().imageUp = new TextureRegionDrawable(Draw.region("icon-nullitem"));
+            ImageButton button = cont.addImageButton("white", "clear-toggle", 24, () -> Cons.get(null)).group(group).get();
+            button.getStyle().imageUp = new TextureRegionDrawable(Core.atlas.find("icon-nullitem"));
             button.setChecked(holder.get() == null);
 
             i ++;
@@ -39,7 +39,7 @@ public interface SelectionTrait{
         for(Item item : items){
             if(!control.unlocks.isUnlocked(item)) continue;
 
-            ImageButton button = cont.addImageButton("white", "clear-toggle", 24, () -> consumer.accept(item))
+            ImageButton button = cont.addImageButton("white", "clear-toggle", 24, () -> Cons.get(item))
                     .group(group).get();
             button.getStyle().imageUp = new TextureRegionDrawable(item.region);
             button.setChecked(holder.get() == item);

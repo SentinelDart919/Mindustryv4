@@ -1,27 +1,27 @@
 package io.anuke.mindustry.world.meta.values;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.ui.ItemDisplay;
 import io.anuke.mindustry.world.meta.StatValue;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.scene.ui.layout.Table;
+import arc.func.Boolf;
+import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.content;
 
 public class ItemFilterValue implements StatValue{
-    private final Predicate<Item> filter;
+    private final Boolf<Item> filter;
 
-    public ItemFilterValue(Predicate<Item> filter){
+    public ItemFilterValue(Boolf<Item> filter){
         this.filter = filter;
     }
 
     @Override
     public void display(Table table){
-        Array<Item> list = new Array<>();
+        Seq<Item> list = new Seq<>();
 
         for(Item item : content.items()){
-            if(filter.test(item)) list.add(item);
+            if(filter.get(item)) list.add(item);
         }
 
         for(int i = 0; i < list.size; i++){

@@ -1,10 +1,13 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Base64Coder;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.modules.Module;
+
+import io.anuke.mindustry.entities.Timer;
+import arc.Core;
+import arc.graphics.Color;
+import arc.util.*;
+import arc.util.serialization.Base64Coder;
+import arc.struct.IntSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.PacketPriority;
 import io.anuke.annotations.Annotations.Remote;
@@ -25,16 +28,14 @@ import io.anuke.mindustry.net.Packets.*;
 import io.anuke.mindustry.net.ValidateException;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.io.ReusableByteArrayInputStream;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Timer;
+import arc.Core;
+import arc.Settings;
+import arc.util.Time;
+import arc.entities.Entities;
+import arc.entities.EntityGroup;
+import arc.util.io.ReusableByteArrayInputStream;
+import arc.ApplicationListener;
+import arc.math.Mathf;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -320,7 +321,7 @@ public class NetClient extends Module{
 
                 //entity must not be added yet, so create it
                 if(entity == null){
-                    entity = (SyncTrait) TypeTrait.getTypeByID(typeID).get(); //create entity from supplier
+                    entity = (SyncTrait) TypeTrait.getTypeByID(typeID).get(); //create entity from Prov
                     entity.resetID(id);
                     if(!netClient.isEntityUsed(entity.getID())){
                         add = true;
@@ -369,7 +370,7 @@ public class NetClient extends Module{
         ui.loadfrag.hide();
         ui.join.hide();
         Net.setClientLoaded(true);
-        Gdx.app.postRunnable(Call::connectConfirm);
+        Core.app.post(Call::connectConfirm);
         Timers.runTask(40f, Platform.instance::updateRPC);
     }
 
@@ -422,13 +423,13 @@ public class NetClient extends Module{
                 requests[i] = player.getPlaceQueue().get(i);
             }
 
-            Call.onClientShapshot(lastSent++, TimeUtils.millis(), player.x, player.y,
+            Call.onClientShapshot(lastSent++, Time.millis(), player.x, player.y,
                 player.pointerX, player.pointerY, player.rotation, player.baseRotation,
                 player.getVelocity().x, player.getVelocity().y,
                 player.getMineTile(),
                 player.isBoosting, player.isShooting, requests,
                 Core.camera.position.x, Core.camera.position.y,
-                Core.camera.viewportWidth * Core.camera.zoom * viewScale, Core.camera.viewportHeight * Core.camera.zoom * viewScale);
+                Core.camera.width * Core.camera.zoom * viewScale, Core.camera.height * Core.camera.zoom * viewScale);
         }
 
         if(timer.get(1, 60)){
@@ -437,14 +438,14 @@ public class NetClient extends Module{
     }
 
     String getUsid(String ip){
-        if(Settings.getString("usid-" + ip, null) != null){
-            return Settings.getString("usid-" + ip, null);
+        if(Core.settings.getString("usid-" + ip, null) != null){
+            return Core.settings.getString("usid-" + ip, null);
         }else{
             byte[] bytes = new byte[8];
             new Random().nextBytes(bytes);
             String result = new String(Base64Coder.encode(bytes));
-            Settings.putString("usid-" + ip, result);
-            Settings.save();
+            Core.settings.put("usid-" + ip, result);
+            Core.settings.manualSave();
             return result;
         }
     }

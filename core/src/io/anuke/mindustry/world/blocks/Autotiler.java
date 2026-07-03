@@ -2,8 +2,8 @@ package io.anuke.mindustry.world.blocks;
 
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 public interface Autotiler{
     class AutotilerHolder{

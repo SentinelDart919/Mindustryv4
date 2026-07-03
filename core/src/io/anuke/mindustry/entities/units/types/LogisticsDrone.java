@@ -1,6 +1,6 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.entities.units.UnitCommand;
@@ -9,10 +9,10 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.logic.LogicExporter.LogicExporterEntity;
 import io.anuke.mindustry.world.blocks.logic.LogicImporter.LogicImporterEntity;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Angles;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
 
-import static io.anuke.ucore.core.Timers.delta;
+import static arc.util.Timers.delta;
 
 public class LogisticsDrone extends FlyingUnit {
     float propRot;
@@ -51,7 +51,7 @@ public class LogisticsDrone extends FlyingUnit {
     }
     @Override
     public void drawOver(){
-        trail.draw(Color.BLACK, 0f);
+        trail.draw(Color.black, 0f);
     }
 
         public final UnitState

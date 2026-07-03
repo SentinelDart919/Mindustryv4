@@ -1,20 +1,20 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
+import arc.struct.Seq;
+import arc.util.serialization.JsonReader;
+import arc.util.serialization.JsonValue;
 import io.anuke.mindustry.net.Net;
-import io.anuke.ucore.function.Consumer;
+import arc.func.Cons;
 
 import static io.anuke.mindustry.Vars.releasesURL;
 
 public class Changelogs{
 
-    public static void getChangelog(Consumer<Array<VersionInfo>> success, Consumer<Throwable> fail){
+    public static void getChangelog(Cons<Seq<VersionInfo>> success, Cons<Throwable> fail){
         Net.http(releasesURL, "GET", result -> {
             JsonReader reader = new JsonReader();
             JsonValue value = reader.parse(result);
-            Array<VersionInfo> out = new Array<>();
+            Seq<VersionInfo> out = new Seq<>();
 
             for(JsonValue entry = value.child; entry != null; entry = entry.next){
                 String name = entry.getString("name");
@@ -37,7 +37,7 @@ public class Changelogs{
                 out.add(new VersionInfo(name, description, id, build, entry.getString("published_at")));
             }
 
-            success.accept(out);
+            success.get(out);
         }, fail);
     }
 

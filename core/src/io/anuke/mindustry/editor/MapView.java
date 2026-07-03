@@ -1,32 +1,32 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.input.GestureDetector.GestureListener;
-import com.badlogic.gdx.math.Bresenham2;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import arc.input.Input.Buttons;
+import arc.graphics.Color;
+import arc.graphics.g2d.Batch;
+import arc.input.GestureDetector;
+import arc.input.GestureDetector.GestureListener;
+import arc.math.geom.Bresenham2;
+import arc.math.geom.Point2;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
 import io.anuke.mindustry.editor.DrawOperation.TileOperation;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.ui.GridImage;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Inputs;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.Element;
-import io.anuke.ucore.scene.event.InputEvent;
-import io.anuke.ucore.scene.event.InputListener;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.TextField;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Tmp;
+import arc.Core;
+import arc.Graphics;
+import arc.Input;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.scene.Element;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.event.Touchable;
+import arc.scene.ui.TextField;
+import arc.scene.ui.layout.Scl;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.util.Tmp;
 
 import static io.anuke.mindustry.Vars.mobile;
 import static io.anuke.mindustry.Vars.ui;
@@ -42,9 +42,9 @@ public class MapView extends Element implements GestureListener{
     private float zoom = 1f;
     private boolean grid = false;
     private GridImage image = new GridImage(0, 0);
-    private Vector2 vec = new Vector2();
-    private Rectangle rect = new Rectangle();
-    private Vector2[][] brushPolygons = new Vector2[MapEditor.brushSizes.length][0];
+    private Vec2 vec = new Vec2();
+    private Rect rect = new Rect();
+    private Vec2[][] brushPolygons = new Vec2[MapEditor.brushSizes.length][0];
 
     private boolean drawing;
     private int lastx, lasty;
@@ -57,7 +57,7 @@ public class MapView extends Element implements GestureListener{
 
         for(int i = 0; i < MapEditor.brushSizes.length; i++){
             float size = MapEditor.brushSizes[i];
-            brushPolygons[i] = Geometry.pixelCircle(size, (index, x, y) -> Vector2.dst(x, y, index, index) <= index - 0.5f);
+            brushPolygons[i] = Geometry.pixelCircle(size, (index, x, y) -> Vec2.dst(x, y, index, index) <= index - 0.5f);
         }
 
         Inputs.addProcessor(0, new GestureDetector(20, 0.5f, 2, 0.15f, this));
@@ -95,7 +95,7 @@ public class MapView extends Element implements GestureListener{
 
                 updated = false;
 
-                GridPoint2 p = project(x, y);
+                Point2 p = project(x, y);
                 lastx = p.x;
                 lasty = p.y;
                 startx = p.x;
@@ -119,12 +119,12 @@ public class MapView extends Element implements GestureListener{
 
                 drawing = false;
 
-                GridPoint2 p = project(x, y);
+                Point2 p = project(x, y);
 
                 if(tool == EditorTool.line){
                     ui.editor.resetSaved();
-                    Array<GridPoint2> points = br.line(startx, starty, p.x, p.y);
-                    for(GridPoint2 point : points){
+                    Seq<Point2> points = br.line(startx, starty, p.x, p.y);
+                    for(Point2 point : points){
                         editor.draw(point.x, point.y);
                     }
                     updated = true;
@@ -149,12 +149,12 @@ public class MapView extends Element implements GestureListener{
                 mousex = x;
                 mousey = y;
 
-                GridPoint2 p = project(x, y);
+                Point2 p = project(x, y);
 
                 if(drawing && tool.draggable){
                     ui.editor.resetSaved();
-                    Array<GridPoint2> points = br.line(lastx, lasty, p.x, p.y);
-                    for(GridPoint2 point : points){
+                    Seq<Point2> points = br.line(lastx, lasty, p.x, p.y);
+                    for(Point2 point : points){
                         tool.touched(editor, point.x, point.y);
                     }
                     updated = true;
@@ -214,7 +214,7 @@ public class MapView extends Element implements GestureListener{
         super.act(delta);
 
         if(Core.scene.getKeyboardFocus() == null || !(Core.scene.getKeyboardFocus() instanceof TextField) &&
-                !Inputs.keyDown(io.anuke.ucore.input.Input.CONTROL_LEFT)){
+                !Inputs.keyDown(Input.CONTROL_LEFT)){
             float ax = Inputs.getAxis("move_x");
             float ay = Inputs.getAxis("move_y");
             offsetx -= ax * 15f / zoom;
@@ -231,7 +231,7 @@ public class MapView extends Element implements GestureListener{
         zoom = Mathf.clamp(zoom, 0.2f, 12f);
     }
 
-    private GridPoint2 project(float x, float y){
+    private Point2 project(float x, float y){
         float ratio = 1f / ((float) editor.getMap().width() / editor.getMap().height());
         float size = Math.min(width, height);
         float sclwidth = size * zoom;
@@ -246,7 +246,7 @@ public class MapView extends Element implements GestureListener{
         }
     }
 
-    private Vector2 unproject(int x, int y){
+    private Vec2 unproject(int x, int y){
         float ratio = 1f / ((float) editor.getMap().width() / editor.getMap().height());
         float size = Math.min(width, height);
         float sclwidth = size * zoom;
@@ -268,7 +268,7 @@ public class MapView extends Element implements GestureListener{
 
         image.setImageSize(editor.getMap().width(), editor.getMap().height());
 
-        Graphics.beginClip(x, y, width, height);
+        Gfx.beginClip(x, y, width, height);
 
         Draw.color(Palette.remove);
         Lines.stroke(2f);
@@ -277,7 +277,7 @@ public class MapView extends Element implements GestureListener{
         Draw.reset();
 
         if(grid){
-            Draw.color(Color.GRAY);
+            Draw.color(Color.gray);
             image.setBounds(centerx - sclwidth / 2, centery - sclheight / 2, sclwidth, sclheight);
             image.draw(batch, alpha);
             Draw.color();
@@ -294,27 +294,27 @@ public class MapView extends Element implements GestureListener{
         float scaling = zoom * Math.min(width, height) / editor.getMap().width();
 
         Draw.color(Palette.accent);
-        Lines.stroke(Unit.dp.scl(1f * zoom));
+        Lines.stroke(Scl.scl(1f * zoom));
 
         if(!editor.getDrawBlock().isMultiblock() || tool == EditorTool.eraser){
             if(tool == EditorTool.line && drawing){
-                Vector2 v1 = unproject(startx, starty).add(x, y);
+                Vec2 v1 = unproject(startx, starty).add(x, y);
                 float sx = v1.x, sy = v1.y;
-                Vector2 v2 = unproject(lastx, lasty).add(x, y);
+                Vec2 v2 = unproject(lastx, lasty).add(x, y);
 
                 Lines.poly(brushPolygons[index], sx, sy, scaling);
                 Lines.poly(brushPolygons[index], v2.x, v2.y, scaling);
             }
 
             if(tool.edit && (!mobile || drawing)){
-                GridPoint2 p = project(mousex, mousey);
-                Vector2 v = unproject(p.x, p.y).add(x, y);
+                Point2 p = project(mousex, mousey);
+                Vec2 v = unproject(p.x, p.y).add(x, y);
                 Lines.poly(brushPolygons[index], v.x, v.y, scaling);
             }
         }else{
             if((tool.edit || tool == EditorTool.line) && (!mobile || drawing)){
-                GridPoint2 p = project(mousex, mousey);
-                Vector2 v = unproject(p.x, p.y).add(x, y);
+                Point2 p = project(mousex, mousey);
+                Vec2 v = unproject(p.x, p.y).add(x, y);
                 float offset = (editor.getDrawBlock().size % 2 == 0 ? scaling / 2f : 0f);
                 Lines.square(
                         v.x + scaling / 2f + offset,
@@ -323,10 +323,10 @@ public class MapView extends Element implements GestureListener{
             }
         }
 
-        Graphics.endClip();
+        Gfx.endClip();
 
         Draw.color(Palette.accent);
-        Lines.stroke(Unit.dp.scl(3f));
+        Lines.stroke(Scl.scl(3f));
         Lines.rect(x, y, width, height);
         Draw.reset();
     }
@@ -335,7 +335,7 @@ public class MapView extends Element implements GestureListener{
         return Core.scene.getKeyboardFocus() != null
                 && Core.scene.getKeyboardFocus().isDescendantOf(ui.editor)
                 && ui.editor.isShown() && tool == EditorTool.zoom &&
-                Core.scene.hit(Graphics.mouse().x, Graphics.mouse().y, true) == this;
+                Core.scene.hit(Gfx.mouseWorld().x, Gfx.mouseWorld().y, true) == this;
     }
 
     @Override
@@ -375,13 +375,13 @@ public class MapView extends Element implements GestureListener{
     public boolean zoom(float initialDistance, float distance){
         if(!active()) return false;
         float nzoom = distance - initialDistance;
-        zoom += nzoom / 10000f / Unit.dp.scl(1f) * zoom;
+        zoom += nzoom / 10000f / Scl.scl(1f) * zoom;
         clampZoom();
         return false;
     }
 
     @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2){
+    public boolean pinch(Vec2 initialPointer1, Vec2 initialPointer2, Vec2 pointer1, Vec2 pointer2){
         return false;
     }
 
@@ -390,3 +390,4 @@ public class MapView extends Element implements GestureListener{
 
     }
 }
+

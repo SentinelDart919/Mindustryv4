@@ -1,6 +1,6 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.annotations.Annotations.ReadClass;
 import io.anuke.annotations.Annotations.WriteClass;
 import io.anuke.mindustry.entities.Player;
@@ -19,9 +19,9 @@ import io.anuke.mindustry.net.Packets.KickReason;
 import io.anuke.mindustry.type.*;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.entities.Entities;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.entities.Entities;
 
 import java.io.DataInput;
 import java.io.DataOutput;

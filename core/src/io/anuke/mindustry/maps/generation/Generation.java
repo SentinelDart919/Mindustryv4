@@ -6,8 +6,9 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.Drill;
-import io.anuke.ucore.util.Structs;
-import io.anuke.ucore.util.SeedRandom;
+import arc.util.Structs;
+import arc.math.Random;
+import arc.math.geom.SeedRandom;
 
 public class Generation{
     public final Sector sector;
@@ -61,7 +62,6 @@ public class Generation{
     }
 
 
-
     public boolean canPlace(int x, int y, Block block){
         if(block.isMultiblock()){
             int offsetx = -(block.size - 1) / 2;
@@ -104,3 +104,5 @@ public class Generation{
         }
     }
 }
+
+

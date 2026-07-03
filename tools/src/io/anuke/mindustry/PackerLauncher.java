@@ -1,7 +1,7 @@
 package io.anuke.mindustry;
 
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Log;
+import arc.util.Time;
+import arc.util.Log;
 
 import java.io.IOException;
 

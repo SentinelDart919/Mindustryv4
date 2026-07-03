@@ -1,9 +1,9 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Base64Coder;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.util.serialization.Base64Coder;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Recipe;
@@ -11,7 +11,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.content.blocks.Blocks;
-import io.anuke.ucore.util.Log;
+import arc.util.Log;
 
 import java.io.*;
 import java.util.zip.DeflaterOutputStream;
@@ -20,13 +20,13 @@ import java.util.zip.InflaterInputStream;
 import static io.anuke.mindustry.Vars.content;
 
 public class Schematics {
-    private Array<Schematic> all = new Array<>();
+    private Seq<Schematic> all = new Seq<>();
 
     public void load() {
         all.clear();
         if (!Vars.schematicDirectory.exists()) return;
 
-        for (FileHandle file : Vars.schematicDirectory.list()) {
+        for (Fi file : Vars.schematicDirectory.list()) {
             if (file.extension().equals("msch")) {
                 try {
                     Schematic s = read(file);
@@ -38,7 +38,7 @@ public class Schematics {
         }
     }
 
-    public Array<Schematic> all() {
+    public Seq<Schematic> all() {
         return all;
     }
 
@@ -53,7 +53,7 @@ public class Schematics {
     }
 
     public void remove(Schematic schem) {
-        all.removeValue(schem, true);
+        all.remove(schem, true);
         if (schem.file != null && schem.file.exists()) {
             schem.file.delete();
         }
@@ -75,7 +75,7 @@ public class Schematics {
         int maxx = Math.max(x, x2);
         int maxy = Math.max(y, y2);
 
-        Array<Schematic.Stile> tiles = new Array<>();
+        Seq<Schematic.Stile> tiles = new Seq<>();
         int minTileX = Integer.MAX_VALUE, minTileY = Integer.MAX_VALUE;
         int maxTileX = Integer.MIN_VALUE, maxTileY = Integer.MIN_VALUE;
 
@@ -97,7 +97,7 @@ public class Schematics {
             }
         }
 
-        if (tiles.size == 0) return new Schematic(new Array<>(), new ObjectMap<>(), 0, 0);
+        if (tiles.size == 0) return new Schematic(new Seq<>(), new ObjectMap<>(), 0, 0);
 
         for (Schematic.Stile stile : tiles) {
             stile.x -= minTileX;
@@ -112,7 +112,7 @@ public class Schematics {
         return new Schematic(tiles, tags, width, height);
     }
 
-    public Schematic read(FileHandle file) throws IOException {
+    public Schematic read(Fi file) throws IOException {
         try (InputStream is = new InflaterInputStream(file.read())) {
             DataInputStream stream = new DataInputStream(is);
             Schematic s = read(stream);
@@ -145,7 +145,7 @@ public class Schematics {
         }
 
         int tileCount = stream.readInt();
-        Array<Schematic.Stile> tiles = new Array<>(tileCount);
+        Seq<Schematic.Stile> tiles = new Seq<>(tileCount);
         for (int i = 0; i < tileCount; i++) {
             int blockIndex = stream.readUnsignedByte();
             short x = stream.readShort();
@@ -160,7 +160,7 @@ public class Schematics {
         return new Schematic(tiles, tags, width, height);
     }
 
-    public void write(Schematic schematic, FileHandle file) throws IOException {
+    public void write(Schematic schematic, Fi file) throws IOException {
         try (OutputStream os = new DeflaterOutputStream(file.write(false))) {
             DataOutputStream stream = new DataOutputStream(os);
             write(schematic, stream);
@@ -179,7 +179,7 @@ public class Schematics {
             stream.writeUTF(entry.value);
         }
 
-        Array<Block> blocks = new Array<>();
+        Seq<Block> blocks = new Seq<>();
         for (Schematic.Stile tile : schematic.tiles) {
             if (tile.block != null && !blocks.contains(tile.block, true)) {
                 blocks.add(tile.block);
@@ -215,3 +215,4 @@ public class Schematics {
         return read(new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(bytes))));
     }
 }
+

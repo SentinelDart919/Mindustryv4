@@ -1,10 +1,12 @@
 package io.anuke.mindustry.entities.effect;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.Pool.Poolable;
+import arc.graphics.Color;
+import arc.graphics.Hue;
+import arc.math.geom.Point2;
+import arc.math.geom.Rect;
+import arc.struct.IntMap;
+import arc.util.Timers;
+import arc.util.pooling.Pool.Poolable;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.Liquids;
@@ -19,18 +21,18 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.SolidEntity;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Hue;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Pooling;
+import arc.Effects;
+import arc.util.Time;
+import arc.entities.EntityGroup;
+import arc.entities.impl.SolidEntity;
+import arc.entities.trait.DrawTrait;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.Color;
+import arc.math.Angles;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.util.pooling.Pools;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -43,8 +45,8 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
     private static final float maxLiquid = 70f;
     private static final int maxGeneration = 2;
     private static final Color tmp = new Color();
-    private static final Rectangle rect = new Rectangle();
-    private static final Rectangle rect2 = new Rectangle();
+    private static final Rect rect = new Rect();
+    private static final Rect rect2 = new Rect();
     private static int seeds;
 
     private int loadedPosition = -1;
@@ -97,7 +99,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         if(p == null){
             if(Net.client()) return; //not clientside.
 
-            Puddle puddle = Pooling.obtain(Puddle.class, Puddle::new);
+            Puddle puddle = Pools.obtain(Puddle.class, Puddle::new);
             puddle.tile = tile;
             puddle.liquid = liquid;
             puddle.amount = amount;
@@ -157,13 +159,13 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
     }
 
     @Override
-    public void getHitbox(Rectangle rectangle){
-        rectangle.setCenter(x, y).setSize(tilesize);
+    public void getHitbox(Rect Rect){
+        Rect.setCenter(x, y).setSize(tilesize);
     }
 
     @Override
-    public void getHitboxTile(Rectangle rectangle){
-        rectangle.setCenter(x, y).setSize(0f);
+    public void getHitboxTile(Rect Rect){
+        Rect.setCenter(x, y).setSize(0f);
     }
 
     @Override
@@ -183,7 +185,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
 
             if(amount >= maxLiquid / 1.5f && generation < maxGeneration){
                 float deposited = Math.min((amount - maxLiquid / 1.5f) / 4f, 0.3f) * Timers.delta();
-                for(GridPoint2 point : Geometry.d4){
+                for(Point2 point : Geometry.d4){
                     Tile other = world.tile(tile.x + point.x, tile.y + point.y);
                     if(other != null && other.block() == Blocks.air && !other.hasCliffs()){
                         deposit(other, tile, liquid, deposited, generation + 1);
@@ -317,3 +319,4 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         return puddleGroup;
     }
 }
+

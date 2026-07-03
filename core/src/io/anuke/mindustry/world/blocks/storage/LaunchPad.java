@@ -1,19 +1,19 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -53,7 +53,7 @@ public class LaunchPad extends Block {
 
                 Draw.color(Palette.lightishGray);
                 Draw.alpha(waveAlpha * alpha);
-                Draw.rect(Draw.region("circle"), px, py, 4f, 4f);
+                Draw.rect(Core.atlas.find("circle"), px, py, 4f, 4f);
             }
         }
 
@@ -71,7 +71,7 @@ public class LaunchPad extends Block {
                 Draw.color(Color.valueOf("ff971c").cpy().lerp(Palette.lightishGray, Mathf.clamp(lerpVal)));
                 Draw.alpha(shockAlpha * alpha * (0.5f + Mathf.randomSeed(e.id + i + 40, 0, 100) / 200f));
                 float psize = 2f + (Mathf.randomSeed(e.id + i + 50, 0, 800) / 100f) + progress * 10f;
-                Draw.rect(Draw.region("circle"), sx, sy, psize, psize);
+                Draw.rect(Core.atlas.find("circle"), sx, sy, psize, psize);
             }
         }
 
@@ -89,18 +89,18 @@ public class LaunchPad extends Block {
                     Draw.color(color);
                     Draw.alpha(p.fout() * particleAlpha);
                     float s = tsize * (1f + p.fin() * 0.5f);
-                    Draw.rect(Draw.region("circle"), p.x, p.y, s, s);
+                    Draw.rect(Core.atlas.find("circle"), p.x, p.y, s, s);
                 }), px, py);
             }
         }
 
         if (alpha > 0) {
-            Draw.color(Color.WHITE);
+            Draw.color(Color.white);
             Draw.alpha(alpha);
             Effects.effect(new Effect(1.1f, p -> {
-                Draw.color(Color.WHITE);
+                Draw.color(Color.white);
                 Draw.alpha(alpha);
-                Draw.rect(pod, x + ox, y + oy, pod.getRegionWidth() * size, pod.getRegionHeight() * size, rotation);
+                Draw.rect(pod, x + ox, y + oy, pod.width * size, pod.height * size, rotation);
             }), x, y);
         }
 
@@ -122,8 +122,8 @@ public class LaunchPad extends Block {
     @Override
     public void load() {
         super.load();
-        topRegion = Draw.region(name + "-top");
-        pod = Draw.region("launchpod");
+        topRegion = Core.atlas.find(name + "-top");
+        pod = Core.atlas.find("launchpod");
     }
 
     @Override

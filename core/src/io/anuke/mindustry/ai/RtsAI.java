@@ -1,19 +1,21 @@
 package io.anuke.mindustry.ai;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectSet;
+import java.util.EnumSet;
+import arc.struct.Seq;
+import arc.struct.ObjectSet;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams.TeamData;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.entities.Timer;
 import io.anuke.mindustry.world.blocks.BuildBlock;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.content.blocks.Blocks;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Timer;
+import arc.math.Mathf;
+import arc.util.Time;
 
 
 import static io.anuke.mindustry.Vars.*;
@@ -43,7 +45,7 @@ public class RtsAI{
     }
 
     public void update(){
-        if(data.cores.size == 0) return;
+        if(data.cores.isEmpty()) return;
 
         if(timer.get(timerFill, fillInterval)){
             fillCores();
@@ -84,7 +86,7 @@ public class RtsAI{
     }
 
     private void assignAttackSquads(){
-        Array<Tile> targets = findEnemyTargets();
+        Seq<Tile> targets = findEnemyTargets();
         if(targets.size == 0) return;
 
         Tile bestTarget = null;
@@ -181,7 +183,7 @@ public class RtsAI{
     private void reassignIdleUnits(){
         Tile coreTile = data.cores.first();
         float coreX = coreTile.drawx(), coreY = coreTile.drawy();
-        Array<Tile> targets = findEnemyTargets();
+        Seq<Tile> targets = findEnemyTargets();
         if(targets.size == 0) return;
 
         Tile target = targets.first();
@@ -212,7 +214,7 @@ public class RtsAI{
 
         if(idleCount < 5) return;
 
-        Array<Tile> targets = findEnemyTargets();
+        Seq<Tile> targets = findEnemyTargets();
         if(targets.size == 0) return;
 
         Tile target = targets.random();
@@ -233,8 +235,8 @@ public class RtsAI{
         }
     }
 
-    private Array<Tile> findEnemyTargets(){
-        Array<Tile> result = new Array<>();
+    private Seq<Tile> findEnemyTargets(){
+        Seq<Tile> result = new Seq<>();
         for(Team enemy : state.teams.enemiesOf(team)){
             if(!state.teams.isActive(enemy)) continue;
             for(Tile core : state.teams.get(enemy).cores){

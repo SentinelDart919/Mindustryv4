@@ -4,17 +4,18 @@ import io.anuke.mindustry.core.*;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.io.BundleLoader;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.modules.ModuleCore;
-import io.anuke.ucore.util.Log;
+import arc.Events;
+import arc.util.Time;
+import arc.util.Timers;
+import arc.ApplicationListener;
+import arc.util.Log;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class Mindustry extends ModuleCore{
+public class Mindustry extends arc.modules.ModuleCore{
 
     @Override
-    public void init(){
+    public void initModules(){
         Timers.mark();
 
         Vars.init();
@@ -37,6 +38,11 @@ public class Mindustry extends ModuleCore{
     }
 
     @Override
+    public void preInit() {
+
+    }
+
+    @Override
     public void postInit(){
         launchManager.load();
         Log.info("Time to load [total]: {0}", Timers.elapsed());
@@ -44,9 +50,9 @@ public class Mindustry extends ModuleCore{
     }
 
     @Override
-    public void render(){
+    public void update(){
         threads.handleBeginRender();
-        super.render();
+        super.update();
         threads.handleEndRender();
     }
 

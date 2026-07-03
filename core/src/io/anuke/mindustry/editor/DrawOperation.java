@@ -1,10 +1,10 @@
 package io.anuke.mindustry.editor;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
+import arc.struct.Seq;
+import arc.struct.IntSet;
 import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.maps.MapTileData.TileDataMarker;
-import io.anuke.ucore.util.Bits;
+import arc.struct.Bits;
 
 public class DrawOperation{
     /**
@@ -14,7 +14,7 @@ public class DrawOperation{
     /**
      * List of per-tile operations that occurred.
      */
-    private Array<TileOperation> operations = new Array<>();
+    private Seq<TileOperation> operations = new Seq<>();
     /**
      * Checks for duplicate operations, useful for brushes.
      */

@@ -1,17 +1,17 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.ContentType;
-import io.anuke.ucore.scene.event.HandCursorListener;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.Tooltip;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.utils.UIUtils;
+import arc.scene.event.HandCursorListener;
+import arc.scene.ui.Image;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.Tooltip;
+import arc.scene.ui.layout.Table;
+import arc.scene.utils.UIUtils;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.control;
@@ -34,12 +34,12 @@ public class UnlocksDialog extends FloatingDialog{
         table.margin(20);
         ScrollPane pane = new ScrollPane(table);
 
-        Array<Content>[] allContent = content.getContentMap();
+        Seq<Content>[] allContent = content.getContentMap();
 
         for(int j = 0; j < allContent.length; j ++){
             ContentType type = ContentType.values()[j];
 
-            Array<Content> array = allContent[j];
+            Seq<Content> array = allContent[j];
             if(array.size == 0 || !(array.first() instanceof UnlockableContent)) continue;
 
             table.add("$content." + type.name() + ".name").growX().left().color(Palette.accent);
@@ -65,7 +65,7 @@ public class UnlocksDialog extends FloatingDialog{
 
                     if(control.unlocks.isUnlocked(unlock)){
                         image.clicked(() -> Vars.ui.content.show(unlock));
-                        image.addListener(new Tooltip<>(new Table("button"){{
+                        image.addListener(new Tooltip(new Table(){{
                             add(unlock.localizedName());
                         }}));
                     }

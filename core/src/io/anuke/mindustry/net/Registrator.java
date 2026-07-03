@@ -1,8 +1,8 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.utils.ObjectIntMap;
+import arc.struct.ObjectIntMap;
 import io.anuke.mindustry.net.Packets.*;
-import io.anuke.ucore.function.Supplier;
+import arc.func.Prov;
 
 public class Registrator{
     private static ClassEntry[] classes = {
@@ -35,9 +35,9 @@ public class Registrator{
 
     public static class ClassEntry{
         public final Class<?> type;
-        public final Supplier<?> constructor;
+        public final Prov<?> constructor;
 
-        public <T extends Packet> ClassEntry(Class<T> type, Supplier<T> constructor){
+        public <T extends Packet> ClassEntry(Class<T> type, Prov<T> constructor){
             this.type = type;
             this.constructor = constructor;
         }

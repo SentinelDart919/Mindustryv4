@@ -1,7 +1,7 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.utils.Align;
-import io.anuke.ucore.scene.ui.ImageButton;
+import arc.util.Align;
+import arc.scene.ui.ImageButton;
 
 public class MobileButton extends ImageButton{
 
@@ -13,3 +13,4 @@ public class MobileButton extends ImageButton{
         add(text).growX().wrap().center().get().setAlignment(Align.center, Align.center);
     }
 }
+

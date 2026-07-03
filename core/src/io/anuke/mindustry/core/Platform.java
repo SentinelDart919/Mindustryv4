@@ -1,15 +1,16 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Base64Coder;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.scene.ui.Dialog;
-import io.anuke.ucore.scene.ui.TextField;
+import arc.Core;
+import arc.input.KeyCode;
+import arc.files.Fi;
+import arc.util.Timers;
+import arc.util.serialization.Base64Coder;
+import arc.Core;
+import arc.Settings;
+import arc.util.Time;
+import arc.func.Cons;
+import arc.scene.ui.Dialog;
+import arc.scene.ui.TextField;
 
 import java.util.Random;
 
@@ -39,12 +40,12 @@ public abstract class Platform {
                     .visible(() -> use[0] != null && use[0].getSelection() != null && !use[0].getSelection().isEmpty()).width(65f);
 
             dialog.content().addImageButton("icon-paste", "clear", 16*3, () ->
-                    use[0].paste(Gdx.app.getClipboard().getContents(), false))
-                    .visible(() -> Gdx.app.getClipboard().getContents() != null && !Gdx.app.getClipboard().getContents().isEmpty()).width(65f);
+                    use[0].paste(Core.app.getClipboardText(), false))
+                    .visible(() -> Core.app.getClipboardText() != null && !Core.app.getClipboardText().isEmpty()).width(65f);
 
             TextField to = dialog.content().addField(field.getText() == null ? "" : field.getText(), t-> {}).pad(15).width(250f).get();
             to.setMaxLength(maxLength);
-            to.keyDown(Keys.ENTER, () -> {
+            to.keyDown(KeyCode.enter, () -> {
                 if(dialog.content().find("okb") != null){
                     dialog.content().find("okb").fireClick();
                 }
@@ -58,7 +59,7 @@ public abstract class Platform {
                 field.appendText(to.getText() == null ? "" : to.getText());
                 field.change();
                 dialog.hide();
-                Gdx.input.setOnscreenKeyboardVisible(false);
+                Core.input.setOnscreenKeyboardVisible(false);
             }).width(90f).name("okb");
 
             dialog.show();
@@ -66,7 +67,7 @@ public abstract class Platform {
                 if(to == null || to.getScene() == null) return;
                 to.setCursorPosition(to.getText() == null ? 0 : to.getText().length());
                 Core.scene.setKeyboardFocus(to);
-                Gdx.input.setOnscreenKeyboardVisible(true);
+                Core.input.setOnscreenKeyboardVisible(true);
             });
         });
     }
@@ -82,19 +83,19 @@ public abstract class Platform {
     }
     /**Must be a base64 string 8 bytes in length.*/
     public String getUUID(){
-        String uuid = Settings.getString("uuid", "");
+        String uuid = Core.settings.getString("uuid", "");
         if(uuid.isEmpty()){
             byte[] result = new byte[8];
             new Random().nextBytes(result);
             uuid = new String(Base64Coder.encode(result));
-            Settings.putString("uuid", uuid);
-            Settings.save();
+            Core.settings.put("uuid", uuid);
+            Core.settings.save();
             return uuid;
         }
         return uuid;
     }
     /**Only used for iOS or android: open the share menu for a map or save.*/
-    public void shareFile(FileHandle file){}
+    public void shareFile(Fi file){}
 
     /**Show a file chooser. Desktop only.
      *
@@ -104,7 +105,7 @@ public abstract class Platform {
      * @param open Whether to open or save files
      * @param filetype File extension to filter
      */
-    public void showFileChooser(String text, String content, Consumer<FileHandle> cons, boolean open, String filetype){}
+    public void showFileChooser(String text, String content, Cons<Fi> cons, boolean open, String filetype){}
 
     /**Forces the app into landscape mode. Currently Android only.*/
     public void beginForceLandscape(){}

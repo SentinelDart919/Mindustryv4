@@ -1,7 +1,7 @@
 package io.anuke.kryonet;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Array;
+import arc.Core;
+import arc.struct.Seq;
 import com.esotericsoftware.kryonet.*;
 import io.anuke.mindustry.net.Host;
 import io.anuke.mindustry.net.Net;
@@ -10,8 +10,8 @@ import io.anuke.mindustry.net.Net.SendMode;
 import io.anuke.mindustry.net.NetworkIO;
 import io.anuke.mindustry.net.Packets.Connect;
 import io.anuke.mindustry.net.Packets.Disconnect;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.Pooling;
+import arc.func.Cons;
+import arc.util.pooling.Pools;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 
@@ -27,10 +27,10 @@ import static io.anuke.mindustry.Vars.*;
 
 public class KryoClient implements ClientProvider{
     final Client client;
-    final Array<InetAddress> foundAddresses = new Array<>();
+    final Seq<InetAddress> foundAddresses = new Seq<>();
     final ClientDiscoveryHandler handler;
     final LZ4FastDecompressor decompressor = LZ4Factory.fastestInstance().fastDecompressor();
-    Consumer<Host> lastCallback;
+    Cons<Host> lastCallback;
 
     public KryoClient(){
         KryoCore.init();
@@ -50,7 +50,7 @@ public class KryoClient implements ClientProvider{
                         return;
                     }
                 }
-                Gdx.app.postRunnable(() -> lastCallback.accept(host));
+                Core.app.postRunnable(() -> lastCallback.get(host));
                 foundAddresses.add(datagramPacket.getAddress());
             }
 
@@ -176,7 +176,7 @@ public class KryoClient implements ClientProvider{
     }
 
     @Override
-    public void pingHost(String address, int port, Consumer<Host> valid, Consumer<Exception> invalid){
+    public void pingHost(String address, int port, Cons<Host> valid, Cons<Exception> invalid){
         runAsync(() -> {
             synchronized(handler){
                 try{
@@ -194,22 +194,22 @@ public class KryoClient implements ClientProvider{
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
                     Host host = NetworkIO.readServerData(packet.getAddress().getHostAddress(), buffer);
 
-                    Gdx.app.postRunnable(() -> valid.accept(host));
+                    Core.app.postRunnable(() -> valid.get(host));
                 }catch(Exception e){
-                    Gdx.app.postRunnable(() -> invalid.accept(e));
+                    Core.app.postRunnable(() -> invalid.get(e));
                 }
             }
         });
     }
 
     @Override
-    public void discover(Consumer<Host> callback, Runnable done){
+    public void discover(Cons<Host> callback, Runnable done){
         runAsync(() -> {
             synchronized(handler){
                 foundAddresses.clear();
                 lastCallback = callback;
                 client.discoverHosts(port, 3000);
-                Gdx.app.postRunnable(done);
+                Core.app.postRunnable(done);
             }
         });
     }
@@ -231,9 +231,9 @@ public class KryoClient implements ClientProvider{
 
     private void handleException(Exception e){
         if(e instanceof KryoNetException){
-            Gdx.app.postRunnable(() -> Net.showError(new IOException("mismatch")));
+            Core.app.postRunnable(() -> Net.showError(new IOException("mismatch")));
         }else{
-            Gdx.app.postRunnable(() -> Net.showError(e));
+            Core.app.postRunnable(() -> Net.showError(e));
         }
     }
 

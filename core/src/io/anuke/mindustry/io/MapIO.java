@@ -1,11 +1,11 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.utils.IntIntMap;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Entry;
+import arc.graphics.Color;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmap.Format;
+import arc.struct.IntIntMap;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.game.Team;
@@ -19,8 +19,8 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.LegacyColorMapper;
 import io.anuke.mindustry.world.LegacyColorMapper.LegacyBlock;
-import io.anuke.ucore.util.Bits;
-import io.anuke.ucore.util.Structs;
+import arc.struct.Bits;
+import arc.util.Structs;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -200,3 +200,4 @@ public class MapIO{
         stream.writeShort(meta.height);
     }
 }
+

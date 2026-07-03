@@ -1,7 +1,7 @@
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
-import com.badlogic.gdx.math.GridPoint2;
+import arc.Core;
+import arc.backends.headless.HeadlessApplication;
+import arc.backends.headless.HeadlessApplicationConfiguration;
+import arc.math.geom.Point2;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.UnitTypes;
@@ -23,10 +23,10 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.modules.ModuleCore;
-import io.anuke.ucore.util.EmptyLogger;
-import io.anuke.ucore.util.Log;
+import arc.util.Time;
+import arc.ApplicationListener;
+;
+import arc.util.Log;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ public class ApplicationTests{
             new File("tests_files/").delete();
 
             new HeadlessApplication(core, config){{
-                Gdx.app.setApplicationLogger(new EmptyLogger());
+                Core.app.setApplicationLogger(new EmptyLogger());
             }};
 
             for(Thread thread : Thread.getAllStackTraces().keySet()){
@@ -219,13 +219,13 @@ public class ApplicationTests{
 
     @Test
     void edges(){
-        GridPoint2[] edges = Edges.getEdges(1);
-        assertEquals(edges[0], new GridPoint2(1, 0));
-        assertEquals(edges[1], new GridPoint2(0, 1));
-        assertEquals(edges[2], new GridPoint2(-1, 0));
-        assertEquals(edges[3], new GridPoint2(0, -1));
+        Point2[] edges = Edges.getEdges(1);
+        assertEquals(edges[0], new Point2(1, 0));
+        assertEquals(edges[1], new Point2(0, 1));
+        assertEquals(edges[2], new Point2(-1, 0));
+        assertEquals(edges[3], new Point2(0, -1));
 
-        GridPoint2[] edges2 = Edges.getEdges(2);
+        Point2[] edges2 = Edges.getEdges(2);
         assertEquals(8, edges2.length);
     }
 

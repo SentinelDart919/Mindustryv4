@@ -1,8 +1,9 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.util.Translator;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
@@ -17,11 +18,11 @@ import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
 import io.anuke.mindustry.world.meta.values.LiquidFilterValue;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Translator;
+import arc.Effects;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -64,8 +65,8 @@ public class NuclearReactor extends PowerGenerator{
     public void load(){
         super.load();
 
-        topRegion = Draw.region(name + "-center");
-        lightsRegion = Draw.region(name + "-lights");
+        topRegion = Core.atlas.find(name + "-center");
+        lightsRegion = Core.atlas.find(name + "-lights");
     }
 
     @Override

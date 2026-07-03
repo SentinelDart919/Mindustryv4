@@ -1,12 +1,12 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.LiquidBlock;
 import io.anuke.mindustry.world.meta.BlockStat;
-import io.anuke.ucore.graphics.Draw;
+import arc.graphics.g2d.Draw;
 
 public class LiquidJunction extends LiquidBlock{
 
@@ -34,7 +34,7 @@ public class LiquidJunction extends LiquidBlock{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name)};
+        return new TextureRegion[]{Core.atlas.find(name)};
     }
 
     @Override

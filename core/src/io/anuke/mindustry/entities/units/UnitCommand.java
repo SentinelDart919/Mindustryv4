@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units;
 
-import io.anuke.ucore.util.Bundles;
+import arc.util.Bundles;
+import arc.util.Strings;
 
 public enum UnitCommand{
     attack, retreat, patrol;

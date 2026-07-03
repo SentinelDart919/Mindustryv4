@@ -1,6 +1,6 @@
 package io.anuke.mindustry.maps.missions;
 
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 import static io.anuke.mindustry.Vars.threads;
 

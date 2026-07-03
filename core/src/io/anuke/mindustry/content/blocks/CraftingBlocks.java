@@ -1,6 +1,7 @@
 package io.anuke.mindustry.content.blocks;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -9,9 +10,9 @@ import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 public class CraftingBlocks extends BlockList implements ContentList{
     public static Block smelter, arcsmelter, denseAlloyKiln, arcscrapsmelter, siliconsmelter, siliconcrucible, plastaniumCompressor, phaseWeaver, alloySmelter, surgeAlloyCrucible,
@@ -188,7 +189,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
         }};
 
         pyratiteMixer = new PowerSmelter("pyratite-mixer"){{
-            flameColor = Color.CLEAR;
+            flameColor = Color.clear;
             itemCapacity = 20;
             hasItems = true;
             hasPower = true;

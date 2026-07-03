@@ -1,10 +1,10 @@
 package io.anuke.mindustry.maps.generation;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.math.geom.Point2;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.IntSeq;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.OreBlocks;
@@ -21,14 +21,16 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.OreBlock;
-import io.anuke.ucore.noise.RidgedPerlin;
-import io.anuke.ucore.noise.Simplex;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.SeedRandom;
-import io.anuke.ucore.util.Structs;
+import arc.util.noise.Ridged;
+import arc.util.noise.Simplex;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.math.Random;
+import arc.util.Structs;
 
 import static io.anuke.mindustry.Vars.*;
+import arc.math.RidgedPerlin;
+import arc.math.geom.SeedRandom;
 
 
 public class WorldGenerator{
@@ -80,7 +82,7 @@ public class WorldGenerator{
     public void prepareTiles(Tile[][] tiles){
 
         //find multiblocks
-        IntArray multiblocks = new IntArray();
+        IntSeq multiblocks = new IntSeq();
 
         for(int x = 0; x < tiles.length; x++){
             for(int y = 0; y < tiles[0].length; y++){
@@ -149,15 +151,15 @@ public class WorldGenerator{
             int sy = (short)Mathf.range(Short.MAX_VALUE/2);
             int width = 380;
             int height = 380;
-            Array<GridPoint2> spawns = new Array<>();
-            Array<Item> ores = Item.getAllOres();
+            Seq<Point2> spawns = new Seq<>();
+            Seq<Item> ores = Item.getAllOres();
 
             if(state.mode.isPvp){
                 int scaling = 10;
-                spawns.add(new GridPoint2(width/scaling, height/scaling));
-                spawns.add(new GridPoint2(width - 1 - width/scaling, height - 1 - height/scaling));
+                spawns.add(new Point2(width/scaling, height/scaling));
+                spawns.add(new Point2(width - 1 - width/scaling, height - 1 - height/scaling));
             }else{
-                spawns.add(new GridPoint2(width/2, height/2));
+                spawns.add(new Point2(width/2, height/2));
             }
 
             Tile[][] tiles = world.createTiles(width, height);
@@ -179,7 +181,7 @@ public class WorldGenerator{
 
                     byte elevation = tile.getElevation();
 
-                    for(GridPoint2 point : Geometry.d4){
+                    for(Point2 point : Geometry.d4){
                         if(!Structs.inBounds(x + point.x, y + point.y, width, height)) continue;
                         if(tiles[x + point.x][y + point.y].getElevation() < elevation){
 
@@ -205,11 +207,11 @@ public class WorldGenerator{
         });
     }
 
-    public void generateOres(Tile[][] tiles, long seed, boolean genOres, Array<Item> usedOres){
+    public void generateOres(Tile[][] tiles, long seed, boolean genOres, Seq<Item> usedOres){
         oreIndex = 0;
 
         if(genOres){
-            Array<OreEntry> baseOres = Array.with(
+            Seq<OreEntry> baseOres = Seq.with(
                 new OreEntry(Items.copper, 0.3f, seed),
                 new OreEntry(Items.scrap, 0.342f, seed),
                 new OreEntry(Items.coal, 0.284f, seed),
@@ -219,7 +221,7 @@ public class WorldGenerator{
                 new OreEntry(Items.chromium, 0.28f, seed)
             );
 
-            Array<OreEntry> ores = new Array<>();
+            Seq<OreEntry> ores = new Seq<>();
             if(usedOres == null){
                 ores.addAll(baseOres);
             }else{
@@ -255,8 +257,8 @@ public class WorldGenerator{
         int width = tiles.length, height = tiles[0].length;
         SeedRandom rnd = new SeedRandom(sector.getSeed());
         Generation gena = new Generation(sector, tiles, tiles.length, tiles[0].length, rnd);
-        Array<GridPoint2> spawnpoints = sector.currentMission().getSpawnPoints(gena);
-        Array<Item> ores = world.sectors.getOres(sector.x, sector.y);
+        Seq<Point2> spawnpoints = sector.currentMission().getSpawnPoints(gena);
+        Seq<Item> ores = world.sectors.getOres(sector.x, sector.y);
 
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
@@ -272,7 +274,7 @@ public class WorldGenerator{
 
                 byte elevation = tile.getElevation();
 
-                for(GridPoint2 point : Geometry.d4){
+                for(Point2 point : Geometry.d4){
                     if(!Structs.inBounds(x + point.x, y + point.y, width, height)) continue;
                     if(tiles[x + point.x][y + point.y].getElevation() < elevation){
 
@@ -321,7 +323,7 @@ public class WorldGenerator{
      * @param spawnpoints list of player spawnpoints, can be null
      * @return the GenResult passed in with its values modified
      */
-    public GenResult generateTile(GenResult result, int sectorX, int sectorY, int localX, int localY, boolean detailed, Array<GridPoint2> spawnpoints, Array<Item> ores){
+    public GenResult generateTile(GenResult result, int sectorX, int sectorY, int localX, int localY, boolean detailed, Seq<Point2> spawnpoints, Seq<Item> ores){
         int x = sectorX * sectorSize + localX + Short.MAX_VALUE;
         int y = sectorY * sectorSize + localY + Short.MAX_VALUE;
 
@@ -342,8 +344,8 @@ public class WorldGenerator{
         float minDst = Float.MAX_VALUE;
 
         if(detailed && spawnpoints != null){
-            for(GridPoint2 p : spawnpoints){
-                float dst = Vector2.dst2(p.x, p.y, localX, localY);
+            for(Point2 p : spawnpoints){
+                float dst = Vec2.dst2(p.x, p.y, localX, localY);
                 minDst = Math.min(minDst, dst);
 
                 if(dst < lerpDst){
@@ -436,3 +438,7 @@ public class WorldGenerator{
         }
     }
 }
+
+
+
+

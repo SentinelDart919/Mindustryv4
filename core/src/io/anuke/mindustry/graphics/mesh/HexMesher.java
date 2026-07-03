@@ -1,7 +1,9 @@
 package io.anuke.mindustry.graphics.mesh;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector3;
+import arc.graphics.Color;
+import arc.math.geom.Vec3;
+import arc.math.geom.Vector3;
+import arc.math.geom.PerspectiveCamera;
 
 /** Defines color and height for a planet mesh. */
 public interface HexMesher{
@@ -10,10 +12,11 @@ public interface HexMesher{
     }
 
     default void getColor(Vector3 position, Color out){
-        out.set(Color.WHITE);
+        out.set(Color.white);
     }
 
     default boolean skip(Vector3 position){
         return false;
     }
 }
+

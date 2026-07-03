@@ -1,24 +1,24 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.LongMap;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.GL20;
+import arc.graphics.Mesh;
+import arc.math.geom.PerspectiveCamera;
+import arc.graphics.VertexAttributes.Usage;
+import arc.graphics.g3d.Environment;
+import arc.graphics.g3d.Material;
+import arc.graphics.g3d.Model;
+import arc.graphics.g3d.ModelBatch;
+import arc.graphics.g3d.ModelInstance;
+import arc.graphics.g3d.attributes.ColorAttribute;
+import arc.graphics.g3d.utils.ModelBuilder;
+import arc.graphics.gl.Shader;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
+import arc.math.geom.Vec3;
+import arc.struct.Seq;
+import arc.struct.LongMap;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.mesh.HexMesher;
 import io.anuke.mindustry.graphics.mesh.MeshBuilder;
@@ -28,16 +28,18 @@ import io.anuke.mindustry.maps.campaign.CampaignRegistry.PlanetDefinition;
 import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.blocks.Floor;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.Graphics;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 import io.anuke.mindustry.ui.dialogs.SectorsDialog;
 
 import static io.anuke.mindustry.Vars.sectorSize;
 import static io.anuke.mindustry.Vars.world;
+import arc.math.geom.Vector3;
+import arc.graphics.g2d.ShaderProgram;
 
 public class PlanetMeshRenderer{ // All this class is a bullshit I hate java just using all the planet mesh will corrupt your game, crash your game, and more, so let's not touch more of this bullshit
     public static class HoverData{
@@ -56,7 +58,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
     private final GenResult gen = new GenResult();
     private final LongMap<Vector3> cellBySector = new LongMap<>();
     private final LongMap<Integer> cellCountBySector = new LongMap<>();
-    private final LongMap<Vector2> projectedBySector = new LongMap<>();
+    private final LongMap<Vec2> projectedBySector = new LongMap<>();
     private final Color tmpColor = new Color();
 
     private Model basePlanetModel;
@@ -137,22 +139,22 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
 
         float radius = 1.2f;
         float camDistance = Mathf.clamp(4.2f * zoom, 1.8f, 9f);
-        float cy = MathUtils.cos(rotLat), sy = MathUtils.sin(rotLat);
-        float cx = MathUtils.cos(rotLon), sx = MathUtils.sin(rotLon);
+        float cy = Mathf.cos(rotLat), sy = Mathf.sin(rotLat);
+        float cx = Mathf.cos(rotLon), sx = Mathf.sin(rotLon);
         cam.position.set(camDistance * cy * cx, camDistance * sy, camDistance * cy * sx);
         cam.up.set(0f, 1f, 0f);
         cam.lookAt(0f, 0f, 0f);
         cam.near = 0.1f;
         cam.far = 1000f;
-        cam.viewportWidth = Gdx.graphics.getWidth();
-        cam.viewportHeight = Gdx.graphics.getHeight();
+        cam.viewportWidth = Core.Gfx.getWidth();
+        cam.viewportHeight = Core.Gfx.getHeight();
         cam.update(true);
         camFromCenter.set(cam.position).nor();
 
         basePlanet.transform.idt().scale(radius, radius, radius);
 
-        float mouseX = Gdx.input.getX();
-        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+        float mouseX = Core.input.getX();
+        float mouseY = Core.Gfx.getHeight() - Core.input.getY();
         float best = Float.MAX_VALUE;
         float pickRadius = 26f + (1f - Mathf.clamp((zoom - 0.45f) / 1.85f, 0f, 1f)) * 14f;
         for(LongMap.Entry<Vector3> entry : cellBySector.entries()){
@@ -163,7 +165,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
             tmpVec.set(entry.value);
             if(tmpVec.dot(camFromCenter) <= 0f) continue;
             Vector3 projected = cam.project(new Vector3(tmpVec).scl(radius * 1.03f));
-            float dst = Vector2.dst(mouseX, mouseY, projected.x, projected.y);
+            float dst = Vec2.dst(mouseX, mouseY, projected.x, projected.y);
             if(dst < pickRadius && dst < best){
                 best = dst;
                 hover.sector = sector;
@@ -173,18 +175,18 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         }
         hover.selected = hover.sector != null && hover.sector == selected;
 
-        Graphics.end();
+        Gfx.end();
         try{
-            Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-            Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+            Core.gl.glEnable(GL20.GL_DEPTH_TEST);
+            Core.gl.glViewport(0, 0, Core.Gfx.getWidth(), Core.Gfx.getHeight());
+            Core.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
 
             modelBatch.begin(cam);
             modelBatch.render(basePlanet, env);
             modelBatch.end();
         }finally{
-            Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-            Graphics.begin();
+            Core.gl.glDisable(GL20.GL_DEPTH_TEST);
+            Gfx.begin();
         }
 
         projectedBySector.clear();
@@ -200,11 +202,11 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
 
             Vector3 projected = cam.project(new Vector3(tmpVec).scl(radius * 1.02f));
             float size = 32f / zoom;
-            projectedBySector.put(entry.key, new Vector2(projected.x, projected.y));
+            projectedBySector.put(entry.key, new Vec2(projected.x, projected.y));
 
             if(unlocked){
                 if(sector.texture != null){
-                    Draw.color(Color.WHITE);
+                    Draw.color(Color.white);
                     Draw.rect(sector.texture, projected.x, projected.y, size, size);
                 }else if(sector.complete){
                     Draw.color(Palette.accent);
@@ -215,7 +217,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
                     float isize = size * 0.6f;
                     Draw.color(0f, 0f, 0f, 0.4f);
                     Fill.circle(projected.x, projected.y, isize / 2f + 2f);
-                    Draw.color(Color.WHITE);
+                    Draw.color(Color.white);
                     Draw.rect(sector.getDominantMission().getIcon(), projected.x, projected.y, isize - 1, isize - 1);
                 }
                 if(sector.hasSave()){
@@ -225,7 +227,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
                     Draw.alpha(1f);
                 }
             }else{
-                Draw.color(Color.GRAY);
+                Draw.color(Color.gray);
                 Draw.alpha(0.3f);
                 Draw.rect("blank", projected.x, projected.y, size, size);
                 Draw.alpha(1f);
@@ -239,17 +241,17 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
             Sector sector = world.sectors.get(sxKey, syKey);
             if(sector == null || !sector.complete) continue;
 
-            Vector2 v1 = projectedBySector.get(entry.key);
+            Vec2 v1 = projectedBySector.get(entry.key);
             if(v1 == null) continue;
 
-            for(com.badlogic.gdx.math.GridPoint2 g : io.anuke.ucore.util.Geometry.d4){
+            for(arc.math.geom.Point2 g : arc.math.geom.Geometry.d4){
                 Sector other = world.sectors.get(sxKey + g.x, syKey + g.y);
                 if(other == null || !SectorsDialog.isUnlockedStatic(other)) continue;
                 
-                Vector2 v2 = projectedBySector.get(key(other.x, other.y));
+                Vec2 v2 = projectedBySector.get(key(other.x, other.y));
                 if(v2 != null){
                     if(other.complete){
-                        Draw.color(Color.GRAY);
+                        Draw.color(Color.gray);
                         Draw.alpha(0.2f);
                     }else{
                         Draw.color(Palette.accent);
@@ -263,9 +265,9 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         Draw.alpha(1f);
 
         if(selected != null){
-            Vector2 sel = projectedBySector.get(key(selected.x, selected.y));
+            Vec2 sel = projectedBySector.get(key(selected.x, selected.y));
             if(sel != null){
-                Draw.color(Color.WHITE);
+                Draw.color(Color.white);
                 Draw.alpha(0.95f);
                 Draw.rect("sector-select", sel.x, sel.y, 44f, 44f);
                 Draw.color(Palette.accent);
@@ -274,7 +276,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
                 Draw.alpha(1f);
             }
         }else if(hover.sector != null){
-            Draw.color(hover.selected ? Palette.accent : Color.WHITE);
+            Draw.color(hover.selected ? Palette.accent : Color.white);
             Draw.rect("sector-select", hover.x, hover.y, 34f, 34f);
         }
         Draw.reset();
@@ -287,10 +289,10 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         PlanetGrid grid = PlanetGrid.create(Math.max(0, planet.subdivisions));
         for(PlanetGrid.Cell cell : grid.cells){
             Vector3 p = cell.v.cpy().nor();
-            float lon = MathUtils.atan2(p.z, p.x);
-            float lat = (float)Math.asin(MathUtils.clamp(p.y, -1f, 1f));
-            int sx = (int)(((lon + MathUtils.PI) / MathUtils.PI2) * planet.gridLongitude) - planet.gridLongitude / 2;
-            int sy = (int)(((lat + MathUtils.PI / 2f) / MathUtils.PI) * planet.gridLatitude) - planet.gridLatitude / 2;
+            float lon = Mathf.atan2(p.z, p.x);
+            float lat = (float)Math.asin(Mathf.clamp(p.y, -1f, 1f));
+            int sx = (int)(((lon + Mathf.PI) / Mathf.PI2) * planet.gridLongitude) - planet.gridLongitude / 2;
+            int sy = (int)(((lat + Mathf.PI / 2f) / Mathf.PI) * planet.gridLatitude) - planet.gridLatitude / 2;
 
             long k = key(sx, sy);
             Vector3 acc = cellBySector.get(k);
@@ -382,12 +384,12 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
     }
 
     private void mapAndSample(Vector3 position, PlanetDefinition planet){
-        float lon = MathUtils.atan2(position.z, position.x);
-        float lat = (float)Math.asin(MathUtils.clamp(position.y, -1f, 1f));
-        int sx = (int)(((lon + MathUtils.PI) / MathUtils.PI2) * planet.gridLongitude) - planet.gridLongitude / 2;
-        int sy = (int)(((lat + MathUtils.PI / 2f) / MathUtils.PI) * planet.gridLatitude) - planet.gridLatitude / 2;
-        int lx = Mathf.clamp((int)(((lon + MathUtils.PI) / MathUtils.PI2) * (sectorSize - 1)), 0, sectorSize - 1);
-        int ly = Mathf.clamp((int)(((lat + MathUtils.PI / 2f) / MathUtils.PI) * (sectorSize - 1)), 0, sectorSize - 1);
+        float lon = Mathf.atan2(position.z, position.x);
+        float lat = (float)Math.asin(Mathf.clamp(position.y, -1f, 1f));
+        int sx = (int)(((lon + Mathf.PI) / Mathf.PI2) * planet.gridLongitude) - planet.gridLongitude / 2;
+        int sy = (int)(((lat + Mathf.PI / 2f) / Mathf.PI) * planet.gridLatitude) - planet.gridLatitude / 2;
+        int lx = Mathf.clamp((int)(((lon + Mathf.PI) / Mathf.PI2) * (sectorSize - 1)), 0, sectorSize - 1);
+        int ly = Mathf.clamp((int)(((lat + Mathf.PI / 2f) / Mathf.PI) * (sectorSize - 1)), 0, sectorSize - 1);
         world.generator.generateTile(gen, sx, sy, lx, ly, false, null, null);
     }
 
@@ -417,3 +419,5 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         currentPlanet = null;
     }
 }
+
+

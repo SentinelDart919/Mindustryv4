@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
@@ -10,11 +10,11 @@ import io.anuke.mindustry.world.consumers.ConsumeLiquid;
 import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.graphics.Draw;
+import arc.graphics.g2d.Draw;
 
 public class Pump extends LiquidBlock{
-    protected final Array<Tile> drawTiles = new Array<>();
-    protected final Array<Tile> updateTiles = new Array<>();
+    protected final Seq<Tile> drawTiles = new Seq<>();
+    protected final Seq<Tile> updateTiles = new Seq<>();
 
     protected final int timerContentCheck = timers++;
 
@@ -35,7 +35,7 @@ public class Pump extends LiquidBlock{
     public void load(){
         super.load();
 
-        liquidRegion = Draw.region("pump-liquid");
+        liquidRegion = Core.atlas.find("pump-liquid");
     }
 
     @Override
@@ -56,7 +56,7 @@ public class Pump extends LiquidBlock{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name)};
+        return new TextureRegion[]{Core.atlas.find(name)};
     }
 
     @Override

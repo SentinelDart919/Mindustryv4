@@ -1,14 +1,14 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Autotiler;
 import io.anuke.mindustry.world.meta.BlockGroup;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -32,9 +32,9 @@ public class TrainRail extends Block implements Autotiler{
     @Override
     public void load(){
         super.load();
-        TextureRegion base = Draw.region(name + "-0");
+        TextureRegion base = Core.atlas.find(name + "-0");
         for(int i = 0; i < regions.length; i++){
-            regions[i] = Draw.region(name + "-" + i, base);
+            regions[i] = Core.atlas.find(name + "-" + i, base);
         }
     }
 
@@ -53,7 +53,7 @@ public class TrainRail extends Block implements Autotiler{
     @Override
     public TextureRegion[] getIcon(){
         if(icon == null){
-            icon = new TextureRegion[]{Draw.region(name + "-0")};
+            icon = new TextureRegion[]{Core.atlas.find(name + "-0")};
         }
         return icon;
     }
@@ -109,8 +109,8 @@ public class TrainRail extends Block implements Autotiler{
 
     public boolean blends(Tile tile, int rotation, int direction){
         int worldDir = Mathf.mod(rotation - direction, 4);
-        int dx = io.anuke.ucore.util.Geometry.d4[worldDir].x * 2;
-        int dy = io.anuke.ucore.util.Geometry.d4[worldDir].y * 2;
+        int dx = arc.math.geom.Geometry.d4[worldDir].x * 2;
+        int dy = arc.math.geom.Geometry.d4[worldDir].y * 2;
         Tile other = world.tile(tile.x + dx, tile.y + dy);
         if(other != null) other = other.target();
 

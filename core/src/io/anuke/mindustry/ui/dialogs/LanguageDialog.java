@@ -1,11 +1,11 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ScrollPane;
-import io.anuke.ucore.scene.ui.TextButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Log;
+import arc.Settings;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ScrollPane;
+import arc.scene.ui.TextButton;
+import arc.scene.ui.layout.Table;
+import arc.util.Log;
 
 import java.util.Locale;
 

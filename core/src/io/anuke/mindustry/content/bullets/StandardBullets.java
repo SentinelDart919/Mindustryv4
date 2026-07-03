@@ -1,6 +1,6 @@
 package io.anuke.mindustry.content.bullets;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.bullet.BasicBulletType;
@@ -112,7 +112,7 @@ public class StandardBullets extends BulletList implements ContentList{
             bulletShrink = 1f;
             lifetime = 20f;
             backColor = Palette.lightishGray;
-            frontColor = Color.LIGHT_GRAY;
+            frontColor = Color.lightGray;
             despawneffect = Fx.none;
         }};
     }

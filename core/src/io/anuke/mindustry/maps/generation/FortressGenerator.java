@@ -1,10 +1,10 @@
 package io.anuke.mindustry.maps.generation;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntIntMap;
-import com.badlogic.gdx.utils.Predicate;
+import arc.math.geom.Point2;
+import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.struct.IntIntMap;
+import arc.func.Boolf;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.blocks.*;
@@ -33,11 +33,11 @@ import io.anuke.mindustry.world.blocks.storage.CoreBlock;
 import io.anuke.mindustry.world.blocks.storage.StorageBlock;
 import io.anuke.mindustry.world.blocks.units.UnitFactory;
 import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
-import io.anuke.ucore.function.BiFunction;
-import io.anuke.ucore.function.IntPositionConsumer;
-import io.anuke.ucore.function.TriFunction;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
+import arc.func.Func2;
+import arc.func.Intc2;
+import arc.func.Func3;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.state;
 import static io.anuke.mindustry.Vars.content;
@@ -73,9 +73,9 @@ public class FortressGenerator{
         float difficultyScl = Mathf.clamp(difficulty / 20f + gen.random.range(0.25f), 0f, 0.9999f);
         float dscl2 = Mathf.clamp(0.5f + difficulty / 20f + gen.random.range(0.1f), 0f, 1.5f);
 
-        Array<Block> turrets = find(b -> b instanceof ItemTurret && !b.living);
-        Array<Block> powerTurrets = find(b -> b instanceof PowerTurret);
-        Array<Block> walls = find(b -> b instanceof Wall && !(b instanceof Door) && b.size == 1);
+        Seq<Block> turrets = find(b -> b instanceof ItemTurret && !b.living);
+        Seq<Block> powerTurrets = find(b -> b instanceof PowerTurret);
+        Seq<Block> walls = find(b -> b instanceof Wall && !(b instanceof Door) && b.size == 1);
 
         Block wall = walls.get((int)(difficultyScl * walls.size));
 
@@ -93,8 +93,8 @@ public class FortressGenerator{
             ammoPerType.put(t.id, Mathf.clamp((int)(size* difficultyScl) + gen.random.range(1), 0, size - 1));
         }
 
-        TriFunction<Tile, Block, Predicate<Tile>, Boolean> checker = (current, block, pred) -> {
-            for(GridPoint2 point : Edges.getEdges(block.size)){
+        TriFunction<Tile, Block, Boolf<Tile>, Boolean> checker = (current, block, pred) -> {
+            for(Point2 point : Edges.getEdges(block.size)){
                 Tile tile = gen.tile(current.x + point.x, current.y + point.y);
                 if(tile != null){
                     tile = tile.target();
@@ -106,7 +106,7 @@ public class FortressGenerator{
             return false;
         };
 
-        BiFunction<Block, Predicate<Tile>, IntPositionConsumer> seeder = (block, pred) -> (x, y) -> {
+        BiFunction<Block, Boolf<Tile>, IntPositionConsumer> seeder = (block, pred) -> (x, y) -> {
             if(gen.canPlace(x, y, block) && ((block instanceof Wall && block.size == 1) || gen.random.chance(placeChance)) && checker.get(gen.tile(x, y), block, pred)){
                 gen.setBlock(x, y, block, team);
             }
@@ -118,7 +118,7 @@ public class FortressGenerator{
             }
         };
 
-        Array<IntPositionConsumer> passes = Array.with(
+        Seq<IntPositionConsumer> passes = Seq.with(
             //initial seeding solar panels
             placer.get(PowerBlocks.largeSolarPanel, 0.001f),
 
@@ -196,7 +196,7 @@ public class FortressGenerator{
             (x, y) -> {
                 if(!gen.canPlace(x, y, wall)) return;
 
-                for(GridPoint2 point : Geometry.d8){
+                for(Point2 point : Geometry.d8){
                     Tile tile = gen.tile(x + point.x, y + point.y);
                     if(tile != null){
                         tile = tile.target();
@@ -247,18 +247,18 @@ public class FortressGenerator{
         for(IntPositionConsumer i : passes){
             for(int x = 0; x < gen.width; x++){
                 for(int y = 0; y < gen.height; y++){
-                    if(Vector2.dst(x, y, enemyX, enemyY) > coreDst){
+                    if(Vec2.dst(x, y, enemyX, enemyY) > coreDst){
                         continue;
                     }
 
-                    i.accept(x, y);
+                    i.get(x, y);
                 }
             }
         }
     }
 
-    Array<Block> find(Predicate<Block> pred){
-        Array<Block> out = new Array<>();
+    Seq<Block> find(Boolf<Block> pred){
+        Seq<Block> out = new Seq<>();
         for(Block block : content.blocks()){
             if(pred.evaluate(block) && Recipe.getByResult(block) != null){
                 out.add(block);

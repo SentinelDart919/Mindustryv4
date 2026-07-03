@@ -1,14 +1,16 @@
 package io.anuke.mindustry.entities.units;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Vec2;
+import arc.util.Timers;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 public class BiomassGroundUnit extends GroundUnit{
 
@@ -29,21 +31,21 @@ public class BiomassGroundUnit extends GroundUnit{
     },
     pursue = new UnitState(){
         public void update(){
-            if(Units.invalidateTarget(target, team, x, y) || distanceTo(target) > getType().pursueRange){
+            if(Units.invalidateTarget(target, team, x, y) || dst(target) > getType().pursueRange){
                 target = null;
                 onCommand(getCommand());
             }else{
-                if(distanceTo(target) > getWeapon().getAmmo().getRange() * 0.8f){
+                if(dst(target) > getWeapon().getAmmo().getRange() * 0.8f){
                     moveTo(target.getX(), target.getY());
                 }
 
-                if(distanceTo(target) < getWeapon().getAmmo().getRange()){
+                if(dst(target) < getWeapon().getAmmo().getRange()){
                     rotate(angleTo(target));
 
                     if(Mathf.angNear(angleTo(target), rotation, 13f)){
                         AmmoType ammo = getWeapon().getAmmo();
 
-                        Vector2 to = Predict.intercept(BiomassGroundUnit.this, target, ammo.bullet.speed);
+                        Vec2 to = Predict.intercept(BiomassGroundUnit.this, target, ammo.bullet.speed);
 
                         getWeapon().update(BiomassGroundUnit.this, to.x, to.y);
                     }
@@ -68,18 +70,18 @@ public class BiomassGroundUnit extends GroundUnit{
 
         float scale = 1f + Mathf.sin(Timers.time() * frequency, 2f, amplitude);
 
-        Draw.color(Color.BLACK, team.color, hf + Mathf.absin(Timers.time(), hf * 5f, 1f - hf));
+        Draw.color(Color.black, team.color, hf + Mathf.absin(Timers.time(), hf * 5f, 1f - hf));
         Draw.alpha(hitTime);
         Draw.rect(getPowerCellRegion(), x, y,
-                getPowerCellRegion().getRegionWidth() * scale,
-                getPowerCellRegion().getRegionHeight() * scale,
+                getPowerCellRegion().width * scale,
+                getPowerCellRegion().height * scale,
                 rotation - 90);
         Draw.color();
     }
 
     @Override
     public TextureRegion getPowerCellRegion(){
-        if(type.hitsize > 10f)return Draw.region("biomass-heart");
-        else  return Draw.region("small-biomass-heart");
+        if(type.hitsize > 10f)return Core.atlas.find("biomass-heart");
+        else  return Core.atlas.find("small-biomass-heart");
     }
 }

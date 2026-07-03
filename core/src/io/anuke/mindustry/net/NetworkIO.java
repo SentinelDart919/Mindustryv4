@@ -1,8 +1,8 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Entry;
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectMap;
+import arc.util.Time;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.game.GameMode;
@@ -14,10 +14,10 @@ import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BlockPart;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.util.Bits;
+import arc.Core;
+import arc.util.Time;
+import arc.entities.Entities;
+import arc.struct.Bits;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -187,7 +187,7 @@ public class NetworkIO{
             Entities.clear();
             int id = stream.readInt();
             player.resetNoAdd();
-            player.read(stream, TimeUtils.millis());
+            player.read(stream, Time.millis());
             player.resetID(id);
             player.add();
 
@@ -344,3 +344,4 @@ public class NetworkIO{
         return new Host(host, hostAddress, map, wave, players, version, vertype);
     }
 }
+

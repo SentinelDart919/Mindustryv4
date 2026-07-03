@@ -1,7 +1,8 @@
 package io.anuke.mindustry.entities.units;
+import arc.util.Translator;
 
-import com.badlogic.gdx.math.Vector2;
-import io.anuke.ucore.util.Translator;
+import arc.math.geom.Vec2;
+import arc.math.geom.Vec2;
 
 import static io.anuke.mindustry.Vars.threads;
 
@@ -10,7 +11,7 @@ import static io.anuke.mindustry.Vars.threads;
  * Usually, squads are used by units spawned in the same wave.
  */
 public class Squad{
-    public Vector2 direction = new Translator();
+    public Vec2 direction = new Translator();
     public int units;
 
     private long lastUpdated;

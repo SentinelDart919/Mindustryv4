@@ -1,6 +1,6 @@
 package io.anuke.mindustry.content.blocks;
 
-import com.badlogic.gdx.utils.Array;
+import arc.struct.Seq;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.Items;
@@ -24,11 +24,11 @@ import io.anuke.mindustry.world.blocks.distribution.Sorter;
 import io.anuke.mindustry.world.blocks.power.PowerNode;
 import io.anuke.mindustry.world.blocks.units.UnitFactoryAdvanced;
 import io.anuke.mindustry.world.meta.BlockStat;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.ImageButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Geometry;
+import arc.graphics.g2d.Draw;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.ImageButton;
+import arc.scene.ui.layout.Table;
+import arc.math.geom.Geometry;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -143,7 +143,7 @@ public class DebugBlocks extends BlockList implements ContentList{
             public void buildTable(Tile tile, Table table){
                 LiquidSourceEntity entity = tile.entity();
 
-                Array<Liquid> items = content.liquids();
+                Seq<Liquid> items = content.liquids();
 
                 ButtonGroup<ImageButton> group = new ButtonGroup<>();
                 Table cont = new Table();
@@ -279,7 +279,6 @@ public class DebugBlocks extends BlockList implements ContentList{
             }
         };
     }
-
 
 
     class LiquidSourceEntity extends TileEntity{

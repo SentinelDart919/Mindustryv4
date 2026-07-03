@@ -52,7 +52,7 @@ public class SerializeAnnotationProcessor extends AbstractProcessor{
 
                 TypeSpec.Builder serializer = TypeSpec.anonymousClassBuilder("")
                 .addSuperinterface(ParameterizedTypeName.get(
-                ClassName.bestGuess("io.anuke.ucore.io.TypeSerializer"), type));
+                ClassName.bestGuess("arc.util.io.TypeSerializer"), type));
 
                 MethodSpec.Builder writeMethod = MethodSpec.methodBuilder("write")
                 .returns(void.class)
@@ -83,8 +83,8 @@ public class SerializeAnnotationProcessor extends AbstractProcessor{
                         writeMethod.addStatement("stream.write" + capName + "(object." + name + ")");
                         readMethod.addStatement("object." + name + "= stream.read" + capName + "()");
                     }else{
-                        writeMethod.addStatement("io.anuke.ucore.core.Settings.getSerializer(" + typeName+ ".class).write(stream, object." + name + ")");
-                        readMethod.addStatement("object." + name + " = (" +typeName+")io.anuke.ucore.core.Settings.getSerializer(" + typeName+ ".class).read(stream)");
+                        writeMethod.addStatement("arc.Settings.getSerializer(" + typeName+ ".class).write(stream, object." + name + ")");
+                        readMethod.addStatement("object." + name + " = (" +typeName+")arc.Settings.getSerializer(" + typeName+ ".class).read(stream)");
                     }
                 }
 
@@ -93,7 +93,7 @@ public class SerializeAnnotationProcessor extends AbstractProcessor{
                 serializer.addMethod(writeMethod.build());
                 serializer.addMethod(readMethod.build());
 
-                method.addStatement("io.anuke.ucore.core.Settings.setSerializer($N, $L)",  Utils.elementUtils.getBinaryName(elem).toString().replace('$', '.') + ".class", serializer.build());
+                method.addStatement("arc.Settings.setSerializer($N, $L)",  Utils.elementUtils.getBinaryName(elem).toString().replace('$', '.') + ".class", serializer.build());
             }
 
             classBuilder.addMethod(method.build());

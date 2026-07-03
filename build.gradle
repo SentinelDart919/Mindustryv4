@@ -1,14 +1,23 @@
 buildscript {
+    ext {
+        arcHash = '41219a4eb5'
+
+        arcModule = { String name ->
+            name = name.substring(name.lastIndexOf(':') + 1)
+            return "com.github.Anuken.Arc:$name:$arcHash"
+        }
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
         google()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        jcenter()
+        maven { url 'https://jitpack.io' }
     }
+
     dependencies {
-        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.0'
-        classpath "com.badlogicgames.gdx:gdx-tools:1.9.8"
+        classpath arcModule(":extensions:packer")
+        classpath arcModule(":arc-core")
     }
 }
 
@@ -20,12 +29,9 @@ allprojects {
 
     ext {
         versionNumber = '4'
-        versionModifier = 'Modded by B919'
+        versionModifier = 'Arc'
         versionType = 'unofficial'
         appName = 'Mindustry'
-        gdxVersion = '1.9.9'
-        roboVMVersion = '2.3.0'
-        uCoreVersion = '3dfb820142a0fc583ad19413a24fc5038aa29d89'
 
         getVersionString = {
             String buildVersion = getBuildVersion()
@@ -33,7 +39,7 @@ allprojects {
         }
 
         getBuildVersion = {
-            if(!project.hasProperty("buildversion")) return "custom build"
+            if (!project.hasProperty("buildversion")) return "custom build"
             return project.getProperties()["buildversion"]
         }
 
@@ -45,7 +51,7 @@ allprojects {
             def output = 'en\n'
             def bundles = new File(project(':core').projectDir, 'assets/bundles/')
             bundles.listFiles().each { other ->
-                if(other.name == "bundle.properties") return
+                if (other.name == "bundle.properties") return
                 output += other.name.substring("bundle".length() + 1, other.name.lastIndexOf('.')) + "\n"
             }
             new File(project(':core').projectDir, 'assets/locales').text = output
@@ -55,12 +61,11 @@ allprojects {
             def pfile = new File(project(':core').projectDir, 'assets/version.properties')
             def props = new Properties()
 
-            try{
+            try {
                 pfile.createNewFile()
-            }catch (Exception ignored){}
+            } catch (Exception ignored) {}
 
-            if(pfile.exists()) {
-
+            if (pfile.exists()) {
                 props.load(new FileInputStream(pfile))
 
                 String buildid = getBuildVersion()
@@ -84,77 +89,37 @@ allprojects {
     }
 }
 
-project(":desktop") {
-    apply plugin: "java"
-
-    dependencies {
-        compile project(":core")
-        compile project(":kryonet")
-        if(new File(projectDir.parent, '../debug').exists() && System.properties["release"] == null) compile project(":debug")
-
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        compile 'com.github.MinnDevelopment:java-discord-rpc:v2.0.0'
+configure(subprojects) {
+    tasks.withType(JavaCompile) {
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        options.encoding = "UTF-8"
     }
 }
 
-project(":ios") {
-    apply plugin: "java"
-    apply plugin: "robovm"
-
-    task copyGen{
-        copy{
-            from ("core/build/classes/java/main/io/anuke/mindustry/gen/"){
-                include "**/*.java"
-            }
-
-            into "core/src/io/anuke/mindustry/gen"
-        }
-
-        doFirst{
-            delete{
-                delete "core/src/io/anuke/mindustry/gen/"
-            }
-        }
-    }
-
-    task incrementConfig{
-        def vfile = file('robovm.properties')
-
-        def props = new Properties()
-        if(vfile.exists()){
-            props.load(new FileInputStream(vfile))
-        }
-
-        props['app.id'] = 'io.anuke.mindustry'
-        props['app.version'] = '4.0'
-        props['app.mainclass'] = 'io.anuke.mindustry.IOSLauncher'
-        props['app.executable'] = 'IOSLauncher'
-        props['app.name'] = 'Mindustry'
-        props['app.build'] = (!props.hasProperty("app.build") ? 40 : props['app.build'].toInteger() + 1)+""
-        props.store(vfile.newWriter(), null)
-    }
-
-    build.dependsOn(incrementConfig)
-    build.dependsOn(copyGen)
+project(":desktop") {
+    apply plugin: "java-library"
 
     dependencies {
-        compile project(":core")
+        implementation project(":core")
         implementation project(":kryonet")
 
-        compile "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
-        compile "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
-        compile "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-ios"
-        compileOnly project(":annotations")
+        implementation arcModule("backends:backend-sdl")
+        implementation arcModule("natives:natives-desktop")
+        implementation arcModule("natives:natives-freetype-desktop")
+        implementation arcModule("extensions:discord")
+        implementation 'com.github.MinnDevelopment:java-discord-rpc:v2.0.0'
     }
 }
 
 project(":core") {
-    apply plugin: "java"
+    apply plugin: "java-library"
+
+    task copyDeps(type: Copy) {
+        from configurations.annotationProcessor
+        from configurations.compileClasspath
+        into "deps"
+    }
 
     task finish {
         generateLocales()
@@ -163,55 +128,36 @@ project(":core") {
     dependencies {
         build.finalizedBy(finish)
 
-        def comp = System.properties["release"] == null || System.properties["release"] == "false"
-        if(!comp) println("Note: Compiling release build.")
-
-        if(new File(projectDir.parent, '../uCore').exists() && comp){
-            compile project(":uCore")
-        }else{
-            compile "com.github.anuken:ucore:$uCoreVersion"
-        }
-
-        if(new File(projectDir.parent, '../GDXGifRecorder').exists() && comp) {
-            compile project(":GDXGifRecorder")
-        }
-
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        implementation arcModule(":arc-core")
+        implementation arcModule("extensions:freetype")
 
         compileOnly project(":annotations")
         annotationProcessor project(":annotations")
     }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-XprintProcessorInfo" << "-XprintRounds"
+    }
 }
 
 project(":server") {
-    apply plugin: "java"
+    apply plugin: "java-library"
 
-    configurations {
-        if(findProject(":android") != null){
-            compile.exclude module: android
-        }
-    }
-    
     dependencies {
-
-        compile project(":core")
-        compile project(":kryonet")
-        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation project(":core")
+        implementation project(":kryonet")
+        implementation arcModule("backends:backend-headless")
     }
 }
 
-project(":tests"){
+project(":tests") {
     apply plugin: "java"
 
     dependencies {
         testImplementation project(":core")
-        testImplementation('org.junit.jupiter:junit-jupiter-api:5.1.0')
-        testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.1.0')
-        testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+        testImplementation arcModule("backends:backend-headless")
     }
 
     test {
@@ -224,7 +170,7 @@ project(":tools") {
     apply plugin: "java"
 
     dependencies {
-        compile project(":core")
+        implementation project(":core")
     }
 }
 
@@ -232,17 +178,17 @@ project(":annotations") {
     apply plugin: "java"
 
     dependencies {
-        compile 'com.squareup:javapoet:1.11.0'
+        implementation 'com.squareup:javapoet:1.11.0'
     }
 }
 
 project(":kryonet") {
-    apply plugin: "java"
+    apply plugin: "java-library"
 
     dependencies {
-        compile project(":core")
-        compile "org.lz4:lz4-java:1.4.1"
-        compile 'com.github.Anuken:kryonet:53b10247b1'
-        compile 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'
+        implementation project(":core")
+        implementation "org.lz4:lz4-java:1.4.1"
+        implementation 'com.github.Anuken:kryonet:53b10247b1'
+        implementation 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'
     }
 }

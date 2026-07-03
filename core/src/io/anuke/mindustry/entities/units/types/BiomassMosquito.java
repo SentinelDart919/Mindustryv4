@@ -1,6 +1,6 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
+import arc.graphics.Color;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BiomassAirUnit;
 import io.anuke.mindustry.entities.units.UnitType;
@@ -9,11 +9,11 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.Angles;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -33,11 +33,11 @@ public class BiomassMosquito extends BiomassAirUnit {
         }
 
         if(wing1 == null){
-            wing1 = Draw.region(type.name + "-wing1");
+            wing1 = Core.atlas.find(type.name + "-wing1");
             if(wing1 == null) wing1 = type.region; // crash are annoying
         }
         if(wing2 == null){
-            wing2 = Draw.region(type.name + "-wing2");
+            wing2 = Core.atlas.find(type.name + "-wing2");
             if(wing2 == null) wing2 = wing1; // CRASH SHALL NO PASS
         }
     }
@@ -45,8 +45,8 @@ public class BiomassMosquito extends BiomassAirUnit {
     public void init(UnitType type, Team team){
         super.init(type, team);
         this.weapon = type.weapon;
-        this.wing1 = Draw.region(type.name + "-wing1");
-        this.wing2 = Draw.region(type.name + "-wing2");
+        this.wing1 = Core.atlas.find(type.name + "-wing1");
+        this.wing2 = Core.atlas.find(type.name + "-wing2");
         ensureInitialized();
     }
     @Override
@@ -102,7 +102,6 @@ public class BiomassMosquito extends BiomassAirUnit {
         Draw.alpha(1f);
 
 
-
         for(int i : Mathf.signs){
             if(!getWeapon().weaponMirror && i < 0) continue;
             Draw.alpha(hitTime / hitDuration);
@@ -129,7 +128,7 @@ public class BiomassMosquito extends BiomassAirUnit {
     }
     @Override
     public void drawOver(){
-        trail.draw(Color.BLACK, 0f);
+        trail.draw(Color.black, 0f);
     }
 
     @Override

@@ -1,10 +1,10 @@
 package io.anuke.mindustry.world;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
+import arc.struct.IntSeq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.Player;
@@ -26,15 +26,16 @@ import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.meta.*;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Hue;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.util.Time;
+import arc.util.Timers;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
+import java.util.EnumSet;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 import static io.anuke.mindustry.sounds.Sounds.blockExplode;
@@ -103,7 +104,7 @@ public class Block extends BaseBlock {
     /** Whether this block consumes touchDown events when tapped. */
     public boolean consumesTap;
     /** The color of this block when displayed on the minimap or map preview. */
-    public Color minimapColor = Color.CLEAR;
+    public Color minimapColor = Color.clear;
     /** View range of this block type. Use a value < 0 to disable. */
     public float viewRange = 10;
     /**Whether the top icon is outlined, like a turret.*/
@@ -121,7 +122,7 @@ public class Block extends BaseBlock {
     /** Unit type to spawn as defense drone. */
     public UnitType defenseDroneType;
 
-    protected Array<Tile> tempTiles = new Array<>();
+    protected Seq<Tile> tempTiles = new Seq<>();
     protected Color tempColor = new Color();
     protected TextureRegion[] blockIcon;
     protected TextureRegion[] icon;
@@ -137,8 +138,8 @@ public class Block extends BaseBlock {
     public float ambientSoundFadeSpeed = 0.08f;
     public Block(String name){
         this.name = name;
-        this.formalName = Bundles.get("block." + name + ".name", name);
-        this.fullDescription = Bundles.getOrNull("block." + name + ".description");
+        this.formalName = Core.bundle.get("block." + name + ".name", name);
+        this.fullDescription = Core.bundle.getOrNull("block." + name + ".description");
         this.solid = false;
     }
 
@@ -174,7 +175,7 @@ public class Block extends BaseBlock {
     public boolean isAmbientSoundInRange(Tile tile){
         if(headless || Core.camera == null) return true;
 
-        float range = ambientSoundRange > 0f ? ambientSoundRange : Math.max(Core.camera.viewportWidth, Core.camera.viewportHeight) * 1.25f;
+        float range = ambientSoundRange > 0f ? ambientSoundRange : Math.max(Core.camera.width, Core.camera.height) * 1.25f;
         float dx = tile.drawx() - Core.camera.position.x;
         float dy = tile.drawy() - Core.camera.position.y;
         return dx * dx + dy * dy <= range * range;
@@ -215,7 +216,7 @@ public class Block extends BaseBlock {
         tile.entity.ambientSoundFade = 0f;
     }
     /**Populates the array with all blocks that produce this content.*/
-    public static void getByProduction(Array<Block> arr, Content result){
+    public static void getByProduction(Seq<Block> arr, Content result){
         arr.clear();
         for(Block block : content.blocks()){
             if(block.produces.get() == result){
@@ -262,7 +263,7 @@ public class Block extends BaseBlock {
         }
     }
 
-    public Array<Tile> getPowerConnections(Tile tile, Array<Tile> out){
+    public Seq<Tile> getPowerConnections(Tile tile, Seq<Tile> out){
         out.clear();
         for(Tile other : tile.entity.proximity()){
             if(other.entity.power != null && !(consumesPower && other.block().consumesPower && !outputsPower && !other.block().outputsPower)
@@ -343,8 +344,8 @@ public class Block extends BaseBlock {
 
     @Override
     public void load(){
-        shadowRegion = Draw.region(shadow == null ? "shadow-" + size : shadow);
-        region = Draw.region(name);
+        shadowRegion = Core.atlas.find(shadow == null ? "shadow-" + size : shadow);
+        region = Core.atlas.find(name);
 
         if(defenseDroneType == null && defenseDrones){
             defenseDroneType = UnitTypes.defenseDrone;
@@ -368,8 +369,8 @@ public class Block extends BaseBlock {
      * Call super!*/
     public void transformLinks(Tile tile, int oldWidth, int oldHeight, int newWidth, int newHeight, int shiftX, int shiftY){
         if(tile.entity != null && tile.entity.power != null){
-            IntArray links = tile.entity.power.links;
-            IntArray out = new IntArray();
+            IntSeq links = tile.entity.power.links;
+            IntSeq out = new IntSeq();
             for(int i = 0; i < links.size; i++){
                 out.add(world.transform(links.get(i), oldWidth, oldHeight, newWidth, shiftX, shiftY));
             }
@@ -493,7 +494,7 @@ public class Block extends BaseBlock {
 
                 if(item.flammability * amount > 0.5){
                     units++;
-                    Hue.addu(tempColor, item.flameColor);
+                    tempColor.add(item.flameColor);
                 }
             }
         }
@@ -570,7 +571,7 @@ public class Block extends BaseBlock {
 
     public TextureRegion getEditorIcon(){
         if(editorIcon == null){
-            editorIcon = Draw.region("block-icon-" + name, Draw.region("clear"));
+            editorIcon = Core.atlas.find("block-icon-" + name, Core.atlas.find("clear"));
         }
         return editorIcon;
     }
@@ -578,12 +579,12 @@ public class Block extends BaseBlock {
     /** Returns the icon used for displaying this block in the place menu */
     public TextureRegion[] getIcon(){
         if(icon == null){
-            if(Draw.hasRegion(name + "-icon")){
-                icon = new TextureRegion[]{Draw.region(name + "-icon")};
-            }else if(Draw.hasRegion(name)){
-                icon = new TextureRegion[]{Draw.region(name)};
-            }else if(Draw.hasRegion(name + "1")){
-                icon = new TextureRegion[]{Draw.region(name + "1")};
+            if(Core.atlas.has(name + "-icon")){
+                icon = new TextureRegion[]{Core.atlas.find(name + "-icon")};
+            }else if(Core.atlas.has(name)){
+                icon = new TextureRegion[]{Core.atlas.find(name)};
+            }else if(Core.atlas.has(name + "1")){
+                icon = new TextureRegion[]{Core.atlas.find(name + "1")};
             }else{
                 icon = new TextureRegion[]{};
             }
@@ -611,8 +612,8 @@ public class Block extends BaseBlock {
     /** Crops a regionto 8x8 */
     protected TextureRegion iconRegion(TextureRegion src){
         TextureRegion region = new TextureRegion(src);
-        region.setRegionWidth(8);
-        region.setRegionHeight(8);
+        region.setWidth(8);
+        region.setHeight(8);
         return region;
     }
 
@@ -644,8 +645,8 @@ public class Block extends BaseBlock {
         return size > 1;
     }
 
-    public Array<Object> getDebugInfo(Tile tile){
-        return Array.with(
+    public Seq<Object> getDebugInfo(Tile tile){
+        return Seq.with(
                 "block", tile.block().name,
                 "floor", tile.floor().name,
                 "x", tile.x,
@@ -659,3 +660,5 @@ public class Block extends BaseBlock {
         );
     }
 }
+
+

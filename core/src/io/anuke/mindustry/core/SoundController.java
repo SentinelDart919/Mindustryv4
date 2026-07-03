@@ -1,21 +1,23 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.modules.Module;
+
+import arc.Core;
+import arc.audio.Sound;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectIntMap;
+import arc.struct.ObjectSet;
+import arc.util.Time;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.core.GameState;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.modules.Module;
-import io.anuke.ucore.util.Mathf;
+import arc.Core;
+import arc.ApplicationListener;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.Vars.world;
@@ -24,15 +26,15 @@ public class SoundController extends Module{
     private static final long defaultMinInterval = 100L;
 
     private final ObjectMap<String, Sound> sounds = new ObjectMap<>();
-    private final ObjectMap<String, Array<Sound>> groups = new ObjectMap<>();
+    private final ObjectMap<String, Seq<Sound>> groups = new ObjectMap<>();
     private final ObjectMap<Sound, Long> lastPlayed = new ObjectMap<>();
     private final ObjectMap<Sound, Integer> priorities = new ObjectMap<>();
     private final ObjectMap<Sound, Long> minIntervals = new ObjectMap<>();
     private final ObjectSet<TileEntity> ambientEntities = new ObjectSet<>();
     private final ObjectSet<TileEntity> nextAmbientEntities = new ObjectSet<>();
-    private final Array<Tile> ambientTiles = new Array<>();
+    private final Seq<Tile> ambientTiles = new Seq<>();
     private final ObjectIntMap<Block> ambientCounts = new ObjectIntMap<>();
-    private final Array<PriorityEntry> priorityEntries = new Array<>();
+    private final Seq<PriorityEntry> priorityEntries = new Seq<>();
     private int ambientSoundBudget = 6;
     private int prioritySoundBudget = 8;
     private long priorityWindow = 120L;
@@ -41,16 +43,16 @@ public class SoundController extends Module{
 
     public SoundController(){
         if(Vars.headless) return;
-        Settings.defaults("sfxvol", 10);
-        Settings.defaults("mutesound", false);
+        Core.settings.defaults("sfxvol", 10);
+        Core.settings.defaults("mutesound", false);
         loadDirectory("sounds");
     }
 
     public void loadDirectory(String path){
-        FileHandle dir = Gdx.files.internal(path);
+        Fi dir = Core.files.internal(path);
         if(!dir.exists() || !dir.isDirectory()) return;
 
-        for(FileHandle file : dir.list()){
+        for(Fi file : dir.list()){
             if(file.isDirectory()){
                 loadDirectory(file.path());
                 continue;
@@ -69,13 +71,13 @@ public class SoundController extends Module{
             existing.dispose();
         }
 
-        Sound sound = Gdx.audio.newSound(Gdx.files.internal(path));
+        Sound sound = Core.audio.newSound(Core.files.internal(path));
         sounds.put(name, sound);
         return sound;
     }
 
     public void createGroup(String name, String... soundNames){
-        Array<Sound> list = new Array<>();
+        Seq<Sound> list = new Seq<>();
         for(String soundName : soundNames){
             Sound sound = sounds.get(soundName);
             if(sound != null){
@@ -160,7 +162,7 @@ public class SoundController extends Module{
 
         long id = sound.play(Mathf.clamp(finalVolume, 0f, 1f), pitch, Mathf.clamp(pan, -1f, 1f));
         if(id != -1L){
-            lastPlayed.put(sound, TimeUtils.millis());
+            lastPlayed.put(sound, Time.millis());
             registerPriority(sound);
         }
         return id;
@@ -183,7 +185,7 @@ public class SoundController extends Module{
 
         long id = sound.play(Mathf.clamp(finalVolume, 0f, 1f), pitch, calcPan(x));
         if(id != -1L){
-            lastPlayed.put(sound, TimeUtils.millis());
+            lastPlayed.put(sound, Time.millis());
             registerPriority(sound);
         }
         return id;
@@ -201,7 +203,7 @@ public class SoundController extends Module{
         }
 
         float finalVolume = calcVolume(x, y) * volume;
-        if(Settings.getBool("mutesound") || finalVolume <= 0.001f){
+        if(Core.settings.getBool("mutesound") || finalVolume <= 0.001f){
             sound.pause(id);
         }else{
             sound.resume(id);
@@ -229,7 +231,7 @@ public class SoundController extends Module{
         ambientTiles.clear();
         ambientCounts.clear();
 
-        float worldRange = Math.max(Core.camera.viewportWidth, Core.camera.viewportHeight) * 1.5f;
+        float worldRange = Math.max(Core.camera.width, Core.camera.height) * 1.5f;
         int tileRange = Math.max(1, (int)(worldRange / tilesize) + 2);
         int centerX = Mathf.scl(Core.camera.position.x, tilesize);
         int centerY = Mathf.scl(Core.camera.position.y, tilesize);
@@ -301,34 +303,34 @@ public class SoundController extends Module{
     }
 
     public long playRandom(String group, float volume){
-        Array<Sound> list = groups.get(group);
+        Seq<Sound> list = groups.get(group);
         if(list == null || list.size == 0) return -1L;
         return play(list.random(), volume);
     }
 
     public long playRandom(String group, float volume, float pitch, float pan){
-        Array<Sound> list = groups.get(group);
+        Seq<Sound> list = groups.get(group);
         if(list == null || list.size == 0) return -1L;
         return play(list.random(), volume, pitch, pan);
     }
 
     public long atRandom(String group, float x, float y, float pitch, float volume){
-        Array<Sound> list = groups.get(group);
+        Seq<Sound> list = groups.get(group);
         if(list == null || list.size == 0) return -1L;
         return at(list.random(), x, y, pitch, volume);
     }
 
     public Sound random(String group){
-        Array<Sound> list = groups.get(group);
+        Seq<Sound> list = groups.get(group);
         return list == null || list.size == 0 ? null : list.random();
     }
 
     private boolean canPlay(Sound sound){
-        if(Vars.headless || Settings.getBool("mutesound")) return false;
+        if(Vars.headless || Core.settings.getBool("mutesound")) return false;
 
         long interval = minIntervals.get(sound, defaultMinInterval);
         long last = lastPlayed.get(sound, 0L);
-        return TimeUtils.timeSinceMillis(last) >= interval && canPlayPriority(sound);
+        return Time.timeSinceMillis(last) >= interval && canPlayPriority(sound);
     }
 
     private boolean canPlayPriority(Sound sound){
@@ -369,11 +371,11 @@ public class SoundController extends Module{
             }
         }
 
-        priorityEntries.add(new PriorityEntry(TimeUtils.millis(), priority));
+        priorityEntries.add(new PriorityEntry(Time.millis(), priority));
     }
 
     private void cleanupPriorityEntries(){
-        long now = TimeUtils.millis();
+        long now = Time.millis();
         for(int i = priorityEntries.size - 1; i >= 0; i--){
             if(now - priorityEntries.get(i).time > priorityWindow){
                 priorityEntries.removeIndex(i);
@@ -382,12 +384,12 @@ public class SoundController extends Module{
     }
 
     private float getVolume(){
-        return Settings.getInt("sfxvol", 10) / 10f;
+        return Core.settings.getInt("sfxvol", 10) / 10f;
     }
 
     private float calcPan(float x){
         if(Core.camera == null) return 0f;
-        return Mathf.clamp((x - Core.camera.position.x) / (Core.camera.viewportWidth / 2f), -0.9f, 0.9f);
+        return Mathf.clamp((x - Core.camera.position.x) / (Core.camera.width / 2f), -0.9f, 0.9f);
     }
 
     private float calcVolume(float x, float y){
@@ -430,3 +432,4 @@ public class SoundController extends Module{
         priorityEntries.clear();
     }
 }
+

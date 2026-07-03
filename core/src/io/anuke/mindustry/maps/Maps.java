@@ -1,15 +1,15 @@
 package io.anuke.mindustry.maps;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.Core;
+import arc.files.Fi;
+import arc.graphics.Texture;
+import arc.struct.Seq;
+import arc.util.Disposable;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.io.MapIO;
-import io.anuke.ucore.function.Supplier;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.ThreadArray;
+import arc.func.Prov;
+import arc.util.Log;
+import arc.struct.Seq;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -26,17 +26,17 @@ public class Maps implements Disposable{
     /**Maps map names to the real maps.*/
     private ObjectMap<String, Map> maps = new ObjectMap<>();
     /**All maps stored in an ordered array.*/
-    private Array<Map> allMaps = new ThreadArray<>();
+    private Seq<Map> allMaps = new Seq<>();
     /**Temporary array used for returning things.*/
-    private Array<Map> returnArray = new ThreadArray<>();
+    private Seq<Map> returnArray = new Seq<>();
 
     /**Returns a list of all maps, including custom ones.*/
-    public Array<Map> all(){
+    public Seq<Map> all(){
         return allMaps;
     }
 
     /**Returns a list of only custom maps.*/
-    public Array<Map> customMaps(){
+    public Seq<Map> customMaps(){
         returnArray.clear();
         for(Map map : allMaps){
             if(map.custom) returnArray.add(map);
@@ -45,7 +45,7 @@ public class Maps implements Disposable{
     }
 
     /**Returns a list of only default maps.*/
-    public Array<Map> defaultMaps(){
+    public Seq<Map> defaultMaps(){
         returnArray.clear();
         for(Map map : allMaps){
             if(!map.custom) returnArray.add(map);
@@ -62,7 +62,7 @@ public class Maps implements Disposable{
     public void load(){
         try {
             for (String name : defaultMapNames) {
-                FileHandle file = Gdx.files.internal("maps/" + name + "." + mapExtension);
+                Fi file = Core.files.internal("maps/" + name + "." + mapExtension);
                 loadMap(file.nameWithoutExtension(), file::read, false);
             }
         }catch (IOException e){
@@ -80,7 +80,7 @@ public class Maps implements Disposable{
             newTags.putAll(tags);
             tags = newTags;
 
-            FileHandle file = customMapDirectory.child(name + "." + mapExtension);
+            Fi file = customMapDirectory.child(name + "." + mapExtension);
             MapIO.writeMap(file.write(false), tags, data);
 
             if(maps.containsKey(name)){
@@ -88,7 +88,7 @@ public class Maps implements Disposable{
                     maps.get(name).texture.dispose();
                     maps.get(name).texture = null;
                 }
-                allMaps.removeValue(maps.get(name), true);
+                allMaps.remove(maps.get(name), true);
             }
 
             Map map = new Map(name, new MapMeta(version, tags, data.width(), data.height(), null), true, getStreamFor(name));
@@ -111,15 +111,15 @@ public class Maps implements Disposable{
         }
 
         maps.remove(map.name);
-        allMaps.removeValue(map, true);
+        allMaps.remove(map, true);
 
         customMapDirectory.child(map.name + "." + mapExtension).delete();
     }
 
-    private void loadMap(String name, Supplier<InputStream> supplier, boolean custom) throws IOException{
-        try(DataInputStream ds = new DataInputStream(supplier.get())) {
+    private void loadMap(String name, Prov<InputStream> Prov, boolean custom) throws IOException{
+        try(DataInputStream ds = new DataInputStream(Prov.get())) {
             MapMeta meta = MapIO.readMapMeta(ds);
-            Map map = new Map(name, meta, custom, supplier);
+            Map map = new Map(name, meta, custom, Prov);
 
             if (!headless){
                 map.texture = new Texture(MapIO.generatePixmap(MapIO.readTileData(ds, meta, true)));
@@ -131,7 +131,7 @@ public class Maps implements Disposable{
     }
 
     private void loadCustomMaps(){
-        for(FileHandle file : customMapDirectory.list()){
+        for(Fi file : customMapDirectory.list()){
             try{
                 if(file.extension().equalsIgnoreCase(mapExtension)){
                     loadMap(file.nameWithoutExtension(), file::read, true);
@@ -143,8 +143,8 @@ public class Maps implements Disposable{
         }
     }
 
-    /**Returns an input stream supplier for a given map name.*/
-    private Supplier<InputStream> getStreamFor(String name){
+    /**Returns an input stream Prov for a given map name.*/
+    private Prov<InputStream> getStreamFor(String name){
         return customMapDirectory.child(name + "." + mapExtension)::read;
     }
 

@@ -1,7 +1,10 @@
 package io.anuke.mindustry.ai;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.*;
+import arc.Core;
+import arc.struct.*;
+
+import arc.graphics.Color;
+import arc.util.*;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.content.Items;
@@ -23,21 +26,21 @@ import io.anuke.mindustry.world.blocks.defense.turrets.Turret.TurretEntity;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
+import arc.Events;
+import arc.Settings;
+import arc.util.Time;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BaseUnit;
-import com.badlogic.gdx.math.Rectangle;
+import arc.math.geom.Rect;
 import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Log;
+import arc.util.Strings;
+import arc.math.geom.Geometry;
+import arc.util.Log;
 
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
+import arc.math.Mathf;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -45,6 +48,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.world;
 import static io.anuke.mindustry.Vars.unitGroups;
+
 /* DID xD
     Make them more aggressive - (add vein like system that goes directly to enemy blocks and damage them)
    make them spawn Units, done
@@ -58,14 +62,14 @@ import static io.anuke.mindustry.Vars.unitGroups;
 public class MassAI {
     public static boolean debug = false;
     private static ObjectSet<Tile> initializedCores = new ObjectSet<>();
-    private static Array<BuildingLine> activeLines = new Array<>();
-    private static Array<SubSection> activeSubsections = new Array<>();
+    private static Seq<BuildingLine> activeLines = new Seq<>();
+    private static Seq<SubSection> activeSubsections = new Seq<>();
     private static float spawnTimer = 0;
     private static float turretTimer = 0;
     private static float nextTurretTime = 0;
     private static float damageTurretTimer = 0;
     private static float nextDamageTurretTime = 0;
-    private static Array<PendingBuild> pendingBuilds = new Array<>();
+    private static Seq<PendingBuild> pendingBuilds = new Seq<>();
     private static final Item[] targetOres = {Items.scrap, Items.lead, Items.copper, Items.coal, Items.titanium, Items.thorium, Items.chromium};
     private static final int[] oreLimits = {6, 6, 6, 5, 4, 4, 4};
     private static int[] oreBoosts = new int[7];
@@ -76,9 +80,9 @@ public class MassAI {
     private static float squadTaskTimer = 0f;
     private static float nextSquadTaskTime = 45f * 60f;
     private static final int squadSize = 6;
-    private static final Array<SquadOrder> squadOrders = new Array<>();
+    private static final Seq<SquadOrder> squadOrders = new Seq<>();
     private static final ObjectIntMap<BaseUnit> unitSquadAssignments = new ObjectIntMap<>();
-    private static Rectangle rect = new Rectangle();
+    private static Rect rect = new Rect();
     private static boolean enemyNearby = false;
     public static float nextInfectionTime = 0;
     private static boolean disableGrace = false;
@@ -248,8 +252,8 @@ public class MassAI {
 
     public static void update() {
         if (Vars.state.isPaused() || Vars.state.teams == null) return;
-        if(Settings.getBool("massai-debug", false) != debug){
-            setDebug(Settings.getBool("massai-debug", false));
+        if(Core.settings.getBool("massai-debug", false) != debug){
+            setDebug(Core.settings.getBool("massai-debug", false));
         }
 
         ObjectSet<Tile> cores = Vars.state.teams.get(Team.themass).cores;
@@ -372,7 +376,7 @@ public class MassAI {
     }
 
     private static void updateSquadOrders(ObjectSet<Tile> cores, UnitCommand fallbackCommand, boolean enemyNearCore){
-        Array<BaseUnit> massUnits = new Array<>();
+        Seq<BaseUnit> massUnits = new Seq<>();
         for(BaseUnit unit : unitGroups[Team.themass.ordinal()].all()){
             if(unit != null && unit.isAdded() && !unit.isDead()){
                 massUnits.add(unit);
@@ -439,7 +443,7 @@ public class MassAI {
     }
 
     private static SquadTask rollTaskForSquad(ObjectSet<Tile> cores, boolean enemyNearCore, UnitCommand fallbackCommand, int squadIndex){
-        FloatArray weights = new FloatArray(SquadTask.all.length);
+        FloatSeq weights = new FloatSeq(SquadTask.all.length);
         float total = 0f;
 
         for(SquadTask task : SquadTask.all){
@@ -513,30 +517,30 @@ public class MassAI {
 
     public static void setDebug(boolean enabled){
         debug = enabled;
-        Settings.putBool("massai-debug", enabled);
+        Core.settings.putBool("massai-debug", enabled);
         Log.info("[MassAI] debug={0}", enabled);
     }
 
     public static void drawDebugOverlay(){
         if(!debug || Vars.headless || Vars.state == null || Vars.state.isPaused()) return;
 
-        IntMap<Array<BaseUnit>> bySquad = new IntMap<>();
+        IntMap<Seq<BaseUnit>> bySquad = new IntMap<>();
         for(BaseUnit unit : unitGroups[Team.themass.ordinal()].all()){
             if(unit == null || !unit.isAdded() || unit.isDead()) continue;
             int squadId = unitSquadAssignments.get(unit, -1);
             if(squadId < 0) continue;
-            Array<BaseUnit> list = bySquad.get(squadId);
+            Seq<BaseUnit> list = bySquad.get(squadId);
             if(list == null){
-                list = new Array<>();
+                list = new Seq<>();
                 bySquad.put(squadId, list);
             }
             list.add(unit);
         }
 
         Lines.stroke(1.2f);
-        for(IntMap.Entry<Array<BaseUnit>> entry : bySquad.entries()){
+        for(IntMap.Entry<Seq<BaseUnit>> entry : bySquad.entries()){
             int squadId = entry.key;
-            Array<BaseUnit> units = entry.value;
+            Seq<BaseUnit> units = entry.value;
             if(units.size == 0) continue;
 
             float cx = 0f, cy = 0f;
@@ -552,7 +556,7 @@ public class MassAI {
 
             for(BaseUnit unit : units){
                 Lines.line(cx, cy, unit.x, unit.y);
-                Draw.color(Color.WHITE);
+                Draw.color(Color.white);
                 Draw.text("SQ " + squadId, unit.x, unit.y + 11f);
                 Draw.color(Color.valueOf("7efcff"));
             }
@@ -674,7 +678,7 @@ public class MassAI {
         int size = turretBlock.size;
 
         // checks spawns
-        Array<Tile> potentialBases = new Array<>();
+        Seq<Tile> potentialBases = new Seq<>();
         if (fromDamage) {
             int rx = (int)(targetX / Vars.tilesize);
             int ry = (int)(targetY / Vars.tilesize);
@@ -725,7 +729,7 @@ public class MassAI {
                     items.remove(Items.titanium, 10);
                 }
 
-                Array<Tile> veinPath = findPathToAnyLine(target);
+                Seq<Tile> veinPath = findPathToAnyLine(target);
                 if (veinPath != null) {
                     // start from the building line(aka vein lines) and build towards the turret (first tile)
                     for (int j = veinPath.size - 1; j >= 0; j--) {
@@ -886,10 +890,10 @@ public class MassAI {
                 }
 
                 if (!occluded) {
-                    Array<Tile> path = findPathToAnyLine(target);
+                    Seq<Tile> path = findPathToAnyLine(target);
                     if (path != null && path.size > 1) {
                         Tile start = path.get(0);
-                        Array<Tile> p = new Array<>();
+                        Seq<Tile> p = new Seq<>();
                         for (int k = 1; k < path.size; k++) {
                             p.add(path.get(k));
                         }
@@ -979,7 +983,7 @@ public class MassAI {
         for (Tile core : Vars.state.teams.get(Team.themass).cores) {
             if (coreExpanded.get(core, false)) continue;
 
-            Array<BuildingLine> lines = new Array<>();
+            Seq<BuildingLine> lines = new Seq<>();
             for (BuildingLine line : activeLines) {
                 if (line.core == core) {
                     lines.add(line);
@@ -995,7 +999,7 @@ public class MassAI {
         }
     }
 
-    private static boolean tryExpandCore(Tile core, Array<BuildingLine> lines) {
+    private static boolean tryExpandCore(Tile core, Seq<BuildingLine> lines) {
         if (!core.entity.items.has(Items.corruptedbiomatter, 20)) return false; // biomatter is more logic
 
         // Shuffle lines to pick a random one that works
@@ -1010,7 +1014,7 @@ public class MassAI {
             if (line.tiles.size == 0) continue;
             
             // Prioritize tiles further from the core
-            Array<PathTile> lineTiles = new Array<>(line.tiles);
+            Seq<PathTile> lineTiles = new Seq<>(line.tiles);
             lineTiles.sort((a, b) -> {
                 float d1 = Mathf.dst(a.tile.x - core.x, a.tile.y - core.y);
                 float d2 = Mathf.dst(b.tile.x - core.x, b.tile.y - core.y);
@@ -1084,10 +1088,10 @@ public class MassAI {
         Tile oreTile = find2x2Ore(ore);
         if (oreTile == null) return false;
 
-        Array<Tile> p = findPathToAnyLine(oreTile);
+        Seq<Tile> p = findPathToAnyLine(oreTile);
         if (p != null && p.size > 1) {
             Tile startTile = p.get(0);
-            Array<Tile> path = new Array<>();
+            Seq<Tile> path = new Seq<>();
             for (int i = 1; i < p.size; i++) {
                 path.add(p.get(i));
             }
@@ -1104,7 +1108,7 @@ public class MassAI {
         return false;
     }
 
-    private static Array<Tile> findPathToAnyLine(Tile target) {
+    private static Seq<Tile> findPathToAnyLine(Tile target) {
         Queue<Tile> queue = new Queue<>();
         ObjectMap<Tile, Tile> parents = new ObjectMap<>();
         queue.addLast(target);
@@ -1124,7 +1128,7 @@ public class MassAI {
                 }
 
                 if (isLine) {
-                    Array<Tile> p = new Array<>();
+                    Seq<Tile> p = new Seq<>();
                     Tile node = curr;
                     while (node != null) {
                         p.add(node);
@@ -1248,7 +1252,7 @@ public class MassAI {
         return false;
     }
 
-    private static Array<Tile> findPath(Tile start, Tile target) {
+    private static Seq<Tile> findPath(Tile start, Tile target) {
         Queue<Tile> queue = new Queue<>();
         ObjectMap<Tile, Tile> parents = new ObjectMap<>();
         queue.addLast(start);
@@ -1257,7 +1261,7 @@ public class MassAI {
         while (!queue.isEmpty()) {
             Tile curr = queue.removeFirst();
             if (curr.x == target.x && curr.y == target.y) {
-                Array<Tile> path = new Array<>();
+                Seq<Tile> path = new Seq<>();
                 while (curr != start) {
                     path.add(curr);
                     curr = parents.get(curr);
@@ -1293,7 +1297,7 @@ public class MassAI {
         final Tile targetTile;
         final Block targetBlock;
         final Item targetOre;
-        final Array<Tile> path;
+        final Seq<Tile> path;
         int progress = 0;
         float timer = 0;
         float stuckTimer = 0;
@@ -1301,15 +1305,15 @@ public class MassAI {
         boolean failed = false;
         boolean destroying = false;
 
-        SubSection(Tile startTile, Tile targetTile, Item targetOre, Array<Tile> path) {
+        SubSection(Tile startTile, Tile targetTile, Item targetOre, Seq<Tile> path) {
             this(startTile, targetTile, ProductionBlocks.biomassBulb, targetOre, path);
         }
 
-        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Array<Tile> path) {
+        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Seq<Tile> path) {
             this(startTile, targetTile, targetBlock, null, path);
         }
 
-        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Item targetOre, Array<Tile> path) {
+        SubSection(Tile startTile, Tile targetTile, Block targetBlock, Item targetOre, Seq<Tile> path) {
             this.startTile = startTile;
             this.targetTile = targetTile;
             this.targetBlock = targetBlock;
@@ -1341,7 +1345,7 @@ public class MassAI {
                     stuckTimer += Timers.delta();
                     if (stuckTimer >= 15f * 60f) { // 15 seconds
                         // try to reconnect
-                        Array<Tile> newPath = findPathToAnyLine(targetTile);
+                        Seq<Tile> newPath = findPathToAnyLine(targetTile);
                         if (newPath != null && newPath.size > 1) {
                             this.startTile = newPath.get(0);
                             path.clear();
@@ -1424,7 +1428,7 @@ public class MassAI {
             int oreId = stream.readInt();
             Item targetOre = oreId == -1 ? null : Vars.content.item(oreId);
             int pathSize = stream.readInt();
-            Array<Tile> path = new Array<>(pathSize);
+            Seq<Tile> path = new Seq<>(pathSize);
             for (int i = 0; i < pathSize; i++) {
                 path.add(world.tile(stream.readInt()));
             }
@@ -1447,8 +1451,8 @@ public class MassAI {
         int targetLength;
         int divisions = 0;
         boolean subdivided = false;
-        Array<PathTile> tiles = new Array<>();
-        Array<Tile> pathBuffer = new Array<>();
+        Seq<PathTile> tiles = new Seq<>();
+        Seq<Tile> pathBuffer = new Seq<>();
         float timer = 0;
         float lastSubsectionTimer = 0;
         IntIntMap attempts = new IntIntMap();
@@ -1594,7 +1598,7 @@ public class MassAI {
                 for (int jump = 3; jump <= 7; jump++) {
                     Tile target = world.tile(tx + dx * jump, ty + dy * jump);
                     if (target != null && !target.block().solid && !isNearEnemyCore(target)) {
-                        Array<Tile> path = findPath(tiles.size == 0 ? world.tile(startX - dx, startY - dy) : tiles.peek().tile, target);
+                        Seq<Tile> path = findPath(tiles.size == 0 ? world.tile(startX - dx, startY - dy) : tiles.peek().tile, target);
                         if (path != null) {
                             pathBuffer.addAll(path);
                             return;
@@ -1655,7 +1659,7 @@ public class MassAI {
 
             int d1 = (direction + 1) % 4;
             int d2 = (direction + 3) % 4;
-            int dir = Mathf.choose(d1, d2);
+            int dir = Mathf.select(d1, d2);
             int tx = base.x + Geometry.d4[dir].x;
             int ty = base.y + Geometry.d4[dir].y;
             Tile next = world.tile(tx, ty);
@@ -1875,3 +1879,5 @@ public class MassAI {
         }
     }
 }
+
+

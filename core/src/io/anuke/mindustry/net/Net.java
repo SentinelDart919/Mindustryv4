@@ -1,25 +1,28 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net.HttpRequest;
-import com.badlogic.gdx.Net.HttpResponse;
-import com.badlogic.gdx.Net.HttpResponseListener;
-import com.badlogic.gdx.net.HttpRequestBuilder;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.Core;
+import arc.util.Http;
+import arc.util.Http.HttpResponse;
+import arc.util.Http.HttpRequest;
+import arc.util.Bundles;
+import arc.util.Timers;
+import arc.util.pooling.Pools;
+import arc.func.Cons2;
+import arc.struct.Seq;
+import arc.struct.IntMap;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.net.Packets.KickReason;
 import io.anuke.mindustry.net.Packets.StreamBegin;
 import io.anuke.mindustry.net.Packets.StreamChunk;
 import io.anuke.mindustry.net.Streamable.StreamBuilder;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.function.BiConsumer;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Pooling;
+import arc.util.Time;
+import arc.func.Cons2;
+import arc.func.Cons;
+import arc.util.Strings;
+import arc.util.Log;
+import arc.util.pooling.Pools;
 
 import java.io.IOException;
 
@@ -30,9 +33,9 @@ public class Net{
     private static boolean active;
     private static boolean clientLoaded;
     private static String lastIP;
-    private static Array<Object> packetQueue = new Array<>();
-    private static ObjectMap<Class<?>, Consumer> clientListeners = new ObjectMap<>();
-    private static ObjectMap<Class<?>, BiConsumer<Integer, Object>> serverListeners = new ObjectMap<>();
+    private static Seq<Object> packetQueue = new Seq<>();
+    private static ObjectMap<Class<?>, Cons> clientListeners = new ObjectMap<>();
+    private static ObjectMap<Class<?>, Cons2<Integer, Object>> serverListeners = new ObjectMap<>();
     private static ClientProvider clientProvider;
     private static ServerProvider serverProvider;
 
@@ -166,15 +169,15 @@ public class Net{
      * Starts discovering servers on a different thread.
      * Callback is run on the main libGDX thread.
      */
-    public static void discoverServers(Consumer<Host> cons, Runnable done){
+    public static void discoverServers(Cons<Host> cons, Runnable done){
         clientProvider.discover(cons, done);
     }
 
     /**
      * Returns a list of all connections IDs.
      */
-    public static Array<NetConnection> getConnections(){
-        return (Array<NetConnection>) serverProvider.getConnections();
+    public static Seq<NetConnection> getConnections(){
+        return (Seq<NetConnection>) serverProvider.getConnections();
     }
 
     /**
@@ -233,15 +236,15 @@ public class Net{
     /**
      * Registers a client listener for when an object is recieved.
      */
-    public static <T> void handleClient(Class<T> type, Consumer<T> listener){
+    public static <T> void handleClient(Class<T> type, Cons<T> listener){
         clientListeners.put(type, listener);
     }
 
     /**
      * Registers a server listener for when an object is recieved.
      */
-    public static <T> void handleServer(Class<T> type, BiConsumer<Integer, T> listener){
-        serverListeners.put(type, (BiConsumer<Integer, Object>) listener);
+    public static <T> void handleServer(Class<T> type, Cons2<Integer, T> listener){
+        serverListeners.put(type, (Cons2<Integer, Object>) listener);
     }
 
     /**
@@ -267,13 +270,13 @@ public class Net{
 
             if(clientLoaded || ((object instanceof Packet) && ((Packet) object).isImportant())){
                 if(clientListeners.get(object.getClass()) != null)
-                    clientListeners.get(object.getClass()).accept(object);
-                Pooling.free(object);
+                    clientListeners.get(object.getClass()).get(object);
+                Pools.free(object);
             }else if(!((object instanceof Packet) && ((Packet) object).isUnimportant())){
                 packetQueue.add(object);
                 Log.info("Queuing packet {0}", object);
             }else{
-                Pooling.free(object);
+                Pools.free(object);
             }
         }else{
             Log.err("Unhandled packet type: '{0}'!", object);
@@ -287,8 +290,8 @@ public class Net{
 
         if(serverListeners.get(object.getClass()) != null){
             if(serverListeners.get(object.getClass()) != null)
-                serverListeners.get(object.getClass()).accept(connection, object);
-            Pooling.free(object);
+                serverListeners.get(object.getClass()).get(connection, object);
+            Pools.free(object);
         }else{
             Log.err("Unhandled packet type: '{0}'!", object.getClass());
         }
@@ -297,7 +300,7 @@ public class Net{
     /**
      * Pings a host in an new thread. If an error occured, failed() should be called with the exception.
      */
-    public static void pingHost(String address, int port, Consumer<Host> valid, Consumer<Exception> failed){
+    public static void pingHost(String address, int port, Cons<Host> valid, Cons<Exception> failed){
         clientProvider.pingHost(address, port, valid, failed);
     }
 
@@ -345,29 +348,21 @@ public class Net{
         active = false;
     }
 
-    public static void http(String url, String method, Consumer<String> listener, Consumer<Throwable> failure){
+    public static void http(String url, String method, Cons<String> listener, Cons<Throwable> failure){
         http(url, method, null, listener, failure);
     }
 
-    public static void http(String url, String method, String body, Consumer<String> listener, Consumer<Throwable> failure){
-        HttpRequest req = new HttpRequestBuilder().newRequest()
-        .method(method).url(url).content(body).timeout(10000).build();
-
-        Gdx.net.sendHttpRequest(req, new HttpResponseListener(){
-            @Override
-            public void handleHttpResponse(HttpResponse httpResponse){
-                listener.accept(httpResponse.getResultAsString());
-            }
-
-            @Override
-            public void failed(Throwable t){
-                failure.accept(t);
-            }
-
-            @Override
-            public void cancelled(){
-            }
-        });
+    public static void http(String url, String method, String body, Cons<String> listener, Cons<Throwable> failure){
+        Http.request(Http.HttpMethod.valueOf(method.toLowerCase()), url)
+            .content(body)
+            .error(failure)
+            .submit(res -> {
+                try{
+                    listener.get(res.getResultAsString());
+                }catch(Exception e){
+                    if(failure != null) failure.get(e);
+                }
+            });
     }
 
     public enum SendMode{
@@ -399,10 +394,10 @@ public class Net{
          * Callback should be run on libGDX main thread.
          * @param done is the callback that should run after discovery.
          */
-        void discover(Consumer<Host> callback, Runnable done);
+        void discover(Cons<Host> callback, Runnable done);
 
         /**Ping a host. If an error occured, failed() should be called with the exception.*/
-        void pingHost(String address, int port, Consumer<Host> valid, Consumer<Exception> failed);
+        void pingHost(String address, int port, Cons<Host> valid, Cons<Exception> failed);
 
         /**Close all connections.*/
         void dispose();
@@ -432,7 +427,7 @@ public class Net{
         byte[] compressSnapshot(byte[] input);
 
         /**Return all connected users.*/
-        Array<? extends NetConnection> getConnections();
+        Seq<? extends NetConnection> getConnections();
 
         /**Returns a connection by ID.*/
         NetConnection getByID(int id);
@@ -441,3 +436,4 @@ public class Net{
         void dispose();
     }
 }
+

@@ -1,6 +1,7 @@
 package io.anuke.mindustry.game;
 
-import io.anuke.ucore.util.Bundles;
+import arc.util.Bundles;
+import arc.util.Strings;
 
 public enum GameMode{
     waves,

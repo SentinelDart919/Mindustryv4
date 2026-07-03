@@ -1,17 +1,17 @@
 package io.anuke.mindustry;
 
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData.Region;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ObjectMap;
+import arc.files.Fi;
+import arc.graphics.g2d.TextureAtlas.TextureAtlasData;
+import arc.graphics.g2d.TextureAtlas.TextureAtlasData.Region;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.ObjectMap;
 import io.anuke.mindustry.core.ContentLoader;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Atlas;
-import io.anuke.ucore.util.Log;
-import io.anuke.ucore.util.Log.LogHandler;
-import io.anuke.ucore.util.Log.NoopLogHandler;
+import arc.Core;
+import arc.util.Time;
+import arc.graphics.g2d.TextureAtlas;
+import arc.util.Log;
+import arc.util.Log.LogHandler;
+import arc.util.Log.NoopLogHandler;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -28,8 +28,8 @@ public class ImageContext {
         Log.setLogger(new LogHandler());
 
         String spritesFolder = new File("../../../assets/sprites").getAbsolutePath();
-        TextureAtlasData data = new TextureAtlasData(new FileHandle(spritesFolder + "/sprites.atlas"),
-                new FileHandle(spritesFolder), false);
+        TextureAtlasData data = new TextureAtlasData(new Fi(spritesFolder + "/sprites.atlas"),
+                new Fi(spritesFolder), false);
 
         ObjectMap<String, TextureRegion> regionCache = new ObjectMap<>();
 

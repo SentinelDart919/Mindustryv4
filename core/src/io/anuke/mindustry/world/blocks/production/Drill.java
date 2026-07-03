@@ -1,9 +1,12 @@
 package io.anuke.mindustry.world.blocks.production;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectIntMap;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.Gfx;
+import arc.graphics.g2d.TextureRegion;
+import arc.struct.Seq;
+import arc.struct.ObjectIntMap;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
@@ -16,21 +19,21 @@ import io.anuke.mindustry.world.consumers.ConsumeLiquid;
 import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Effects.Effect;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Effects.Effect;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.content;
 public class Drill extends Block{
     protected final static float hardnessDrillMultiplier = 50f;
     protected final int timerDump = timers++;
 
-    protected final Array<Tile> drawTiles = new Array<>();
+    protected final Seq<Tile> drawTiles = new Seq<>();
     protected final ObjectIntMap<Item> oreCount = new ObjectIntMap<>();
-    protected final Array<Item> itemArray = new Array<>();
+    protected final Seq<Item> itemArray = new Seq<>();
 
     /**Maximum tier of blocks this drill can mine.*/
     protected int tier;
@@ -78,9 +81,9 @@ public class Drill extends Block{
     @Override
     public void load(){
         super.load();
-        rimRegion = Draw.region(name + "-rim");
-        rotatorRegion = Draw.region(name + "-rotator");
-        topRegion = Draw.region(name + "-top");
+        rimRegion = Core.atlas.find(name + "-rim");
+        rotatorRegion = Core.atlas.find(name + "-rotator");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -93,12 +96,12 @@ public class Drill extends Block{
         Draw.rect(region, tile.drawx(), tile.drawy());
 
         if(drawRim){
-            Graphics.setAdditiveBlending();
+            Gfx.setAdditiveBlending();
             Draw.color(heatColor);
             Draw.alpha(entity.warmup * ts * (1f - s + Mathf.absin(Timers.time(), 3f, s)));
             Draw.rect(rimRegion, tile.drawx(), tile.drawy());
             Draw.color();
-            Graphics.setNormalBlending();
+            Gfx.setNormalBlending();
         }
 
         Draw.rect(rotatorRegion, tile.drawx(), tile.drawy(), entity.drillTime * rotateSpeed);
@@ -114,7 +117,7 @@ public class Drill extends Block{
 
     @Override
     public TextureRegion[] getIcon(){
-        return new TextureRegion[]{Draw.region(name), Draw.region(name + "-rotator"), Draw.region(name + "-top")};
+        return new TextureRegion[]{Core.atlas.find(name), Core.atlas.find(name + "-rotator"), Core.atlas.find(name + "-top")};
     }
 
     @Override
@@ -122,10 +125,10 @@ public class Drill extends Block{
         super.setStats();
 
         stats.add(BlockStat.drillTier, table -> {
-            Array<Item> list = new Array<>();
+            Seq<Item> list = new Seq<>();
 
             for(Item item : content.items()){
-                if(tier >= item.hardness && Draw.hasRegion(item.name + "1")){
+                if(tier >= item.hardness && Core.atlas.has(item.name + "1")){
                     list.add(item);
                 }
             }
@@ -133,7 +136,7 @@ public class Drill extends Block{
             for(int i = 0; i < list.size; i++){
                 Item item = list.get(i);
 
-                table.addImage(item.name + "1").size(8 * 3).padRight(2).padLeft(2).padTop(3).padBottom(3);
+                table.image(item.name + "1").size(8 * 3).padRight(2).padLeft(2).padTop(3).padBottom(3);
                 table.add(item.localizedName());
                 if(i != list.size - 1){
                     table.add("/");
@@ -154,7 +157,7 @@ public class Drill extends Block{
 
             for(Tile other : tile.getLinkedTiles(tempTiles)){
                 if(isValid(other)){
-                    oreCount.getAndIncrement(getDrop(other), 0, 1);
+                    oreCount.increment(getDrop(other), 0, 1);
                 }
             }
 
@@ -256,3 +259,4 @@ public class Drill extends Block{
     }
 
 }
+

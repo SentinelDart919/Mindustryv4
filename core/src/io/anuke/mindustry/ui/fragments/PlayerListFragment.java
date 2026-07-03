@@ -1,30 +1,30 @@
 package io.anuke.mindustry.ui.fragments;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Batch;
+import arc.Core;
+import arc.util.Bundles;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.NetConnection;
 import io.anuke.mindustry.net.Packets.AdminAction;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.scene.Group;
-import io.anuke.ucore.scene.event.Touchable;
-import io.anuke.ucore.scene.ui.Image;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Timer;
+import arc.Core;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.scene.Group;
+import arc.scene.event.Touchable;
+import arc.scene.ui.Image;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.Scl;
+import arc.util.Strings;
+import io.anuke.mindustry.entities.Timer;
 
 import static io.anuke.mindustry.Vars.*;
 
 public class PlayerListFragment extends Fragment{
     private boolean visible = false;
     private Table content = new Table().marginRight(13f).marginLeft(13f);
-    private Timer timer = new Timer();
+    private Timer timer = new Timer(1);
 
     @Override
     public void build(Group parent){
@@ -39,7 +39,7 @@ public class PlayerListFragment extends Fragment{
                 if(visible && timer.get(20)){
                     rebuild();
                     content.pack();
-                    content.act(Gdx.graphics.getDeltaTime());
+                    content.act(Core.graphics.getDeltaTime());
                     //TODO hack
                     Core.scene.act(0f);
                 }
@@ -83,11 +83,10 @@ public class PlayerListFragment extends Fragment{
 
             Table table = new Table(){
                 @Override
-                public void draw(Batch batch, float parentAlpha){
-                    super.draw(batch, parentAlpha);
+                public void draw(){
+                    super.draw();
                     Draw.color(Palette.accent);
-                    Draw.alpha(parentAlpha);
-                    Lines.stroke(Unit.dp.scl(3f));
+                    Lines.stroke(Scl.scl(3f));
                     Lines.rect(x, y, width, height);
                     Draw.reset();
                 }
@@ -99,7 +98,7 @@ public class PlayerListFragment extends Fragment{
             button.labelWrap("[#" + player.color.toString().toUpperCase() + "]" + player.name).width(170f).pad(10);
             button.add().grow();
 
-            button.addImage("icon-admin").size(14 * 2).visible(() -> player.isAdmin && !(!player.isLocal && Net.server())).padRight(5).get().updateVisibility();
+            button.image("icon-admin").size(14 * 2).visible(() -> player.isAdmin && !(!player.isLocal && Net.server())).padRight(5).get().updateVisibility();
 
             if((Net.server() || players[0].isAdmin) && !player.isLocal && (!player.isAdmin || Net.server())){
                 button.add().growY();
@@ -139,7 +138,7 @@ public class PlayerListFragment extends Fragment{
 
             content.add(button).padBottom(-6).width(350f).maxHeight(h + 14);
             content.row();
-            content.addImage("blank").height(3f).color(state.mode.isPvp ? player.getTeam().color : Palette.accent).growX();
+            content.image("blank").height(3f).color(state.mode.isPvp ? player.getTeam().color : Palette.accent).growX();
             content.row();
         });
 

@@ -1,12 +1,16 @@
 package io.anuke.mindustry.entities;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.util.Translator;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Queue;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.graphics.g2d.GlyphLayout;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
+import arc.struct.Queue;
+import arc.util.pooling.Pools;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -27,13 +31,14 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.storage.CoreBlock.CoreEntity;
-import io.anuke.ucore.core.*;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.EntityQuery;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Hue;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.*;
+import arc.*;
+import arc.entities.EntityGroup;
+import arc.entities.EntityQuery;
+import arc.graphics.g2d.Draw;
+import arc.graphics.Color;
+import arc.graphics.g2d.Lines;
+import arc.struct.Bits;
+import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -50,7 +55,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     private static final int timerShootRight = 1;
     private static final float liftoffBoost = 0.2f;
 
-    private static final Rectangle rect = new Rectangle();
+    private static final Rect rect = new Rect();
 
     //region instance variables
 
@@ -80,7 +85,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     private Tile mining;
     private CarriableTrait carrying;
     private Trail trail = new Trail(12);
-    private Vector2 movement = new Translator();
+    private Vec2 movement = new Translator();
     private boolean moved;
 
     //endregion
@@ -108,13 +113,13 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     }
 
     @Override
-    public void getHitbox(Rectangle rectangle){
-        rectangle.setSize(mech.hitsize).setCenter(x, y);
+    public void getHitbox(Rect Rect){
+        Rect.setSize(mech.hitsize).setCenter(x, y);
     }
 
     @Override
-    public void getHitboxTile(Rectangle rectangle){
-        rectangle.setSize(mech.hitsize * 2f / 3f).setCenter(x, y);
+    public void getHitboxTile(Rect Rect){
+        Rect.setSize(mech.hitsize * 2f / 3f).setCenter(x, y);
     }
 
     @Override
@@ -324,7 +329,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
         if(!mech.flying){
             if(floor.isLiquid){
-                Draw.tint(Color.WHITE, floor.liquidColor, 0.5f);
+                Draw.tint(Color.white, floor.liquidColor, 0.5f);
             }
 
             float boostTrnsY = -boostHeat * 3f;
@@ -335,16 +340,16 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
                 Draw.rect(mech.legRegion,
                         x + Angles.trnsx(baseRotation, ft * i + boostTrnsY, -boostTrnsX * i),
                         y + Angles.trnsy(baseRotation, ft * i + boostTrnsY, -boostTrnsX * i),
-                        mech.legRegion.getRegionWidth() * i, mech.legRegion.getRegionHeight() - Mathf.clamp(ft * i, 0, 2), baseRotation - 90 + boostAng * i);
+                        mech.legRegion.width * i, mech.legRegion.height - Mathf.clamp(ft * i, 0, 2), baseRotation - 90 + boostAng * i);
             }
 
             Draw.rect(mech.baseRegion, x, y, baseRotation - 90);
         }
 
         if(floor.isLiquid){
-            Draw.tint(Color.WHITE, floor.liquidColor, drownTime);
+            Draw.tint(Color.white, floor.liquidColor, drownTime);
         }else{
-            Draw.tint(Color.WHITE);
+            Draw.tint(Color.white);
         }
 
         Draw.rect(mech.region, x, y, rotation - 90);
@@ -354,10 +359,10 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         for(int i : Mathf.signs){
             if(!mech.weapon.weaponMirror && i < 0) continue;
             float tra = rotation - 90, trY = -mech.weapon.getRecoil(this, i > 0) + mech.weaponOffsetY;
-            float w = i > 0 ? -mech.weapon.equipRegion.getRegionWidth() : mech.weapon.equipRegion.getRegionWidth();
+            float w = i > 0 ? -mech.weapon.equipRegion.width : mech.weapon.equipRegion.width;
             Draw.rect(mech.weapon.equipRegion,
                     x + Angles.trnsx(tra, (mech.weaponOffsetX + mech.spreadX(this)) * i, trY),
-                    y + Angles.trnsy(tra, (mech.weaponOffsetX + mech.spreadX(this)) * i, trY), w, mech.weapon.equipRegion.getRegionHeight(), rotation - 90);
+                    y + Angles.trnsy(tra, (mech.weaponOffsetX + mech.spreadX(this)) * i, trY), w, mech.weapon.equipRegion.height, rotation - 90);
         }
 
         float backTrns = 4f, itemSize = 5f;
@@ -382,7 +387,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     public void drawStats(){
         float x = snappedX(), y = snappedY();
 
-        Draw.color(Color.BLACK, team.color, healthf() + Mathf.absin(Timers.time(), healthf()*5f, 1f - healthf()));
+        Draw.color(Color.black, team.color, healthf() + Mathf.absin(Timers.time(), healthf()*5f, 1f - healthf()));
         Draw.alpha(hitTime / hitDuration);
         Draw.rect(getPowerCellRegion(), x + Angles.trnsx(rotation, mech.cellTrnsY, 0f), y + Angles.trnsy(rotation, mech.cellTrnsY, 0f), rotation - 90);
         Draw.color();
@@ -415,11 +420,11 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     }
 
     public void drawName(){
-        GlyphLayout layout = Pooling.obtain(GlyphLayout.class, GlyphLayout::new);
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
 
         boolean ints = Core.font.usesIntegerPositions();
         Core.font.setUseIntegerPositions(false);
-        Draw.tscl(0.25f / io.anuke.ucore.scene.ui.layout.Unit.dp.scl(1f));
+        Draw.tscl(0.25f / arc.scene.ui.layout.Scl.scl(1f));
         layout.setText(Core.font, name);
         Draw.color(0f, 0f, 0f, 0.3f);
         Draw.rect("blank", x, y + 8 - layout.height / 2, layout.width + 2, layout.height + 3);
@@ -436,7 +441,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         }
 
         Draw.reset();
-        Pooling.free(layout);
+        Pools.free(layout);
         Draw.tscl(1f);
         Core.font.setUseIntegerPositions(ints);
     }
@@ -624,7 +629,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         movement.y += ya * speed;
         movement.x += xa * speed;
 
-        Vector2 vec = Graphics.world(control.input(playerIndex).getMouseX(), control.input(playerIndex).getMouseY());
+        Vec2 vec = Graphics.world(control.input(playerIndex).getMouseX(), control.input(playerIndex).getMouseY());
         pointerX = vec.x;
         pointerY = vec.y;
         updateShooting();
@@ -637,7 +642,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
             }
             float prex = x, prey = y;
             updateVelocityStatus();
-            moved = distanceTo(prex, prey) > 0.001f;
+            moved = dst(prex, prey) > 0.001f;
         }else{
             velocity.setZero();
             x = Mathf.lerpDelta(x, getCarrier().getX(), 0.1f);
@@ -681,7 +686,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
                 velocity.setAngle(Mathf.slerpDelta(velocity.angle(), angleTo(moveTarget), 0.1f));
             }
 
-            if(distanceTo(moveTarget) < 2f){
+            if(dst(moveTarget) < 2f){
                 if(moveTarget instanceof CarriableTrait){
                     carry((CarriableTrait) moveTarget);
                 }else if(tapping){
@@ -704,7 +709,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         movement.set(targetX - x, targetY - y).limit(isBoosting && !mech.flying ? mech.boostSpeed : mech.speed);
         movement.setAngle(Mathf.slerp(movement.angle(), velocity.angle(), 0.05f));
 
-        if(distanceTo(targetX, targetY) < attractDst){
+        if(dst(targetX, targetY) < attractDst){
             movement.setZero();
         }
 
@@ -716,7 +721,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         rect.width += expansion*2f;
         rect.height += expansion*2f;
 
-        isBoosting = EntityQuery.collisions().overlapsTile(rect) || distanceTo(targetX, targetY) > 85f;
+        isBoosting = EntityQuery.collisions().overlapsTile(rect) || dst(targetX, targetY) > 85f;
 
         velocity.add(movement.scl(Timers.delta()));
 
@@ -728,7 +733,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
         float lx = x, ly = y;
         updateVelocityStatus();
-        moved = distanceTo(lx, ly) > 0.001f && !isCarried();
+        moved = dst(lx, ly) > 0.001f && !isCarried();
 
         if(mech.flying){
             //hovering effect
@@ -743,7 +748,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
             if(mobile){
                 if(target == null){
                     isShooting = false;
-                    if(Settings.getBool("autotarget")){
+                    if(Core.settings.getBool("autotarget")){
                         target = Units.getClosestTarget(team, x, y, getWeapon().getAmmo().getRange());
                         if(target != null){
                             setMineTile(null);
@@ -755,7 +760,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
                         rotation = Mathf.slerpDelta(rotation, angleTo(target), 0.2f);
                     }
 
-                    Vector2 intercept =
+                    Vec2 intercept =
                             Predict.intercept(x, y, target.getX(), target.getY(), target.getVelocity().x - velocity.x, target.getVelocity().y - velocity.y, getWeapon().getAmmo().bullet.speed);
 
                     pointerX = intercept.x;
@@ -766,7 +771,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
                 }
 
             }else if(isShooting()){
-                Vector2 vec = Graphics.world(control.input(playerIndex).getMouseX(),
+                Vec2 vec = Graphics.world(control.input(playerIndex).getMouseX(),
                         control.input(playerIndex).getMouseY());
                 pointerX = vec.x;
                 pointerY = vec.y;
@@ -918,3 +923,4 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
     //endregion
 }
+

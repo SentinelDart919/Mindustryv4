@@ -1,20 +1,20 @@
 package io.anuke.mindustry.world.blocks.defense;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntSet;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Vec2;
+import arc.struct.IntSet;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Hue;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.Graphics;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.Color;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -50,7 +50,7 @@ public class MendProjector extends Block{
     @Override
     public void load(){
         super.load();
-        topRegion = Draw.region(name + "-top");
+        topRegion = Core.atlas.find(name + "-top");
     }
 
     @Override
@@ -76,7 +76,7 @@ public class MendProjector extends Block{
 
             for(int x = -tileRange + tile.x; x <= tileRange + tile.x; x++){
                 for(int y = -tileRange + tile.y; y <= tileRange + tile.y; y++){
-                    if(Vector2.dst(x, y, tile.x, tile.y) > realRange) continue;
+                    if(Vec2.dst(x, y, tile.x, tile.y) > realRange) continue;
 
                     Tile other = world.tile(x, y);
 
@@ -112,10 +112,10 @@ public class MendProjector extends Block{
 
         Draw.color(color, phase, entity.phaseHeat);
         Draw.alpha(entity.heat * Mathf.absin(Timers.time(), 10f, 1f) * 0.5f);
-        Graphics.setAdditiveBlending();
+        Gfx.setAdditiveBlending();
         Draw.rect(topRegion, tile.drawx(), tile.drawy());
 
-        Graphics.setNormalBlending();
+        Gfx.setNormalBlending();
         Draw.alpha(1f);
         Lines.stroke((2f  * f + 0.2f)* entity.heat);
         Lines.circle(tile.drawx(), tile.drawy(), (1f-f) * 9f);
@@ -146,3 +146,4 @@ public class MendProjector extends Block{
         }
     }
 }
+

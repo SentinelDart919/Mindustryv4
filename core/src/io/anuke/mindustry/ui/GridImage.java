@@ -1,9 +1,9 @@
 package io.anuke.mindustry.ui;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.scene.Element;
+import arc.graphics.g2d.Batch;
+import arc.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.Draw;
+import arc.scene.Element;
 
 public class GridImage extends Element{
     private int imageWidth, imageHeight;
@@ -14,7 +14,7 @@ public class GridImage extends Element{
     }
 
     public void draw(Batch batch, float alpha){
-        TextureRegion blank = Draw.region("white");
+        TextureRegion blank = Core.atlas.find("white");
 
         float xspace = (getWidth() / imageWidth);
         float yspace = (getHeight() / imageHeight);

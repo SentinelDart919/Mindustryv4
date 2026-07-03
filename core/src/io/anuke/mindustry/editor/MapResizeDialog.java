@@ -2,17 +2,17 @@ package io.anuke.mindustry.editor;
 
 import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
-import io.anuke.ucore.function.BiConsumer;
-import io.anuke.ucore.scene.ui.ButtonGroup;
-import io.anuke.ucore.scene.ui.TextButton;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
+import arc.func.Cons2;
+import arc.scene.ui.ButtonGroup;
+import arc.scene.ui.TextButton;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
 
 public class MapResizeDialog extends FloatingDialog{
     int[] validMapSizes = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
     int width, height;
 
-    public MapResizeDialog(MapEditor editor, BiConsumer<Integer, Integer> cons){
+    public MapResizeDialog(MapEditor editor, Cons2<Integer, Integer> cons){
         super("$text.editor.resizemap");
         shown(() -> {
             content().clear();
@@ -55,9 +55,10 @@ public class MapResizeDialog extends FloatingDialog{
         buttons().defaults().size(200f, 50f);
         buttons().addButton("$text.cancel", this::hide);
         buttons().addButton("$text.editor.resize", () -> {
-            cons.accept(width, height);
+            cons.get(width, height);
             hide();
         });
 
     }
 }
+

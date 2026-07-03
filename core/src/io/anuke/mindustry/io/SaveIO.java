@@ -1,10 +1,10 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntMap;
+import arc.Core;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.struct.IntSeq;
+import arc.struct.IntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.io.versions.Save16;
 import io.anuke.mindustry.io.versions.Save17;
@@ -17,12 +17,12 @@ import java.util.zip.InflaterInputStream;
 import static io.anuke.mindustry.Vars.*;
 
 public class SaveIO{
-    public static final IntArray breakingVersions = IntArray.with(47, 48, 49, 50, 51, 52, 53, 54, 55, 56);
+    public static final IntSeq breakingVersions = IntSeq.with(47, 48, 49, 50, 51, 52, 53, 54, 55, 56);
     public static final IntMap<SaveFileVersion> versions = new IntMap<>();
     public final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
     private static final int campaignsSaveVersion = 2;
 
-    public static final Array<SaveFileVersion> versionArray = Array.with(
+    public static final Seq<SaveFileVersion> versionArray = Seq.with(
         new Save16(),
         new Save17()
     );
@@ -32,8 +32,8 @@ public class SaveIO{
             versions.put(version.version, version);
         }
     }
-    public void saveCampaigns(Array<Campaign> campaigns){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+    public void saveCampaigns(Seq<Campaign> campaigns){
+        Fi fileHandle = Core.files.local(CAMPAIGNS_SAVE_FILE);
 
         try(DataOutputStream stream = new DataOutputStream(fileHandle.write(false))){
             stream.writeInt(campaignsSaveVersion);
@@ -48,20 +48,20 @@ public class SaveIO{
         }
     }
 
-    public Array<Campaign> loadCampaigns(){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+    public Seq<Campaign> loadCampaigns(){
+        Fi fileHandle = Core.files.local(CAMPAIGNS_SAVE_FILE);
         if(!fileHandle.exists()){
-            return new Array<>();
+            return new Seq<>();
         }
 
         try(DataInputStream stream = new DataInputStream(fileHandle.read())){
             int version = stream.readInt();
             if(version != 1 && version != campaignsSaveVersion){
-                return new Array<>();
+                return new Seq<>();
             }
 
             int campaignCount = stream.readInt();
-            Array<Campaign> campaigns = new Array<>(campaignCount);
+            Seq<Campaign> campaigns = new Seq<>(campaignCount);
 
             for(int i = 0; i < campaignCount; i++){
                 Campaign campaign = new Campaign(stream.readUTF());
@@ -87,7 +87,7 @@ public class SaveIO{
     }
 
     public static void saveToSlot(int slot){
-        FileHandle file = fileFor(slot);
+        Fi file = fileFor(slot);
         boolean exists = file.exists();
         if(exists) file.moveTo(file.sibling(file.name() + "-backup." + file.extension()));
         try{
@@ -114,7 +114,7 @@ public class SaveIO{
         }
     }
 
-    public static boolean isSaveValid(FileHandle file){
+    public static boolean isSaveValid(Fi file){
         return isSaveValid(new DataInputStream(new InflaterInputStream(file.read())));
     }
 
@@ -147,11 +147,11 @@ public class SaveIO{
         }
     }
 
-    public static FileHandle fileFor(int slot){
+    public static Fi fileFor(int slot){
         return saveDirectory.child(slot + "." + Vars.saveExtension);
     }
 
-    public static void write(FileHandle file){
+    public static void write(Fi file){
         write(new DeflaterOutputStream(file.write(false)){
             byte[] tmp = {0};
 
@@ -174,12 +174,12 @@ public class SaveIO{
         }
     }
 
-    public static void load(FileHandle file){
+    public static void load(Fi file){
         try{
             load(new InflaterInputStream(file.read()));
         }catch(RuntimeException e){
             e.printStackTrace();
-            FileHandle backup = file.sibling(file.name() + "-backup." + file.extension());
+            Fi backup = file.sibling(file.name() + "-backup." + file.extension());
             if(backup.exists()){
                 load(new InflaterInputStream(backup.read()));
             }else{
@@ -211,3 +211,4 @@ public class SaveIO{
         return versionArray.peek();
     }
 }
+

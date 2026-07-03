@@ -1,9 +1,12 @@
 package io.anuke.mindustry.entities.units;
 
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
+import arc.audio.Sound;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.math.geom.Rect;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -12,6 +15,7 @@ import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.entities.Timer;
 import io.anuke.mindustry.entities.effect.ScorchDecal;
 import io.anuke.mindustry.entities.traits.ShooterTrait;
 import io.anuke.mindustry.entities.traits.SpawnerTrait;
@@ -27,11 +31,11 @@ import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.units.CommandCenter.CommandCenterEntity;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.util.*;
+import arc.Effects;
+import arc.util.Time;
+import arc.entities.EntityGroup;
+import arc.graphics.g2d.Draw;
+import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -50,7 +54,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     protected static final int timerShootRight = timerIndex++;
 
     protected UnitType type;
-    protected Timer timer = new Timer(10);
+    protected io.anuke.mindustry.entities.Timer timer = new io.anuke.mindustry.entities.Timer(10);
     protected StateMachine state = new StateMachine();
     protected TargetTrait target;
     protected AIController controller;
@@ -291,7 +295,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
             if(retarget()){
                 targetClosest();
             }
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(target != null && !Units.invalidateTarget(target, this) && dst(target) < getWeapon().getAmmo().getRange()){
                 rotate(angleTo(target));
             }
         }
@@ -305,7 +309,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
             orderX = target.getX();
             orderY = target.getY();
 
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+            if(target != null && !Units.invalidateTarget(target, this) && dst(target) < getWeapon().getAmmo().getRange()){
                 rotate(angleTo(target));
             }
         }
@@ -355,7 +359,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     }
 
     @Override
-    public Timer getTimer(){
+    public io.anuke.mindustry.entities.Timer getTimer(){
         return timer;
     }
 
@@ -500,13 +504,13 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     }
 
     @Override
-    public void getHitbox(Rectangle rectangle){
-        rectangle.setSize(type.hitsize).setCenter(x, y);
+    public void getHitbox(Rect Rect){
+        Rect.setSize(type.hitsize).setCenter(x, y);
     }
 
     @Override
-    public void getHitboxTile(Rectangle rectangle){
-        rectangle.setSize(type.hitsizeTile).setCenter(x, y);
+    public void getHitboxTile(Rect Rect){
+        Rect.setSize(type.hitsizeTile).setCenter(x, y);
     }
 
     @Override

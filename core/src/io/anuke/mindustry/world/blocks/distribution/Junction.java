@@ -1,13 +1,13 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.utils.NumberUtils;
+import arc.math.NumberUtils;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockGroup;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Bits;
+import arc.util.Time;
+import arc.struct.Bits;
 
 import static io.anuke.mindustry.Vars.content;
 
@@ -100,3 +100,4 @@ public class Junction extends Block{
         }
     }
 }
+

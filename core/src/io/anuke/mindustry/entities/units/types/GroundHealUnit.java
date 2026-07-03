@@ -1,9 +1,11 @@
 package io.anuke.mindustry.entities.units.types;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
+import arc.struct.ObjectSet;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
@@ -14,15 +16,15 @@ import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Shapes;
-import io.anuke.ucore.util.Angles;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Log;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Shapes;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.util.Log;
 
 public class GroundHealUnit extends GroundUnit {
-    private static Rectangle rect = new Rectangle();
+    private static Rect rect = new Rect();
     private static ObjectSet<String> warnedMissingHealTurretRegions = new ObjectSet<>();
 
     public boolean healTurretMirror = false;
@@ -39,18 +41,18 @@ public class GroundHealUnit extends GroundUnit {
 
         // checks if there is regions and drops log, this may look silly but is for remind me these units are pretty volatile (crash when loading game)
         String turretRegionName = type.name + "-heal-turret";
-        TextureRegion fallback = type.region != null ? type.region : Draw.region("clear");
-        if (!Draw.hasRegion(turretRegionName) && warnedMissingHealTurretRegions.add(turretRegionName)) {
+        TextureRegion fallback = type.region != null ? type.region : Core.atlas.find("clear");
+        if (!Core.atlas.has(turretRegionName) && warnedMissingHealTurretRegions.add(turretRegionName)) {
             Log.err("Missing texture region: '" + turretRegionName + " add it to sprites atlas or update it");
         }
-        healTurretRegion = Draw.region(turretRegionName, fallback);
+        healTurretRegion = Core.atlas.find(turretRegionName, fallback);
     }
 
     @Override
     public void update() {
         super.update();
 
-        if (healTarget != null && (healTarget.isDead() || distanceTo(healTarget) > type.healRange ||
+        if (healTarget != null && (healTarget.isDead() || dst(healTarget) > type.healRange ||
                 healTarget.health >= healTarget.maxHealth())) {
             healTarget = null;
         } else if (healTarget != null) {
@@ -80,7 +82,7 @@ public class GroundHealUnit extends GroundUnit {
         if (isRedNonPvp) {
             Unit ally = Units.getClosest(getTeam(), x, y, 400f, u -> u != this && !u.isFlying());
             if (ally != null) {
-                if (distanceTo(ally) > 40f) {
+                if (dst(ally) > 40f) {
                     moveTo(ally.x, ally.y);
                 }
             } else {
@@ -98,7 +100,7 @@ public class GroundHealUnit extends GroundUnit {
             // Units
             rect.setSize(searchDist * 2f).setCenter(x, y);
             Units.getNearbyEnemies(getTeam(), rect, enemy -> {
-                float dist = distanceTo(enemy);
+                float dist = dst(enemy);
                 if (dist < avoidDistUnit) {
                     float ang = angleTo(enemy);
                     targetX[0] -= Angles.trnsx(ang, avoidDistUnit - dist);
@@ -110,7 +112,7 @@ public class GroundHealUnit extends GroundUnit {
             // Turrets
             TileEntity turret = Units.findEnemyTile(getTeam(), x, y, searchDist, t -> t.block().flags != null && t.block().flags.contains(BlockFlag.turret));
             if (turret != null) {
-                float dist = distanceTo(turret);
+                float dist = dst(turret);
                 if (dist < avoidDistTurret) {
                     float ang = angleTo(turret);
                     targetX[0] -= Angles.trnsx(ang, avoidDistTurret - dist);
@@ -124,7 +126,7 @@ public class GroundHealUnit extends GroundUnit {
             } else {
                 Unit lowHealthAlly = Units.getClosest(getTeam(), x, y, 400f, u -> u.health < u.maxHealth() && u != this && !u.isFlying());
                 if (lowHealthAlly != null) {
-                    if (distanceTo(lowHealthAlly) > type.healRange * 0.5f) {
+                    if (dst(lowHealthAlly) > type.healRange * 0.5f) {
                         moveTo(lowHealthAlly.x, lowHealthAlly.y);
                     }
                 } else {
@@ -137,7 +139,7 @@ public class GroundHealUnit extends GroundUnit {
     protected void idleFollow() {
         Unit ally = Units.getClosest(getTeam(), x, y, 500f, u -> u != this && !u.isFlying() && !u.isHealer());
         if (ally != null) {
-            float dist = distanceTo(ally);
+            float dist = dst(ally);
             float followDist = 70f;
             if (dist > followDist) {
                 moveTo(ally.x, ally.y);
@@ -156,8 +158,8 @@ public class GroundHealUnit extends GroundUnit {
 
         if (healTurretRegion == null) {
             String turretRegionName = type.name + "-heal-turret";
-            TextureRegion fallback = type.region != null ? type.region : Draw.region("clear");
-            healTurretRegion = Draw.region(turretRegionName, fallback);
+            TextureRegion fallback = type.region != null ? type.region : Core.atlas.find("clear");
+            healTurretRegion = Core.atlas.find(turretRegionName, fallback);
         }// this should fix Crash of not region detected when loading game
 
         Draw.alpha(hitTime / hitDuration);
@@ -167,7 +169,7 @@ public class GroundHealUnit extends GroundUnit {
             float tx = x + Angles.trnsx(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
             float ty = y + Angles.trnsy(rotation - 90, type.healTurretOffsetX * i, type.healTurretOffsetY);
 
-            if (healTurretRegion != null && healTurretRegion.getTexture() != null) {
+            if (healTurretRegion != null && healTurretRegion.texture != null) {
                 Draw.rect(healTurretRegion, tx, ty, healRotation - 90);
             }
 

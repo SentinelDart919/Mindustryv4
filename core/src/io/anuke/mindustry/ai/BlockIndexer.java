@@ -1,7 +1,7 @@
 package io.anuke.mindustry.ai;
 
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.*;
+import arc.math.geom.Vec2;
+import arc.util.*;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
@@ -11,12 +11,13 @@ import io.anuke.mindustry.game.Teams.TeamData;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.function.Predicate;
-import io.anuke.ucore.util.EnumSet;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.ThreadArray;
+import arc.Events;
+import arc.func.Boolf;
+import arc.struct.*;
+import arc.math.geom.Geometry;
+import arc.math.Mathf;
+import arc.struct.Seq;
+import java.util.EnumSet;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -47,7 +48,7 @@ public class BlockIndexer{
     /**Empty set used for returning.*/
     private ObjectSet<Tile> emptySet = new ObjectSet<>();
     /**Array used for returning and reusing.*/
-    private Array<Tile> returnArray = new ThreadArray<>();
+    private Seq<Tile> returnArray = new Seq<>();
 
     public BlockIndexer(){
         Events.on(TileChangeEvent.class, event -> {
@@ -134,7 +135,7 @@ public class BlockIndexer{
     }
 
     /**Get all enemy blocks with a flag.*/
-    public Array<Tile> getEnemy(Team team, BlockFlag type){
+    public Seq<Tile> getEnemy(Team team, BlockFlag type){
         returnArray.clear();
         for(Team enemy : state.teams.enemiesOf(team)){
             if(state.teams.isActive(enemy)){
@@ -155,7 +156,7 @@ public class BlockIndexer{
         set.add(entity.tile);
     }
 
-    public TileEntity findTile(Team team, float x, float y, float range, Predicate<Tile> pred){
+    public TileEntity findTile(Team team, float x, float y, float range, Boolf<Tile> pred){
         TileEntity closest = null;
         float dst = 0;
 
@@ -172,11 +173,11 @@ public class BlockIndexer{
 
                         other = other.target();
 
-                        if(other.entity == null || other.getTeam() != team || !pred.test(other) || !other.block().targetable) continue;
+                        if(other.entity == null || other.getTeam() != team || !pred.get(other) || !other.block().targetable) continue;
 
                         TileEntity e = other.entity;
 
-                        float ndst = Vector2.dst(x, y, e.x, e.y);
+                        float ndst = new Vec2(x, y).dst(e.x, e.y);
                         if(ndst < range && (closest == null || ndst < dst)){
                             dst = ndst;
                             closest = e;

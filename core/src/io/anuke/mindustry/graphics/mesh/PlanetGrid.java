@@ -1,8 +1,9 @@
 package io.anuke.mindustry.graphics.mesh;
 
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.LongMap;
+import arc.math.geom.Vec3;
+import arc.struct.Seq;
+import arc.struct.LongMap;
+import arc.math.geom.Vector3;
 
 /** Simplified geodesic cell grid for planet meshes. */
 public class PlanetGrid{
@@ -25,7 +26,7 @@ public class PlanetGrid{
     }
 
     public static PlanetGrid create(int subdivisions){
-        Array<Vector3> vertices = buildGeodesicVertices(Math.max(0, subdivisions));
+        Seq<Vector3> vertices = buildGeodesicVertices(Math.max(0, subdivisions));
         Cell[] out = new Cell[vertices.size];
         for(int i = 0; i < vertices.size; i++){
             out[i] = new Cell(i, vertices.get(i).cpy().nor());
@@ -33,9 +34,9 @@ public class PlanetGrid{
         return new PlanetGrid(subdivisions, out);
     }
 
-    private static Array<Vector3> buildGeodesicVertices(int subdivisions){
-        Array<Vector3> vertices = new Array<>();
-        Array<int[]> faces = new Array<>();
+    private static Seq<Vector3> buildGeodesicVertices(int subdivisions){
+        Seq<Vector3> vertices = new Seq<>();
+        Seq<int[]> faces = new Seq<>();
 
         float t = (1f + (float)Math.sqrt(5f)) / 2f;
         addVertex(vertices, -1, t, 0); addVertex(vertices, 1, t, 0); addVertex(vertices, -1, -t, 0); addVertex(vertices, 1, -t, 0);
@@ -52,7 +53,7 @@ public class PlanetGrid{
 
         for(int s = 0; s < subdivisions; s++){
             LongMap<Integer> cache = new LongMap<>();
-            Array<int[]> newFaces = new Array<>();
+            Seq<int[]> newFaces = new Seq<>();
             for(int[] f : faces){
                 int a = midpoint(vertices, cache, f[0], f[1]);
                 int b = midpoint(vertices, cache, f[1], f[2]);
@@ -71,7 +72,7 @@ public class PlanetGrid{
         return vertices;
     }
 
-    private static int midpoint(Array<Vector3> verts, LongMap<Integer> cache, int i1, int i2){
+    private static int midpoint(Seq<Vector3> verts, LongMap<Integer> cache, int i1, int i2){
         int a = Math.min(i1, i2), b = Math.max(i1, i2);
         long key = (((long)a) << 32) | (b & 0xffffffffL);
         Integer idx = cache.get(key);
@@ -83,7 +84,8 @@ public class PlanetGrid{
         return out;
     }
 
-    private static void addVertex(Array<Vector3> verts, float x, float y, float z){
+    private static void addVertex(Seq<Vector3> verts, float x, float y, float z){
         verts.add(new Vector3(x, y, z).nor());
     }
 }
+

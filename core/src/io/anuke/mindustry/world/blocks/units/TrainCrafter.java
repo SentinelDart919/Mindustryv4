@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
-import com.badlogic.gdx.audio.Sound;
+import arc.audio.Sound;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -15,8 +15,8 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.distribution.TrainRail;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.util.Mathf;
+import arc.Effects;
+import arc.math.Mathf;
 
 public class TrainCrafter extends UnitFactory{
 

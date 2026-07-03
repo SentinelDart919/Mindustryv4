@@ -1,6 +1,6 @@
 package io.anuke.mindustry.ui;
 
-import io.anuke.ucore.util.Bundles;
+import arc.util.Strings;
 
 /**
  * A low-garbage way to format bundle strings.

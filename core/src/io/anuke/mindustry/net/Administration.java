@@ -1,10 +1,10 @@
 package io.anuke.mindustry.net;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
+import arc.Core;
+import arc.struct.Seq;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectSet;
 import io.anuke.annotations.Annotations.Serialize;
-import io.anuke.ucore.core.Settings;
 
 import static io.anuke.mindustry.Vars.headless;
 
@@ -12,10 +12,10 @@ public class Administration{
 
     /**All player info. Maps UUIDs to info. This persists throughout restarts.*/
     private ObjectMap<String, PlayerInfo> playerInfo = new ObjectMap<>();
-    private Array<String> bannedIPs = new Array<>();
+    private Seq<String> bannedIPs = new Seq<>();
 
     public Administration(){
-        Settings.defaultList(
+        Core.settings.defaultList(
             "strict", true
         );
 
@@ -23,21 +23,21 @@ public class Administration{
     }
 
     public void setStrict(boolean on){
-        Settings.putBool("strict", on);
-        Settings.save();
+        Core.settings.putBool("strict", on);
+        Core.settings.save();
     }
 
     public boolean getStrict(){
-        return Settings.getBool("strict");
+        return Core.settings.getBool("strict");
     }
 
     public boolean allowsCustomClients(){
-        return Settings.getBool("allow-custom", !headless);
+        return Core.settings.getBool("allow-custom", !headless);
     }
 
     public void setCustomClients(boolean allowed){
-        Settings.putBool("allow-custom", allowed);
-        Settings.save();
+        Core.settings.putBool("allow-custom", allowed);
+        Core.settings.save();
     }
 
     /**Call when a player joins to update their information here.*/
@@ -100,7 +100,7 @@ public class Administration{
             }
         }
 
-        bannedIPs.removeValue(ip, false);
+        bannedIPs.remove(ip, false);
 
         if(found) save();
 
@@ -127,8 +127,8 @@ public class Administration{
     /**
      * Returns list of all players with admin status
      */
-    public Array<PlayerInfo> getAdmins(){
-        Array<PlayerInfo> result = new Array<>();
+    public Seq<PlayerInfo> getAdmins(){
+        Seq<PlayerInfo> result = new Seq<>();
         for(PlayerInfo info : playerInfo.values()){
             if(info.admin){
                 result.add(info);
@@ -140,8 +140,8 @@ public class Administration{
     /**
      * Returns list of all players with admin status
      */
-    public Array<PlayerInfo> getBanned(){
-        Array<PlayerInfo> result = new Array<>();
+    public Seq<PlayerInfo> getBanned(){
+        Seq<PlayerInfo> result = new Seq<>();
         for(PlayerInfo info : playerInfo.values()){
             if(info.banned){
                 result.add(info);
@@ -153,7 +153,7 @@ public class Administration{
     /**
      * Returns all banned IPs. This does not include the IPs of ID-banned players.
      */
-    public Array<String> getBannedIPs(){
+    public Seq<String> getBannedIPs(){
         return bannedIPs;
     }
 
@@ -215,8 +215,8 @@ public class Administration{
         return result;
     }
 
-    public Array<PlayerInfo> findByIPs(String ip){
-        Array<PlayerInfo> result = new Array<>();
+    public Seq<PlayerInfo> findByIPs(String ip){
+        Seq<PlayerInfo> result = new Seq<>();
 
         for(PlayerInfo info : playerInfo.values()){
             if(info.ips.contains(ip, false)){
@@ -256,22 +256,22 @@ public class Administration{
     }
 
     public void save(){
-        Settings.putObject("player-info", playerInfo);
-        Settings.putObject("banned-ips", bannedIPs);
-        Settings.save();
+        Core.settings.putObject("player-info", playerInfo);
+        Core.settings.putObject("banned-ips", bannedIPs);
+        Core.settings.save();
     }
 
     private void load(){
-        playerInfo = Settings.getObject("player-info", ObjectMap.class, ObjectMap::new);
-        bannedIPs = Settings.getObject("banned-ips", Array.class, Array::new);
+        playerInfo = Core.settings.getObject("player-info", ObjectMap.class, ObjectMap::new);
+        bannedIPs = Core.settings.getObject("banned-ips", Seq.class, Seq::new);
     }
 
     @Serialize
     public static class PlayerInfo{
         public String id;
         public String lastName = "<unknown>", lastIP = "<unknown>";
-        public Array<String> ips = new Array<>();
-        public Array<String> names = new Array<>();
+        public Seq<String> ips = new Seq<>();
+        public Seq<String> names = new Seq<>();
         public String adminUsid;
         public int timesKicked;
         public int timesJoined;
@@ -287,3 +287,4 @@ public class Administration{
     }
 
 }
+

@@ -1,13 +1,14 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.I18NBundle;
+import arc.Core;
+import arc.files.Fi;
+import arc.util.I18NBundle;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Log;
+import arc.Core;
+import arc.Settings;
+import arc.util.Time;
+import arc.util.Log;
 
 import java.util.Locale;
 
@@ -16,13 +17,13 @@ import static io.anuke.mindustry.Vars.headless;
 public class BundleLoader{
 
     public static void load(){
-        Settings.defaults("locale", "default");
+        Core.settings.defaults("locale", "default");
         Settings.load(Vars.appName, headless ? "io.anuke.mindustry.server" : "io.anuke.mindustry");
         loadBundle();
     }
 
     private static Locale getLocale(){
-        String loc = Settings.getString("locale");
+        String loc = Core.settings.getString("locale");
         if(loc.equals("default")){
             return Locale.getDefault();
         }else{
@@ -42,7 +43,7 @@ public class BundleLoader{
         I18NBundle.setExceptionOnMissingKey(false);
         try{
             //try loading external bundle
-            FileHandle handle = Gdx.files.local("bundle");
+            Fi handle = Core.files.local("bundle");
 
             Locale locale = Locale.ENGLISH;
             Core.bundle = I18NBundle.createBundle(handle, locale);
@@ -54,7 +55,7 @@ public class BundleLoader{
         }catch(Throwable e){
             //no external bundle found
 
-            FileHandle handle = Gdx.files.internal("bundles/bundle");
+            Fi handle = Core.files.internal("bundles/bundle");
 
             Locale locale = getLocale();
             Locale.setDefault(locale);

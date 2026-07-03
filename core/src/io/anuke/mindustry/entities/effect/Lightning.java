@@ -1,9 +1,14 @@
 package io.anuke.mindustry.entities.effect;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.util.Translator;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
+import arc.graphics.Color;
+import arc.math.geom.Rect;
+import arc.struct.Seq;
+import arc.struct.IntSet;
+import arc.util.pooling.Pools;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.bullets.TurretBullets;
@@ -14,32 +19,33 @@ import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.impl.TimedEntity;
-import io.anuke.ucore.entities.trait.DrawTrait;
-import io.anuke.ucore.entities.trait.PosTrait;
-import io.anuke.ucore.entities.trait.TimeTrait;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
-import io.anuke.ucore.util.*;
+import arc.entities.EntityGroup;
+import arc.entities.impl.TimedEntity;
+import arc.entities.trait.DrawTrait;
+import arc.entities.trait.PosTrait;
+import arc.entities.trait.TimeTrait;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 
 import static io.anuke.mindustry.Vars.bulletGroup;
+import arc.math.geom.SeedRandom;
 
 public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, TimeTrait{
     public static final float lifetime = 10f;
 
-    private static final SeedRandom random = new SeedRandom();
-    private static final Rectangle rect = new Rectangle();
-    private static final Array<Unit> entities = new Array<>();
+    //private static final SeedRandom random = new SeedRandom();
+    private static final Rect rect = new Rect();
+    private static final Seq<Unit> entities = new Seq<>();
     private static final IntSet hit = new IntSet();
     private static final int maxChain = 8;
     private static final float hitRange = 30f;
     private static int lastSeed = 0;
 
-    private Array<PosTrait> lines = new Array<>();
+    private Seq<PosTrait> lines = new Seq<>();
     private Color color = Palette.lancerLaser;
 
     /**For pooling use only. Do not call directly!*/
@@ -55,7 +61,7 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
     @Remote(called = Loc.server)
     public static void createLighting(int seed, Team team, Color color, float damage, float x, float y, float rotation, int length){
 
-        Lightning l = Pooling.obtain(Lightning.class, Lightning::new);
+        Lightning l = Pools.obtain(Lightning.class, Lightning::new);
         Float dmg = damage;
 
         l.x = x;
@@ -63,7 +69,7 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
         l.color = color;
         l.add();
 
-        random.setSeed(seed);
+        Mathf.randomSeed(seed);
         hit.clear();
 
         for (int i = 0; i < length/2; i++) {
@@ -87,7 +93,7 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
                 x = furthest.x;
                 y = furthest.y;
             }else{
-                rotation += random.range(20f);
+                rotation += Mathf.range(20f);
                 x += Angles.trnsx(rotation, hitRange/2f);
                 y += Angles.trnsy(rotation, hitRange/2f);
             }
@@ -121,13 +127,13 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
     @Override
     public void removed(){
         super.removed();
-        Pooling.free(this);
+        Pools.free(this);
     }
 
     @Override
     public void draw(){
         float lx = x, ly = y;
-        Draw.color(color, Color.WHITE, fin());
+        Draw.color(color, Color.white, fin());
         for(int i = 0; i < lines.size; i++){
             PosTrait v = lines.get(i);
 
@@ -157,3 +163,5 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
         return bulletGroup;
     }
 }
+
+

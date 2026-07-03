@@ -1,20 +1,21 @@
 package io.anuke.mindustry.game;
 
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.TimeUtils;
+import arc.Core;
+import arc.files.Fi;
+import arc.struct.Seq;
+import arc.struct.IntSeq;
+import arc.struct.IntMap;
+import arc.util.Time;
+import arc.util.Timers;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.StateChangeEvent;
 import io.anuke.mindustry.io.SaveIO;
 import io.anuke.mindustry.io.SaveMeta;
 import io.anuke.mindustry.maps.Map;
-import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Settings;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Strings;
-import io.anuke.ucore.util.ThreadArray;
+import arc.Events;
+import arc.util.Time;
+import arc.util.Strings;
+import arc.struct.Seq;
 
 import java.io.IOException;
 
@@ -22,7 +23,7 @@ import static io.anuke.mindustry.Vars.*;
 
 public class Saves{
     private int nextSlot;
-    private Array<SaveSlot> saves = new ThreadArray<>();
+    private Seq<SaveSlot> saves = new Seq<>();
     private IntMap<SaveSlot> saveMap = new IntMap<>();
     private SaveSlot current;
     private boolean saving;
@@ -45,7 +46,7 @@ public class Saves{
 
     public void load(){
         saves.clear();
-        IntArray slots = Settings.getObject("save-slots", IntArray.class, IntArray::new);
+        IntSeq slots = Core.settings.getObject("save-slots", IntSeq.class, IntSeq::new);
 
         for(int i = 0; i < slots.size; i ++){
             int index = slots.get(i);
@@ -69,14 +70,14 @@ public class Saves{
         if(current != null && !state.is(State.menu)
             && !(state.isPaused() && ui.hasDialog())){
             if(lastTimestamp != 0){
-                totalPlaytime += TimeUtils.timeSinceMillis(lastTimestamp);
+                totalPlaytime += Time.timeSinceMillis(lastTimestamp);
             }
-            lastTimestamp = TimeUtils.millis();
+            lastTimestamp = Time.millis();
         }
 
         if(!state.is(State.menu) && !state.gameOver && current != null && current.isAutosave()){
             time += Timers.delta();
-            if(time > Settings.getInt("saveinterval") * 60){
+            if(time > Core.settings.getInt("saveinterval") * 60){
                 saving = true;
 
                 Timers.runTask(2f, () -> {
@@ -118,7 +119,7 @@ public class Saves{
         return slot;
     }
 
-    public SaveSlot importSave(FileHandle file) throws IOException{
+    public SaveSlot importSave(Fi file) throws IOException{
         SaveSlot slot = new SaveSlot(nextSlot);
         slot.importFile(file);
         nextSlot++;
@@ -135,16 +136,16 @@ public class Saves{
         return saveMap.get(id);
     }
 
-    public Array<SaveSlot> getSaveSlots(){
+    public Seq<SaveSlot> getSaveSlots(){
         return saves;
     }
 
     private void saveSlots(){
-        IntArray result = new IntArray(saves.size);
+        IntSeq result = new IntSeq(saves.size);
         for(int i = 0; i < saves.size; i++) result.add(saves.get(i).index);
 
-        Settings.putObject("save-slots", result);
-        Settings.save();
+        Core.settings.putObject("save-slots", result);
+        Core.settings.save();
     }
 
     public class SaveSlot{
@@ -204,12 +205,12 @@ public class Saves{
         }
 
         public String getName(){
-            return Settings.getString("save-" + index + "-name", "untittled");
+            return Core.settings.getString("save-" + index + "-name", "untittled");
         }
 
         public void setName(String name){
-            Settings.putString("save-" + index + "-name", name);
-            Settings.save();
+            Core.settings.put("save-" + index + "-name", name);
+            Core.settings.save();
         }
 
         public int getBuild(){
@@ -229,15 +230,15 @@ public class Saves{
         }
 
         public boolean isAutosave(){
-            return Settings.getBool("save-" + index + "-autosave", true);
+            return Core.settings.getBool("save-" + index + "-autosave", true);
         }
 
         public void setAutosave(boolean save){
-            Settings.putBool("save-" + index + "-autosave", save);
-            Settings.save();
+            Core.settings.putBool("save-" + index + "-autosave", save);
+            Core.settings.save();
         }
 
-        public void importFile(FileHandle file) throws IOException{
+        public void importFile(Fi file) throws IOException{
             try{
                 file.copyTo(SaveIO.fileFor(index));
             }catch(Exception e){
@@ -245,7 +246,7 @@ public class Saves{
             }
         }
 
-        public void exportFile(FileHandle file) throws IOException{
+        public void exportFile(Fi file) throws IOException{
             try{
                 if(!file.extension().equals(saveExtension)){
                     file = file.parent().child(file.nameWithoutExtension() + "." + saveExtension);
@@ -258,7 +259,7 @@ public class Saves{
 
         public void delete(){
             SaveIO.fileFor(index).delete();
-            saves.removeValue(this, true);
+            saves.remove(this, true);
             saveMap.remove(index);
             if(this == current){
                 current = null;
@@ -268,3 +269,5 @@ public class Saves{
         }
     }
 }
+
+

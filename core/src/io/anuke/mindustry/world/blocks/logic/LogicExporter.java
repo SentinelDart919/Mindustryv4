@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.logic;
 
-import com.badlogic.gdx.utils.IntArray;
+import arc.struct.IntSeq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
@@ -9,12 +9,12 @@ import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.graphics.Draw;
-import io.anuke.ucore.graphics.Lines;
+import arc.util.Time;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
 import io.anuke.mindustry.graphics.Palette;
-import io.anuke.ucore.scene.ui.layout.Table;
-import io.anuke.ucore.util.Mathf;
+import arc.scene.ui.layout.Table;
+import arc.math.Mathf;
 
 import static io.anuke.mindustry.Vars.tilesize;
 
@@ -82,7 +82,7 @@ public class LogicExporter extends LogicBlock {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         LogicExporterEntity entity = tile.entity();
-        entity.droneIDs.removeValue(unit.id);
+        entity.droneIDs.remove(unit.id);
     }
 
     @Override
@@ -127,9 +127,11 @@ public class LogicExporter extends LogicBlock {
     }
 
     public static class LogicExporterEntity extends LogicEntity {
-        public IntArray droneIDs = new IntArray();
+        public IntSeq droneIDs = new IntSeq();
         public float spawnTimer;
         public float findTimer;
         public LogicImporter.LogicImporterEntity targetImporter;
     }
 }
+
+

@@ -11,10 +11,10 @@ import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Base64Coder;
+import arc.Core;
+import arc.backends.android.AndroidApplicationConfiguration;
+import arc.files.Fi;
+import arc.util.serialization.Base64Coder;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -26,10 +26,11 @@ import io.anuke.mindustry.game.Saves.SaveSlot;
 import io.anuke.mindustry.io.SaveIO;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.ui.dialogs.FileChooser;
-import io.anuke.ucore.function.Consumer;
-import io.anuke.ucore.scene.ui.layout.Unit;
-import io.anuke.ucore.util.Bundles;
-import io.anuke.ucore.util.Strings;
+import arc.func.Cons;
+import arc.scene.ui.layout.Unit;
+import arc.util.Log;
+import arc.util.Strings;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,11 +72,11 @@ public class AndroidLauncher extends PatchedAndroidApplication {
             }
 
             @Override
-            public void shareFile(FileHandle file) {
+            public void shareFile(Fi file) {
             }
 
             @Override
-            public void showFileChooser(String text, String content, Consumer<FileHandle> cons, boolean open, String filetype) {
+            public void showFileChooser(String text, String content, Cons<Fi> cons, boolean open, String filetype) {
                 chooser = new FileChooser(text, file -> file.extension().equalsIgnoreCase(filetype), open, cons);
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                         checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
@@ -114,8 +115,8 @@ public class AndroidLauncher extends PatchedAndroidApplication {
         } catch (GooglePlayServicesRepairableException e) {
             GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
             apiAvailability.getErrorDialog(this, e.getConnectionStatusCode(), 0).show();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            Log.e("SecurityException", "Google Play Services not available.");
+        } catch (Exception e) {
+            Log.err("SecurityException", "Google Play Services not available.");
         }
         if (doubleScaleTablets && isTablet(this.getContext())) {
             Unit.dp.addition = 0.5f;
@@ -157,10 +158,10 @@ public class AndroidLauncher extends PatchedAndroidApplication {
                 InputStream inStream;
                 if (myFile != null) inStream = new FileInputStream(myFile);
                 else inStream = getContentResolver().openInputStream(uri);
-                Gdx.app.postRunnable(() -> {
+                Core.app.post(() -> {
                     if (save) { //open save
                         System.out.println("Opening save.");
-                        FileHandle file = Gdx.files.local("temp-save." + saveExtension);
+                        Fi file = Core.files.local("temp-save." + saveExtension);
                         file.write(inStream, false);
                         if (SaveIO.isSaveValid(file)) {
                             try {
@@ -173,7 +174,7 @@ public class AndroidLauncher extends PatchedAndroidApplication {
                             ui.showError("$text.save.import.invalid");
                         }
                     } else if (map) { //open map
-                        Gdx.app.postRunnable(() -> {
+                        Core.app.post(() -> {
                             System.out.println("Opening map.");
                             if (!ui.editor.isShown()) {
                                 ui.editor.show();
