@@ -38,6 +38,8 @@ public class UnitTypes implements ContentList{
                 weapon = Weapons.droneBlaster;
                 trailColor = Color.valueOf("ffd37f");
                 spawnsInSiegeMode = false;
+                playerControllable = false;
+                rtsAIControllable = false;
             }
 
             @Override
@@ -59,6 +61,8 @@ public class UnitTypes implements ContentList{
                 weapon = Weapons.droneBlaster;
                 trailColor = Color.valueOf("ffd37f");
                 spawnsInSiegeMode = false;
+                playerControllable = false;
+                rtsAIControllable = false;
             }
 
             @Override
@@ -78,6 +82,8 @@ public class UnitTypes implements ContentList{
             toMine = ObjectSet.with(Items.scrap);
             itemCapacity = 50;
             spawnsInSiegeMode = false;
+            playerControllable = false;
+            rtsAIControllable = false;
         }};
 
         draug = new UnitType("draug", DroneMiner.class, DroneMiner::new){{
@@ -90,6 +96,8 @@ public class UnitTypes implements ContentList{
             health = 40;
             toMine = ObjectSet.with(Items.copper, Items.lead);
             spawnsInSiegeMode = false;
+            playerControllable = false;
+            rtsAIControllable = false;
         }};
 
         spirit = new UnitType("spirit", Spirit.class, Spirit::new){{
@@ -101,6 +109,7 @@ public class UnitTypes implements ContentList{
             range = 50f;
             health = 60;
             spawnsInSiegeMode = false;
+            rtsAIControllable = false;
         }};
 
         ghost = new UnitType("ghost", Ghost.class, Ghost::new){{
@@ -117,6 +126,7 @@ public class UnitTypes implements ContentList{
             minePower = 0.98f;
             toMine = ObjectSet.with(Items.thorium, Items.titanium);
             spawnsInSiegeMode = false;
+            rtsAIControllable = false;
         }};
 
         phantom = new UnitType("phantom", Phantom.class, Phantom::new){{
@@ -133,6 +143,7 @@ public class UnitTypes implements ContentList{
             minePower = 1.2f;
             toMine = ObjectSet.with(Items.lead, Items.copper, Items.titanium, Items.thorium);
             spawnsInSiegeMode = false;
+            rtsAIControllable = false;
         }};
 
         scrappeon = new UnitType("scrappeon", Scrappeon.class, Scrappeon::new){{
@@ -350,6 +361,8 @@ public class UnitTypes implements ContentList{
             range = 55f;
             health = 40;
             spawnsInSiegeMode = false;
+            playerControllable = false;
+            rtsAIControllable = false;
         }};
 
         minerDroneT2 = new UnitType("miner-drone-t2", MiningPostDrone.class, MiningPostDrone::new){{
@@ -364,6 +377,8 @@ public class UnitTypes implements ContentList{
             health = 220;
             minePower = 1.2f;
             spawnsInSiegeMode = false;
+            playerControllable = false;
+            rtsAIControllable = false;
         }};
 
         logisticsDrone = new UnitType("logistics-drone", LogisticsDrone.class, LogisticsDrone::new){{
@@ -374,6 +389,8 @@ public class UnitTypes implements ContentList{
             health = 100;
             itemCapacity = 30;
             spawnsInSiegeMode = false;
+            playerControllable = false;
+            rtsAIControllable = false;
         }};
         // The Mass Units
         evilDagger = new UnitType("evil-dagger", BiomassGroundUnit.class, BiomassGroundUnit::new){{

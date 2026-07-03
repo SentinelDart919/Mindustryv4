@@ -200,6 +200,23 @@ public class CustomGameDialog extends FloatingDialog{
         table.addCheck("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
         table.row();
         table.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
+        table.row();
+        table.add("RTS AI Teams").padTop(8f).left();
+        table.row();
+
+        for(Team team : Team.all){
+            if(team == Team.none || team == Team.themass) continue;
+
+            boolean def = (state.rtsAIBits & (1L << team.ordinal())) != 0;
+            table.addCheck("$team." + team.name() + ".name", def, b -> {
+                if(b){
+                    state.rtsAIBits |= (1L << team.ordinal());
+                }else{
+                    state.rtsAIBits &= ~(1L << team.ordinal());
+                }
+            }).left();
+            table.row();
+        }
 
         ScrollPane pane = new ScrollPane(table);
         pane.setFadeScrollBars(false);

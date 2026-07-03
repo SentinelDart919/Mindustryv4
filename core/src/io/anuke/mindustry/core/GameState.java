@@ -31,6 +31,8 @@ public class GameState{
     public boolean startWithBiomass = false;
     /**The team used as the enemy in waves and custom attack maps.*/
     public Team enemyTeam = Team.red;
+    /**Bitmask of teams that should use RTS AI.*/
+    public long rtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
     /**Current game state.*/
     private State state = State.menu;
 

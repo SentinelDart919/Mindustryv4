@@ -36,6 +36,8 @@ public class UnitType extends UnlockableContent{
     public boolean isTank;
     public boolean living;
     public boolean isHealer;
+    public boolean playerControllable = true;
+    public boolean rtsAIControllable = true;
     public boolean targetAir = true;
     public boolean spawnsInSiegeMode = true;
     /** Cost for the ExtraSurvival Mode*/

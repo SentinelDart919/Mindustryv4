@@ -9,6 +9,10 @@ import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.EnvironmentFx;
 import io.anuke.mindustry.entities.Player;
+import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.entities.units.BaseUnit;
+import io.anuke.mindustry.entities.units.UnitOrderType;
+import io.anuke.mindustry.entities.units.types.Drone;
 import io.anuke.mindustry.entities.effect.ItemTransfer;
 import io.anuke.mindustry.entities.traits.BuilderTrait.BuildRequest;
 import io.anuke.mindustry.game.Schematic;
@@ -125,6 +129,48 @@ public abstract class InputHandler extends InputAdapter{
         tile.block().tapped(tile, player);
     }
 
+    @Remote(targets = Loc.both, called = Loc.server, forward = true)
+    public static void issueUnitOrder(Player player, int unitID, byte orderType, float x, float y){
+        if(player == null) return;
+
+        BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(unitID);
+        if(unit == null || unit.getTeam() != player.getTeam() || !unit.isPlayerControllable) return;
+
+        UnitOrderType[] values = UnitOrderType.values();
+        if(orderType < 0 || orderType >= values.length) return;
+        UnitOrderType type = values[orderType];
+
+        if(type == UnitOrderType.move){
+            unit.orderMove(x, y);
+        }else if(type == UnitOrderType.attackMove){
+            unit.orderAttackMove(x, y);
+        }else if(type == UnitOrderType.attackTarget){
+            unit.orderAttackTarget(x, y);
+            unit.setDirectTarget(Units.getClosestTarget(unit.getTeam(), x, y, 80f, u -> true));
+        }else{
+            unit.clearOrder();
+        }
+    }
+
+    @Remote(targets = Loc.both, called = Loc.server, forward = true)
+    public static void issueUnitAttackTarget(Player player, int unitID, float x, float y){
+        if(player == null) return;
+        BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(unitID);
+        if(unit == null || unit.getTeam() != player.getTeam() || !unit.isPlayerControllable) return;
+
+        unit.orderAttackTarget(x, y);
+        unit.setDirectTarget(Units.getClosestTarget(unit.getTeam(), x, y, 80f, u -> true));
+    }
+
+    @Remote(targets = Loc.both, called = Loc.server, forward = true)
+    public static void setDroneFollowMode(Player player, int unitID, boolean follow){
+        if(player == null) return;
+        BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(unitID);
+        if(unit instanceof Drone){
+            ((Drone)unit).setFollowPlayer(follow, player.id);
+        }
+    }
+
     public OverlayFragment getFrag(){
         return frag;
     }
@@ -162,6 +208,10 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public void drawTop(){
+
+    }
+
+    public void drawUnderUnitsAndBlocks(){
 
     }
 

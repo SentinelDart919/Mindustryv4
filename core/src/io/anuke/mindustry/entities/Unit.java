@@ -47,6 +47,8 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     public final UnitInventory inventory = new UnitInventory(this);
     public float rotation;
     public float hitTime;
+    public boolean isPlayerControllable = true;
+    public boolean isRTSAIControllable = true;
 
     protected final Interpolator interpolator = new Interpolator();
     protected final StatusController status = new StatusController();

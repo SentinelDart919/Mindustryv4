@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ai;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.*;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Player;
@@ -23,6 +24,7 @@ import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Events;
+import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.Units;
@@ -31,8 +33,11 @@ import com.badlogic.gdx.math.Rectangle;
 import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
 import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Geometry;
+import io.anuke.ucore.util.Log;
 
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.graphics.Lines;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -51,6 +56,7 @@ import static io.anuke.mindustry.Vars.unitGroups;
    done
 */
 public class MassAI {
+    public static boolean debug = false;
     private static ObjectSet<Tile> initializedCores = new ObjectSet<>();
     private static Array<BuildingLine> activeLines = new Array<>();
     private static Array<SubSection> activeSubsections = new Array<>();
@@ -67,6 +73,11 @@ public class MassAI {
     private static UnitCommand currentCommand = UnitCommand.patrol;
     private static float commandTimer = 0;
     private static float enemyNearbyTimer = 0;
+    private static float squadTaskTimer = 0f;
+    private static float nextSquadTaskTime = 45f * 60f;
+    private static final int squadSize = 6;
+    private static final Array<SquadOrder> squadOrders = new Array<>();
+    private static final ObjectIntMap<BaseUnit> unitSquadAssignments = new ObjectIntMap<>();
     private static Rectangle rect = new Rectangle();
     private static boolean enemyNearby = false;
     public static float nextInfectionTime = 0;
@@ -93,6 +104,10 @@ public class MassAI {
             currentCommand = UnitCommand.patrol;
             commandTimer = 0;
             enemyNearbyTimer = 0;
+            squadTaskTimer = 0f;
+            nextSquadTaskTime = Mathf.random(30f, 75f) * 60f;
+            squadOrders.clear();
+            unitSquadAssignments.clear();
             enemyNearby = false;
         });
     }
@@ -187,6 +202,10 @@ public class MassAI {
         currentCommand = UnitCommand.values()[stream.readInt()];
         commandTimer = stream.readFloat();
         enemyNearbyTimer = stream.readFloat();
+        squadTaskTimer = 0f;
+        nextSquadTaskTime = Mathf.random(30f, 75f) * 60f;
+        squadOrders.clear();
+        unitSquadAssignments.clear();
         enemyNearby = stream.readBoolean();
     }
 
@@ -229,6 +248,9 @@ public class MassAI {
 
     public static void update() {
         if (Vars.state.isPaused() || Vars.state.teams == null) return;
+        if(Settings.getBool("massai-debug", false) != debug){
+            setDebug(Settings.getBool("massai-debug", false));
+        }
 
         ObjectSet<Tile> cores = Vars.state.teams.get(Team.themass).cores;
 
@@ -238,6 +260,7 @@ public class MassAI {
             if (nextInfectionTime <= 0) {
                 nextInfectionTime = Mathf.random(5f, 40f) * 60f * 60f;
                 spawnInitialHive();
+                debugLog("infection timer reached zero, spawning initial hive");
                 cores = Vars.state.teams.get(Team.themass).cores;
             }
         }/* else if (!Vars.state.allowMassInfection && cores.size == 0) {
@@ -265,6 +288,7 @@ public class MassAI {
         for (Tile core : cores) {
             if (!initializedCores.contains(core)) {
                 startBuilding(core);
+                debugLog("core initialized at ({0},{1})", core.x, core.y);
                 initializedCores.add(core);
             }
         }
@@ -290,6 +314,7 @@ public class MassAI {
         if (turretTimer >= nextTurretTime) {
             turretTimer = 0;
             nextTurretTime = Mathf.random(15f, 30f) * 60f;
+            debugLog("periodic turret attempt targetAirRandom");
             trySpawnTurret(false, Mathf.chance(0.3), 0, 0);
         }
 
@@ -309,8 +334,7 @@ public class MassAI {
             }
         }
 
-        // MY LIFE FOR AIUR
-        // command system this to the units attack, patrol hives, attack after minutes from the world loaded, patrol when enemies are nearby the hives and attack again if there is no enemies near
+        // default global command fallback for biomass when not split by squads
         if (cores.size == 0) {
             currentCommand = UnitCommand.retreat;
         } else {
@@ -330,28 +354,222 @@ public class MassAI {
             if (foundEnemy) {
                 currentCommand = UnitCommand.patrol;
                 enemyNearbyTimer = 0;
+                debugLog("global fallback command set to patrol due to nearby enemy");
             } else if (currentCommand == UnitCommand.patrol) {
                 enemyNearbyTimer += Timers.delta();
                 // after 15-30 seconds with no enemies they will command attack AND command if the initial grace period is over
                 if (enemyNearbyTimer >= Mathf.random(15f, 30f) * 60f && !isGracePeriod()) {
                     currentCommand = UnitCommand.attack;
+                    debugLog("global fallback command set to attack after patrol timeout");
                 }
             } else if (!isGracePeriod() && currentCommand != UnitCommand.attack) {
                 currentCommand = UnitCommand.attack;
+                debugLog("global fallback command forced to attack (grace over)");
             }
         }
 
-        for (BaseUnit unit : unitGroups[Team.themass.ordinal()].all()) {
-            if (unit.getCommand() != currentCommand) {
-                unit.onCommand(currentCommand);
+        updateSquadOrders(cores, currentCommand, foundAnyEnemyNearCore(cores));
+    }
+
+    private static void updateSquadOrders(ObjectSet<Tile> cores, UnitCommand fallbackCommand, boolean enemyNearCore){
+        Array<BaseUnit> massUnits = new Array<>();
+        for(BaseUnit unit : unitGroups[Team.themass.ordinal()].all()){
+            if(unit != null && unit.isAdded() && !unit.isDead()){
+                massUnits.add(unit);
             }
         }
+
+        if(massUnits.size == 0){
+            squadOrders.clear();
+            unitSquadAssignments.clear();
+            return;
+        }
+
+        int squadCount = Math.max(1, (massUnits.size + squadSize - 1) / squadSize);
+        if(squadOrders.size < squadCount){
+            for(int i = squadOrders.size; i < squadCount; i++){
+                squadOrders.add(new SquadOrder(i));
+            }
+        }else if(squadOrders.size > squadCount){
+            while(squadOrders.size > squadCount){
+                squadOrders.pop();
+            }
+        }
+
+        squadTaskTimer += Timers.delta();
+        if(squadTaskTimer >= nextSquadTaskTime){
+            squadTaskTimer = 0f;
+            nextSquadTaskTime = Mathf.random(30f, 75f) * 60f;
+            assignSquadTasks(cores, enemyNearCore, fallbackCommand);
+        }else{
+            for(SquadOrder order : squadOrders){
+                if(order.task == null){
+                    order.task = SquadTask.PATROL_HIVES;
+                    order.command = UnitCommand.patrol;
+                }
+            }
+        }
+
+        for(int i = 0; i < massUnits.size; i++){
+            BaseUnit unit = massUnits.get(i);
+            SquadOrder order = squadOrders.get(Math.min(i / squadSize, squadOrders.size - 1));
+            unitSquadAssignments.put(unit, order.id);
+            if(order.task == SquadTask.SUPPLY_DEFENSE && Mathf.chance(0.01f)){
+                trySpawnTurret(false, Mathf.chance(0.4), unit.x, unit.y);
+                debugLog("squad={0} task=supply-defense action=trySpawnTurret unit=({1},{2})", order.id, (int)unit.x, (int)unit.y);
+            }
+            if(unit.getCommand() != order.command){
+                unit.onCommand(order.command);
+                debugLog("unit={0} squad={1} command={2} task={3}", unit.getID(), order.id, order.command, order.task);
+            }
+        }
+    }
+
+    private static void assignSquadTasks(ObjectSet<Tile> cores, boolean enemyNearCore, UnitCommand fallbackCommand){
+        for(int i = 0; i < squadOrders.size; i++){
+            SquadOrder order = squadOrders.get(i);
+            if(order.task != null){
+                continue;
+            }
+            SquadTask task = rollTaskForSquad(cores, enemyNearCore, fallbackCommand, i);
+            order.task = task;
+            order.command = task.command;
+            debugLog("squad={0} assignedTask={1} command={2} enemyNearCore={3} cores={4}", order.id, task, task.command, enemyNearCore, cores.size);
+        }
+    }
+
+    private static SquadTask rollTaskForSquad(ObjectSet<Tile> cores, boolean enemyNearCore, UnitCommand fallbackCommand, int squadIndex){
+        FloatArray weights = new FloatArray(SquadTask.all.length);
+        float total = 0f;
+
+        for(SquadTask task : SquadTask.all){
+            if(task.maxSquads != -1 && countTaskAssignments(task) >= task.maxSquads){
+                weights.add(0f);
+                continue;
+            }
+            float weight = task.basePriority;
+            if(task == SquadTask.ATTACK_PLAYER_BASE){
+                if(isGracePeriod()) weight *= 0.15f;
+                if(enemyNearCore) weight *= 0.65f;
+                if(fallbackCommand == UnitCommand.attack) weight *= 1.6f;
+            }else if(task == SquadTask.DEFEND_HIVES){
+                if(enemyNearCore) weight *= 2.5f;
+                if(cores.size <= 1) weight *= 1.4f;
+            }else if(task == SquadTask.PATROL_HIVES){
+                if(enemyNearCore) weight *= 1.3f;
+                if(fallbackCommand == UnitCommand.patrol) weight *= 1.2f;
+            }else if(task == SquadTask.SUPPLY_DEFENSE){
+                if(cores.size == 0) weight = 0.01f;
+                int groundTurrets = countTurrets(false);
+                if(groundTurrets < Math.max(4, cores.size * 4)) weight *= 2.0f;
+                if(enemyNearCore) weight *= 1.7f;
+            }
+
+            // keep at least one attacking squad after grace if many squads exist
+            if(task == SquadTask.ATTACK_PLAYER_BASE && !isGracePeriod() && squadOrders.size >= 3 && squadIndex == 0){
+                weight *= 1.8f;
+            }
+
+            total += weight;
+            weights.add(weight);
+        }
+
+        if(total <= 0.001f){
+            return fallbackCommand == UnitCommand.attack ? SquadTask.ATTACK_PLAYER_BASE :
+                   fallbackCommand == UnitCommand.retreat ? SquadTask.DEFEND_HIVES :
+                   SquadTask.PATROL_HIVES;
+        }
+
+        float value = Mathf.random(total);
+        float cursor = 0f;
+        for(int i = 0; i < SquadTask.all.length; i++){
+            cursor += weights.get(i);
+            if(value <= cursor){
+                return SquadTask.all[i];
+            }
+        }
+        return SquadTask.PATROL_HIVES;
+    }
+
+    private static int countTaskAssignments(SquadTask task){
+        int count = 0;
+        for(SquadOrder order : squadOrders){
+            if(order.task == task) count++;
+        }
+        return count;
+    }
+
+    private static boolean foundAnyEnemyNearCore(ObjectSet<Tile> cores){
+        for(Tile core : cores){
+            rect.setSize(200f * 2f).setCenter(core.worldx(), core.worldy());
+            enemyNearby = false;
+            Units.getNearbyEnemies(Team.themass, rect, u -> enemyNearby = true);
+            if(enemyNearby){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void setDebug(boolean enabled){
+        debug = enabled;
+        Settings.putBool("massai-debug", enabled);
+        Log.info("[MassAI] debug={0}", enabled);
+    }
+
+    public static void drawDebugOverlay(){
+        if(!debug || Vars.headless || Vars.state == null || Vars.state.isPaused()) return;
+
+        IntMap<Array<BaseUnit>> bySquad = new IntMap<>();
+        for(BaseUnit unit : unitGroups[Team.themass.ordinal()].all()){
+            if(unit == null || !unit.isAdded() || unit.isDead()) continue;
+            int squadId = unitSquadAssignments.get(unit, -1);
+            if(squadId < 0) continue;
+            Array<BaseUnit> list = bySquad.get(squadId);
+            if(list == null){
+                list = new Array<>();
+                bySquad.put(squadId, list);
+            }
+            list.add(unit);
+        }
+
+        Lines.stroke(1.2f);
+        for(IntMap.Entry<Array<BaseUnit>> entry : bySquad.entries()){
+            int squadId = entry.key;
+            Array<BaseUnit> units = entry.value;
+            if(units.size == 0) continue;
+
+            float cx = 0f, cy = 0f;
+            for(BaseUnit unit : units){
+                cx += unit.x;
+                cy += unit.y;
+            }
+            cx /= units.size;
+            cy /= units.size;
+
+            Draw.color(Color.valueOf("7efcff"));
+            Lines.circle(cx, cy, 8f + Mathf.absin(Timers.time(), 6f, 2f));
+
+            for(BaseUnit unit : units){
+                Lines.line(cx, cy, unit.x, unit.y);
+                Draw.color(Color.WHITE);
+                Draw.text("SQ " + squadId, unit.x, unit.y + 11f);
+                Draw.color(Color.valueOf("7efcff"));
+            }
+        }
+        Draw.reset();
+    }
+
+    private static void debugLog(String text, Object... args){
+        if(!debug) return;
+        Log.info("[MassAI] " + text, args);
     }
 
     public static void onDamage() {
         float grace = getGraceTime();
         if (commandTimer < grace) {
             commandTimer = grace;
+            debugLog("onDamage: grace skipped, commandTimer set to {0}", commandTimer);
         }
     }
 
@@ -406,6 +624,7 @@ public class MassAI {
 
         if (spawn != null) {
             world.setBlock(spawn, StorageBlocks.hive, Team.themass);
+            debugLog("initial hive spawned at ({0},{1})", spawn.x, spawn.y);
             if (!Vars.headless) {
                 String msg = Mathf.chance(0.01) ? Bundles.get("text.biomass.alert.rare") : Bundles.get("text.biomass.alert");
                 Vars.ui.hudfrag.showBiomassAlert(msg);
@@ -525,7 +744,8 @@ public class MassAI {
 
                 float turretDelay = (veinPath != null ? veinPath.size * 5f : 0) + 10f;
                 pendingBuilds.add(new PendingBuild(target, turretBlock, massTeam, 0, turretDelay, fromDamage, targetX, targetY));
-                
+                debugLog("queued turret build block={0} at ({1},{2}) delay={3}", turretBlock.name, target.x, target.y, turretDelay);
+
                 if (fromDamage) {
                     damageTurretTimer = 0;
                     nextDamageTurretTime = Mathf.random(10f, 35f) * 60f;
@@ -1529,6 +1749,34 @@ public class MassAI {
 
         static PathTile read(DataInputStream stream) throws IOException {
             return new PathTile(world.tile(stream.readInt()), stream.readInt());
+        }
+    }
+
+    private static class SquadOrder{
+        final int id;
+        SquadTask task;
+        UnitCommand command = UnitCommand.patrol;
+
+        SquadOrder(int id){
+            this.id = id;
+        }
+    }
+
+    private enum SquadTask{
+        ATTACK_PLAYER_BASE(UnitCommand.attack, 1.25f, -1),
+        DEFEND_HIVES(UnitCommand.patrol, 1.05f, 3),
+        PATROL_HIVES(UnitCommand.patrol, 1.0f, 5),
+        SUPPLY_DEFENSE(UnitCommand.patrol, 0.95f, 2);
+
+        static final SquadTask[] all = values();
+        final UnitCommand command;
+        final float basePriority;
+        final int maxSquads;
+
+        SquadTask(UnitCommand command, float basePriority, int maxSquads){
+            this.command = command;
+            this.basePriority = basePriority;
+            this.maxSquads = maxSquads;
         }
     }
     // I think I should use this for more stuff but I'm so lazy to refactor the full code

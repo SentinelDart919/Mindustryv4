@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.blocks.Blocks;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.Team;
@@ -198,6 +199,8 @@ public class OverlayRenderer{
                 }
             }
         }
+
+        MassAI.drawDebugOverlay();
     }
 
     void drawBar(Color color, float x, float y, float finion){

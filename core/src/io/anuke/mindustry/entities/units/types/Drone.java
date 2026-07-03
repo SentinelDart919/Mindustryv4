@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.units.types;
 
 import com.badlogic.gdx.utils.Queue;
+import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
@@ -40,6 +41,8 @@ public class Drone extends FlyingUnit implements BuilderTrait{
     protected Tile mineTile;
     protected Queue<BuildRequest> placeQueue = new Queue<>();
     protected boolean isBreaking;
+    protected boolean followPlayerMode = false;
+    protected int followPlayerID = -1;
 
     public UnitState
 
@@ -302,6 +305,28 @@ public class Drone extends FlyingUnit implements BuilderTrait{
     public void update(){
         super.update();
 
+        if(followPlayerMode){
+            Player p = Vars.playerGroup.getByID(followPlayerID);
+            if(p != null && !p.isDead()){
+                target = p;
+                moveTo(55f);
+
+                //assist combat and repairs only; disable mining/drop behavior in follow mode
+                if(retarget()){
+                    TileEntity damaged = Units.findDamagedTile(team, x, y);
+                    if(damaged != null && distanceTo(damaged) < type.range * 1.3f){
+                        this.target = damaged;
+                    }else{
+                        targetClosest();
+                    }
+                }
+
+                if(this.target != null && this.target != p && distanceTo(this.target) < type.range){
+                    getWeapon().update(this, this.target.getX(), this.target.getY());
+                }
+            }
+        }
+
         if(state.is(repair) && target != null && target.getTeam() != team){
             target = null;
         }
@@ -348,6 +373,21 @@ public class Drone extends FlyingUnit implements BuilderTrait{
             return;
         }
         targetItem = Structs.findMin(type.toMine, (a, b) -> -Integer.compare(entity.items.get(a), entity.items.get(b)));
+    }
+
+    public void setFollowPlayer(boolean follow, int playerID){
+        this.followPlayerMode = follow;
+        this.followPlayerID = follow ? playerID : -1;
+        if(follow){
+            setState(repair);
+            targetItem = null;
+            setMineTile(null);
+            getPlaceQueue().clear();
+        }
+    }
+
+    public boolean isFollowPlayerMode(){
+        return followPlayerMode;
     }
 
     @Override

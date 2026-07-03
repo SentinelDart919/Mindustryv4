@@ -55,6 +55,7 @@ public class Teams{
         public final ObjectSet<Tile> cores = new ThreadSet<>();
         public final EnumSet<Team> enemies;
         public final Team team;
+        public io.anuke.mindustry.ai.RtsAI rtsAI;
 
         public TeamData(Team team, EnumSet<Team> enemies){
             this.team = team;

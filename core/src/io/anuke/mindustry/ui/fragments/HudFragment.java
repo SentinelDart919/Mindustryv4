@@ -16,6 +16,8 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.Packets.AdminAction;
+import io.anuke.mindustry.entities.units.UnitOrderType;
+import io.anuke.mindustry.input.DesktopInput;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.ui.IntFormat;
 import io.anuke.mindustry.ui.Minimap;
@@ -241,6 +243,50 @@ public class HudFragment extends Fragment{
             t.add("$text.saveload");
         });
 
+        //desktop RTS command panel
+        parent.fill(t -> {
+            t.bottom().left().visible(() ->
+                !mobile &&
+                !state.is(State.menu) &&
+                control.input(0) instanceof DesktopInput &&
+                ((DesktopInput)control.input(0)).isUnitCommandMode()
+            );
+
+            t.table("button", pane -> {
+                pane.left().margin(6f);
+                pane.label(() -> {
+                    DesktopInput input = (DesktopInput)control.input(0);
+                    UnitOrderType type = input.getActiveOrderType();
+                    return "Units: " + (type == UnitOrderType.attackMove ? "Attack-Move" : type == UnitOrderType.move ? "Move" : "Clear");
+                }).padRight(8f);
+
+                pane.addButton("Move", "clear-partial", () -> ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.move))
+                    .size(78f, 42f)
+                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.move));
+
+                pane.addButton("Attack", "clear-partial", () -> ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.attackMove))
+                    .size(78f, 42f)
+                    .padLeft(4f)
+                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.attackMove));
+
+                pane.addButton("Clear", "clear-partial", () -> ((DesktopInput)control.input(0)).clearUnitSelection())
+                    .size(78f, 42f)
+                    .padLeft(4f);
+
+                pane.addButton("Normal", "clear-partial", () -> ((DesktopInput)control.input(0)).setSelectedDronesFollow(false))
+                    .size(84f, 42f)
+                    .padLeft(8f)
+                    .visible(() -> ((DesktopInput)control.input(0)).hasSelectedDrones())
+                    .update(b -> b.setChecked(!((DesktopInput)control.input(0)).selectedDronesFollowing()));
+
+                pane.addButton("Follow", "clear-partial", () -> ((DesktopInput)control.input(0)).setSelectedDronesFollow(true))
+                    .size(84f, 42f)
+                    .padLeft(4f)
+                    .visible(() -> ((DesktopInput)control.input(0)).hasSelectedDrones())
+                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).selectedDronesFollowing()));
+            }).margin(8f);
+        });
+
         blockfrag.build(Core.scene.getRoot());
     }
 
@@ -449,6 +495,6 @@ public class HudFragment extends Fragment{
             l.getStyle().imageUp = Core.skin.getDrawable(vis ? "icon-play" : "clear");
             l.setTouchable(!paused ? Touchable.enabled : Touchable.disabled);
         }).visible(() -> state.mode.disableWaveTimer && state.mode != GameMode.SiegeMode &&
-                ((Net.server() || players[0].isAdmin) || !Net.active()) && unitGroups[Team.red.ordinal()].size() == 0);
+                ((Net.server() || players[0].isAdmin) || !Net.active()) && unitGroups[state.enemyTeam.ordinal()].size() == 0);
     }
 }

@@ -43,6 +43,7 @@ import static io.anuke.mindustry.Vars.state;
 import static io.anuke.mindustry.Vars.content;
 
 public class FortressGenerator{
+    //TODO add a way to control the Seed for generating the bases
     private final static int coreDst = 60;
     private final static float customAttackDifficultyMultiplier = 2.25f;
     private final static float customAttackDifficultyBonus = 2f;

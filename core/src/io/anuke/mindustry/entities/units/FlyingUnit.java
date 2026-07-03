@@ -166,6 +166,15 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             if(target == getClosestCore())circle(60f + Mathf.absin(Timers.time() + id * 23525, 70f, 1200f));
             else circle(45f + Mathf.randomSeed(id) * 80);
         }
+    },
+
+    hold = new UnitState(){
+        public void update(){
+            velocity.scl(0.9f);
+            if(retarget()){
+                targetClosest();
+            }
+        }
     };
 
     @Override
@@ -202,6 +211,88 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
         if(!customTrail)trail.update(x + Angles.trnsx(rotation + 180f, 6f) + Mathf.range(wobblyness),
         y + Angles.trnsy(rotation + 180f, 6f) + Mathf.range(wobblyness));
+    }
+
+    @Override
+    protected boolean updateOrder(){
+        if(!hasOrder()){
+            return false;
+        }
+
+        if(getOrderType() == UnitOrderType.move){
+            if(retarget()){
+                targetClosest();
+            }
+            if(target != null && !Units.invalidateTarget(target, team, x, y)
+            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+                AmmoType ammo = getWeapon().getAmmo();
+                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                getWeapon().update(FlyingUnit.this, to.x, to.y);
+            }
+
+            vec.set(getOrderX() - x, getOrderY() - y);
+            if(vec.len() <= Math.max(type.hitsize, 10f)){
+                clearOrder();
+                setState(hold);
+                return false;
+            }
+
+            vec.setLength(type.speed * Timers.delta());
+            velocity.add(vec);
+            return true;
+        }
+
+        if(getOrderType() == UnitOrderType.attackMove){
+            if(retarget()){
+                targetClosest();
+            }
+
+            if(target != null && !Units.invalidateTarget(target, team, x, y)
+            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+                AmmoType ammo = getWeapon().getAmmo();
+                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                getWeapon().update(FlyingUnit.this, to.x, to.y);
+            }
+
+            vec.set(getOrderX() - x, getOrderY() - y);
+            if(vec.len() <= Math.max(type.hitsize, 10f)){
+                clearOrder();
+                setState(hold);
+                return false;
+            }
+
+            vec.setLength(type.speed * Timers.delta());
+            velocity.add(vec);
+            return true;
+        }
+
+        if(getOrderType() == UnitOrderType.attackTarget){
+            if(target == null || target.isDead() || target.getTeam() == team){
+                clearOrder();
+                setState(hold);
+                return false;
+            }
+
+            if(target != null && !Units.invalidateTarget(target, team, x, y)
+            && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)){
+                AmmoType ammo = getWeapon().getAmmo();
+                Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                getWeapon().update(FlyingUnit.this, to.x, to.y);
+            }
+
+            vec.set(target.getX() - x, target.getY() - y);
+            if(vec.len() <= Math.max(type.hitsize, 10f)){
+                clearOrder();
+                setState(hold);
+                return false;
+            }
+
+            vec.setLength(type.speed * Timers.delta());
+            velocity.add(vec);
+            return true;
+        }
+
+        return false;
     }
 
     @Override

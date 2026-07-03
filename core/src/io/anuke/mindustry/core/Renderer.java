@@ -212,6 +212,7 @@ public class Renderer extends RendererModule{
         drawAndInterpolate(groundEffectGroup, e -> e instanceof BelowLiquidTrait);
         drawAndInterpolate(puddleGroup);
         drawAndInterpolate(groundEffectGroup, e -> !(e instanceof BelowLiquidTrait));
+        control.input(0).drawUnderUnitsAndBlocks();
 
         blocks.processBlocks();
         blocks.drawShadows();

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Align;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
@@ -136,6 +137,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         }
         game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Bundles.format("setting.seconds", i));
         game.checkPref("planet3d", true);
+        game.checkPref("massai-debug", false, MassAI::setDebug);
 
         if(!mobile){
             game.checkPref("crashreport", true);

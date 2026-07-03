@@ -113,8 +113,8 @@ public class Recipes implements ContentList{
         new Recipe(distribution, DistributionBlocks.titaniumconveyor, new ItemStack(Items.copper, 2), new ItemStack(Items.titanium, 1));
         new Recipe(distribution, DistributionBlocks.thoriumconveyor,new ItemStack(Items.copper, 2), new ItemStack(Items.thorium, 2) );
         new Recipe(distribution, DistributionBlocks.phaseConveyor, new ItemStack(Items.phasefabric, 10), new ItemStack(Items.silicon, 15), new ItemStack(Items.lead, 20), new ItemStack(Items.densealloy, 20));
-        new Recipe(distribution, DistributionBlocks.stackConveyor, new ItemStack(Items.plastanium, 1), new ItemStack(Items.silicon, 1), new ItemStack(Items.silicon, 1));
-        //new Recipe(distribution, DistributionBlocks.trainRail, new ItemStack(Items.densealloy, 8), new ItemStack(Items.titanium, 6), new ItemStack(Items.copper, 6));
+        new Recipe(distribution, DistributionBlocks.stackConveyor, new ItemStack(Items.plastanium, 1), new ItemStack(Items.silicon, 1), new ItemStack(Items.lead, 1));
+        new Recipe(distribution, DistributionBlocks.trainRail, new ItemStack(Items.densealloy, 8), new ItemStack(Items.titanium, 6), new ItemStack(Items.copper, 6)).setAlwaysUnlocked(true);
 
         //starter transport
         new Recipe(distribution, DistributionBlocks.junction, new ItemStack(Items.copper, 2)).setAlwaysUnlocked(true);
@@ -240,7 +240,7 @@ public class Recipes implements ContentList{
 
         new Recipe(units, UnitBlocks.repairPoint, new ItemStack(Items.lead, 30), new ItemStack(Items.copper, 30), new ItemStack(Items.silicon, 30));
         new Recipe(units, UnitBlocks.commandCenter, new ItemStack(Items.lead, 10), new ItemStack(Items.densealloy, 10), new ItemStack(Items.silicon, 20));
-        //new Recipe(units, UnitBlocks.trainCrafter, new ItemStack(Items.densealloy, 120), new ItemStack(Items.titanium, 90), new ItemStack(Items.silicon, 110), new ItemStack(Items.lead, 140));
+        new Recipe(units, UnitBlocks.trainCrafter, new ItemStack(Items.densealloy, 120), new ItemStack(Items.titanium, 90), new ItemStack(Items.silicon, 110), new ItemStack(Items.lead, 140)).setAlwaysUnlocked(true);
         //LIQUIDS
         new Recipe(liquid, LiquidBlocks.conduit, new ItemStack(Items.lead, 1)).setDependencies(CraftingBlocks.smelter);
         new Recipe(liquid, LiquidBlocks.pulseConduit, new ItemStack(Items.titanium, 1), new ItemStack(Items.lead, 1));

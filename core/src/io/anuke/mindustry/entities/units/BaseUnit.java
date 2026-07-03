@@ -16,6 +16,7 @@ import io.anuke.mindustry.entities.effect.ScorchDecal;
 import io.anuke.mindustry.entities.traits.ShooterTrait;
 import io.anuke.mindustry.entities.traits.SpawnerTrait;
 import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.entities.units.ai.AIController;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
@@ -52,6 +53,9 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     protected Timer timer = new Timer(10);
     protected StateMachine state = new StateMachine();
     protected TargetTrait target;
+    protected AIController controller;
+    protected UnitOrderType orderType = UnitOrderType.none;
+    protected float orderX, orderY;
 
     protected boolean isWave;
     protected Squad squad;
@@ -112,6 +116,8 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
         this.type = type;
         this.team = team;
+        this.isPlayerControllable = type.playerControllable;
+        this.isRTSAIControllable = type.rtsAIControllable;
     }
 
     public boolean isCommanded(){
@@ -127,6 +133,52 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     public UnitType getType(){
         return type;
+    }
+
+    public void setDirectTarget(TargetTrait target){
+        this.target = target;
+    }
+
+    public UnitOrderType getOrderType(){
+        return orderType;
+    }
+
+    public boolean hasOrder(){
+        return orderType != UnitOrderType.none;
+    }
+
+    public void clearOrder(){
+        orderType = UnitOrderType.none;
+    }
+
+    public void orderMove(float x, float y){
+        orderType = UnitOrderType.move;
+        orderX = x;
+        orderY = y;
+    }
+
+    public void orderAttackMove(float x, float y){
+        orderType = UnitOrderType.attackMove;
+        orderX = x;
+        orderY = y;
+    }
+
+    public void orderAttackTarget(float x, float y){
+        orderType = UnitOrderType.attackTarget;
+        orderX = x;
+        orderY = y;
+    }
+
+    public TargetTrait getTarget(){
+        return target;
+    }
+
+    public float getOrderX(){
+        return orderX;
+    }
+
+    public float getOrderY(){
+        return orderY;
     }
 
     public Tile getSpawner(){
@@ -230,6 +282,54 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     public UnitState getStartState(){
         return null;
+    }
+
+    protected boolean updateOrder(){
+        if(!hasOrder()) return false;
+
+        if(getOrderType() == UnitOrderType.attackMove){
+            if(retarget()){
+                targetClosest();
+            }
+            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+                rotate(angleTo(target));
+            }
+        }
+
+        if(getOrderType() == UnitOrderType.attackTarget){
+            if(target == null || target.isDead() || target.getTeam() == team){
+                clearOrder();
+                return false;
+            }
+
+            orderX = target.getX();
+            orderY = target.getY();
+
+            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+                rotate(angleTo(target));
+            }
+        }
+
+        float dst = distanceTo(getOrderX(), getOrderY());
+        Tile goalTile = world.tileWorld(getOrderX(), getOrderY());
+        float blockRadius = goalTile != null && goalTile.block() != null && goalTile.block().size > 0 ? goalTile.block().size * tilesize / 2f : 0f;
+        if(dst <= Math.max(getSize(), 10f) + blockRadius){
+            clearOrder();
+            return false;
+        }
+
+        float angle = angleTo(getOrderX(), getOrderY());
+        float rad = angle * 0.01745329252f;
+        velocity.add(type.speed * Timers.delta() * (float)Math.cos(rad),
+                     type.speed * Timers.delta() * (float)Math.sin(rad));
+        rotate(angle);
+        return true;
+    }
+
+    public void updateDefaultAI(){
+        if(!updateOrder()){
+            state.update();
+        }
     }
 
     protected void drawItems(){
@@ -345,7 +445,11 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
         updateTargeting();
 
-        state.update();
+        if(controller != null){
+            controller.updateUnit();
+        }else{
+            updateDefaultAI();
+        }
         updateVelocityStatus();
 
         if(target != null) behavior();

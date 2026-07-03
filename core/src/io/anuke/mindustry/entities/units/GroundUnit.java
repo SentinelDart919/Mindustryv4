@@ -2,6 +2,8 @@ package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.IntIntMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.TileEntity;
@@ -26,16 +28,21 @@ import io.anuke.mindustry.content.blocks.UnitBlocks;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.ucore.util.Geometry;
-import static io.anuke.mindustry.Vars.content;
-import static io.anuke.mindustry.Vars.world;
+
+import static io.anuke.mindustry.Vars.*;
 
 public abstract class GroundUnit extends BaseUnit{
     protected static Translator vec = new Translator();
+    private static final int maxOrderPathNodes = 700;
+    private static final int orderPathRepathDelay = 30;
 
     protected float walkTime;
     protected float stuckTime;
     protected float baseRotation;
     protected Weapon weapon;
+    protected IntArray orderPath = new IntArray();
+    protected int orderPathCursor = 0;
+    protected int orderPathRepath = 0;
 
     public final UnitState
 
@@ -125,6 +132,15 @@ public abstract class GroundUnit extends BaseUnit{
                 moveToHome();
             }
         }
+    },
+
+    hold = new UnitState(){
+        public void update(){
+            velocity.scl(0.9f);
+            if(retarget()){
+                targetClosest();
+            }
+        }
     };
 
     @Override
@@ -185,6 +201,286 @@ public abstract class GroundUnit extends BaseUnit{
 
     public void setWeapon(Weapon weapon){
         this.weapon = weapon;
+    }
+
+    private float orderArrivalDst(float x, float y){
+        Tile t = world.tileWorld(x, y);
+        float blockRadius = t != null && t.block() != null && t.block().size > 0 ? t.block().size * tilesize / 2f : 0f;
+        return Math.max(type.hitsize, 10f) + blockRadius;
+    }
+
+    @Override
+    protected boolean updateOrder(){
+        if(!hasOrder()){
+            clearOrderPath();
+            return false;
+        }
+
+        float arrivalDst = orderArrivalDst(getOrderX(), getOrderY());
+
+        if(getOrderType() == UnitOrderType.move){
+            float dst = distanceTo(getOrderX(), getOrderY());
+            if(dst <= arrivalDst){
+                clearOrder();
+                clearOrderPath();
+                velocity.scl(0.5f);
+                state.set(hold);
+                return false;
+            }
+
+            followOrderPath();
+            return true;
+        }
+
+        if(getOrderType() == UnitOrderType.attackMove){
+            if(retarget()){
+                targetClosest();
+            }
+
+            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+                rotate(angleTo(target));
+                if(Mathf.angNear(angleTo(target), rotation, 13f)){
+                    AmmoType ammo = getWeapon().getAmmo();
+                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
+                    getWeapon().update(GroundUnit.this, to.x, to.y);
+                }
+            }
+
+            float dst = distanceTo(getOrderX(), getOrderY());
+            if(dst <= arrivalDst){
+                clearOrder();
+                clearOrderPath();
+                state.set(hold);
+                return false;
+            }
+
+            followOrderPath();
+            return true;
+        }
+
+        if(getOrderType() == UnitOrderType.attackTarget){
+            if(target == null || target.isDead() || target.getTeam() == team){
+                clearOrder();
+                clearOrderPath();
+                state.set(hold);
+                return false;
+            }
+
+            orderX = target.getX();
+            orderY = target.getY();
+
+            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
+                rotate(angleTo(target));
+                if(Mathf.angNear(angleTo(target), rotation, 13f)){
+                    AmmoType ammo = getWeapon().getAmmo();
+                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
+                    getWeapon().update(GroundUnit.this, to.x, to.y);
+                }
+            }
+
+            followOrderPath();
+            return true;
+        }
+
+        return false;
+    }
+
+    protected void clearOrderPath(){
+        orderPath.clear();
+        orderPathCursor = 0;
+        orderPathRepath = 0;
+    }
+
+    protected void followOrderPath(){
+        Tile start = world.tileWorld(x, y);
+        Tile goal = world.tileWorld(getOrderX(), getOrderY());
+
+        if(start == null || goal == null){
+            moveTo(getOrderX(), getOrderY());
+            return;
+        }
+
+        goal = findPassableGoal(goal);
+        if(start == goal){
+            return;
+        }
+
+        if(orderPathRepath <= 0 || orderPath.size == 0 || orderPathCursor >= orderPath.size){
+            buildOrderPath(start, goal);
+            orderPathRepath = orderPathRepathDelay;
+        }else{
+            orderPathRepath--;
+        }
+
+        if(orderPath.size == 0 || orderPathCursor >= orderPath.size){
+            moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
+            return;
+        }
+
+        Tile waypoint = world.tile(orderPath.get(orderPathCursor));
+        if(waypoint == null){
+            buildOrderPath(start, goal);
+            if(orderPath.size == 0){
+                moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
+                return;
+            }
+            waypoint = world.tile(orderPath.get(orderPathCursor));
+            if(waypoint == null){
+                moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
+                return;
+            }
+        }
+
+        if(Mathf.dst(x - waypoint.worldx(), y - waypoint.worldy()) <= tilesize * 0.55f){
+            orderPathCursor++;
+            if(orderPathCursor >= orderPath.size){
+                moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
+                return;
+            }
+            waypoint = world.tile(orderPath.get(orderPathCursor));
+            if(waypoint == null){
+                moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
+                return;
+            }
+        }
+
+        moveTo(waypoint.worldx(), waypoint.worldy());
+    }
+
+    private Tile findPassableGoal(Tile goal){
+        if(orderPassable(goal)) return goal;
+        for(int r = 1; r <= 3; r++){
+            for(int dx = -r; dx <= r; dx++){
+                for(int dy = -r; dy <= r; dy++){
+                    if(Math.abs(dx) != r && Math.abs(dy) != r) continue;
+                    Tile t = world.tile(goal.x + dx, goal.y + dy);
+                    if(t != null && orderPassable(t)) return t;
+                }
+            }
+        }
+        return goal;
+    }
+
+    protected void buildOrderPath(Tile start, Tile goal){
+        orderPath.clear();
+        orderPathCursor = 0;
+
+        if(start == goal){
+            return;
+        }
+
+        IntArray open = new IntArray();
+        IntIntMap cameFrom = new IntIntMap();
+        IntIntMap gScore = new IntIntMap();
+        IntIntMap fScore = new IntIntMap();
+        IntIntMap closed = new IntIntMap();
+
+        int startPos = start.packedPosition();
+        int goalPos = goal.packedPosition();
+
+        open.add(startPos);
+        gScore.put(startPos, 0);
+        fScore.put(startPos, (Math.abs(start.x - goal.x) + Math.abs(start.y - goal.y)) * 10);
+
+        int expanded = 0;
+
+        while(open.size > 0 && expanded < maxOrderPathNodes){
+            int bestIndex = 0;
+            int current = open.get(0);
+            int bestScore = fScore.get(current, Integer.MAX_VALUE);
+
+            for(int i = 1; i < open.size; i++){
+                int node = open.get(i);
+                int score = fScore.get(node, Integer.MAX_VALUE);
+                if(score < bestScore){
+                    bestScore = score;
+                    current = node;
+                    bestIndex = i;
+                }
+            }
+
+            open.removeIndex(bestIndex);
+
+            if(current == goalPos){
+                reconstructOrderPath(cameFrom, current, startPos);
+                return;
+            }
+
+            closed.put(current, 1);
+            expanded++;
+
+            Tile currentTile = world.tile(current);
+            if(currentTile == null) continue;
+
+            for(int sx = -1; sx <= 1; sx++){
+                for(int sy = -1; sy <= 1; sy++){
+                    if(sx == 0 && sy == 0) continue;
+                    int nx = currentTile.x + sx, ny = currentTile.y + sy;
+                    Tile next = world.tile(nx, ny);
+                    if(next == null || !orderPassable(next)) continue;
+                    if(sx != 0 && sy != 0 && (world.solid(currentTile.x + sx, currentTile.y) || world.solid(currentTile.x, currentTile.y + sy))){
+                        continue;
+                    }
+
+                    int nextPos = next.packedPosition();
+                    if(closed.get(nextPos, 0) == 1) continue;
+
+                    int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
+                    int stepCost = (sx == 0 || sy == 0 ? 10 : 14) + (int)(next.cost * 2f);
+                    int tentativeG = currentScore + stepCost;
+                    int known = gScore.get(nextPos, Integer.MAX_VALUE / 8);
+
+                    if(tentativeG < known){
+                        cameFrom.put(nextPos, current);
+                        gScore.put(nextPos, tentativeG);
+                        int heuristic = (Math.abs(next.x - goal.x) + Math.abs(next.y - goal.y)) * 10;
+                        fScore.put(nextPos, tentativeG + heuristic);
+
+                        boolean exists = false;
+                        for(int i = 0; i < open.size; i++){
+                            if(open.get(i) == nextPos){
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if(!exists) open.add(nextPos);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void reconstructOrderPath(IntIntMap cameFrom, int current, int startPos){
+        IntArray rev = new IntArray();
+        rev.add(current);
+
+        while(cameFrom.containsKey(current)){
+            current = cameFrom.get(current, startPos);
+            rev.add(current);
+            if(current == startPos) break;
+        }
+
+        for(int i = rev.size - 2; i >= 0; i--){
+            orderPath.add(rev.get(i));
+        }
+        orderPathCursor = 0;
+    }
+
+    protected boolean orderPassable(Tile tile){
+        if(tile.solid() && !(tile.breakable() && tile.target().getTeam() != team)) return false;
+        return tile.floor().drownTime <= 0f;
+    }
+
+    public int getOrderPathCursor(){
+        return orderPathCursor;
+    }
+
+    public int getOrderPathSize(){
+        return orderPath.size;
+    }
+
+    public int getOrderPathTilePacked(int index){
+        return orderPath.get(index);
     }
 
     @Override
@@ -264,7 +560,9 @@ public abstract class GroundUnit extends BaseUnit{
             target = null;
         }
 
-        retarget(this::targetClosest);
+        if(getOrderType() != UnitOrderType.attackTarget){
+            retarget(this::targetClosest);
+        }
     }
 
     @Override

@@ -1,11 +1,23 @@
 package io.anuke.mindustry.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.IntSet;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
+import io.anuke.mindustry.entities.Unit;
+import io.anuke.mindustry.entities.Units;
+import io.anuke.mindustry.entities.traits.TargetTrait;
+import io.anuke.mindustry.entities.units.BaseUnit;
+import io.anuke.mindustry.entities.units.GroundUnit;
+import io.anuke.mindustry.entities.units.UnitOrderType;
+import io.anuke.mindustry.entities.units.types.Drone;
 import io.anuke.mindustry.game.Schematic;
+import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeDrawResult;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
@@ -14,13 +26,12 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.core.Inputs;
-import io.anuke.ucore.core.Inputs.DeviceType;
 import io.anuke.ucore.core.KeyBinds;
 import io.anuke.ucore.core.Settings;
+import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.input.Input;
-import io.anuke.ucore.scene.ui.layout.Unit;
 import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
@@ -37,6 +48,12 @@ public class DesktopInput extends InputHandler{
 
     /**Animation scale for line.*/
     private float selectScale;
+    private final IntSet selectedUnits = new IntSet();
+    private boolean selectingUnits;
+    private final Vector2 unitSelectStart = new Vector2();
+    private final Vector2 unitSelectEnd = new Vector2();
+    private boolean leftWasDown, rightWasDown;
+    private UnitOrderType activeOrderType = UnitOrderType.move;
 
     public DesktopInput(Player player){
         super(player);
@@ -185,7 +202,7 @@ public class DesktopInput extends InputHandler{
 
         if(state.is(State.menu) || ui.hasDialog()) return;
 
-        boolean controller = KeyBinds.getSection(section).device.type == DeviceType.controller;
+        boolean controller = KeyBinds.getSection(section).device.type == Inputs.DeviceType.controller;
 
         //zoom and rotate things
         if(Inputs.getAxisActive("zoom") && (Inputs.keyDown(section, "zoom_hold") || controller)){
@@ -260,9 +277,67 @@ public class DesktopInput extends InputHandler{
         Tile selected = tileAt(Gdx.input.getX(), Gdx.input.getY());
         int cursorX = tileX(Gdx.input.getX());
         int cursorY = tileY(Gdx.input.getY());
+        Vector2 mouseWorld = Graphics.mouseWorld();
+        boolean leftDown = Gdx.input.isButtonPressed(Buttons.LEFT);
+        boolean rightDown = Gdx.input.isButtonPressed(Buttons.RIGHT);
+        boolean leftJustPressed = leftDown && !leftWasDown;
+        boolean rightJustPressed = rightDown && !rightWasDown;
 
-        if(Inputs.keyTap(section, "deselect")){
+        if(Inputs.keyTap(section, "deselect") && !rightJustPressed){
             player.setMineTile(null);
+            selectedUnits.clear();
+        }
+
+        boolean shift = Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
+        boolean rtsModifier = Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT)
+            || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
+        boolean unitCommandMode = hasSelectedUnits();
+        if((rtsModifier || unitCommandMode) && !ui.hasMouse() && leftJustPressed){
+            selectingUnits = true;
+            unitSelectStart.set(mouseWorld);
+            unitSelectEnd.set(mouseWorld);
+        }
+
+        if(selectingUnits){
+            unitSelectEnd.set(mouseWorld);
+            if(!leftDown){
+                finalizeUnitSelection();
+                selectingUnits = false;
+            }
+            leftWasDown = leftDown;
+            rightWasDown = rightDown;
+            return;
+        }
+
+        if(!ui.hasMouse() && rightJustPressed && unitCommandMode){
+            Tile clickTile = world.tileWorld(mouseWorld.x, mouseWorld.y);
+            if(clickTile != null) clickTile = clickTile.target();
+            Unit enemyUnit = Units.getClosestEnemy(player.getTeam(), mouseWorld.x, mouseWorld.y, 18f, u -> !u.isDead());
+            boolean enemyTile = clickTile != null && state.teams.areEnemies(player.getTeam(), clickTile.getTeam()) && clickTile.entity != null;
+
+            if(enemyUnit != null || enemyTile){
+                issueSelectedTargetOrders(mouseWorld.x, mouseWorld.y);
+                leftWasDown = leftDown;
+                rightWasDown = rightDown;
+                return;
+            }
+
+            UnitOrderType issued = activeOrderType == UnitOrderType.none ? UnitOrderType.move : activeOrderType;
+            if(shift){
+                issued = UnitOrderType.attackMove;
+            }
+            issueSelectedOrders(mouseWorld.x, mouseWorld.y, issued);
+            leftWasDown = leftDown;
+            rightWasDown = rightDown;
+            return;
+        }
+
+        if(unitCommandMode){
+            // While units are selected, suppress build/break/mine click flows to avoid keybind conflicts.
+            player.isShooting = false;
+            leftWasDown = leftDown;
+            rightWasDown = rightDown;
+            return;
         }
 
         if(Inputs.keyTap(section, "select") && !ui.hasMouse()){
@@ -336,7 +411,193 @@ public class DesktopInput extends InputHandler{
 
             if(mode != PlaceMode.schematic) mode = none;
         }
-        
+
+        leftWasDown = leftDown;
+        rightWasDown = rightDown;
+    }
+
+    private void finalizeUnitSelection(){
+        float minx = Math.min(unitSelectStart.x, unitSelectEnd.x);
+        float miny = Math.min(unitSelectStart.y, unitSelectEnd.y);
+        float maxx = Math.max(unitSelectStart.x, unitSelectEnd.x);
+        float maxy = Math.max(unitSelectStart.y, unitSelectEnd.y);
+
+        selectedUnits.clear();
+
+        for(BaseUnit unit : unitGroups[player.getTeam().ordinal()].all()){
+            if(unit.isDead()) continue;
+            if(!unit.isPlayerControllable) continue;
+            if(unit.x >= minx && unit.x <= maxx && unit.y >= miny && unit.y <= maxy){
+                selectedUnits.add(unit.getID());
+            }
+        }
+    }
+
+    private void issueSelectedOrders(float x, float y, UnitOrderType type){
+        if(selectedUnits.size == 0) return;
+
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(unit == null || unit.isDead()) continue;
+            if(Net.active() && Net.client()){
+                Call.issueUnitOrder(player, id, (byte)type.ordinal(), x, y);
+            }else{
+                InputHandler.issueUnitOrder(player, id, (byte)type.ordinal(), x, y);
+            }
+        }
+    }
+
+    private void issueSelectedTargetOrders(float x, float y){
+        if(selectedUnits.size == 0) return;
+
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(unit == null || unit.isDead()) continue;
+            if(Net.active() && Net.client()){
+                Call.issueUnitAttackTarget(player, id, x, y);
+            }else{
+                InputHandler.issueUnitAttackTarget(player, id, x, y);
+            }
+        }
+    }
+
+    private boolean hasSelectedUnits(){
+        return selectedUnits.size > 0;
+    }
+
+    public boolean isUnitCommandMode(){
+        return hasSelectedUnits();
+    }
+
+    public UnitOrderType getActiveOrderType(){
+        return activeOrderType;
+    }
+
+    public void setActiveOrderType(UnitOrderType activeOrderType){
+        if(activeOrderType != null){
+            this.activeOrderType = activeOrderType;
+        }
+    }
+
+    public void clearUnitSelection(){
+        selectedUnits.clear();
+    }
+
+    public void setSelectedDronesFollow(boolean follow){
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(!(unit instanceof Drone)) continue;
+            if(Net.active() && Net.client()){
+                Call.setDroneFollowMode(player, id, follow);
+            }else{
+                InputHandler.setDroneFollowMode(player, id, follow);
+            }
+        }
+    }
+
+    public boolean hasSelectedDrones(){
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(it.next());
+            if(unit instanceof Drone) return true;
+        }
+        return false;
+    }
+
+    public boolean selectedDronesFollowing(){
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(it.next());
+            if(unit instanceof Drone && ((Drone)unit).isFollowPlayerMode()) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void drawTop(){
+        if(selectingUnits){
+            float minx = Math.min(unitSelectStart.x, unitSelectEnd.x);
+            float miny = Math.min(unitSelectStart.y, unitSelectEnd.y);
+            float maxx = Math.max(unitSelectStart.x, unitSelectEnd.x);
+            float maxy = Math.max(unitSelectStart.y, unitSelectEnd.y);
+
+            Draw.color(Palette.accent);
+            Lines.stroke(1.5f);
+            Lines.rect(minx, miny, maxx - minx, maxy - miny);
+            Draw.color();
+        }
+
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(unit == null || unit.isDead()) continue;
+            Draw.color(Palette.accent);
+            Lines.stroke(1.2f);
+            Lines.circle(unit.x, unit.y, unit.getSize() * 0.75f + 2f);
+        }
+
+        it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(unit == null || unit.isDead()) continue;
+            TargetTrait target = unit.getTarget();
+            if(target != null && target.isValid() && target.getTeam() != unit.getTeam()){
+                Draw.color(Palette.remove);
+                Lines.stroke(1f);
+                Lines.poly(target.getX(), target.getY(), 4, 7f, Timers.time() * 1.5f);
+                Lines.spikes(target.getX(), target.getY(), 3f, 6f, 4, Timers.time() * 1.5f);
+            }
+        }
+        Draw.color();
+    }
+
+    @Override
+    public void drawUnderUnitsAndBlocks(){
+        if(!Settings.getBool("massai-debug", false)) return;
+
+        IntSet.IntSetIterator it = selectedUnits.iterator();
+        while(it.hasNext){
+            int id = it.next();
+            BaseUnit unit = unitGroups[player.getTeam().ordinal()].getByID(id);
+            if(unit == null || unit.isDead() || !unit.hasOrder()) continue;
+
+            float ox = unit.getOrderX(), oy = unit.getOrderY();
+
+            Draw.color(Palette.command);
+            Lines.stroke(1.4f);
+            Lines.line(unit.x, unit.y, ox, oy);
+            Lines.circle(ox, oy, 4f);
+
+            if(unit instanceof GroundUnit){
+                GroundUnit g = (GroundUnit)unit;
+                int cursor = g.getOrderPathCursor();
+                int size = g.getOrderPathSize();
+
+                float lastx = unit.x, lasty = unit.y;
+                Draw.color(Palette.placeRotate);
+                Lines.stroke(1.8f);
+                for(int i = cursor; i < size; i++){
+                    Tile t = world.tile(g.getOrderPathTilePacked(i));
+                    if(t == null) continue;
+                    Lines.line(lastx, lasty, t.worldx(), t.worldy());
+                    lastx = t.worldx();
+                    lasty = t.worldy();
+                }
+
+                if(size > cursor){
+                    Lines.line(lastx, lasty, ox, oy);
+                }
+            }
+        }
+        Draw.color();
     }
 
     @Override
@@ -369,7 +630,7 @@ public class DesktopInput extends InputHandler{
             droppingItem = false;
         }
 
-        if(KeyBinds.getSection(section).device.type == DeviceType.controller && (!mousemove || player.playerIndex > 0)){
+        if(KeyBinds.getSection(section).device.type == Inputs.DeviceType.controller && (!mousemove || player.playerIndex > 0)){
             if(player.playerIndex > 0){
                 controlling = true;
             }
@@ -378,7 +639,7 @@ public class DesktopInput extends InputHandler{
             float ya = Inputs.getAxis(section, "cursor_y");
 
             if(Math.abs(xa) > controllerMin || Math.abs(ya) > controllerMin){
-                float scl = Settings.getInt("sensitivity", 100) / 100f * Unit.dp.scl(1f);
+                float scl = Settings.getInt("sensitivity", 100) / 100f;
                 controlx += xa * baseControllerSpeed * scl;
                 controly -= ya * baseControllerSpeed * scl;
                 controlling = true;

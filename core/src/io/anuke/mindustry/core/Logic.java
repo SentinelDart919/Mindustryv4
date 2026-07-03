@@ -181,6 +181,20 @@ public class Logic extends Module{
         world.sectors.save();
     }
 
+    private void updateRtsAI(){
+        if(Net.client()) return;
+        for(Team team : Team.all){
+            if(team == Team.none || team == Team.themass) continue;
+            if((state.rtsAIBits & (1L << team.ordinal())) != 0){
+                Teams.TeamData data = state.teams.get(team);
+                if(data.rtsAI == null){
+                    data.rtsAI = new io.anuke.mindustry.ai.RtsAI(data);
+                }
+                data.rtsAI.update();
+            }
+        }
+    }
+
     @Remote(called = Loc.server)
     public static void onSectorComplete(){
         state.mode = GameMode.victory;
@@ -256,6 +270,7 @@ public class Logic extends Module{
                 world.pathfinder.update();
                 infection.update();
                 MassAI.update();
+                updateRtsAI();
             }
 
             if(!Net.client() && !world.isInvalidMap()){
