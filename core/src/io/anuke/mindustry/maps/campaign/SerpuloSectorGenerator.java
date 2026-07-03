@@ -95,7 +95,7 @@ public class SerpuloSectorGenerator implements CampaignSectorGenerator{
         }
 
         GenResult result = new GenResult();
-        for(Point2 point : new Array.ArrayIterable<>(points)){
+        for(Point2 point : new Seq.SeqIterable<>(points)){
             world.generator.generateTile(result, sector.x, sector.y, point.x, point.y, true, null, null);
             if(((Floor)result.floor).isLiquid || result.wall.solid){
                 sector.missions.clear();
