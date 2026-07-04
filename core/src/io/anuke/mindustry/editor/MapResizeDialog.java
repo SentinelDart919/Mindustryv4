@@ -33,7 +33,7 @@ public class MapResizeDialog extends FloatingDialog{
                 ButtonGroup<TextButton> group = new ButtonGroup<>();
                 for(int i = 0; i < validMapSizes.length; i++){
                     int size = validMapSizes[i];
-                    TextButton button = new TextButton(size + "", "toggle");
+                    TextButton button = new TextButton(size + "");
                     button.clicked(() -> {
                         if(w)
                             width = size;

@@ -3,6 +3,7 @@ package io.anuke.mindustry.graphics;
 import arc.graphics.Color;
 import arc.Core;
 import arc.Graphics;
+import arc.graphics.Gfx;
 import arc.graphics.g2d.Draw;
 import arc.graphics.gl.Shader;
 
@@ -79,7 +80,7 @@ public enum CacheLayer{
 
         Gfx.shader(shader);
         Gfx.begin();
-        Draw.rect(renderer.effectSurface.texture(), Core.camera.position.x, Core.camera.position.y,
+        Draw.rect(Draw.wrap(renderer.effectSurface.getTexture()), Core.camera.position.x, Core.camera.position.y,
                 Core.camera.width * Core.camera.zoom, -Core.camera.height * Core.camera.zoom);
         Gfx.end();
         Gfx.shader();

@@ -89,7 +89,7 @@ public abstract class Batch implements Disposable{
         flush();
     }
 
-    protected Mat getProjection(){
+    public Mat getProjection(){
         return projectionMatrix;
     }
 

@@ -1,8 +1,10 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import io.anuke.mindustry.net.Administration.PlayerInfo;
+import arc.Core;
+import arc.scene.style.Drawable;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
+import io.anuke.mindustry.net.Administration.PlayerInfo;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -19,7 +21,7 @@ public class BansDialog extends FloatingDialog{
     }
 
     private void setup(){
-        content().clear();
+        cont.clear();
 
         float w = 400f, h = 80f;
 
@@ -38,7 +40,7 @@ public class BansDialog extends FloatingDialog{
 
             res.labelWrap("IP: [LIGHT_GRAY]" + info.lastIP + "\n[]Name: [LIGHT_GRAY]" + info.lastName).width(w - h - 24f);
             res.add().growX();
-            res.addImageButton("icon-cancel", 14 * 3, () -> {
+            res.button((Drawable)Core.atlas.getDrawable("icon-cancel"), 14 * 3, () -> {
                 ui.showConfirm("$text.confirm", "$text.confirmunban", () -> {
                     netServer.admins.unbanPlayerID(info.id);
                     setup();
@@ -49,6 +51,6 @@ public class BansDialog extends FloatingDialog{
             table.row();
         }
 
-        content().add(pane);
+        cont.add(pane);
     }
 }

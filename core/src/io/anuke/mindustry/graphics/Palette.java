@@ -43,7 +43,7 @@ public class Palette{
     portalDark = Color.valueOf("3f3dac"),
 
     heal = Color.valueOf("98ffa9"),
-    bar = Color.SLATE,
+    bar = Color.valueOf("708090"),
     accent = Color.valueOf("ffd37f"),
     accentBack = Color.valueOf("d4816b"),
     place = Color.valueOf("6335f8"),

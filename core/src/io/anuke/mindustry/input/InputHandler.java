@@ -5,6 +5,7 @@ import arc.util.Translator;
 import arc.Core;
 import arc.input.InputProcessor;
 import arc.graphics.Color;
+import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -29,13 +30,10 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Build;
 import io.anuke.mindustry.world.Tile;
 import arc.Effects;
-import arc.Graphics;
-import arc.Input;
 import arc.util.Time;
 import arc.scene.ui.layout.Table;
 import arc.math.Angles;
 import arc.math.Mathf;
-import arc.math.geom.Vec2;
 
 import static io.anuke.mindustry.Vars.*;
 import arc.input.InputAdapter;
@@ -183,11 +181,11 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public float getMouseX(){
-        return Core.input.getX();
+        return Core.input.mouseX();
     }
 
     public float getMouseY(){
-        return Core.input.getY();
+        return Core.input.mouseY();
     }
 
     public void resetCursor(){
@@ -287,7 +285,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     boolean canTapPlayer(float x, float y){
-        return Vec2.dst(x, y, player.x, player.y) <= playerSelectRange && player.inventory.hasItem();
+        return Mathf.dst2(x, y, player.x, player.y) <= playerSelectRange && player.inventory.hasItem();
     }
 
     /**Tries to begin mining a tile, returns true if successful.*/
@@ -301,8 +299,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     boolean canMine(Tile tile){
-        return !ui.hasMouse()
-                && tile.floor().drops != null && tile.floor().drops.item.hardness <= player.mech.drillPower
+        return tile.floor().drops != null && tile.floor().drops.item.hardness <= player.mech.drillPower
                 && !tile.floor().playerUnmineable
                 && player.inventory.canAcceptItem(tile.floor().drops.item)
                 && tile.block() == Blocks.air && player.distanceTo(tile.worldx(), tile.worldy()) <= Player.mineDistance;
@@ -314,7 +311,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public int tileX(float cursorX){
-        Vec2 vec = Graphics.world(cursorX, 0);
+        Vec2 vec = Core.camera.unproject(cursorX, 0);
         if(selectedBlock()){
             if(recipe != null){
                 vec.sub(recipe.result.offset(), recipe.result.offset());
@@ -326,7 +323,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public int tileY(float cursorY){
-        Vec2 vec = Graphics.world(0, cursorY);
+        Vec2 vec = Core.camera.unproject(0, cursorY);
         if(selectedBlock()){
             if(recipe != null){
                 vec.sub(recipe.result.offset(), recipe.result.offset());
@@ -346,16 +343,16 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public float mouseAngle(float x, float y){
-        return Graphics.world(getMouseX(), getMouseY()).sub(x, y).angle();
+        return Core.camera.unproject(getMouseX(), getMouseY()).sub(x, y).angle();
     }
 
     public void remove(){
-        Inputs.removeProcessor(this);
+        Core.input.removeProcessor(this);
         frag.remove();
     }
 
     public boolean canShoot(){
-        return !isPlacing() && mode == PlaceMode.none && !ui.hasMouse() && !onConfigurable() && !isDroppingItem();
+        return !isPlacing() && mode == PlaceMode.none && !onConfigurable() && !isDroppingItem();
     }
 
     public boolean onConfigurable(){
@@ -408,7 +405,7 @@ public abstract class InputHandler extends InputAdapter{
         for(Tile tile : state.teams.get(player.getTeam()).cores){
             if(tile.distanceTo(x * tilesize, y * tilesize) < coreBuildRange){
                 return Build.validPlace(player.getTeam(), x, y, type, rotation) &&
-                Vec2.dst(player.x, player.y, x * tilesize, y * tilesize) < Player.placeDistance;
+                Mathf.dst2(player.x, player.y, x * tilesize, y * tilesize) < Player.placeDistance;
             }
         }
 
@@ -416,7 +413,7 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public boolean validBreak(int x, int y){
-        return Build.validBreak(player.getTeam(), x, y) && Vec2.dst(player.x, player.y, x * tilesize, y * tilesize) < Player.placeDistance;
+        return Build.validBreak(player.getTeam(), x, y) && Mathf.dst2(player.x, player.y, x * tilesize, y * tilesize) < Player.placeDistance;
     }
 
     public void placeBlock(int x, int y, Recipe recipe, int rotation){

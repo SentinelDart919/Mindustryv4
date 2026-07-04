@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.logic;
 
 import arc.struct.IntSeq;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -61,7 +62,7 @@ public class MiningPost extends Block {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         MiningPostEntity entity = tile.entity();
-        entity.droneIDs.remove(unit.id);
+        entity.droneIDs.removeValue(unit.id);
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)

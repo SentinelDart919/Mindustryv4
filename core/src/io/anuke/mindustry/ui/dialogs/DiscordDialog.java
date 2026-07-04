@@ -2,6 +2,7 @@ package io.anuke.mindustry.ui.dialogs;
 
 import arc.Core;
 import arc.graphics.Color;
+import arc.scene.style.Drawable;
 import io.anuke.mindustry.graphics.Palette;
 import arc.scene.ui.Dialog;
 
@@ -11,41 +12,41 @@ import static io.anuke.mindustry.Vars.ui;
 public class DiscordDialog extends Dialog{
 
     public DiscordDialog(){
-        super("", "dialog");
+        super("");
 
         float h = 70f;
 
-        content().margin(12f);
+        cont.margin(12f);
 
         Color color = Color.valueOf("7289da");
 
-        content().table(t -> {
-            t.background("button").margin(0);
+        cont.table(t -> {
+            t.background(Core.atlas.getDrawable("button")).margin(0);
 
             t.table(img -> {
-                img.addImage("white").height(h - 5).width(40f).color(color);
+                img.image((Drawable)Core.atlas.getDrawable("white")).height(h - 5).width(40f).color(color);
                 img.row();
-                img.addImage("white").height(5).width(40f).color(color.cpy().mul(0.8f, 0.8f, 0.8f, 1f));
+                img.image((Drawable)Core.atlas.getDrawable("white")).height(5).width(40f).color(color.cpy().mul(0.8f, 0.8f, 0.8f, 1f));
             }).expandY();
 
             t.table(i -> {
-                i.background("button");
-                i.addImage("icon-discord").size(14 * 3);
+                i.background(Core.atlas.getDrawable("button"));
+                i.image((Drawable)Core.atlas.getDrawable("icon-discord")).size(14 * 3);
             }).size(h).left();
 
             t.add("$text.discord").color(Palette.accent).growX().padLeft(10f);
         }).size(470f, h).pad(10f);
 
-        buttons().defaults().size(170f, 50);
+        buttons.defaults().size(170f, 50);
 
-        buttons().addButton("$text.back", this::hide);
-        buttons().addButton("$text.copylink", () -> {
-            Core.app.getClipboard().setContents(discordURL);
+        buttons.button("$text.back", this::hide);
+        buttons.button("$text.copylink", () -> {
+            Core.app.setClipboardText(discordURL);
         });
-        buttons().addButton("$text.openlink", () -> {
-            if(!Core.net.openURI(discordURL)){
+        buttons.button("$text.openlink", () -> {
+            if(!Core.app.openURI(discordURL)){
                 ui.showError("$text.linkfail");
-                Core.app.getClipboard().setContents(discordURL);
+                Core.app.setClipboardText(discordURL);
             }
         });
     }

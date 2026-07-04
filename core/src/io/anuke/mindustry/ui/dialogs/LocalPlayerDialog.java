@@ -1,11 +1,12 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import arc.util.Scaling;
-import io.anuke.mindustry.entities.Player;
-import arc.graphics.g2d.Draw;
+import arc.Core;
+import arc.scene.style.Drawable;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
+import arc.util.Scaling;
+import io.anuke.mindustry.entities.Player;
 
 import static io.anuke.mindustry.Vars.control;
 import static io.anuke.mindustry.Vars.players;
@@ -22,22 +23,22 @@ public class LocalPlayerDialog extends FloatingDialog{
     private void rebuild(){
         float size = 140f;
 
-        content().clear();
+        cont.clear();
 
         if(players.length > 1){
-            content().addImageButton("icon-cancel", 14 * 2, () -> {
+            cont.button((Drawable)Core.atlas.getDrawable("icon-cancel"), 14 * 2, () -> {
                 control.removePlayer();
                 rebuild();
             }).size(50f, size).pad(5).bottom();
         }else{
-            content().add().size(50f, size);
+            cont.add().size(50f, size);
         }
 
         for(Player player : players){
             Table table = new Table();
             Stack stack = new Stack();
 
-            stack.add(new Image("button"));
+            stack.add(new Image((Drawable)Core.atlas.getDrawable("button")));
 
             Image img = new Image(Core.atlas.find("icon-chat"));
             img.setScaling(Scaling.fill);
@@ -48,15 +49,14 @@ public class LocalPlayerDialog extends FloatingDialog{
             table.row();
             table.add(stack).size(size);
 
-            content().add(table).pad(5);
+            cont.add(table).pad(5);
         }
 
         if(players.length < 4){
-            content().addImageButton("icon-add", 14 * 2, () -> {
+            cont.button((Drawable)Core.atlas.getDrawable("icon-add"), 14 * 2, () -> {
                 control.addPlayer(players.length);
                 rebuild();
             }).size(50f, size).pad(5).bottom();
         }
     }
 }
-

@@ -2,8 +2,10 @@ package io.anuke.mindustry.ui.fragments;
 
 import arc.Core;
 import arc.graphics.Color;
+import arc.graphics.Gfx;
 import arc.math.Interp;
 import arc.math.geom.Vec2;
+import arc.util.Bundles;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
@@ -25,6 +27,7 @@ import arc.scene.actions.Actions;
 import arc.scene.event.Touchable;
 import arc.scene.ui.ButtonGroup;
 import arc.scene.ui.Image;
+import arc.scene.style.Drawable;
 import arc.scene.ui.ImageButton;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
@@ -119,7 +122,7 @@ public class PlacementFragment extends Fragment{
                             unlocked[0] = ulock;
 
                             if(!ulock){
-                                button.replaceImage(new Image("icon-locked"));
+                                button.replaceImage(new Image(Core.skin.getDrawable("icon-locked")));
                             }else{
                                 button.replaceImage(new ImageStack(recipe.result.getCompactIcon()));
                             }
@@ -202,7 +205,7 @@ public class PlacementFragment extends Fragment{
                                 header.add().growX();
                                 Recipe recipe = Recipe.getByResult(lastDisplay);
                                 if(recipe != null && control.unlocks.isUnlocked(recipe)){
-                                    header.addButton("?", "clear-partial", () -> ui.content.show(recipe))
+                                    header.addButton("?", () -> ui.content.show(recipe))
                                         .size(8 * 5).padTop(-5).padRight(-5).right().grow();
                                 }
                             }).growX().left();
@@ -276,7 +279,7 @@ public class PlacementFragment extends Fragment{
         parent.fill(hint -> {
             hint.visible(() -> !mobile && !state.is(State.menu) && (control.input(0).mode == PlaceMode.schematic || control.input(0).mode == PlaceMode.copying));
             hint.update(() -> {
-                if(mobile && Core.Gfx.getHeight() > Core.Gfx.getWidth()){
+                if(mobile && Core.graphics.getHeight() > Core.graphics.getWidth()){
                     hint.top();
                 }else{
                     hint.bottom();
@@ -295,7 +298,7 @@ public class PlacementFragment extends Fragment{
                     }
                 }).size(8 * 4).padLeft(10).visible(() -> control.input(0).mode == PlaceMode.schematic && control.input(0).schematic != null);
             }).update(t -> {
-                boolean portrait = mobile && Core.Gfx.getHeight() > Core.Gfx.getWidth();
+                boolean portrait = mobile && Core.graphics.getHeight() > Core.graphics.getWidth();
                 t.setTranslation(0, portrait ? -20 : 0);
             }).padBottom(mobile ? 0 : 10).padTop(mobile ? 10 : 0);
         });
@@ -308,7 +311,7 @@ public class PlacementFragment extends Fragment{
         Vec2 v = topTable.stageToLocalCoordinates(Gfx.mouseWorld());
 
         //setup hovering tile
-        if(!ui.hasMouse() && topTable.hit(v.x, v.y, false) == null){
+        if(topTable.hit(v.x, v.y, false) == null){
             Tile tile = world.tileWorld(Gfx.mouseWorld().x, Gfx.mouseWorld().y);
             if(tile != null){
                 hoverTile = tile.target();

@@ -9,8 +9,8 @@ import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.ui.BorderImage;
-import arc.Settings;
 import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
 import arc.scene.ui.ButtonGroup;
 import arc.scene.ui.ImageButton;
 import arc.scene.ui.ScrollPane;
@@ -32,14 +32,14 @@ public class CustomGameDialog extends FloatingDialog{
     }
 
     void setup(){
-        content().clear();
+        cont.clear();
 
         Table maps = new Table();
         maps.marginRight(14);
         ScrollPane pane = new ScrollPane(maps);
         pane.setFadeScrollBars(false);
 
-        int maxwidth = (Core.Gfx.getHeight() > Core.Gfx.getHeight() ? 2 : 4);
+        int maxwidth = (Core.graphics.getHeight() > Core.graphics.getHeight() ? 2 : 4);
 
         Table selmode = new Table();
         ButtonGroup<TextButton> group = new ButtonGroup<>();
@@ -52,16 +52,16 @@ public class CustomGameDialog extends FloatingDialog{
         for(GameMode mode : GameMode.values()){
             if(mode.hidden) continue;
 
-            modes.addButton("$mode." + mode.name() + ".name", "toggle", () -> state.mode = mode)
+            modes.button("$mode." + mode.name() + ".name", () -> state.mode = mode)
                 .update(b -> b.setChecked(state.mode == mode)).group(group).size(140f, 54f);
             if(i++ % 2 == 1) modes.row();
         }
         selmode.add(modes);
-        selmode.addButton("?", this::displayGameModeHelp).width(50f).fillY().padLeft(18f);
-        selmode.addImageButton("icon-tools", this::displayGameModeRules).size(50f, 54f).padLeft(6f);
+        selmode.button("?", this::displayGameModeHelp).width(50f).fillY().padLeft(18f);
+        selmode.button((Drawable)Core.atlas.getDrawable("icon-tools"), this::displayGameModeRules).size(50f, 54f).padLeft(6f);
 
-        content().add(selmode);
-        content().row();
+        cont.add(selmode);
+        cont.row();
 
         Difficulty[] ds = Difficulty.values();
 
@@ -72,22 +72,22 @@ public class CustomGameDialog extends FloatingDialog{
         sdif.add("$setting.difficulty.name").padRight(15f);
 
         sdif.defaults().height(s + 4);
-        sdif.addImageButton("icon-arrow-left", 10 * 3, () -> {
+        sdif.button(Core.atlas.getDrawable("icon-arrow-left"), 10 * 3, () -> {
             state.difficulty = (ds[Mathf.mod(state.difficulty.ordinal() - 1, ds.length)]);
         }).width(s);
 
-        sdif.addButton("", () -> {})
+        sdif.button("", () -> {})
         .update(t -> {
             t.setText(state.difficulty.toString());
-            t.setTouchable(Touchable.disabled);
+            t.touchable = Touchable.disabled;
         }).width(180f);
 
-        sdif.addImageButton("icon-arrow-right", 10 * 3, () -> {
+        sdif.button(Core.atlas.getDrawable("icon-arrow-right"), 10 * 3, () -> {
             state.difficulty = (ds[Mathf.mod(state.difficulty.ordinal() + 1, ds.length)]);
         }).width(s);
 
-        content().add(sdif);
-        content().row();
+        cont.add(sdif);
+        cont.row();
 
 
         float images = 146f;
@@ -100,14 +100,14 @@ public class CustomGameDialog extends FloatingDialog{
                 maps.row();
             }
 
-            ImageButton image = new ImageButton(new TextureRegion(map.texture), "clear");
+            ImageButton image = new ImageButton(new TextureRegion(map.texture));
             image.margin(5);
             image.getImageCell().size(images);
             image.top();
             image.row();
             image.add("[accent]" + map.getDisplayName()).pad(3f).growX().wrap().get().setAlignment(Align.center, Align.center);
             image.row();
-            image.label((() -> Bundles.format("text.level.highscore", Settings.getInt("hiscore" + map.name, 0)))).pad(3f);
+            image.label((() -> Core.bundle.format("text.level.highscore", Core.settings.getInt("hiscore" + map.name, 0)))).pad(3f);
 
             BorderImage border = new BorderImage(map.texture, 3f);
             border.setScaling(Scaling.fit);
@@ -123,7 +123,7 @@ public class CustomGameDialog extends FloatingDialog{
             i++;
         }
 
-        ImageButton gen = maps.addImageButton("icon-editor", "clear", 16*4, () -> {
+        ImageButton gen = maps.button(Core.atlas.getDrawable("icon-editor"), 16*4, () -> {
             hide();
             world.generator.playRandomMap();
         }).growY().get();
@@ -134,11 +134,11 @@ public class CustomGameDialog extends FloatingDialog{
             maps.add("$text.maps.none").pad(50);
         }
 
-        content().add(pane).uniformX();
+        cont.add(pane).uniformX();
     }
 
     private void displayGameModeHelp(){
-        FloatingDialog d = new FloatingDialog(Bundles.get("mode.text.help.title"));
+        FloatingDialog d = new FloatingDialog(Core.bundle.get("mode.text.help.title"));
         d.setFillParent(false);
         Table table = new Table();
         table.defaults().pad(1f);
@@ -151,8 +151,8 @@ public class CustomGameDialog extends FloatingDialog{
             table.row();
         }
 
-        d.content().add(pane);
-        d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);
+        d.cont.add(pane);
+        d.buttons.button("$text.ok", d::hide).size(110, 50).pad(10f);
         d.show();
     }
 
@@ -169,17 +169,17 @@ public class CustomGameDialog extends FloatingDialog{
         table.add("[lightgray]" + mode.description()).width(400f).wrap().left();
         table.row();
         table.row();
-        table.addCheck("Infinite resources", mode.infiniteResources, b -> mode.infiniteResources = b).left();
+        table.check("Infinite resources", mode.infiniteResources, b -> mode.infiniteResources = b).left();
         table.row();
-        table.addCheck("Disable wave timer", mode.disableWaveTimer, b -> mode.disableWaveTimer = b).left();
+        table.check("Disable wave timer", mode.disableWaveTimer, b -> mode.disableWaveTimer = b).left();
         table.row();
-        table.addCheck("Disable waves", mode.disableWaves, b -> mode.disableWaves = b).left();
+        table.check("Disable waves", mode.disableWaves, b -> mode.disableWaves = b).left();
         table.row();
-        table.addCheck("Show mission", mode.showMission, b -> mode.showMission = b).left();
+        table.check("Show mission", mode.showMission, b -> mode.showMission = b).left();
         table.row();
-        table.addCheck("Enemy cheat", mode.enemyCheat, b -> mode.enemyCheat = b).left();
+        table.check("Enemy cheat", mode.enemyCheat, b -> mode.enemyCheat = b).left();
         table.row();
-        table.addCheck("PvP", mode.isPvp, b -> mode.isPvp = b).left();
+        table.check("PvP", mode.isPvp, b -> mode.isPvp = b).left();
         table.row();
         table.add("Enemy Selector").padTop(8f).left();
         table.row();
@@ -190,16 +190,16 @@ public class CustomGameDialog extends FloatingDialog{
         for(Team team : Team.all){
             if(team == Team.none) continue;
 
-            enemies.addButton("$team." + team.name() + ".name", "toggle", () -> state.enemyTeam = team)
+            enemies.button("$team." + team.name() + ".name", () -> state.enemyTeam = team)
                 .update(b -> b.setChecked(state.enemyTeam == team)).group(enemyGroup).size(140f, 54f);
             if(j++ % 2 == 1) enemies.row();
         }
 
         table.add(enemies).left();
         table.row();
-        table.addCheck("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
+        table.check("$text.customgame.allowRandomInfection", state.allowMassInfection, b -> state.allowMassInfection = b).left();
         table.row();
-        table.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
+        table.check("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
         table.row();
         table.add("RTS AI Teams").padTop(8f).left();
         table.row();
@@ -208,7 +208,7 @@ public class CustomGameDialog extends FloatingDialog{
             if(team == Team.none || team == Team.themass) continue;
 
             boolean def = (state.rtsAIBits & (1L << team.ordinal())) != 0;
-            table.addCheck("$team." + team.name() + ".name", def, b -> {
+            table.check("$team." + team.name() + ".name", def, b -> {
                 if(b){
                     state.rtsAIBits |= (1L << team.ordinal());
                 }else{
@@ -221,8 +221,8 @@ public class CustomGameDialog extends FloatingDialog{
         ScrollPane pane = new ScrollPane(table);
         pane.setFadeScrollBars(false);
 
-        d.content().add(pane);
-        d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);
+        d.cont.add(pane);
+        d.buttons.button("$text.ok", d::hide).size(110, 50).pad(10f);
         d.show();
     }
 

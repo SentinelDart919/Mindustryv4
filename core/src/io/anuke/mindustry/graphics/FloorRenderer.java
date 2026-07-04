@@ -1,13 +1,15 @@
 package io.anuke.mindustry.graphics;
 
 import arc.Core;
+import arc.graphics.Camera;
 import arc.graphics.Color;
 import arc.graphics.GL20;
-import arc.math.geom.OrthographicCamera;
+import arc.graphics.Gfx;
 import arc.struct.IntSeq;
 import arc.struct.IntSet;
 import arc.struct.IntSet.IntSetIterator;
 import arc.struct.ObjectSet;
+import arc.util.Timers;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.maps.Sector;
@@ -84,7 +86,7 @@ public class FloorRenderer{
                 return;
             }
 
-            OrthographicCamera camera = Core.camera;
+            Camera camera = Core.camera;
 
             int crangex = (int) (camera.width * camera.zoom / (chunksize * tilesize)) + 1;
             int crangey = (int) (camera.height * camera.zoom / (chunksize * tilesize)) + 1;
@@ -143,7 +145,7 @@ public class FloorRenderer{
             return;
         }
 
-        cbatch.setProjectionMatrix(Core.camera.combined);
+        cbatch.setProjection(Core.camera.mat);
         cbatch.beginDraw();
 
         Core.gl.glEnable(GL20.GL_BLEND);
@@ -162,7 +164,7 @@ public class FloorRenderer{
             return;
         }
 
-        OrthographicCamera camera = Core.camera;
+        Camera camera = Core.camera;
 
         int crangex = (int) (camera.width * camera.zoom / (chunksize * tilesize)) + 1;
         int crangey = (int) (camera.height * camera.zoom / (chunksize * tilesize)) + 1;
@@ -218,8 +220,8 @@ public class FloorRenderer{
 
     private void cacheChunkLayer(int cx, int cy, Chunk chunk, CacheLayer layer){
 
-        Graphics.useBatch(cbatch);
-        cbatch.begin();
+        Draw.batch(cbatch);
+        cbatch.beginCache();
 
         Sector sector = world.getSector();
 
@@ -242,9 +244,7 @@ public class FloorRenderer{
             }
         }
 
-        cbatch.end();
-        Gfx.popBatch();
-        chunk.caches[layer.ordinal()] = cbatch.getLastCache();
+        chunk.caches[layer.ordinal()] = cbatch.endCache();
     }
 
     public void clearTiles(){

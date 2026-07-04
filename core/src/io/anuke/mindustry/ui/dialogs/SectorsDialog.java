@@ -2,7 +2,9 @@ package io.anuke.mindustry.ui.dialogs;
 
 import arc.Core;
 import arc.graphics.Color;
+import arc.input.KeyCode;
 import arc.math.geom.Vec2;
+import arc.scene.style.Drawable;
 import arc.util.Align;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.graphics.Palette;
@@ -23,11 +25,8 @@ import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.Scl;
 import arc.scene.utils.Cursors;
-import arc.util.Strings;
 import arc.math.Mathf;
-import arc.Core;
-import arc.Input;
-import arc.Settings;
+import arc.util.Inputs;
 
 import static io.anuke.mindustry.Vars.world;
 
@@ -67,16 +66,16 @@ public class SectorsDialog extends FloatingDialog{
         exportedTable.update(() -> exportedTable.setPosition(width - 10f, height - 10f, Align.topRight));
 
         Group container = new Group();
-        container.setTouchable(Touchable.childrenOnly);
+        container.touchable = Touchable.childrenOnly;
         container.setFillParent(true);
         container.addChild(sectorTable);
         container.addChild(campaignTable);
         container.addChild(exportedTable);
 
         margin(0);
-        getTitleTable().clear();
+        titleTable.clear();
         clear();
-        stack(content(), container, buttons()).grow();
+        stack(cont, container, buttons).grow();
 
         shown(this::setup);
         hidden(() -> {
@@ -95,16 +94,16 @@ public class SectorsDialog extends FloatingDialog{
         sectorTable.clear();
         campaignTable.clear();
         exportedTable.clear();
-        content().clear();
-        buttons().clear();
-        buttons().bottom().margin(15);
+        cont.clear();
+        buttons.clear();
+        buttons.bottom().margin(15);
 
         addCloseButton();
         setupCampaigns();
         Vars.launchManager.load();
         setupExported();
         world.sectors.refreshActiveCampaignPreviews();
-        content().add(view = new SectorView()).grow();
+        cont.add(view = new SectorView()).grow();
         view.rebuildPlanetModels();
         Core.scene.setScrollFocus(view);
     }
@@ -148,7 +147,7 @@ public class SectorsDialog extends FloatingDialog{
         for(io.anuke.mindustry.type.Item item : Vars.launchManager.getInventory().keys()){
             int amount = Vars.launchManager.getAmount(item);
             if(amount > 0){
-                items.addImage(item.region).size(8 * 3).padRight(4);
+                items.image(item.region).size(8 * 3).padRight(4);
                 items.add(amount + " / " + Vars.launchManager.getCapacity()).left().padRight(10);
                 if(++i % 2 == 0) items.row();
             }
@@ -168,18 +167,18 @@ public class SectorsDialog extends FloatingDialog{
         selected = sector;
 
         sectorTable.clear();
-        sectorTable.background("button").margin(5);
+        sectorTable.background((Drawable)Core.atlas.getDrawable("button")).margin(5);
         sectorTable.defaults().pad(3);
-        sectorTable.add(Bundles.format("text.sector", sector.x + ", " + sector.y));
+        sectorTable.add(Core.bundle.format("text.sector", sector.x + ", " + sector.y));
         sectorTable.row();
 
         if(selected.missions.size > 0 && selected.completedMissions < selected.missions.size && !selected.complete){
-            sectorTable.labelWrap(Bundles.format("text.mission", selected.getDominantMission().menuDisplayString())).growX();
+            sectorTable.labelWrap(Core.bundle.format("text.mission", selected.getDominantMission().menuDisplayString())).growX();
             sectorTable.row();
         }
 
         if(selected.hasSave()){
-            sectorTable.labelWrap(Bundles.format("text.sector.time", selected.getSave().getPlayTime())).growX();
+            sectorTable.labelWrap(Core.bundle.format("text.sector.time", selected.getSave().getPlayTime())).growX();
             sectorTable.row();
         }
 
@@ -187,13 +186,13 @@ public class SectorsDialog extends FloatingDialog{
             boolean canDeploy = (selected.missions.size > 0 || selected.complete) && (view.isUnlocked(selected) || selected.hasSave());
 
             if(canDeploy){
-                Cell<?> cell = t.addImageTextButton(selected.hasSave() ? "$text.sector.resume" : "$text.sector.deploy", "icon-play", 10 * 3, () -> {
+                Cell<?> cell = t.button(selected.hasSave() ? "$text.sector.resume" : "$text.sector.deploy", (Drawable)Core.atlas.getDrawable("icon-play"), 10 * 3, () -> {
                     hide();
                     Vars.ui.loadLogic(() -> world.sectors.playSector(selected));
                 }).height(60f);
 
                 if(selected.hasSave()){
-                    t.addImageTextButton("$text.sector.abandon", "icon-cancel", 16 * 2, () ->
+                    t.button("$text.sector.abandon", (Drawable)Core.atlas.getDrawable("icon-cancel"), 16 * 2, () ->
                         Vars.ui.showConfirm("$text.confirm", "$text.sector.abandon.confirm", () -> {
                             world.sectors.abandonSector(selected);
                             selectSector(selected);
@@ -222,7 +221,7 @@ public class SectorsDialog extends FloatingDialog{
             view.remove();
             view = null;
         }
-        content().clear();
+        cont.clear();
         sectorTable.clear();
         campaignTable.clear();
     }
@@ -259,7 +258,7 @@ public class SectorsDialog extends FloatingDialog{
                 float lastZoomDistance = -1f;
 
                 @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
                     if(pointer > 1) return false;
                     lastX = x;
                     lastY = y;
@@ -269,7 +268,7 @@ public class SectorsDialog extends FloatingDialog{
                     pendingClick = false;
 
                     if(pointer == 1){
-                        lastZoomDistance = Vec2.dst(Core.input.getX(0), Core.input.getY(0), Core.input.getX(1), Core.input.getY(1));
+                        lastZoomDistance = new Vec2(Core.input.mouseX(0), Core.input.mouseY(0)).dst(Core.input.mouseX(1), Core.input.mouseY(1));
                     }
 
                     return true;
@@ -280,10 +279,10 @@ public class SectorsDialog extends FloatingDialog{
                     if(pointer > 1) return;
 
                     if(pointer == 1){
-                        float newDistance = Vec2.dst(Core.input.getX(0), Core.input.getY(0), Core.input.getX(1), Core.input.getY(1));
+                        float newDistance = new Vec2(Core.input.mouseX(0), Core.input.mouseY(0)).dst(Core.input.mouseX(1), Core.input.mouseY(1));
                         if(lastZoomDistance > 0){
                             float amount = (newDistance - lastZoomDistance) * 0.01f;
-                            if(Settings.getBool("planet3d")){
+                            if(Core.settings.getBool("planet3d")){
                                 pendingScroll -= amount;
                             }else{
                                 pendingScroll += amount;
@@ -298,7 +297,7 @@ public class SectorsDialog extends FloatingDialog{
                         dragged = true;
                     }
 
-                    if(Settings.getBool("planet3d")){
+                    if(Core.settings.getBool("planet3d")){
                         float factor = 0.01f * zoom;
                         rotLon += (x - lastX) * factor * (float)Math.cos(rotLat);
                         rotLat = Mathf.clamp(rotLat - (y - lastY) * factor, -1.4f, 1.4f);
@@ -312,13 +311,13 @@ public class SectorsDialog extends FloatingDialog{
                 }
 
                 @Override
-                public boolean scrolled(InputEvent event, float x, float y, int amount){
-                    pendingScroll += amount * 0.08f;
+                public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
+                    pendingScroll += amountY * 0.08f;
                     return true;
                 }
 
                 @Override
-                public void touchUp(InputEvent event, float x, float y, int pointer, int button){
+                public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
                     if(pointer > 1) return;
                     if(pointer == 0){
                         pendingClick = !dragged;
@@ -339,14 +338,14 @@ public class SectorsDialog extends FloatingDialog{
             }
 
             if(pendingScroll != 0f){
-                if(Settings.getBool("planet3d")){
+                if(Core.settings.getBool("planet3d")){
                     zoom = Mathf.clamp(zoom + pendingScroll, 0.45f, 2.3f);
                 }else{
                     float lastZoom = zoom;
                     zoom = Mathf.clamp(zoom - pendingScroll, 0.2f, 10f);
                     
-                    float mx = Core.input.getX() - getX();
-                    float my = (Core.Gfx.getHeight() - Core.input.getY()) - getY();
+                    float mx = Core.input.mouseX() - x;
+                    float my = (Core.graphics.getHeight() - Core.input.mouseY()) - y;
                 }
                 pendingScroll = 0f;
             }
@@ -357,7 +356,7 @@ public class SectorsDialog extends FloatingDialog{
 
             PlanetDefinition planet = selectedPlanet == null ? CampaignRegistry.planetForCampaign(world.sectors.getActiveCampaign()) : selectedPlanet;
             PlanetMeshRenderer.HoverData hovered;
-            if(Settings.getBool("planet3d")){
+            if(Core.settings.getBool("planet3d")){
                 try{
                     hovered = mesh.render(x, y, width, height, planet, rotLon, rotLat, zoom, selected);
                     meshFailed = false;
@@ -452,8 +451,8 @@ public class SectorsDialog extends FloatingDialog{
             Lines.stroke(1f);
             Draw.alpha(1f);
 
-            float mx = Core.input.getX();
-            float my = Core.Gfx.getHeight() - Core.input.getY();
+            float mx = Core.input.mouseX();
+            float my = Core.graphics.getHeight() - Core.input.mouseY();
             float best = Float.MAX_VALUE;
 
             for(int sy = -planet.gridLatitude / 2; sy < planet.gridLatitude / 2; sy++){
@@ -481,7 +480,7 @@ public class SectorsDialog extends FloatingDialog{
                     if(unlocked){
                         if(sector.texture != null){
                             Draw.color(Color.white);
-                            Draw.rect(sector.texture, tx, ty, sw, sh);
+                            Draw.rect(Draw.wrap(sector.texture), tx, ty, sw, sh);
                         }else if(sector.complete){
                             Fill.poly(tx, ty, 4, Math.min(sw, sh) * 0.45f, 45f);
                         }
@@ -507,7 +506,7 @@ public class SectorsDialog extends FloatingDialog{
                         Draw.rect("sector-select", tx, ty, sw * 1.5f, sh * 1.5f);
                     }
 
-                    float dst = Vec2.dst(mx, my, tx, ty);
+                    float dst = new Vec2(mx, my).dst(tx, ty);
                     if(unlocked && dst < Math.max(sw, sh) && dst < best){
                         best = dst;
                         out.sector = sector;

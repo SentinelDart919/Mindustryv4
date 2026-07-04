@@ -2,6 +2,7 @@ package io.anuke.mindustry.ui.dialogs;
 
 import arc.Core;
 import arc.input.KeyCode;
+import arc.scene.style.Drawable;
 import arc.util.Align;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.ResizeEvent;
@@ -19,11 +20,11 @@ public class FloatingDialog extends Dialog{
     protected boolean shouldPause;
 
     public FloatingDialog(String title){
-        super(title, "dialog");
+        super(title);
         setFillParent(true);
-        title().setAlignment(Align.center);
-        getTitleTable().row();
-        getTitleTable().addImage("white", Palette.accent)
+        this.title.setAlignment(Align.center);
+        titleTable.row();
+        titleTable.image((Drawable)Core.atlas.getDrawable("white")).color(Palette.accent)
                 .growX().height(3f).pad(4f);
 
         hidden(() -> {
@@ -43,7 +44,7 @@ public class FloatingDialog extends Dialog{
 
         boolean[] done = {false};
 
-        shown(() -> Core.app.postRunnable(() ->
+        shown(() -> Core.app.post(() ->
                 forEach(child -> {
                     if(done[0]) return;
 
@@ -64,11 +65,11 @@ public class FloatingDialog extends Dialog{
 
     @Override
     public void addCloseButton(){
-        buttons().addImageTextButton("$text.back", "icon-arrow-left", 30f, this::hide).size(230f, 64f);
+        buttons.button("$text.back", Core.atlas.getDrawable("icon-arrow-left"), 30f, this::hide).size(230f, 64f);
 
         keyDown(key -> {
-            if(key == Keys.ESCAPE || key == Keys.BACK) {
-                Core.app.postRunnable(this::hide);
+            if(key == KeyCode.escape || key == KeyCode.back) {
+                Core.app.post(this::hide);
             }
         });
     }

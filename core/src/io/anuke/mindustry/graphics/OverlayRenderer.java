@@ -5,6 +5,7 @@ import arc.math.Mathf;
 import arc.math.geom.Rect;
 import arc.math.geom.Vec2;
 import arc.struct.Seq;
+import arc.util.Timers;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.Player;
@@ -16,12 +17,11 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockBar;
 import arc.Core;
 import arc.Graphics;
-import arc.Settings;
 import arc.util.Time;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
-import arc.math.Mathf;
+import arc.scene.ui.layout.Scl;
 import arc.util.Tmp;
 
 import static io.anuke.mindustry.Vars.*;
@@ -53,7 +53,7 @@ public class OverlayRenderer{
     public void drawTop(){
 
         for(Player player : playerGroup.all()){
-            if(Settings.getBool("indicators") && player != players[0] && player.getTeam() == players[0].getTeam()){
+            if(Core.settings.getBool("indicators") && player != players[0] && player.getTeam() == players[0].getTeam()){
                 if(!rect.setSize(Core.camera.width * Core.camera.zoom * 0.9f, Core.camera.height * Core.camera.zoom * 0.9f)
                 .setCenter(Core.camera.position.x, Core.camera.position.y).contains(player.x, player.y)){
 
@@ -89,7 +89,7 @@ public class OverlayRenderer{
                 for(Team enemy : state.teams.enemiesOf(player.getTeam())){
                     if(enemy == Team.themass) continue;
                     for(Tile core : state.teams.get(enemy).cores){
-                        float dst = Vec2.dst(player.x, player.y, core.drawx(), core.drawy());
+                        float dst = Mathf.dst2(player.x, player.y, core.drawx(), core.drawy());
                         if(dst < state.mode.enemyCoreBuildRadius * 1.5f){
                             Draw.color(Color.darkGray);
                             Lines.poly(core.drawx(), core.drawy() - 2, 200, state.mode.enemyCoreBuildRadius);
@@ -103,19 +103,19 @@ public class OverlayRenderer{
             Draw.reset();
 
             //draw selected block bars and info
-            if(input.recipe == null && !ui.hasMouse()){
-                Vec2 vec = Graphics.world(input.getMouseX(), input.getMouseY());
+            if(input.recipe == null){
+                Vec2 vec = Core.camera.unproject(input.getMouseX(), input.getMouseY());
                 Tile tile = world.tileWorld(vec.x, vec.y);
 
                 if(tile != null && tile.block() != Blocks.air && tile.target().getTeam() == players[0].getTeam()){
                     Tile target = tile.target();
 
                     if(showBlockDebug && target.entity != null){
-                        Draw.color(Color.RED);
-                        Lines.crect(target.drawx(), target.drawy(), target.block().size * tilesize, target.block().size * tilesize);
-                        Vec2 v = new Vec2();
+                        Draw.color(Color.red);
+                        float w = target.block().size * tilesize, h = target.block().size * tilesize;
+                        Lines.rect(target.drawx() - w/2f, target.drawy() - h/2f, w, h);
 
-                        Draw.tcolor(Color.YELLOW);
+                        Draw.tcolor(Color.yellow);
                         Draw.tscl(0.25f);
                         Seq<Object> arr = target.block().getDebugInfo(target);
                         StringBuilder result = new StringBuilder();
@@ -125,10 +125,10 @@ public class OverlayRenderer{
                             result.append(arr.get(i * 2 + 1));
                             result.append("\n");
                         }
-                        Draw.textc(result.toString(), target.drawx(), target.drawy(), v);
+                        Draw.text(result.toString(), target.drawx(), target.drawy());
                         Draw.color(0f, 0f, 0f, 0.5f);
-                        Fill.rect(target.drawx(), target.drawy(), v.x, v.y);
-                        Draw.textc(result.toString(), target.drawx(), target.drawy(), v);
+                        Fill.rect(target.drawx(), target.drawy(), 50f, 20f);
+                        Draw.text(result.toString(), target.drawx(), target.drawy());
                         Draw.tscl(1f);
                         Draw.reset();
                     }
@@ -146,7 +146,7 @@ public class OverlayRenderer{
 
                                 float value = bar.value.get(target);
 
-                                if(Mathf.isEqual(value, -1f)) continue;
+                                if(Mathf.equal(value, -1f)) continue;
 
                                 if(doDraw[0]){
                                     drawBar(bar.type.color, target.drawx(), target.drawy() + offset, value);
@@ -183,7 +183,7 @@ public class OverlayRenderer{
             }
 
             if(input.isDroppingItem()){
-                Vec2 v = Graphics.world(input.getMouseX(), input.getMouseY());
+                Vec2 v = Core.camera.unproject(input.getMouseX(), input.getMouseY());
                 float size = 8;
                 Draw.rect(player.inventory.getItem().item.region, v.x, v.y, size, size);
                 Draw.color(Palette.accent);

@@ -2,6 +2,7 @@ package io.anuke.mindustry.ui;
 
 import arc.graphics.Color;
 import arc.struct.OrderedMap;
+import arc.util.Bundles;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
@@ -25,13 +26,13 @@ public class ContentDisplay{
         table.table(title -> {
             int size = 8 * 6;
 
-            title.addImage(Core.atlas.find("block-icon-" + block.name)).size(size);
+            title.image(Core.atlas.find("block-icon-" + block.name)).size(size);
             title.add("[accent]" + block.formalName).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+        table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -39,7 +40,7 @@ public class ContentDisplay{
             table.add(block.fullDescription).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+            table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -67,13 +68,13 @@ public class ContentDisplay{
     public static void displayItem(Table table, Item item){
 
         table.table(title -> {
-            title.addImage(item.getContentIcon()).size(8 * 6);
+            title.image(item.getContentIcon()).size(8 * 6);
             title.add("[accent]" + item.localizedName()).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+        table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -81,7 +82,7 @@ public class ContentDisplay{
             table.add(item.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+            table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -100,13 +101,13 @@ public class ContentDisplay{
     public static void displayLiquid(Table table, Liquid liquid){
 
         table.table(title -> {
-            title.addImage(liquid.getContentIcon()).size(8 * 6);
+            title.image(liquid.getContentIcon()).size(8 * 6);
             title.add("[accent]" + liquid.localizedName()).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+        table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -114,7 +115,7 @@ public class ContentDisplay{
             table.add(liquid.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+            table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -134,13 +135,13 @@ public class ContentDisplay{
 
     public static void displayMech(Table table, Mech mech){
         table.table(title -> {
-            title.addImage(mech.getContentIcon()).size(8 * 6);
+            title.image(mech.getContentIcon()).size(8 * 6);
             title.add("[accent]" + mech.localizedName()).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+        table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -148,7 +149,7 @@ public class ContentDisplay{
             table.add(mech.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+            table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 
@@ -177,13 +178,13 @@ public class ContentDisplay{
 
     public static void displayUnit(Table table, UnitType unit){
         table.table(title -> {
-            title.addImage(unit.getContentIcon()).size(8 * 6);
+            title.image(unit.getContentIcon()).size(8 * 6);
             title.add("[accent]" + unit.localizedName()).padLeft(5);
         });
 
         table.row();
 
-        table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+        table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
 
         table.row();
 
@@ -191,7 +192,7 @@ public class ContentDisplay{
             table.add(unit.description).padLeft(5).padRight(5).width(400f).wrap().fillX();
             table.row();
 
-            table.addImage("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
+            table.image("white").height(3).color(Color.lightGray).pad(15).padLeft(0).padRight(0).fillX();
             table.row();
         }
 

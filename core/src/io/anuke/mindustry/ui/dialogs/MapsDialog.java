@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.util.Scaling;
 import io.anuke.mindustry.Vars;
@@ -10,6 +11,7 @@ import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.ui.BorderImage;
 import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
 import arc.scene.ui.Image;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.TextButton;
@@ -30,7 +32,7 @@ public class MapsDialog extends FloatingDialog{
         super("$text.maps");
 
         addCloseButton();
-        buttons().addImageTextButton("$text.editor.importmap", "icon-add", 14 * 2, () -> {
+        buttons.button("$text.editor.importmap", Core.atlas.getDrawable("icon-add"), 14 * 2, () -> {
             Platform.instance.showFileChooser("$text.editor.importmap", "Map File", file -> {
                 try{
                     DataInputStream stream = new DataInputStream(file.read());
@@ -41,7 +43,7 @@ public class MapsDialog extends FloatingDialog{
                     String name = meta.tags.get("name", file.nameWithoutExtension());
 
                     if(world.maps.getByName(name) != null && !world.maps.getByName(name).custom){
-                        ui.showError(Bundles.format("text.editor.import.exists", name));
+                        ui.showError(Core.bundle.format("text.editor.import.exists", name));
                     }else if(world.maps.getByName(name) != null){
                         ui.showConfirm("$text.confirm", "$text.editor.overwrite.confirm", () -> {
                             world.maps.saveMap(name, data, meta.tags);
@@ -53,7 +55,7 @@ public class MapsDialog extends FloatingDialog{
                     }
 
                 }catch(Exception e){
-                    ui.showError(Bundles.format("text.editor.errorimageload", Strings.parseException(e, false)));
+                    ui.showError(Core.bundle.format("text.editor.errorimageload", Strings.parseException(e, false)));
                     Log.err(e);
                 }
             }, true, mapExtension);
@@ -68,7 +70,7 @@ public class MapsDialog extends FloatingDialog{
     }
 
     void setup(){
-        content().clear();
+        cont.clear();
 
         Table maps = new Table();
         maps.marginRight(24);
@@ -86,12 +88,12 @@ public class MapsDialog extends FloatingDialog{
                 maps.row();
             }
 
-            TextButton button = maps.addButton("", "clear", () -> showMapInfo(map)).width(mapsize).pad(8).get();
+            TextButton button = maps.button("", () -> showMapInfo(map)).width(mapsize).pad(8).get();
             button.clearChildren();
             button.margin(9);
             button.add(map.meta.tags.get("name", map.name)).growX().center().get().setEllipsis(true);
             button.row();
-            button.addImage("white").growX().pad(4).color(Color.gray);
+            button.image((Drawable)Core.atlas.getDrawable("white")).growX().pad(4).color(Color.gray);
             button.row();
             button.stack(new Image(map.texture).setScaling(Scaling.fit), new BorderImage(map.texture).setScaling(Scaling.fit)).size(mapsize - 20f);
             button.row();
@@ -104,19 +106,19 @@ public class MapsDialog extends FloatingDialog{
             maps.add("$text.maps.none");
         }
 
-        content().add(pane).uniformX();
+        cont.add(pane).uniformX();
     }
 
     void showMapInfo(Map map){
         dialog = new FloatingDialog("$text.editor.mapinfo");
         dialog.addCloseButton();
 
-        float mapsize = UIUtils.portrait() ? 160f : 300f;
-        Table table = dialog.content();
+        float mapsize = Core.graphics.isPortrait() ? 160f : 300f;
+        Table table = dialog.cont;
 
         table.stack(new Image(map.texture).setScaling(Scaling.fit), new BorderImage(map.texture).setScaling(Scaling.fit)).size(mapsize);
 
-        table.table("flat", desc -> {
+        table.table((Drawable)Core.atlas.getDrawable("flat"), desc -> {
             desc.top();
             Table t = new Table();
             t.margin(6);
@@ -146,7 +148,7 @@ public class MapsDialog extends FloatingDialog{
 
         table.row();
 
-        table.addImageTextButton("$text.editor.openin", "icon-load-map", 16 * 2, () -> {
+        table.button("$text.editor.openin", Core.atlas.getDrawable("icon-load-map"), 16 * 2, () -> {
             try{
                 Vars.ui.editor.beginEditMap(map.stream.get());
                 dialog.hide();
@@ -157,8 +159,8 @@ public class MapsDialog extends FloatingDialog{
             }
         }).fillX().height(54f).marginLeft(10);
 
-        table.addImageTextButton("$text.delete", "icon-trash-16", 16 * 2, () -> {
-            ui.showConfirm("$text.confirm", Bundles.format("text.map.delete", map.name), () -> {
+        table.button("$text.delete", Core.atlas.getDrawable("icon-trash-16"), 16 * 2, () -> {
+            ui.showConfirm("$text.confirm", Core.bundle.format("text.map.delete", map.name), () -> {
                 world.maps.removeMap(map);
                 dialog.hide();
                 setup();

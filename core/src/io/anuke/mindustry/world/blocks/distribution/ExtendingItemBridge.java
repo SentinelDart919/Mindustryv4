@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
 import io.anuke.mindustry.world.Tile;
-import arc.graphics.CapStyle;
+
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.geom.Geometry;
@@ -37,7 +37,7 @@ public class ExtendingItemBridge extends ItemBridge{
                 tile.worldx() + Geometry.d4[i].x * tilesize / 2f,
                 tile.worldy() + Geometry.d4[i].y * tilesize / 2f,
                 tile.worldx() + ex,
-                tile.worldy() + ey, CapStyle.none, 0f);
+                tile.worldy() + ey, 0f);
 
         Draw.rect(endRegion, tile.drawx(), tile.drawy(), i * 90 + 90);
         Draw.rect(endRegion,

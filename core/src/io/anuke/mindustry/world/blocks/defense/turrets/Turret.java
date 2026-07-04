@@ -1,4 +1,8 @@
 package io.anuke.mindustry.world.blocks.defense.turrets;
+import arc.Core;
+import arc.graphics.Gfx;
+import arc.math.Angles;
+import arc.math.Mathf;
 import arc.util.Translator;
 
 import arc.audio.Sound;

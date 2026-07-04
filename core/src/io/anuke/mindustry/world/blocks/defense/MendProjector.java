@@ -1,9 +1,13 @@
 package io.anuke.mindustry.world.blocks.defense;
 
+import arc.Core;
 import arc.graphics.Color;
+import arc.graphics.Gfx;
+import arc.graphics.Hue;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Vec2;
 import arc.struct.IntSet;
+import arc.util.Timers;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.world.Block;
@@ -76,7 +80,7 @@ public class MendProjector extends Block{
 
             for(int x = -tileRange + tile.x; x <= tileRange + tile.x; x++){
                 for(int y = -tileRange + tile.y; y <= tileRange + tile.y; y++){
-                    if(Vec2.dst(x, y, tile.x, tile.y) > realRange) continue;
+                    if(Vec2.dst2(x, y, tile.x, tile.y) > realRange) continue;
 
                     Tile other = world.tile(x, y);
 

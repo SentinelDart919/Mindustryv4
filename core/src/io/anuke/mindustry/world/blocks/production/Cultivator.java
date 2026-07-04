@@ -1,7 +1,9 @@
 package io.anuke.mindustry.world.blocks.production;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.Fx;
@@ -43,7 +45,7 @@ public class Cultivator extends Drill{
 
         stats.remove(BlockStat.drillTier);
         stats.add(BlockStat.drillTier, table -> {
-            table.addImage("grass1").size(8 * 3).padBottom(3).padTop(3);
+            table.image("grass1").size(8 * 3).padBottom(3).padTop(3);
             table.add(Blocks.grass.formalName).padLeft(3);
         });
     }

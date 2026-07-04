@@ -1,6 +1,7 @@
 package io.anuke.mindustry.ai;
 
 import arc.Core;
+import arc.graphics.CapStyle;
 import arc.struct.*;
 
 import arc.graphics.Color;
@@ -27,14 +28,10 @@ import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
 import arc.Events;
-import arc.Settings;
-import arc.util.Time;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import arc.math.geom.Rect;
-import io.anuke.mindustry.world.blocks.defense.turrets.Turret;
-import arc.util.Strings;
 import arc.math.geom.Geometry;
 import arc.util.Log;
 

@@ -1,4 +1,7 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.Core;
+import arc.graphics.Gfx;
+import arc.util.Timers;
 import arc.util.Translator;
 
 import arc.audio.Sound;

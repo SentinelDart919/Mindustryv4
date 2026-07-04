@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.defense;
 
+import arc.Core;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Rect;
 import io.anuke.mindustry.content.fx.BlockFx;

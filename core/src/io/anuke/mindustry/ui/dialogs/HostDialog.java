@@ -1,11 +1,12 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
 import arc.graphics.Color;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.net.Net;
-import arc.Settings;
 import arc.util.Time;
+import arc.util.Strings;
 import arc.scene.ui.ImageButton;
 
 
@@ -24,48 +25,48 @@ public class HostDialog extends FloatingDialog{
 
         addCloseButton();
 
-        content().table(t -> {
+        cont.table(t -> {
             t.add("$text.name").padRight(10);
-            t.addField(Settings.getString("name"), text -> {
+            t.addField(Core.settings.getString("name"), text -> {
                 player.name = text;
-                Settings.put("name", text);
-                Settings.save();
+                Core.settings.put("name", text);
+                Core.settings.save();
                 ui.listfrag.rebuild();
             }).grow().pad(8).get().setMaxLength(40);
 
-            ImageButton button = t.addImageButton("white", "clear-full", 40, () -> {
+            ImageButton button = t.button(Core.atlas.getDrawable("white"), 40, () -> {
                 new ColorPickDialog().show(color -> {
                     player.color.set(color);
-                    Settings.putInt("color-0", Color.rgba8888(color));
-                    Settings.save();
+                    Core.settings.putInt("color-0", Color.rgba8888(color));
+                    Core.settings.save();
                 });
             }).size(54f).get();
             button.update(() -> button.getStyle().imageUpColor = player.color);
         }).width(w).height(70f).pad(4).colspan(3);
 
-        content().row();
+        cont.row();
 
-        content().add().width(65f);
+        cont.add().width(65f);
 
-        content().addButton("$text.host", () -> {
-            if(Settings.getString("name").trim().isEmpty()){
+        cont.button("$text.host", () -> {
+            if(Core.settings.getString("name").trim().isEmpty()){
                 ui.showInfo("$text.noname");
                 return;
             }
 
             ui.loadfrag.show("$text.hosting");
-            Timers.runTask(5f, () -> {
+            Time.runTask(5f, () -> {
                 try{
                     Net.host(Vars.port);
                     player.isAdmin = true;
                 }catch(IOException e){
-                    ui.showError(Bundles.format("text.server.error", Strings.parseException(e, false)));
+                    ui.showError(Core.bundle.format("text.server.error", Strings.parseException(e, false)));
                 }
                 ui.loadfrag.hide();
                 hide();
             });
         }).width(w).height(70f);
 
-        content().addButton("?", () -> ui.showInfo("$text.host.info")).size(65f, 70f).padLeft(6f);
+        cont.button("?", () -> ui.showInfo("$text.host.info")).size(65f, 70f).padLeft(6f);
     }
 }

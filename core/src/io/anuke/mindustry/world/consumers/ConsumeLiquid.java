@@ -27,7 +27,7 @@ public class ConsumeLiquid extends Consume{
 
     @Override
     public void buildTooltip(Table table){
-        table.addImage(liquid.getContentIcon()).size(8 * 3);
+        table.image(liquid.getContentIcon()).size(8 * 3);
     }
 
     @Override

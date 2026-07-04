@@ -1,8 +1,11 @@
 package io.anuke.mindustry.graphics;
 
+import arc.graphics.Gfx;
 import arc.struct.Seq;
 import arc.struct.IntSet;
 import java.util.Arrays;
+
+import arc.struct.Sort;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
@@ -61,7 +64,7 @@ public class BlockRenderer{
 
     public void drawShadows(){
         Draw.color(0, 0, 0, 0.15f);
-        Draw.rect(shadows.texture(),
+        Draw.rect(Draw.wrap(shadows.getTexture()),
             Core.camera.position.x - Core.camera.position.x % tilesize,
             Core.camera.position.y - Core.camera.position.y % tilesize,
             shadows.width(), -shadows.height());
@@ -96,7 +99,7 @@ public class BlockRenderer{
         if(shadows.width() != shadowW || shadows.height() != shadowH){
             shadows.setSize(shadowW, shadowH);
         }
-        Core.batch.getProjectionMatrix().setToOrtho2D(Mathf.round(Core.camera.position.x, tilesize)-shadowW/2f, Mathf.round(Core.camera.position.y, tilesize)-shadowH/2f, shadowW, shadowH);
+        Draw.proj(Mathf.round(Core.camera.position.x, tilesize)-shadowW/2f, Mathf.round(Core.camera.position.y, tilesize)-shadowH/2f, shadowW, shadowH);
         Gfx.surface(shadows);
 
         int minx = Math.max(avgx - rangex - expandr, 0);
@@ -139,7 +142,7 @@ public class BlockRenderer{
 
         Gfx.surface();
         Gfx.end();
-        Core.batch.setProjectionMatrix(camera.combined);
+        Draw.proj(camera);
         Gfx.begin();
 
         Sort.instance().sort(requests.items, 0, requestidx);

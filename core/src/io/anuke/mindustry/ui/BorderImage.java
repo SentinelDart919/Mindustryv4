@@ -34,7 +34,7 @@ public class BorderImage extends Image{
     public void draw(Batch batch, float alpha){
         super.draw(batch, alpha);
 
-        float scaleX = getScaleX();
+        float scaleX = get();
         float scaleY = getScaleY();
 
         Draw.color(Palette.accent);

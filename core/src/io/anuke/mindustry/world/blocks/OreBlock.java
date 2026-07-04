@@ -46,7 +46,7 @@ public class OreBlock extends Floor{
 
     @Override
     public void drawNonLayer(Tile tile){
-        Mathf.setRandSeed(tile.id());
+        Mathf.randomSeed(tile.id());
 
         base.drawEdges(tile, true);
     }

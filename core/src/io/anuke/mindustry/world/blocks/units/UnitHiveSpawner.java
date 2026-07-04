@@ -1,6 +1,8 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import arc.graphics.CapStyle;
 import arc.graphics.Color;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.entities.TileEntity;
@@ -8,11 +10,9 @@ import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.graphics.Layer;
-import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import arc.util.Time;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import java.util.EnumSet;

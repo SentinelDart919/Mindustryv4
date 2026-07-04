@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
 import arc.input.KeyCode;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.net.Net;
@@ -22,7 +23,7 @@ public class PausedDialog extends FloatingDialog{
         shown(this::rebuild);
 
         keyDown(key -> {
-            if(key == Keys.ESCAPE || key == Keys.BACK) {
+            if(key == KeyCode.escape || key == KeyCode.back) {
                 hide();
             }
         });
@@ -32,8 +33,8 @@ public class PausedDialog extends FloatingDialog{
         missionTable.clear();
         missionTable.background((Drawable) null);
         if(world.getSector() != null){
-            missionTable.background("underline");
-            missionTable.add(Bundles.format("text.sector", world.getSector().x + ", " + world.getSector().y));
+            missionTable.background(Core.atlas.getDrawable("underline"));
+            missionTable.add(Core.bundle.format("text.sector", world.getSector().x + ", " + world.getSector().y));
         }
     }
 
@@ -44,30 +45,30 @@ public class PausedDialog extends FloatingDialog{
             }
         });
 
-        content().table(t -> missionTable = t).colspan(mobile ? 3 : 2);
-        content().row();
+        cont.table(t -> missionTable = t).colspan(mobile ? 3 : 2);
+        cont.row();
 
         if(!mobile){
             float dw = 210f;
-            content().defaults().width(dw).height(50).pad(5f);
+            cont.defaults().width(dw).height(50).pad(5f);
 
-            content().addButton("$text.back", this::hide).colspan(2).width(dw*2 + 20f);
+            cont.button("$text.back", this::hide).colspan(2).width(dw*2 + 20f);
 
-            content().row();
-            content().addButton("$text.unlocks", ui.unlocks::show);
-            content().addButton("$text.settings", ui.settings::show);
+            cont.row();
+            cont.button("$text.unlocks", ui.unlocks::show);
+            cont.button("$text.settings", ui.settings::show);
 
-            content().row();
-            content().addButton("$text.savegame", save::show).disabled(s -> world.getSector() != null);
-            content().addButton("$text.loadgame", load::show).disabled(b -> Net.active());
+            cont.row();
+            cont.button("$text.savegame", save::show).disabled(s -> world.getSector() != null);
+            cont.button("$text.loadgame", load::show).disabled(b -> Net.active());
 
-            content().row();
+            cont.row();
 
-            content().addButton("$text.hostserver", ui.host::show).disabled(b -> Net.active()).colspan(2).width(dw*2 + 20f);
+            cont.button("$text.hostserver", ui.host::show).disabled(b -> Net.active()).colspan(2).width(dw*2 + 20f);
 
-            content().row();
+            cont.row();
 
-            content().addButton("$text.quit", () -> {
+            cont.button("$text.quit", () -> {
                 ui.showConfirm("$text.confirm", "$text.quit.confirm", () -> {
                     if(Net.client()) netClient.disconnectQuietly();
                     runExitSave();
@@ -76,20 +77,20 @@ public class PausedDialog extends FloatingDialog{
             }).colspan(2).width(dw + 10f);
 
         }else{
-            content().defaults().size(120f).pad(5);
+            cont.defaults().size(120f).pad(5);
             float isize = 14f * 4;
 
-            content().addRowImageTextButton("$text.back", "icon-play-2", isize, () -> {
+            cont.buttonRow("$text.back", Core.atlas.getDrawable("icon-play-2"), () -> {
                 hide();
             });
-            content().addRowImageTextButton("$text.settings", "icon-tools", isize, ui.settings::show);
-            content().addRowImageTextButton("$text.save", "icon-save", isize, save::show).disabled(b -> world.getSector() != null);
+            cont.buttonRow("$text.settings", Core.atlas.getDrawable("icon-tools"), ui.settings::show);
+            cont.buttonRow("$text.save", Core.atlas.getDrawable("icon-save"), save::show).disabled(b -> world.getSector() != null);
 
-            content().row();
+            cont.row();
 
-            content().addRowImageTextButton("$text.load", "icon-load", isize, load::show).disabled(b -> Net.active());
-            content().addRowImageTextButton("$text.hostserver.mobile", "icon-host", isize, ui.host::show).disabled(b -> Net.active());
-            content().addRowImageTextButton("$text.quit", "icon-quit", isize, () -> {
+            cont.buttonRow("$text.load", Core.atlas.getDrawable("icon-load"), load::show).disabled(b -> Net.active());
+            cont.buttonRow("$text.hostserver.mobile", Core.atlas.getDrawable("icon-host"), ui.host::show).disabled(b -> Net.active());
+            cont.buttonRow("$text.quit", Core.atlas.getDrawable("icon-quit"), () -> {
                 ui.showConfirm("$text.confirm", "$text.quit.confirm", () -> {
                     if(Net.client()) netClient.disconnectQuietly();
                     runExitSave();
@@ -115,7 +116,7 @@ public class PausedDialog extends FloatingDialog{
                 control.saves.getCurrent().save();
             }catch(Throwable e){
                 e.printStackTrace();
-                threads.runGraphics(() -> ui.showError("[accent]" + Bundles.get("text.savefail")));
+                threads.runGraphics(() -> ui.showError("[accent]" + Core.bundle.get("text.savefail")));
             }
             state.set(State.menu);
         });

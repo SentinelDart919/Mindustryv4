@@ -2,6 +2,7 @@ package io.anuke.mindustry.ui.fragments;
 
 import arc.Core;
 import arc.graphics.Color;
+import arc.graphics.Gfx;
 import arc.math.geom.Vec2;
 import arc.util.Align;
 import arc.struct.ObjectSet;
@@ -34,19 +35,17 @@ public class BlockConsumeFragment extends Fragment{
         table.setTransform(true);
 
         parent.addChild(new Element(){{update(() -> {
-            if(!ui.hasMouse()){
-                Tile tile = world.tileWorld(Gfx.mouseWorld().x, Gfx.mouseWorld().y);
-                if(tile == null) return;
-                tile = tile.target();
+            Tile tile = world.tileWorld(Gfx.mouseWorld().x, Gfx.mouseWorld().y);
+            if(tile == null) return;
+            tile = tile.target();
 
-                if(tile != lastTile){
-                    if(tile.getTeam() == players[0].getTeam() && tile.block().consumes.hasAny()){
-                        show(tile);
-                    }else if(visible){
-                        hide();
-                    }
-                    lastTile = tile;
+            if(tile != lastTile){
+                if(tile.getTeam() == players[0].getTeam() && tile.block().consumes.hasAny()){
+                    show(tile);
+                }else if(visible){
+                    hide();
                 }
+                lastTile = tile;
             }
         });}});
 
@@ -90,7 +89,7 @@ public class BlockConsumeFragment extends Fragment{
                 rebuild(block, entity);
             }
 
-            Vec2 v = Graphics.screen(tile.drawx() - tile.block().size * tilesize / 2f + 0.25f, tile.drawy() + tile.block().size * tilesize / 2f);
+            Vec2 v = Core.camera.project(new Vec2(tile.drawx() - tile.block().size * tilesize / 2f + 0.25f, tile.drawy() + tile.block().size * tilesize / 2f));
             table.pack();
             table.setPosition(v.x, v.y, Align.topRight);
         });

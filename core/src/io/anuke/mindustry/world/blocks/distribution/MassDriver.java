@@ -1,8 +1,10 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.struct.ObjectSet;
+import arc.util.Timers;
 import arc.util.pooling.Pool.Poolable;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -228,7 +230,7 @@ public class MassDriver extends Block{
         if(entity.link == other.packedPosition()){
             Call.linkMassDriver(null, tile, -1);
             return false;
-        }else if(other.block() instanceof MassDriver && other.distanceTo(tile) <= range){
+        }else if(other.block() instanceof MassDriver && other.dst(tile) <= range){
             Call.linkMassDriver(null, tile, other.packedPosition());
             return false;
         }
@@ -259,7 +261,7 @@ public class MassDriver extends Block{
         if(entity == null || entity.link == -1) return false;
         Tile link = world.tile(entity.link);
 
-        return link != null && link.block() instanceof MassDriver && tile.distanceTo(link) <= range;
+        return link != null && link.block() instanceof MassDriver && tile.dst(link) <= range;
     }
 
     public static class DriverBulletData implements Poolable{

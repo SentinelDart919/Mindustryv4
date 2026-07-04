@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ui;
 
+import arc.Core;
 import arc.graphics.g2d.Batch;
 import arc.graphics.g2d.TextureRegion;
 import arc.graphics.g2d.Draw;
@@ -16,8 +17,8 @@ public class GridImage extends Element{
     public void draw(Batch batch, float alpha){
         TextureRegion blank = Core.atlas.find("white");
 
-        float xspace = (getWidth() / imageWidth);
-        float yspace = (getHeight() / imageHeight);
+        float xspace = (width / imageWidth);
+        float yspace = (height / imageHeight);
         float s = 1f;
 
         int minspace = 10;
@@ -26,11 +27,11 @@ public class GridImage extends Element{
         int jumpy = (int) (Math.max(minspace, yspace) / yspace);
 
         for(int x = 0; x <= imageWidth; x += jumpx){
-            batch.draw(blank, (int) (getX() + xspace * x - s), getY() - s, 2, getHeight() + (x == imageWidth ? 1 : 0));
+            Draw.rect(blank, x + xspace * x - s, y - s, 2f, height + (x == imageWidth ? 1 : 0));
         }
 
         for(int y = 0; y <= imageHeight; y += jumpy){
-            batch.draw(blank, getX() - s, (int) (getY() + y * yspace - s), getWidth(), 2);
+            Draw.rect(blank, x - s, y + y * yspace - s, width, 2f);
         }
     }
 

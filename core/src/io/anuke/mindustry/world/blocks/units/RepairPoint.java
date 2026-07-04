@@ -1,8 +1,10 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Rect;
+import arc.util.Timers;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
@@ -83,7 +85,7 @@ public class RepairPoint extends Block{
     public void update(Tile tile){
         RepairPointEntity entity = tile.entity();
 
-        if(entity.target != null && (entity.target.isDead() || entity.target.distanceTo(tile) > repairRadius ||
+        if(entity.target != null && (entity.target.isDead() || entity.target.dst(tile) > repairRadius ||
                 entity.target.health >= entity.target.maxHealth())){
             entity.target = null;
         }else if(entity.target != null){

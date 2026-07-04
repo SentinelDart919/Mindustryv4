@@ -1,4 +1,5 @@
 package io.anuke.mindustry.entities.effect;
+import arc.graphics.CapStyle;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Geometry;
@@ -26,13 +27,11 @@ import arc.entities.trait.PosTrait;
 import arc.entities.trait.TimeTrait;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
-import arc.util.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 
 import static io.anuke.mindustry.Vars.bulletGroup;
-import arc.math.geom.SeedRandom;
 
 public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, TimeTrait{
     public static final float lifetime = 10f;

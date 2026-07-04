@@ -1,4 +1,8 @@
 package io.anuke.mindustry.world.blocks.distribution;
+import arc.Core;
+import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.struct.Bits;
 import arc.util.Translator;
 
 import arc.audio.Sound;

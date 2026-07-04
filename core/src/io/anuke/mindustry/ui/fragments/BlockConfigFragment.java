@@ -66,7 +66,7 @@ public class BlockConfigFragment extends Fragment{
             }
 
             table.setOrigin(Align.center);
-            Vec2 pos = Graphics.screen(tile.drawx(), tile.drawy() - tile.block().size * tilesize / 2f - 1);
+            Vec2 pos = Core.camera.project(new Vec2(tile.drawx(), tile.drawy() - tile.block().size * tilesize / 2f - 1));
             table.setPosition(pos.x, pos.y, Align.top);
             if(configTile == null || configTile.block() == Blocks.air || configTile.block() != configBlock){
                 hideConfig();
@@ -75,7 +75,7 @@ public class BlockConfigFragment extends Fragment{
     }
 
     public boolean hasConfigMouse(){
-        Element e = Core.scene.hit(Core.input.getX(), Core.Gfx.getHeight() - Core.input.getY(), true);
+        Element e = Core.scene.hit(Core.input.mouseX(), Core.graphics.getHeight() - Core.input.mouseY(), true);
         return e != null && (e == table || e.isDescendantOf(table));
     }
 

@@ -6,16 +6,11 @@ import arc.struct.ObjectSet;
 import io.anuke.mindustry.game.EventType.UnlockEvent;
 import io.anuke.mindustry.type.ContentType;
 import arc.Events;
-import arc.Settings;
 
 /**Stores player unlocks. Clientside only.*/
 public class Unlocks{
     private ObjectMap<ContentType, ObjectSet<String>> unlocked = new ObjectMap<>();
     private boolean dirty;
-
-    static{
-        Settings.setSerializer(ContentType.class, (stream, t) -> stream.writeInt(t.ordinal()), stream -> ContentType.values()[stream.readInt()]);
-    }
 
     /** Returns whether or not this piece of content is unlocked yet.*/
     public boolean isUnlocked(UnlockableContent content){

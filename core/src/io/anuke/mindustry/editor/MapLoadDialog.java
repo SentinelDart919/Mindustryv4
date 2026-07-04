@@ -11,6 +11,7 @@ import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.world;
+import static arc.Core.scene;
 
 public class MapLoadDialog extends FloatingDialog{
     private Map selected = null;
@@ -36,7 +37,7 @@ public class MapLoadDialog extends FloatingDialog{
     }
 
     public void rebuild(){
-        content().clear();
+        cont.clear();
         if(world.maps.all().size > 0){
             selected = world.maps.all().first();
         }
@@ -51,12 +52,12 @@ public class MapLoadDialog extends FloatingDialog{
         table.defaults().size(200f, 90f).pad(4f);
         table.margin(10f);
 
-        ScrollPane pane = new ScrollPane(table, "horizontal");
+        ScrollPane pane = new ScrollPane(table);
         pane.setFadeScrollBars(false);
 
         for(Map map : world.maps.all()){
 
-            TextButton button = new TextButton(map.getDisplayName(), "toggle");
+            TextButton button = new TextButton(map.getDisplayName());
             button.add(new BorderImage(map.texture, 2f).setScaling(Scaling.fit)).size(16 * 4f);
             button.getCells().reverse();
             button.clicked(() -> selected = map);
@@ -69,11 +70,11 @@ public class MapLoadDialog extends FloatingDialog{
         if(world.maps.all().size == 0){
             table.add("$text.maps.none").center();
         }else{
-            content().add("$text.editor.loadmap");
+            cont.add("$text.editor.loadmap");
         }
 
-        content().row();
-        content().add(pane);
+        cont.row();
+        cont.add(pane);
     }
 
 }

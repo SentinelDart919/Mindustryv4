@@ -3,6 +3,7 @@ package io.anuke.mindustry.graphics;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.GL20;
+import arc.graphics.Gfx;
 import arc.graphics.Pixmap.Format;
 import arc.graphics.Texture;
 import arc.graphics.g2d.TextureRegion;
@@ -44,7 +45,7 @@ public class FogRenderer implements Disposable{
 
             //clear buffer to black
             buffer.begin();
-            Gfx.clear(0, 0, 0, 1f);
+            Core.graphics.clear(0, 0, 0, 1f);
             buffer.end();
 
             for(int x = 0; x < world.width(); x++){
@@ -105,7 +106,7 @@ public class FogRenderer implements Disposable{
         float u2 = ((px + vw) / tilesize) / buffer.getWidth();
         float v2 = ((py + vh) / tilesize) / buffer.getHeight();
 
-        Core.batch.getProjectionMatrix().setToOrtho2D(0, 0, buffer.getWidth() * tilesize, buffer.getHeight() * tilesize);
+        Draw.proj(0, 0, buffer.getWidth() * tilesize, buffer.getHeight() * tilesize);
 
         Draw.color(Color.white);
 
@@ -143,27 +144,27 @@ public class FogRenderer implements Disposable{
 
         Gfx.endClip();
 
-        region.setTexture(buffer.getColorBufferTexture());
-        region.setRegion(u, v2, u2, v);
+        region.setTexture(buffer.getTexture());
+        region.set(u, v2, u2, v);
 
-        Core.batch.setProjectionMatrix(Core.camera.combined);
+        Draw.proj(Core.camera);
         Gfx.shader(Shaders.fog);
         renderer.pixelSurface.getBuffer().begin();
         Gfx.begin();
 
-        Core.batch.draw(region, px, py, vw, vh);
+        Draw.rect(region, px + vw/2f, py + vh/2f, vw, vh);
 
         Gfx.end();
         renderer.pixelSurface.getBuffer().end();
         Gfx.shader();
 
-        Graphics.setScreen();
-        Core.batch.draw(renderer.pixelSurface.texture(), 0, Core.Gfx.getHeight(), Core.Gfx.getWidth(), -Core.Gfx.getHeight());
+        Gfx.begin();
+        Draw.rect(Draw.wrap(renderer.pixelSurface.getTexture()), Gfx.getWidth()/2f, Gfx.getHeight()/2f, Gfx.getWidth(), -Gfx.getHeight());
         Gfx.end();
     }
 
     public Texture getTexture(){
-        return buffer.getColorBufferTexture();
+        return buffer.getTexture();
     }
 
     @Override

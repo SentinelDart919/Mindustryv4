@@ -3,11 +3,11 @@ package io.anuke.mindustry.world;
 import arc.graphics.Color;
 
 public enum BarType{
-    health(Color.SCARLET),
-    inventory(Color.GREEN),
+    health(Color.scarlet),
+    inventory(Color.green),
     power(Color.valueOf("fbeb67")),
     liquid(Color.royal),
-    heat(Color.CORAL),
+    heat(Color.coral),
     production(Color.valueOf("f4ba6e"));
 
     public final Color color;

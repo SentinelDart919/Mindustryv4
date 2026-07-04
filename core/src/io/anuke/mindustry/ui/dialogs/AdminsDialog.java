@@ -1,8 +1,10 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import io.anuke.mindustry.net.Administration.PlayerInfo;
+import arc.Core;
+import arc.scene.style.Drawable;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
+import io.anuke.mindustry.net.Administration.PlayerInfo;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -18,7 +20,7 @@ public class AdminsDialog extends FloatingDialog{
     }
 
     private void setup(){
-        content().clear();
+        cont.clear();
 
         float w = 400f, h = 80f;
 
@@ -37,7 +39,7 @@ public class AdminsDialog extends FloatingDialog{
 
             res.labelWrap("[LIGHT_GRAY]" + info.lastName).width(w - h - 24f);
             res.add().growX();
-            res.addImageButton("icon-cancel", 14 * 3, () -> {
+            res.button((Drawable)Core.atlas.getDrawable("icon-cancel"), 14 * 3, () -> {
                 ui.showConfirm("$text.confirm", "$text.confirmunadmin", () -> {
                     netServer.admins.unAdminPlayer(info.id);
                     playerGroup.forEach(player -> {
@@ -45,13 +47,6 @@ public class AdminsDialog extends FloatingDialog{
                             player.isAdmin = false;
                         }
                     });
-                    /*
-                    for(Player player : playerGroup.all()){
-                        if(player.con != null){
-                            player.isAdmin = false;
-                            break;
-                        }
-                    }*/
                     setup();
                 });
             }).size(h).pad(-14f);
@@ -60,6 +55,6 @@ public class AdminsDialog extends FloatingDialog{
             table.row();
         }
 
-        content().add(pane);
+        cont.add(pane);
     }
 }

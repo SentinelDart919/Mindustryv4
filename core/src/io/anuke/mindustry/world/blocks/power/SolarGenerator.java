@@ -1,9 +1,11 @@
 package io.anuke.mindustry.world.blocks.power;
 
+import arc.util.Timers;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
 import arc.util.Time;
+import io.anuke.mindustry.world.meta.BlockFlag;
 import java.util.EnumSet;
 
 public class SolarGenerator extends PowerGenerator{
@@ -14,7 +16,7 @@ public class SolarGenerator extends PowerGenerator{
 
     public SolarGenerator(String name){
         super(name);
-        flags = EnumSet.of();
+        flags = EnumSet.noneOf(BlockFlag.class);
     }
 
     @Override

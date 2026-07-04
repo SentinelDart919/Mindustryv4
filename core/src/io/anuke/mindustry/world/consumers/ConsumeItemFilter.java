@@ -28,7 +28,7 @@ public class ConsumeItemFilter extends Consume{
 
         for(int i = 0; i < list.size; i++){
             Item item = list.get(i);
-            table.addImage(item.region).size(8 * 4).padRight(2).padLeft(2);
+            table.image(item.region).size(8 * 4).padRight(2).padLeft(2);
             if(i != list.size - 1){
                 table.add("/");
             }

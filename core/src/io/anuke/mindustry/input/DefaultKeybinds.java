@@ -3,12 +3,11 @@ package io.anuke.mindustry.input;
 import arc.Application;
 import arc.Application.ApplicationType;
 import arc.Core;
-
-
 import arc.input.KeyBind;
 import arc.input.KeyBinds;
 import arc.input.KeyBinds.Category;
-import arc.Input;
+import arc.input.KeyCode;
+import arc.input.KeyCode.Keys;
 import arc.scene.ui.DeviceType;
 
 public class DefaultKeybinds{
@@ -20,54 +19,54 @@ public class DefaultKeybinds{
 
             KeyBinds.defaultSection(section, DeviceType.desktop,
                 new Category("general"),
-                "move_x", new KeyBind.Axis(Input.A, Input.D),
-                "move_y", new KeyBind.Axis(Input.S, Input.W),
-                "select", Input.MOUSE_LEFT,
-                "deselect", Input.MOUSE_RIGHT,
-                "break", Input.MOUSE_RIGHT,
-                "rotate", new KeyBind.Axis(Input.SCROLL),
-                "dash", Input.SHIFT_LEFT,
-                "drop_unit", Input.SHIFT_LEFT,
+                "move_x", new KeyBind.Axis(KeyCode.a, KeyCode.d),
+                "move_y", new KeyBind.Axis(KeyCode.s, KeyCode.w),
+                "select", KeyCode.mouseLeft,
+                "deselect", KeyCode.mouseRight,
+                "break", KeyCode.mouseRight,
+                "rotate", new KeyBind.Axis(KeyCode.scroll),
+                "dash", KeyCode.shiftLeft,
+                "drop_unit", KeyCode.shiftLeft,
                 new Category("view"),
-                "zoom_hold", Input.CONTROL_LEFT,
-                "zoom", new KeyBind.Axis(Input.SCROLL),
-                "zoom_minimap", new KeyBind.Axis(Input.MINUS, Input.PLUS),
-                "menu", Core.app.getType() == Application.ApplicationType.android ? Input.BACK : Input.ESCAPE,
-                "pause", Input.SPACE,
-                "toggle_menus", Input.C,
-                "screenshot", Input.P,
-                "copy", Input.F,
-                "schematic_select", Input.T,
-                "schematic_flip_x", Input.X,
-                "schematic_flip_y", Input.Z,
-                "map", Input.M,
+                "zoom_hold", KeyCode.controlLeft,
+                "zoom", new KeyBind.Axis(KeyCode.scroll),
+                "zoom_minimap", new KeyBind.Axis(KeyCode.minus, KeyCode.plus),
+                "menu", Core.app.getType() == ApplicationType.android ? KeyCode.back : KeyCode.escape,
+                "pause", KeyCode.space,
+                "toggle_menus", KeyCode.c,
+                "screenshot", KeyCode.p,
+                "copy", KeyCode.f,
+                "schematic_select", KeyCode.t,
+                "schematic_flip_x", KeyCode.x,
+                "schematic_flip_y", KeyCode.z,
+                "map", KeyCode.m,
                 new Category("multiplayer"),
-                "player_list", Input.TAB,
-                "chat", Input.ENTER,
-                "chat_history_prev", Input.UP,
-                "chat_history_next", Input.DOWN,
-                "chat_scroll", new Axis(Input.SCROLL)
+                "player_list", KeyCode.tab,
+                "chat", KeyCode.enter,
+                "chat_history_prev", KeyCode.up,
+                "chat_history_next", KeyCode.down,
+                "chat_scroll", new KeyBind.Axis(KeyCode.scroll)
             );
 
             KeyBinds.defaultSection(section, DeviceType.controller,
                 new Category("general"),
-                "move_x", new Axis(Input.CONTROLLER_L_STICK_HORIZONTAL_AXIS),
-                "move_y", new Axis(Input.CONTROLLER_L_STICK_VERTICAL_AXIS),
-                "cursor_x", new Axis(Input.CONTROLLER_R_STICK_HORIZONTAL_AXIS),
-                "cursor_y", new Axis(Input.CONTROLLER_R_STICK_VERTICAL_AXIS),
-                //"select", Input.CONTROLLER_R_BUMPER,
-                //"break", Input.CONTROLLER_L_BUMPER,
-                //"shoot", Input.CONTROLLER_R_TRIGGER,
-                "dash", Input.CONTROLLER_Y,
-                "rotate_alt", new Axis(Input.CONTROLLER_DPAD_RIGHT, Input.CONTROLLER_DPAD_LEFT),
-                "rotate", new Axis(Input.CONTROLLER_A, Input.CONTROLLER_B),
+                "move_x", new KeyBind.Axis(KeyCode.controllerLStickXAxis),
+                "move_y", new KeyBind.Axis(KeyCode.controllerLStickYAxis),
+                "cursor_x", new KeyBind.Axis(KeyCode.controllerRStickXAxis),
+                "cursor_y", new KeyBind.Axis(KeyCode.controllerRStickYAxis),
+                //"select", KeyCode.controllerRBumper,
+                //"break", KeyCode.controllerLBumper,
+                //"shoot", KeyCode.controllerRTrigger,
+                "dash", KeyCode.controllerY,
+                "rotate_alt", new KeyBind.Axis(KeyCode.controllerdPadRight, KeyCode.controllerdPadLeft),
+                "rotate", new KeyBind.Axis(KeyCode.controllerA, KeyCode.controllerB),
                 new Category("view"),
-                "zoom_hold", Input.ANY_KEY,
-                "zoom", new Axis(Input.CONTROLLER_DPAD_DOWN, Input.CONTROLLER_DPAD_UP),
-                "menu", Input.CONTROLLER_X,
-                "pause", Input.CONTROLLER_L_TRIGGER,
+                "zoom_hold", KeyCode.anyKey,
+                "zoom", new KeyBind.Axis(KeyCode.controllerdPadDown, KeyCode.controllerdPadUp),
+                "menu", KeyCode.controllerX,
+                "pause", KeyCode.controllerLTrigger,
                 new Category("multiplayer"),
-                "player_list", Input.CONTROLLER_START
+                "player_list", KeyCode.controllerStart
             );
 
         }
@@ -75,4 +74,3 @@ public class DefaultKeybinds{
         KeyBinds.setSectionAlias("default", "player_1");
     }
 }
-

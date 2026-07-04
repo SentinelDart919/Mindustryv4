@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Sector;
@@ -22,33 +23,33 @@ public class RestartDialog extends FloatingDialog{
     }
 
     void rebuild(){
-        buttons().clear();
-        content().clear();
+        buttons.clear();
+        cont.clear();
 
-        buttons().margin(10);
+        buttons.margin(10);
 
         if(state.mode.isPvp){
-            content().add(Bundles.format("text.gameover.pvp",winner.localized())).pad(6);
-            buttons().addButton("$text.menu", () -> {
+            cont.add(Core.bundle.format("text.gameover.pvp",winner.localized())).pad(6);
+            buttons.button("$text.menu", () -> {
                 hide();
                 state.set(State.menu);
                 logic.reset();
             }).size(130f, 60f);
         }else if(world.getSector() == null){
             if(control.isHighScore()){
-                content().add("$text.highscore").pad(6);
-                content().row();
+                cont.add("$text.highscore").pad(6);
+                cont.row();
             }
-            content().add(Bundles.format("text.wave.lasted", state.wave)).pad(12);
+            cont.add(Core.bundle.format("text.wave.lasted", state.wave)).pad(12);
 
-            buttons().addButton("$text.menu", () -> {
+            buttons.button("$text.menu", () -> {
                 hide();
                 state.set(State.menu);
                 logic.reset();
             }).size(130f, 60f);
         }else{
-            content().add("$text.sector.gameover");
-            buttons().addButton("$text.menu", () -> {
+            cont.add("$text.sector.gameover");
+            buttons.button("$text.menu", () -> {
                 if(world.getSector() != null){
                     world.sectors.abandonSector(world.getSector(), true);
                 }
@@ -57,7 +58,7 @@ public class RestartDialog extends FloatingDialog{
                 logic.reset();
             }).size(130f, 60f);
 
-            buttons().addButton("$text.sector.retry", () -> {
+            buttons.button("$text.sector.retry", () -> {
                 Sector sector = world.getSector();
                 ui.loadLogic(() -> world.sectors.playSector(sector));
                 hide();

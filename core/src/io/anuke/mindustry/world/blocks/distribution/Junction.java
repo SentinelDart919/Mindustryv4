@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
 import arc.math.NumberUtils;
+import arc.util.Timers;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
@@ -38,11 +39,11 @@ public class Junction extends Block{
             if(buffer.index > 0){
                 if(buffer.index > buffer.items.length) buffer.index = buffer.items.length;
                 long l = buffer.items[0];
-                float time = NumberUtils.intBitsToFloat(Bits.getLeftInt(l));
+                float time = NumberUtils.intToFloat((int)(l >>> 32));
 
                 if(Timers.time() >= time + speed || Timers.time() < time){
 
-                    Item item = content.item(Bits.getRightInt(l));
+                    Item item = content.item((int)(l & 0xFFFFFFFFL));
                     Tile dest = tile.getNearby(i);
 
                     //skip blocks that don't want the item, keep waiting until they do

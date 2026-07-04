@@ -1,7 +1,9 @@
 package io.anuke.mindustry.editor;
 
 import arc.graphics.Color;
+import arc.graphics.Gfx;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.Mat;
 import arc.math.geom.Point2;
 import arc.util.Disposable;
 import arc.struct.IntSet;
@@ -10,7 +12,6 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.world.Block;
 import arc.Core;
-import arc.Graphics;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.IndexedRenderer;
 import arc.util.Structs;
@@ -79,9 +80,9 @@ public class MapRenderer implements Disposable{
                     mesh = chunks[x][y];
                 }
 
-                mesh.getTransformMatrix().setToTranslation(tx, ty, 0).scl(tw / (width * tilesize),
-                        th / (height * tilesize), 1f);
-                mesh.setProjectionMatrix(Core.batch.getProjectionMatrix());
+                mesh.getTransformMatrix().setToTranslation(tx, ty).scale(tw / (width * tilesize),
+                        th / (height * tilesize));
+                mesh.setProjectionMatrix(new Mat());
 
                 mesh.render(Core.atlas.getTextures().first());
             }

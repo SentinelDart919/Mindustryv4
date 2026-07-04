@@ -1,6 +1,7 @@
 package arc.util;
 
 import arc.Core;
+import arc.input.InputProcessor;
 import arc.input.KeyCode;
 
 public class Inputs{
@@ -8,12 +9,20 @@ public class Inputs{
         //TODO
     }
 
-    public static void addProcessor(arc.input.InputProcessor processor){
-        arc.Core.input.addProcessor(processor);
+    public static void addProcessor(InputProcessor processor){
+        Core.input.addProcessor(processor);
+    }
+
+    public static void addProcessor(int priority, InputProcessor processor){
+        Core.input.addProcessor(processor);
     }
 
     public static boolean keyDown(String name){
         return Core.input.keyDown(KeyCode.valueOf(name));
+    }
+
+    public static boolean keyDown(KeyCode key){
+        return Core.input.keyDown(key);
     }
 
     public static boolean keyTap(String name){
@@ -22,5 +31,13 @@ public class Inputs{
 
     public static float getAxis(String section, String name){
         return Core.input.axis(KeyCode.valueOf(name));
+    }
+
+    public static float getAxis(String name){
+        return 0f;
+    }
+
+    public static float scroll(){
+        return 0f;
     }
 }

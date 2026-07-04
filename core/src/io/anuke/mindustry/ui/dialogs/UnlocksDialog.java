@@ -1,17 +1,19 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
+import arc.scene.style.Drawable;
 import arc.struct.Seq;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.ContentType;
+import arc.func.Cons;
 import arc.scene.event.HandCursorListener;
 import arc.scene.ui.Image;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.Tooltip;
 import arc.scene.ui.layout.Table;
-import arc.scene.utils.UIUtils;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.control;
@@ -28,7 +30,7 @@ public class UnlocksDialog extends FloatingDialog{
     }
 
     void rebuild(){
-        content().clear();
+        cont.clear();
 
         Table table = new Table();
         table.margin(20);
@@ -44,12 +46,12 @@ public class UnlocksDialog extends FloatingDialog{
 
             table.add("$content." + type.name() + ".name").growX().left().color(Palette.accent);
             table.row();
-            table.addImage("white").growX().pad(5).padLeft(0).padRight(0).height(3).color(Palette.accent);
+            table.image((Drawable)Core.atlas.getDrawable("white")).growX().pad(5).padLeft(0).padRight(0).height(3).color(Palette.accent);
             table.row();
-            table.table(list -> {
+            table.table((Drawable)null, list -> {
                 list.left();
 
-                int maxWidth = UIUtils.portrait() ? 7 : 13;
+                int maxWidth = Core.graphics.isPortrait() ? 7 : 13;
                 int size = 8 * 6;
 
                 int count = 0;
@@ -59,15 +61,15 @@ public class UnlocksDialog extends FloatingDialog{
 
                     if(unlock.isHidden()) continue;
 
-                    Image image = control.unlocks.isUnlocked(unlock) ? new Image(unlock.getContentIcon()) : new Image("icon-locked");
+                    Image image = control.unlocks.isUnlocked(unlock) ? new Image(unlock.getContentIcon()) : new Image((Drawable)Core.atlas.getDrawable("icon-locked"));
                     image.addListener(new HandCursorListener());
                     list.add(image).size(size).pad(3);
 
                     if(control.unlocks.isUnlocked(unlock)){
                         image.clicked(() -> Vars.ui.content.show(unlock));
-                        image.addListener(new Tooltip(new Table(){{
-                            add(unlock.localizedName());
-                        }}));
+                        image.addListener(new Tooltip((Cons<Table>)t -> {
+                            t.add(unlock.localizedName());
+                        }));
                     }
 
                     if((++count) % maxWidth == 0){
@@ -78,6 +80,6 @@ public class UnlocksDialog extends FloatingDialog{
             table.row();
         }
 
-        content().add(pane);
+        cont.add(pane);
     }
 }

@@ -14,6 +14,14 @@ public class SeedRandom{
     public SeedRandom(long seed, int mod){
         this.seed = seed;
     }
+
+    public void setSeed(long seed){
+        this.seed = seed;
+    }
+
+    public float range(float range){
+        return (nextFloat() - 0.5f) * 2f * range;
+    }
     
     public boolean chance(double chance){
         return nextFloat() < chance;

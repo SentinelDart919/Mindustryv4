@@ -90,7 +90,7 @@ public class GenViewDialog extends FloatingDialog{
                                     pixmap.drawPixel(i, sectorSize - 1 - j, ColorMapper.colorFor(result.floor, result.wall, Team.none, result.elevation, (byte)0));
                                 }
                             }
-                            Core.app.postRunnable(() -> map.put(wx, wy, new Texture(pixmap)));
+                            Core.app.post(() -> map.put(wx, wy, new Texture(pixmap)));
                             return pixmap;
                         });
 

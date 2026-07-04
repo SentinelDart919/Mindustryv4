@@ -27,17 +27,18 @@ public class OperationStack{
     }
 
     public boolean canUndo(){
-        return !(stack.size - 1 + index < 0);
+        return index < stack.size - 1;
     }
 
     public boolean canRedo(){
-        return !(index > -1 || stack.size + index < 0);
+        return index >= 0;
     }
 
     public void undo(MapEditor editor){
         if(!canUndo()) return;
 
-        stack.get(stack.size - 1 + index).undo(editor);
+        int undoIndex = stack.size - 1 + index;
+        stack.get(undoIndex).undo(editor);
         index--;
     }
 
@@ -45,7 +46,7 @@ public class OperationStack{
         if(!canRedo()) return;
 
         index++;
-        stack.get(stack.size - 1 + index).redo(editor);
-
+        int redoIndex = stack.size - 1 + index;
+        stack.get(redoIndex).redo(editor);
     }
 }

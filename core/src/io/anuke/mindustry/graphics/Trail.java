@@ -1,9 +1,8 @@
 package io.anuke.mindustry.graphics;
 
+import arc.graphics.CapStyle;
 import arc.graphics.Color;
-import arc.math.geom.Vec2;
 import arc.struct.FloatSeq;
-import arc.util.Time;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;

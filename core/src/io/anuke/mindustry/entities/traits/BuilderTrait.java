@@ -1,6 +1,7 @@
 package io.anuke.mindustry.entities.traits;
 
 import arc.Core;
+import arc.graphics.CapStyle;
 import arc.graphics.Color;
 import arc.math.Angles;
 import arc.math.Mathf;
@@ -23,7 +24,6 @@ import io.anuke.mindustry.world.blocks.BuildBlock;
 import io.anuke.mindustry.world.blocks.BuildBlock.BuildEntity;
 import arc.Effects;
 import arc.Events;
-import arc.util.Time;
 import arc.entities.trait.Entity;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;

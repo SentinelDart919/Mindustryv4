@@ -1,4 +1,6 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.Core;
+import arc.util.Timers;
 import arc.util.Translator;
 
 import arc.audio.Sound;
@@ -202,7 +204,7 @@ public class NuclearReactor extends PowerGenerator{
         if(entity.heat > flashThreshold){
             float flash = 1f + ((entity.heat - flashThreshold) / (1f - flashThreshold)) * 5.4f;
             entity.flash += flash * Timers.delta();
-            Draw.color(Color.RED, Color.YELLOW, Mathf.absin(entity.flash, 9f, 1f));
+            Draw.color(Color.red, Color.yellow, Mathf.absin(entity.flash, 9f, 1f));
             Draw.alpha(0.6f);
             Draw.rect(lightsRegion, tile.drawx(), tile.drawy());
         }

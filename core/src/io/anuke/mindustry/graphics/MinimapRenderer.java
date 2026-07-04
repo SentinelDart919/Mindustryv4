@@ -1,9 +1,8 @@
 package io.anuke.mindustry.graphics;
 
 import arc.Core;
-import arc.graphics.Pixmap;
+import arc.graphics.*;
 import arc.graphics.Pixmap.Format;
-import arc.graphics.Texture;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Rect;
 import arc.struct.Seq;
@@ -14,13 +13,10 @@ import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
-import arc.Core;
 import arc.Events;
-import arc.Graphics;
 import arc.graphics.g2d.Draw;
 import arc.graphics.Pixmap;
 import arc.math.Mathf;
-import arc.struct.Seq;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.Vars.world;
@@ -41,7 +37,7 @@ public class MinimapRenderer implements Disposable{
         });
 
         //make sure to call on the graphics thread
-        Events.on(TileChangeEvent.class, event -> Core.app.postRunnable(() -> update(event.tile)));
+        Events.on(TileChangeEvent.class, event -> Core.app.post(() -> update(event.tile)));
     }
 
     public Texture getTexture(){
@@ -80,7 +76,7 @@ public class MinimapRenderer implements Disposable{
         for(Unit unit : units){
             float rx = (unit.x - rect.x) / rect.width * w, ry = (unit.y - rect.y) / rect.width * h;
             Draw.color(unit.getTeam().color);
-            Draw.crect(Draw.getBlankRegion(), x + rx, y + ry, w / (sz * 2), h / (sz * 2));
+            Fill.crect(x + rx, y + ry, w / (sz * 2), h / (sz * 2));
         }
 
         Draw.color();
@@ -96,10 +92,10 @@ public class MinimapRenderer implements Disposable{
         float dy = (Core.camera.position.y / tilesize);
         dx = Mathf.clamp(dx, sz, world.width() - sz);
         dy = Mathf.clamp(dy, sz, world.height() - sz);
-        float invTexWidth = 1f / texture.getWidth();
-        float invTexHeight = 1f / texture.getHeight();
+        float invTexWidth = 1f / texture.width;
+        float invTexHeight = 1f / texture.height;
         float x = dx - sz, y = world.height() - dy - sz, width = sz * 2, height = sz * 2;
-        region.setRegion(x * invTexWidth, y * invTexHeight, (x + width) * invTexWidth, (y + height) * invTexHeight);
+        region.set(x * invTexWidth, y * invTexHeight, (x + width) * invTexWidth, (y + height) * invTexHeight);
         return region;
     }
 

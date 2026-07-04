@@ -2,8 +2,8 @@ package io.anuke.mindustry.input;
 
 import arc.Core;
 import arc.Input;
+import arc.graphics.CapStyle;
 import arc.input.Input.Buttons;
-import arc.input.KeyCode;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Vec2;
 import arc.struct.IntSet;
@@ -25,10 +25,8 @@ import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import arc.Graphics;
 import arc.input.KeyBinds;
 import arc.Settings;
-import arc.util.Time;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
@@ -572,7 +570,7 @@ public class DesktopInput extends InputHandler{
 
             Draw.color(Palette.command);
             Lines.stroke(1.4f);
-            Lines.line(unit.x, unit.y, ox, oy);
+            Lines.line(bridgeRegion, unit.x, unit.y, ox, oy, CapStyle.None.ordinal(), -tilesize / 2f);
             Lines.circle(ox, oy, 4f);
 
             if(unit instanceof GroundUnit){
@@ -586,13 +584,13 @@ public class DesktopInput extends InputHandler{
                 for(int i = cursor; i < size; i++){
                     Tile t = world.tile(g.getOrderPathTilePacked(i));
                     if(t == null) continue;
-                    Lines.line(lastx, lasty, t.worldx(), t.worldy());
+                    Lines.line(bridgeRegion, lastx, lasty, t.worldx(), t.worldy(), CapStyle.None.ordinal(), -tilesize / 2f);
                     lastx = t.worldx();
                     lasty = t.worldy();
                 }
 
                 if(size > cursor){
-                    Lines.line(lastx, lasty, ox, oy);
+                    Lines.line(bridgeRegion, lastx, lasty, ox, oy, CapStyle.None.ordinal(), -tilesize / 2f);
                 }
             }
         }

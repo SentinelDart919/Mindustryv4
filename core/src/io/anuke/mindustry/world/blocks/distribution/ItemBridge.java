@@ -1,10 +1,12 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.struct.IntSeq;
 import arc.struct.IntSet;
 import arc.struct.IntSet.IntSetIterator;
+import arc.util.Timers;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -18,7 +20,7 @@ import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockGroup;
 import arc.util.Time;
-import arc.graphics.CapStyle;
+
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.geom.Geometry;
@@ -222,7 +224,7 @@ public class ItemBridge extends Block{
                 tile.worldx(),
                 tile.worldy(),
                 other.worldx(),
-                other.worldy(), CapStyle.none, -tilesize / 2f);
+                other.worldy(), -tilesize / 2f);
 
         int dist = Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y));
 

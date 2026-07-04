@@ -1,6 +1,6 @@
 package io.anuke.mindustry.ui.dialogs;
 
-import arc.Settings;
+import arc.Core;
 import arc.scene.ui.ButtonGroup;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.TextButton;
@@ -30,22 +30,22 @@ public class LanguageDialog extends FloatingDialog{
         ButtonGroup<TextButton> group = new ButtonGroup<>();
 
         for(Locale loc : locales){
-            TextButton button = new TextButton(loc.getDisplayName(loc), "toggle");
+            TextButton button = new TextButton(loc.getDisplayName(loc));
             button.clicked(() -> {
                 if(getLocale().equals(loc)) return;
-                Settings.putString("locale", loc.toString());
-                Settings.save();
+                Core.settings.put("locale", loc.toString());
+                Core.settings.manualSave();
                 Log.info("Setting locale: {0}", loc.toString());
                 ui.showInfo("$text.language.restart");
             });
             langs.add(button).group(group).update(t -> t.setChecked(loc.equals(getLocale()))).size(400f, 50f).pad(2).row();
         }
 
-        content().add(pane);
+        cont.add(pane);
     }
 
     public Locale getLocale(){
-        String loc = Settings.getString("locale");
+        String loc = Core.settings.getString("locale");
 
         if(loc.equals("default")){
             findClosestLocale();
@@ -67,7 +67,7 @@ public class LanguageDialog extends FloatingDialog{
         //check exact locale
         for(Locale l : locales){
             if(l.equals(Locale.getDefault())){
-                Settings.putString("locale", l.toString());
+                Core.settings.put("locale", l.toString());
                 return;
             }
         }
@@ -75,11 +75,11 @@ public class LanguageDialog extends FloatingDialog{
         //find by language
         for(Locale l : locales){
             if(l.getLanguage().equals(Locale.getDefault().getLanguage())){
-                Settings.putString("locale", l.toString());
+                Core.settings.put("locale", l.toString());
                 return;
             }
         }
 
-        Settings.putString("locale", new Locale("en").toString());
+        Core.settings.put("locale", new Locale("en").toString());
     }
 }

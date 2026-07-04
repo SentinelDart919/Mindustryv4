@@ -9,19 +9,17 @@ import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
-import arc.Core;
-import arc.Settings;
 import arc.func.Cons;
 import arc.scene.Element;
+import arc.scene.style.Drawable;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.ui.Image;
 import arc.scene.ui.ScrollPane;
-import arc.scene.ui.SettingsDialog;
+import arc.scene.ui.SettingsDialog.SettingsTable;
 import arc.scene.ui.SettingsDialog.SettingsTable.Setting;
 import arc.scene.ui.Slider;
 import arc.scene.ui.layout.Table;
-import arc.util.Strings;
 import arc.math.Mathf;
 
 import java.util.HashMap;
@@ -29,7 +27,7 @@ import java.util.Map;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class SettingsMenuDialog extends SettingsDialog{
+public class SettingsMenuDialog extends FloatingDialog{
     public SettingsTable graphics;
     public SettingsTable game;
     public SettingsTable sound;
@@ -39,7 +37,7 @@ public class SettingsMenuDialog extends SettingsDialog{
     private boolean wasPaused;
 
     public SettingsMenuDialog(){
-        setStyle(Core.skin.get("dialog", WindowStyle.class));
+        super("$text.settings.title");
 
         hidden(() -> {
             if(!state.is(State.menu)){
@@ -56,14 +54,14 @@ public class SettingsMenuDialog extends SettingsDialog{
         });
 
         setFillParent(true);
-        title().setAlignment(Align.center);
-        getTitleTable().row();
-        getTitleTable().add(new Image("white"))
+        title.setAlignment(Align.center);
+        titleTable.row();
+        titleTable.add(new Image((Drawable)Core.atlas.getDrawable("white")))
                 .growX().height(3f).pad(4f).get().setColor(Palette.accent);
 
-        content().clearChildren();
-        content().remove();
-        buttons().remove();
+        cont.clearChildren();
+        cont.remove();
+        buttons.remove();
 
         menu = new Table();
 
@@ -81,17 +79,17 @@ public class SettingsMenuDialog extends SettingsDialog{
         prefs.margin(14f);
 
         menu.defaults().size(300f, 60f).pad(3f);
-        menu.addButton("$text.settings.game", () -> visible(0));
+        menu.button("$text.settings.game", () -> visible(0));
         menu.row();
-        menu.addButton("$text.settings.graphics", () -> visible(1));
+        menu.button("$text.settings.graphics", () -> visible(1));
         menu.row();
-        menu.addButton("$text.settings.sound", () -> visible(2));
+        menu.button("$text.settings.sound", () -> visible(2));
         if(!Vars.mobile){
             menu.row();
-            menu.addButton("$text.settings.controls", ui.controls::show);
+            menu.button("$text.settings.controls", ui.controls::show);
         }
         menu.row();
-        menu.addButton("$text.settings.language", ui.language::show);
+        menu.button("$text.settings.language", ui.language::show);
 
         prefs.clearChildren();
         prefs.add(menu);
@@ -99,7 +97,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         ScrollPane pane = new ScrollPane(prefs);
         pane.addCaptureListener(new InputListener(){
             @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
                 Element actor = pane.hit(x, y, true);
                 if(actor instanceof Slider){
                     pane.setFlickScroll(false);
@@ -110,7 +108,7 @@ public class SettingsMenuDialog extends SettingsDialog{
             }
 
             @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button){
+            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
                 pane.setFlickScroll(true);
                 super.touchUp(event, x, y, pointer, button);
             }
@@ -120,7 +118,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         row();
         add(pane).grow().top();
         row();
-        add(buttons()).fillX();
+        add(buttons).fillX();
 
         hidden(this::back);
 
@@ -129,13 +127,14 @@ public class SettingsMenuDialog extends SettingsDialog{
 
     void addSettings(){
         sound.volumePrefs();
+        sound.finish();
 
         game.screenshakePref();
         game.checkPref("effects", true);
         if(mobile){
             game.checkPref("autotarget", true);
         }
-        game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Bundles.format("setting.seconds", i));
+        game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Core.bundle.format("setting.seconds", i));
         game.checkPref("planet3d", true);
         game.checkPref("massai-debug", false, MassAI::setDebug);
 
@@ -149,33 +148,36 @@ public class SettingsMenuDialog extends SettingsDialog{
                 table.addButton("$text.settings.cleardata", () -> {
                     FloatingDialog dialog = new FloatingDialog("$text.settings.cleardata");
                     dialog.setFillParent(false);
-                    dialog.content().defaults().size(230f, 60f).pad(3);
+                    dialog.cont.defaults().size(230f, 60f).pad(3);
                     dialog.addCloseButton();
-                    dialog.content().addButton("$text.settings.clearsectors", () -> {
+                    dialog.cont.button("$text.settings.clearsectors", () -> {
                         ui.showConfirm("$text.confirm", "$text.settings.clear.confirm", () -> {
                             world.sectors.clear();
                             dialog.hide();
                         });
                     });
-                    dialog.content().row();
-                    dialog.content().addButton("$text.settings.clearunlocks", () -> {
+                    dialog.cont.row();
+                    dialog.cont.button("$text.settings.clearunlocks", () -> {
                         ui.showConfirm("$text.confirm", "$text.settings.clear.confirm", () -> {
                             control.unlocks.reset();
                             dialog.hide();
                         });
                     });
-                    dialog.content().row();
-                    dialog.content().addButton("$text.settings.clearall", () -> {
+                    dialog.cont.row();
+                    dialog.cont.button("$text.settings.clearall", () -> {
                         ui.showConfirm("$text.confirm", "$text.settings.clearall.confirm", () -> {
                             Map<String, Object> map = new HashMap<>();
-                            for(String value : Settings.prefs().get().keySet()){
+                            for(String value : Core.settings.keys()){
                                 if(value.contains("usid") || value.contains("uuid")){
-                                    map.put(value, Settings.prefs().getString(value));
+                                    map.put(value, Core.settings.getString(value));
                                 }
                             }
-                            Settings.prefs().clear();
-                            Settings.prefs().put(map);
-                            Settings.save();
+                            Core.settings.clear();
+
+                            for(Map.Entry<String, Object> entry : map.entrySet()){
+                                Core.settings.put(entry.getKey(), entry.getValue());
+                            }
+                            Core.settings.manualSave();
 
                             for(Fi file : dataDirectory.list()){
                                 file.deleteDirectory();
@@ -184,36 +186,38 @@ public class SettingsMenuDialog extends SettingsDialog{
                             Core.app.exit();
                         });
                     });
-                    dialog.content().row();
+                    dialog.cont.row();
                     dialog.show();
                 }).size(220f, 60f).pad(6).left();
                 table.add();
                 table.row();
             }
         });
+        game.finish();
 
-        graphics.sliderPref("fpscap", 125, 5, 125, 5, s -> (s > 120 ? Bundles.get("setting.fpscap.none") : Bundles.format("setting.fpscap.text", s)));
+        graphics.sliderPref("fpscap", 125, 5, 125, 5, s -> (s > 120 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
 
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
             graphics.checkPref("fullscreen", false, b -> {
                 if(b){
-                    Core.graphics.setFullscreenMode(Core.graphics.getDisplayMode());
+                    Core.graphics.setFullscreen(true);
                 }else{
-                    Core.graphics.setWindowedMode(600, 480);
+                    Core.graphics.setWindowSize(600, 480);
                 }
             });
 
-            Core.graphics.setVSync(Settings.getBool("vsync"));
-            if(Settings.getBool("fullscreen")){
-                Core.graphics.setFullscreenMode(Core.graphics.getDisplayMode());
+            Core.graphics.setVSync(Core.settings.getBool("vsync"));
+            if(Core.settings.getBool("fullscreen")){
+                Core.graphics.setFullscreen(true);
             }
         }
 
         graphics.checkPref("fps", false);
         graphics.checkPref("indicators", true);
         graphics.checkPref("lasers", true);
-        graphics.checkPref("minimap", !mobile); //minimap is disabled by default on mobile devices
+        graphics.checkPref("minimap", !mobile);
+        graphics.finish();
     }
 
     private void back(){
@@ -229,12 +233,11 @@ public class SettingsMenuDialog extends SettingsDialog{
 
     @Override
     public void addCloseButton(){
-        buttons().addImageTextButton("$text.menu", "icon-arrow-left", 30f, this::hide).size(230f, 64f);
+        buttons.button("$text.menu", Core.atlas.getDrawable("icon-arrow-left"), 30f, this::hide).size(230f, 64f);
 
         keyDown(key -> {
-            if(key == Keys.ESCAPE || key == Keys.BACK)
+            if(key == KeyCode.escape || key == KeyCode.back)
                 hide();
         });
     }
 }
-

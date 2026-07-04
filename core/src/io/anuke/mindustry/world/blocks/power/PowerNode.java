@@ -1,4 +1,6 @@
 package io.anuke.mindustry.world.blocks.power;
+import arc.Core;
+import arc.util.Timers;
 import arc.util.Translator;
 
 import arc.math.geom.Vec2;
@@ -17,13 +19,11 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
-import arc.Settings;
-import arc.util.Time;
+
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
-import arc.math.geom.Vec2;
 import arc.func.Cons;
 
 import static io.anuke.mindustry.Vars.*;
@@ -83,8 +83,8 @@ public class PowerNode extends PowerBlock{
         PowerGraph tg = entity.power.graph;
         tg.clear();
 
-        entity.power.links.remove(other.packedPosition());
-        other.entity.power.links.remove(tile.packedPosition());
+        entity.power.links.removeValue(other.packedPosition());
+        other.entity.power.links.removeValue(tile.packedPosition());
 
         //reflow from this point, covering all tiles on this side
         tg.reflow(tile);
@@ -224,7 +224,7 @@ public class PowerNode extends PowerBlock{
 
     @Override
     public void drawLayer(Tile tile){
-        if(!Settings.getBool("lasers")) return;
+        if(!Core.settings.getBool("lasers")) return;
 
         TileEntity entity = tile.entity();
 
@@ -253,12 +253,12 @@ public class PowerNode extends PowerBlock{
         if(link.block() instanceof PowerNode){
             TileEntity oe = link.entity();
 
-            return Vec2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy()) <= Math.max(laserRange * tilesize,
+            return Mathf.dst2(tile.drawx(), tile.drawy(), link.drawx(), link.drawy()) <= Math.max(laserRange * tilesize,
                     ((PowerNode) link.block()).laserRange * tilesize)
                     + (link.block().size - 1) * tilesize / 2f + (tile.block().size - 1) * tilesize / 2f &&
                     (!checkMaxNodes || (oe.power.links.size < ((PowerNode) link.block()).maxNodes || oe.power.links.contains(tile.packedPosition())));
         }else{
-            return Vec2.dst(tile.drawx(), tile.drawy(), link.drawx(), link.drawy())
+            return Mathf.dst2(tile.drawx(), tile.drawy(), link.drawx(), link.drawy())
                     <= laserRange * tilesize + (link.block().size - 1) * tilesize;
         }
     }
@@ -300,8 +300,8 @@ public class PowerNode extends PowerBlock{
         tempTiles.sort((a, b) -> {
             int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
             if(type != 0) return type;
-            return Float.compare(Vec2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
-                    Vec2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+            return Float.compare(Mathf.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Mathf.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
         });
 
         int count = 0;
@@ -361,8 +361,8 @@ public class PowerNode extends PowerBlock{
         tempTiles.sort((a, b) -> {
             int type = -Boolean.compare(a.block() instanceof PowerNode, b.block() instanceof PowerNode);
             if(type != 0) return type;
-            return Float.compare(Vec2.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
-                    Vec2.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
+            return Float.compare(Mathf.dst2(a.drawx(), a.drawy(), tile.drawx(), tile.drawy()),
+                    Mathf.dst2(b.drawx(), b.drawy(), tile.drawx(), tile.drawy()));
         });
 
         for(Tile other : tempTiles){
@@ -401,7 +401,7 @@ public class PowerNode extends PowerBlock{
         x2 += t2.x;
         y2 += t2.y;
 
-        float space = Vec2.dst(x1, y1, x2, y2);
+        float space = Mathf.dst2(x1, y1, x2, y2);
         float scl = 4f, mag = 2f, tscl = 4f, segscl = 3f;
 
         int segments = Mathf.ceil(space / segscl);

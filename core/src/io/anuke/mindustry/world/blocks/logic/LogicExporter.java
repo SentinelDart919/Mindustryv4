@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.logic;
 
 import arc.struct.IntSeq;
+import arc.util.Timers;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
@@ -82,7 +83,7 @@ public class LogicExporter extends LogicBlock {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         LogicExporterEntity entity = tile.entity();
-        entity.droneIDs.remove(unit.id);
+        entity.droneIDs.removeValue(unit.id);
     }
 
     @Override

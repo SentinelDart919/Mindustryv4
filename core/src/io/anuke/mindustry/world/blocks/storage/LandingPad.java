@@ -1,7 +1,9 @@
 package io.anuke.mindustry.world.blocks.storage;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.util.Timers;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.core.UI;
@@ -145,7 +147,7 @@ public class LandingPad extends Block {
     public void buildTable(Tile tile, Table table) {
         LandingPadEntity entity = (LandingPadEntity)tile.entity;
 
-        table.addButton("None", "clear", () -> {
+        table.addButton("None", () -> {
             entity.targetItem = null;
         }).size(80, 40).pad(4);
 

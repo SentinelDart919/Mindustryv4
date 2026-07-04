@@ -6,7 +6,6 @@ import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.io.Changelogs;
 import io.anuke.mindustry.io.Changelogs.VersionInfo;
 import io.anuke.mindustry.game.Version;
-import arc.Settings;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.util.Log;
@@ -23,15 +22,15 @@ public class ChangelogDialog extends FloatingDialog{
 
         addCloseButton();
 
-        content().add("$text.changelog.loading");
+        cont.add("$text.changelog.loading");
 
         if(!ios && !OS.isMac){
             Changelogs.getChangelog(result -> {
                 versions = result;
-                Core.app.postRunnable(this::setup);
+                Core.app.post(this::setup);
             }, t -> {
                 Log.err(t);
-                Core.app.postRunnable(this::setup);
+                Core.app.post(this::setup);
             });
         }
     }
@@ -40,8 +39,8 @@ public class ChangelogDialog extends FloatingDialog{
         Table table = new Table();
         ScrollPane pane = new ScrollPane(table);
 
-        content().clear();
-        content().add(pane).grow();
+        cont.clear();
+        cont.add(pane).grow();
 
         if(versions == null){
             table.add("$text.changelog.error");
@@ -77,10 +76,10 @@ public class ChangelogDialog extends FloatingDialog{
                 table.add(in).width(vw).pad(8).row();
             }
 
-            int lastid = Settings.getInt("lastBuild");
+            int lastid = Core.settings.getInt("lastBuild", 0);
             if(lastid != 0 && versions.peek().build > lastid){
-                Settings.putInt("lastBuild", versions.peek().build);
-                Settings.save();
+                Core.settings.put("lastBuild", versions.peek().build);
+                Core.settings.manualSave();
                 show();
             }
         }

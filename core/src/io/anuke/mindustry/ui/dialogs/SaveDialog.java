@@ -1,5 +1,8 @@
 package io.anuke.mindustry.ui.dialogs;
 
+import arc.Core;
+import arc.util.Bundles;
+import arc.util.Timers;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.Saves.SaveSlot;
 import arc.util.Time;
@@ -22,7 +25,7 @@ public class SaveDialog extends LoadDialog{
 
     public void addSetup(){
         slots.row();
-        slots.addImageTextButton("$text.save.new", "icon-add",14 * 3, () ->
+        slots.button("$text.save.new", Core.atlas.getDrawable("icon-add"), 14 * 3, () ->
                 ui.showTextInput("$text.save", "$text.save.newslot", "", text -> {
                     ui.loadGraphics("$text.saving", () -> {
                         control.saves.addSave(text);
