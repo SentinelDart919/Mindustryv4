@@ -239,12 +239,12 @@ public class TypeIO{
 
     @WriteClass(Effect.class)
     public static void writeEffect(ByteBuffer buffer, Effect effect){
-        buffer.putShort((short) effect.id);
+        writeString(buffer, effect.name);
     }
 
     @ReadClass(Effect.class)
     public static Effect readEffect(ByteBuffer buffer){
-        return Effects.getEffect(buffer.getShort());
+        return Effects.get(readString(buffer));
     }
 
     @WriteClass(Color.class)

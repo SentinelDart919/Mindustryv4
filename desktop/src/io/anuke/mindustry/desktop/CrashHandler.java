@@ -6,7 +6,7 @@ import arc.util.serialization.JsonWriter.OutputType;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.net.Net;
-import arc.Settings;
+import arc.Core;
 import arc.util.Log;
 import arc.util.OS;
 
@@ -25,7 +25,7 @@ public class CrashHandler{
 
         try{
             //check crash report setting
-            if(!Settings.getBool("crashreport")){
+            if(!Core.settings.getBool("crashreport")){
                 return;
             }
         }catch(Throwable ignored){

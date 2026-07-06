@@ -59,7 +59,7 @@ public class BlockInventoryFragment extends Fragment{
     public void build(Group parent){
         table = new Table();
         table.visible(() -> !state.is(State.menu) && tile != null && tile.entity != null && tile.entity.items.total() > 0);
-        table.background(Core.skin.getDrawable("inventory"));
+        table.background(Core.scene.skin.getDrawable("inventory"));
 
         itemTable = new Table();
 
@@ -139,7 +139,7 @@ public class BlockInventoryFragment extends Fragment{
                 BooleanProvider canPick = () -> player.inventory.canAcceptItem(item);
 
                 HandCursorListener l = new HandCursorListener();
-                l.enabled = canPick;
+                l.enabled = () -> canPick.get();
 
                 ItemImage image = new ItemImage(item.region, () -> {
                     if(tile == null || tile.entity == null){

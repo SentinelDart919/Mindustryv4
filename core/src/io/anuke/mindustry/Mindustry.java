@@ -1,10 +1,12 @@
 package io.anuke.mindustry;
 
+import arc.Core;
 import io.anuke.mindustry.core.*;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.io.BundleLoader;
 import arc.Events;
+import arc.scene.Scene;
 import arc.util.Time;
 import arc.util.Timers;
 import arc.ApplicationListener;
@@ -24,6 +26,8 @@ public class Mindustry extends arc.modules.ModuleCore{
         BundleLoader.load();
         content.load();
         schematics.load();
+
+        Core.scene = new Scene();
 
         module(logic = new Logic());
         module(world = new World());

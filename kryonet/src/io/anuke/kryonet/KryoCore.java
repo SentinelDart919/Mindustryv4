@@ -39,7 +39,7 @@ public class KryoCore {
                 StringBuilder builder = new StringBuilder(256);
 
                 if(headless)
-                    builder.append(ColorCodes.BLUE);
+                    builder.append(ColorCodes.blue);
 
                 builder.append("Net Error: ");
 
@@ -53,7 +53,7 @@ public class KryoCore {
                 }
 
                 if(headless)
-                    builder.append(ColorCodes.RESET);
+                    builder.append(ColorCodes.reset);
 
                 arc.util.Log.info("&b" + builder.toString());
             }

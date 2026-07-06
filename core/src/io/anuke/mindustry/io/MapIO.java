@@ -5,7 +5,6 @@ import arc.graphics.Pixmap;
 import arc.graphics.Pixmap.Format;
 import arc.struct.IntIntMap;
 import arc.struct.ObjectMap;
-import arc.struct.ObjectMap;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.game.Team;
@@ -70,19 +69,19 @@ public class MapIO{
 
         for(int x = 0; x < data.width(); x++){
             for(int y = 0; y < data.height(); y++){
-                int color = pixmap.getPixel(x, pixmap.getHeight() - 1 - y);
+                int color = pixmap.get(x, pixmap.getHeight() - 1 - y);
                 LegacyBlock block = LegacyColorMapper.get(color);
 
                 data.write(x, y, DataPosition.floor, block.floor.id);
                 data.write(x, y, DataPosition.elevation, (byte)block.elevation);
 
                 //place spawn
-                if(color == Color.rgba8888(Color.RED)){
+                if(color == Color.rgba8888(Color.red)){
                     data.write(x, y, DataPosition.wall, Blocks.spawn.id);
                 }
 
                 //place core
-                if(color == Color.rgba8888(Color.GREEN)){
+                if(color == Color.rgba8888(Color.green)){
                     for(int dx = 0; dx < 3; dx++){
                         for(int dy = 0; dy < 3; dy++){
                             int worldx = dx - 1 + x;
@@ -185,7 +184,7 @@ public class MapIO{
         stream.writeInt(meta.version);
         stream.writeByte((byte) meta.tags.size);
 
-        for(Entry<String, String> entry : meta.tags.entries()){
+        for(ObjectMap.Entry<String, String> entry : meta.tags.entries()){
             stream.writeUTF(entry.key);
             stream.writeUTF(entry.value);
         }

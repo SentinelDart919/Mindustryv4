@@ -1,8 +1,10 @@
 package io.anuke.mindustry.ui;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.struct.OrderedMap;
 import arc.util.Bundles;
+import arc.util.Strings;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;

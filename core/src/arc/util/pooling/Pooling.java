@@ -11,4 +11,10 @@ public class Pooling{
     public static void free(Poolable object){
         Pools.free(object);
     }
+
+    public static void free(Object object){
+        if(object instanceof Poolable){
+            Pools.free((Poolable)object);
+        }
+    }
 }

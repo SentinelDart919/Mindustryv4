@@ -9,6 +9,7 @@ import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.core.Platform;
 import arc.Core;
 import arc.util.Time;
+import arc.util.Timers;
 import arc.func.Cons;
 import arc.func.Boolf;
 import arc.scene.event.Touchable;
@@ -27,7 +28,7 @@ public class FileChooser extends FloatingDialog{
     public static Boolf<Fi> jpegFilter = file -> file.extension().equalsIgnoreCase("png") || file.extension().equalsIgnoreCase("jpg") || file.extension().equalsIgnoreCase("jpeg");
     public static Boolf<Fi> defaultFilter = file -> true;
     private Table files;
-    private Fi homeDirectory = Core.files.absolute(OS.isMac ? OS.getProperty("user.home") + "/Downloads/" :
+    private Fi homeDirectory = Core.files.absolute(OS.isMac ? OS.userHome + "/Downloads/" :
             Core.files.getExternalStoragePath());
     private Fi directory = homeDirectory;
     private ScrollPane pane;
@@ -78,7 +79,7 @@ public class FileChooser extends FloatingDialog{
         cancel.clicked(this::hide);
 
         navigation = new TextField("");
-        navigation.setTouchable(Touchable.disabled);
+        navigation.touchable = Touchable.disabled;
 
         files = new Table();
         files.marginRight(10);
@@ -98,7 +99,7 @@ public class FileChooser extends FloatingDialog{
 
         float isize = 14 * 2;
 
-        ImageButton up = new ImageButton("icon-folder-parent");
+        ImageButton up = new ImageButton(Core.atlas.find("icon-folder-parent"));
         up.resizeImage(isize);
         up.clicked(() -> {
             directory = directory.parent();
@@ -110,17 +111,17 @@ public class FileChooser extends FloatingDialog{
             up.setDisabled(true);
         }
 
-        ImageButton back = new ImageButton("icon-arrow-left");
+        ImageButton back = new ImageButton(Core.atlas.find("icon-arrow-left"));
         back.resizeImage(isize);
 
-        ImageButton forward = new ImageButton("icon-arrow-right");
+        ImageButton forward = new ImageButton(Core.atlas.find("icon-arrow-right"));
         forward.resizeImage(isize);
 
         forward.clicked(() -> stack.forward());
 
         back.clicked(() -> stack.back());
 
-        ImageButton home = new ImageButton("icon-home");
+        ImageButton home = new ImageButton(Core.atlas.find("icon-home"));
         home.resizeImage(isize);
         home.clicked(() -> {
             directory = homeDirectory;
@@ -146,7 +147,7 @@ public class FileChooser extends FloatingDialog{
         content.add(icontable).expandX().fillX();
         content.row();
 
-        content.center().add(pane).width(UIUtils.portrait() ? Core.Gfx.getWidth() / Scl.scl(1) : Core.Gfx.getWidth() / Scl.scl(2)).colspan(3).grow();
+        content.center().add(pane).width(Core.graphics.isPortrait() ? Core.Gfx.getWidth() / Scl.scl(1) : Core.Gfx.getWidth() / Scl.scl(2)).colspan(3).grow();
         content.row();
 
         if(!open){
@@ -201,7 +202,7 @@ public class FileChooser extends FloatingDialog{
 
         //macs are confined to the Downloads/ directory
         if(!OS.isMac){
-            Image upimage = new Image("icon-folder-parent");
+            Image upimage = new Image(Core.atlas.find("icon-folder-parent"));
             TextButton upbutton = new TextButton(".." + directory.toString());
             upbutton.clicked(() -> {
                 directory = directory.parent();
@@ -224,7 +225,7 @@ public class FileChooser extends FloatingDialog{
 
             String filename = file.name();
 
-            TextButton button = new TextButton(shorten(filename), "toggle");
+            TextButton button = new TextButton(shorten(filename));
             group.add(button);
 
             button.clicked(() -> {
@@ -241,7 +242,7 @@ public class FileChooser extends FloatingDialog{
                 button.setChecked(filename.equals(filefield.getText()));
             });
 
-            Image image = new Image(file.isDirectory() ? "icon-folder" : "icon-file-text");
+            Image image = new Image(Core.atlas.find(file.isDirectory() ? "icon-folder" : "icon-file-text"));
 
             button.add(image).padRight(4f).size(14 * 2f);
             button.getCells().reverse();

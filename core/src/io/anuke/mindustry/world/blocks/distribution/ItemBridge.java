@@ -224,7 +224,7 @@ public class ItemBridge extends Block{
                 tile.worldx(),
                 tile.worldy(),
                 other.worldx(),
-                other.worldy(), -tilesize / 2f);
+                other.worldy(), true);
 
         int dist = Math.max(Math.abs(other.x - tile.x), Math.abs(other.y - tile.y));
 

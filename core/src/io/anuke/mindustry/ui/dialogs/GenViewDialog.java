@@ -13,6 +13,7 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.ColorMapper;
 import arc.graphics.g2d.Draw;
 import arc.scene.Element;
+import arc.input.KeyCode;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.utils.Cursors;
@@ -38,12 +39,12 @@ public class GenViewDialog extends FloatingDialog{
         float panX, panY;
         float lastX, lastY;
         int viewsize = 3;
-        AsyncExecutor async = new AsyncExecutor(Mathf.sqr(viewsize*2));
+        AsyncExecutor async = new AsyncExecutor((int)Mathf.sqr(viewsize*2));
 
         {
             addListener(new InputListener(){
                 @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
                     Cursors.setHand();
                     lastX = x;
                     lastY = y;
@@ -60,7 +61,7 @@ public class GenViewDialog extends FloatingDialog{
                 }
 
                 @Override
-                public void touchUp(InputEvent event, float x, float y, int pointer, int button){
+                public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
                     Cursors.restoreCursor();
                 }
             });
@@ -81,6 +82,7 @@ public class GenViewDialog extends FloatingDialog{
                             continue;
                         }
                         processing.put(wx, wy, true);
+                        final int fwx = wx, fwy = wy;
                         async.submit(() -> {
                             GenResult result = new GenResult();
                             Pixmap pixmap = new Pixmap(sectorSize, sectorSize, Format.RGBA8888);
@@ -90,7 +92,13 @@ public class GenViewDialog extends FloatingDialog{
                                     pixmap.drawPixel(i, sectorSize - 1 - j, ColorMapper.colorFor(result.floor, result.wall, Team.none, result.elevation, (byte)0));
                                 }
                             }
-                            Core.app.post(() -> map.put(wx, wy, new Texture(pixmap)));
+                            final int fx = fwx, fy = fwy;
+                            final Pixmap fp = pixmap;
+                            Core.app.post(new Runnable(){
+                                public void run(){
+                                    map.put(fx, fy, new Texture(fp));
+                                }
+                            });
                             return pixmap;
                         });
 
@@ -100,7 +108,7 @@ public class GenViewDialog extends FloatingDialog{
                     float drawX = x + width/2f+ wx * padSectorSize - tx * padSectorSize - panX % padSectorSize;
                     float drawY = y + height/2f + wy * padSectorSize - ty * padSectorSize - panY % padSectorSize;
 
-                    Draw.rect(map.get(wx, wy), drawX, drawY, padSectorSize, padSectorSize);
+                    Draw.rect(Draw.wrap(map.get(wx, wy)), drawX, drawY, padSectorSize, padSectorSize);
                 }
             }
         }

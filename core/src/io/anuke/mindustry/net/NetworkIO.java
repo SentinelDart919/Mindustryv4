@@ -1,7 +1,6 @@
 package io.anuke.mindustry.net;
 
 import arc.struct.ObjectMap;
-import arc.struct.ObjectMap;
 import arc.util.Time;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.Player;
@@ -15,7 +14,7 @@ import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BlockPart;
 import arc.Core;
-import arc.util.Time;
+import arc.util.Timers;
 import arc.entities.Entities;
 import arc.struct.Bits;
 
@@ -38,7 +37,7 @@ public class NetworkIO{
             //write tags
             ObjectMap<String, String> tags = world.getMap().meta.tags;
             stream.writeByte(tags.size);
-            for(Entry<String, String> entry : tags.entries()){
+            for(ObjectMap.Entry<String, String> entry : tags.entries()){
                 stream.writeUTF(entry.key);
                 stream.writeUTF(entry.value);
             }

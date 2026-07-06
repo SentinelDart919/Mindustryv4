@@ -7,27 +7,24 @@ import arc.util.Structs;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class Image {
     private static ArrayList<Image> toDispose = new ArrayList<>();
 
-    private BufferedImage atlas;
-
+    private final ImageContext context;
     private BufferedImage image;
     private Graphics2D graphics;
     private Color color = new Color();
 
-    public Image(BufferedImage atlas, TextureRegion region){
-        this(atlas, region.getRegionWidth(), region.getRegionHeight());
+    public Image(ImageContext context, TextureRegion region){
+        this(context, region.width, region.height);
 
         draw(region);
     }
 
-    public Image(BufferedImage atlas, int width, int height){
-        this.atlas = atlas;
+    public Image(ImageContext context, int width, int height){
+        this.context = context;
 
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         this.graphics = image.createGraphics();
@@ -53,7 +50,7 @@ public class Image {
 
     public Color getColor(int x, int y){
         int i = image.getRGB(x, y);
-        Color.argb8888ToColor(color, i);
+        color.argb8888(i);
         return color;
     }
 
@@ -69,12 +66,12 @@ public class Image {
 
     /**Draws a region at the center.*/
     public void drawCenter(TextureRegion region){
-        draw(region, (width() - region.getRegionWidth())/2, (height() - region.getRegionHeight())/2, false, false);
+        draw(region, (width() - region.width)/2, (height() - region.height)/2, false, false);
     }
 
     /**Draws a region at the center.*/
     public void drawCenter(TextureRegion region, boolean flipx, boolean flipy){
-        draw(region, (width() - region.getRegionWidth())/2, (height() - region.getRegionHeight())/2, flipx, flipy);
+        draw(region, (width() - region.width)/2, (height() - region.height)/2, flipx, flipy);
     }
 
     /**Draws an image at the top left corner.*/
@@ -94,8 +91,8 @@ public class Image {
     public void draw(TextureRegion region, int x, int y, boolean flipx, boolean flipy){
         GenRegion.validate(region);
 
-        int width = region.getRegionWidth();
-        int height = region.getRegionHeight();
+        int width = region.width;
+        int height = region.height;
 
         int leftTrim = Math.max(0, -x);
         int topTrim = Math.max(0, -y);
@@ -114,21 +111,17 @@ public class Image {
         int dstX2 = dstX1 + drawWidth;
         int dstY2 = dstY1 + drawHeight;
 
-        int srcX1 = flipx ? region.getRegionX() + width - leftTrim : region.getRegionX() + leftTrim;
-        int srcX2 = flipx ? region.getRegionX() + rightTrim : region.getRegionX() + width - rightTrim;
-        int srcY1 = flipy ? region.getRegionY() + height - topTrim : region.getRegionY() + topTrim;
-        int srcY2 = flipy ? region.getRegionY() + bottomTrim : region.getRegionY() + height - bottomTrim;
+        int srcX1 = flipx ? region.getX() + width - leftTrim : region.getX() + leftTrim;
+        int srcX2 = flipx ? region.getX() + rightTrim : region.getX() + width - rightTrim;
+        int srcY1 = flipy ? region.getY() + height - topTrim : region.getY() + topTrim;
+        int srcY2 = flipy ? region.getY() + bottomTrim : region.getY() + height - bottomTrim;
 
-        graphics.drawImage(atlas, dstX1, dstY1, dstX2, dstY2, srcX1, srcY1, srcX2, srcY2, null);
+        graphics.drawImage(((GenRegion)region).source, dstX1, dstY1, dstX2, dstY2, srcX1, srcY1, srcX2, srcY2, null);
     }
 
     /** @param name Name of texture file name to create, without any extensions.*/
     public void save(String name){
-        try {
-            ImageIO.write(image, "png", new File(name + ".png"));
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
+        context.addGenerated(name, image);
     }
 
     public static int total(){

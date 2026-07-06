@@ -144,7 +144,7 @@ public class FogRenderer implements Disposable{
 
         Gfx.endClip();
 
-        region.setTexture(buffer.getTexture());
+        region.texture = buffer.getTexture();
         region.set(u, v2, u2, v);
 
         Draw.proj(Core.camera);

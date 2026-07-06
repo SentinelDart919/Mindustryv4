@@ -1,6 +1,8 @@
 package io.anuke.mindustry.ui;
 
+import arc.Core;
 import arc.graphics.Color;
+import arc.scene.style.Drawable;
 import arc.util.Align;
 import arc.scene.ui.TextButton;
 
@@ -22,7 +24,7 @@ public class MenuButton extends TextButton{
 
         table(t -> {
             t.image(icon).size(14 * 3);
-            t.update(() -> t.setBackground(getClickListener().isVisualPressed() ? "button-down" : getClickListener().isOver() ? "button-over" : "button"));
+            t.update(() -> t.setBackground(getClickListener().isVisualPressed() ? (Drawable)Core.atlas.getDrawable("button-down") : getClickListener().isOver() ? (Drawable)Core.atlas.getDrawable("button-over") : (Drawable)Core.atlas.getDrawable("button")));
         }).size(s - 5, s);
 
 

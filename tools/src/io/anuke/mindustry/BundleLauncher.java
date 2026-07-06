@@ -2,9 +2,9 @@ package io.anuke.mindustry;
 
 import arc.struct.Seq;
 import arc.struct.OrderedMap;
-import arc.util.PropertiesUtils;
 import arc.func.Func2;
 import arc.util.Log;
+import arc.util.io.PropertiesUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.BiFunction;
 
 public class BundleLauncher {
 
@@ -21,7 +22,7 @@ public class BundleLauncher {
         File file = new File("bundle.properties");
         OrderedMap<String, String> base = new OrderedMap<>();
         PropertiesUtils.load(base, new InputStreamReader(new FileInputStream(file)));
-        Array<String> removals = new Array<>();
+        Seq<String> removals = new Seq<>();
 
         Files.walk(Paths.get("")).forEach(child -> {
             try {
@@ -64,7 +65,7 @@ public class BundleLauncher {
 
                 //add everything ordered
                 for(String key : base.orderedKeys()){
-                    result.append(processor.get(key, other.get(key)));
+                    result.append(processor.apply(key, other.get(key)));
                     other.remove(key);
                 }
 

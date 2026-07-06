@@ -1,7 +1,7 @@
 package io.anuke.mindustry.maps.generation;
 
 import arc.math.geom.Point2;
-import arc.math.geom.Vec2;
+
 import arc.struct.Seq;
 import arc.struct.IntIntMap;
 import arc.func.Boolf;
@@ -64,7 +64,7 @@ public class FortressGenerator{
 
     void gen(){
         gen.setBlock(enemyX, enemyY, StorageBlocks.core, team);
-        gen.random.nextBoolean();
+        gen.random.nextFloat();
 
         float difficulty = gen.sector == null ? state.difficulty.ordinal() : gen.sector.difficulty;
         if(gen.sector == null  && state.mode == GameMode.customAttackMode){
@@ -90,15 +90,15 @@ public class FortressGenerator{
             if(!(turret instanceof ItemTurret)) continue;
             ItemTurret t = (ItemTurret)turret;
             int size = t.getAmmoTypes().length;
-            ammoPerType.put(t.id, Mathf.clamp((int)(size* difficultyScl) + gen.random.range(1), 0, size - 1));
+            ammoPerType.put(t.id, (int)Mathf.clamp((int)(size* difficultyScl) + gen.random.range(1), 0, size - 1));
         }
 
-        TriFunction<Tile, Block, Boolf<Tile>, Boolean> checker = (current, block, pred) -> {
+        Func3<Tile, Block, Boolf<Tile>, Boolean> checker = (current, block, pred) -> {
             for(Point2 point : Edges.getEdges(block.size)){
                 Tile tile = gen.tile(current.x + point.x, current.y + point.y);
                 if(tile != null){
                     tile = tile.target();
-                    if(tile.getTeamID() == team.ordinal() && pred.evaluate(tile)){
+                    if(tile.getTeamID() == team.ordinal() && pred.get(tile)){
                         return true;
                     }
                 }
@@ -106,19 +106,19 @@ public class FortressGenerator{
             return false;
         };
 
-        BiFunction<Block, Boolf<Tile>, IntPositionConsumer> seeder = (block, pred) -> (x, y) -> {
+        Func2<Block, Boolf<Tile>, Intc2> seeder = (block, pred) -> (x, y) -> {
             if(gen.canPlace(x, y, block) && ((block instanceof Wall && block.size == 1) || gen.random.chance(placeChance)) && checker.get(gen.tile(x, y), block, pred)){
                 gen.setBlock(x, y, block, team);
             }
         };
 
-        BiFunction<Block, Float, IntPositionConsumer> placer = (block, chance) -> (x, y) -> {
+        Func2<Block, Float, Intc2> placer = (block, chance) -> (x, y) -> {
             if(gen.canPlace(x, y, block) && gen.random.chance(chance)){
                 gen.setBlock(x, y, block, team);
             }
         };
 
-        Seq<IntPositionConsumer> passes = Seq.with(
+        Seq<Intc2> passes = Seq.with(
             //initial seeding solar panels
             placer.get(PowerBlocks.largeSolarPanel, 0.001f),
 
@@ -244,10 +244,10 @@ public class FortressGenerator{
             }
         );
 
-        for(IntPositionConsumer i : passes){
+        for(Intc2 i : passes){
             for(int x = 0; x < gen.width; x++){
                 for(int y = 0; y < gen.height; y++){
-                    if(Vec2.dst(x, y, enemyX, enemyY) > coreDst){
+                    if(Mathf.dst((float)x, (float)y, (float)enemyX, (float)enemyY) > coreDst){
                         continue;
                     }
 
@@ -260,7 +260,7 @@ public class FortressGenerator{
     Seq<Block> find(Boolf<Block> pred){
         Seq<Block> out = new Seq<>();
         for(Block block : content.blocks()){
-            if(pred.evaluate(block) && Recipe.getByResult(block) != null){
+            if(pred.get(block) && Recipe.getByResult(block) != null){
                 out.add(block);
             }
         }

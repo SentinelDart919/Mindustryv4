@@ -3,9 +3,10 @@ package io.anuke.mindustry.graphics.mesh;
 import arc.graphics.Color;
 import arc.graphics.Mesh;
 import arc.graphics.VertexAttribute;
-import arc.graphics.VertexAttributes.Usage;
+import arc.graphics.gl.Shader;
 import arc.math.Mathf;
 import arc.math.geom.Vec3;
+import arc.math.geom.Vector3;
 import arc.struct.Seq;
 import arc.struct.LongMap;
 import arc.math.geom.Vector3;
@@ -58,9 +59,9 @@ public class MeshBuilder{
         System.arraycopy(indices, 0, outIndices, 0, iptr);
 
         Mesh mesh = new Mesh(true, maxVerts, iptr,
-            new VertexAttribute(Usage.Position, 3, "a_position"),
-            new VertexAttribute(Usage.Normal, 3, "a_normal"),
-            new VertexAttribute(Usage.ColorUnpacked, 4, "a_color")
+            VertexAttribute.position3,
+            VertexAttribute.normal,
+            VertexAttribute.color
         );
         mesh.setVertices(outVerts);
         mesh.setIndices(outIndices);
@@ -117,9 +118,9 @@ public class MeshBuilder{
         }
 
         Mesh mesh = new Mesh(true, base, iptr,
-            new VertexAttribute(Usage.Position, 3, "a_position"),
-            new VertexAttribute(Usage.Normal, 3, "a_normal"),
-            new VertexAttribute(Usage.ColorUnpacked, 4, "a_color")
+            VertexAttribute.position3,
+            VertexAttribute.normal,
+            VertexAttribute.color
         );
 
         // trim arrays to written size

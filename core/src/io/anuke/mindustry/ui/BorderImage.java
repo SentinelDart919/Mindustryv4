@@ -1,7 +1,6 @@
 package io.anuke.mindustry.ui;
 
 import arc.graphics.Texture;
-import arc.graphics.g2d.Batch;
 import arc.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.graphics.Palette;
 import arc.graphics.g2d.Draw;
@@ -31,11 +30,11 @@ public class BorderImage extends Image{
     }
 
     @Override
-    public void draw(Batch batch, float alpha){
-        super.draw(batch, alpha);
+    public void draw(){
+        super.draw();
 
-        float scaleX = get();
-        float scaleY = getScaleY();
+        float scaleX = this.scaleX;
+        float scaleY = this.scaleY;
 
         Draw.color(Palette.accent);
         Lines.stroke(Scl.scl(thickness));

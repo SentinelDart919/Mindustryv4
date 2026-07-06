@@ -3,8 +3,12 @@ package io.anuke.mindustry.input;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.graphics.Gfx;
 import arc.input.GestureDetector;
 import arc.input.GestureDetector.GestureListener;
+import arc.input.KeyCode;
+import arc.util.Inputs;
+import arc.util.Timers;
 import arc.math.Interp;
 import arc.math.geom.Rect;
 import arc.math.geom.Vec2;
@@ -208,15 +212,15 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     void showGuide(String type){
-        if(!guides.contains(type) && !Settings.getBool(type, false)){
+        if(!guides.contains(type) && !Core.settings.getBool(type, false)){
             FloatingDialog dialog = new FloatingDialog("$text." + type + ".title");
             dialog.addCloseButton();
             dialog.content().left();
             dialog.content().add("$text." + type).growX().wrap();
             dialog.content().row();
-            dialog.content().addCheck("$text.showagain", false, checked -> {
-                Settings.putBool(type, checked);
-                Settings.save();
+            dialog.content().check("$text.showagain", false, checked -> {
+                Core.settings.putBool(type, checked);
+                Core.settings.save();
             }).growX().left().get().left();
             dialog.show();
             guides.add(type);
@@ -229,7 +233,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
     @Override
     public void buildUI(Table table){
-        table.addImage("blank").color(Palette.accent).height(3f).colspan(4).growX();
+        table.image("blank").color(Palette.accent).height(3f).colspan(4).growX();
         table.row();
         table.left().margin(0f).defaults().size(48f);
 
@@ -355,8 +359,8 @@ public class MobileInput extends InputHandler implements GestureListener{
 
         //Draw lines
         if(lineMode){
-            int tileX = tileX(Core.input.getX());
-            int tileY = tileY(Core.input.getY());
+            int tileX = tileX(Core.input.mouseX());
+            int tileY = tileY(Core.input.mouseY());
 
             //draw placing
             if(mode == placing && recipe != null){
@@ -368,8 +372,8 @@ public class MobileInput extends InputHandler implements GestureListener{
 
                 //go through each cell and draw the block to place if valid
                 for(int i = 0; i <= result.getLength(); i += recipe.result.size){
-                    int x = lineStartX + i * Mathf.sign(tileX - lineStartX) * Mathf.bool(result.isX());
-                    int y = lineStartY + i * Mathf.sign(tileY - lineStartY) * Mathf.bool(!result.isX());
+                    int x = lineStartX + i * Mathf.sign(tileX - lineStartX) * Mathf.num(result.isX());
+                    int y = lineStartY + i * Mathf.sign(tileY - lineStartY) * Mathf.num(!result.isX());
 
                     if(!checkOverlapPlacement(x, y, recipe.result) && validPlace(x, y, recipe.result, result.rotation)){
                         Draw.color();
@@ -426,8 +430,8 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         if(mode == PlaceMode.schematic && schematic != null){
-            int tileX = tileX(Core.input.getX());
-            int tileY = tileY(Core.input.getY());
+            int tileX = tileX(Core.input.mouseX());
+            int tileY = tileY(Core.input.mouseY());
 
             for(Schematic.Stile tile : schematic.tiles){
                 int ox = tileX + tile.x + (tile.block.size - 1) / 2;
@@ -450,7 +454,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             Draw.color(Palette.remove);
             Lines.stroke(1f);
 
-            float radius = Interpolation.swingIn.apply(crosshairScale);
+            float radius = Interp.swingIn.apply(crosshairScale);
 
             Lines.poly(target.getX(), target.getY(), 4, 7f * radius, Timers.time() * 1.5f);
             Lines.spikes(target.getX(), target.getY(), 3f * radius, 6f * radius, 4, Timers.time() * 1.5f);
@@ -480,7 +484,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button){
+    public boolean touchDown(int screenX, int screenY, int pointer, KeyCode button){
         if(state.is(State.menu) || player.isDead()) return false;
 
         //get tile on cursor
@@ -500,7 +504,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         //ignore off-screen taps
-        if(cursor == null || ui.hasMouse(screenX, screenY)) return false;
+        if(cursor == null || Core.scene.hasMouse(screenX, screenY)) return false;
 
         //only begin selecting if the tapped block is a request
         selecting = hasRequest(cursor) && isPlacing() && mode == placing;
@@ -520,7 +524,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button){
+    public boolean touchUp(int screenX, int screenY, int pointer, KeyCode button){
         //place down a line if in line mode
         if(lineMode){
             int tileX = tileX(screenX);
@@ -534,8 +538,8 @@ public class MobileInput extends InputHandler implements GestureListener{
 
                 //place blocks on line
                 for(int i = 0; i <= result.getLength(); i += recipe.result.size){
-                    int x = lineStartX + i * Mathf.sign(tileX - lineStartX) * Mathf.bool(result.isX());
-                    int y = lineStartY + i * Mathf.sign(tileY - lineStartY) * Mathf.bool(!result.isX());
+                    int x = lineStartX + i * Mathf.sign(tileX - lineStartX) * Mathf.num(result.isX());
+                    int y = lineStartY + i * Mathf.sign(tileY - lineStartY) * Mathf.num(!result.isX());
 
                     if(!checkOverlapPlacement(x, y, recipe.result) && validPlace(x, y, recipe.result, result.rotation)){
                         PlaceRequest request = new PlaceRequest(x * tilesize + recipe.result.offset(), y * tilesize + recipe.result.offset(), recipe, result.rotation);
@@ -600,7 +604,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         Tile cursor = tileAt(x, y);
 
         //ignore off-screen taps
-        if(cursor == null || ui.hasMouse(x, y)) return false;
+        if(cursor == null || Core.scene.hasMouse(x, y)) return false;
 
         //remove request if it's there
         //long pressing enables line mode otherwise
@@ -618,7 +622,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean tap(float x, float y, int count, int button){
+    public boolean tap(float x, float y, int count, KeyCode button){
         if(state.is(State.menu) || lineMode) return false;
 
         float worldx = Graphics.world(x, y).x, worldy = Graphics.world(x, y).y;
@@ -627,7 +631,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         Tile cursor = tileAt(x, y);
 
         //ignore off-screen taps
-        if(cursor == null || ui.hasMouse(x, y)) return false;
+        if(cursor == null || Core.scene.hasMouse(x, y)) return false;
 
         checkTargets(worldx, worldy);
 
@@ -792,7 +796,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean panStop(float x, float y, int pointer, int button){
+    public boolean panStop(float x, float y, int pointer, KeyCode button){
         return false;
     }
 
@@ -820,13 +824,13 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     @Override
-    public boolean touchDown(float x, float y, int pointer, int button){
-        canPan = !ui.hasMouse();
+    public boolean touchDown(float x, float y, int pointer, KeyCode button){
+        canPan = !Core.scene.hasMouse();
         return false;
     }
 
     @Override
-    public boolean fling(float velocityX, float velocityY, int button){
+    public boolean fling(float velocityX, float velocityY, KeyCode button){
         return false;
     }
 

@@ -38,7 +38,7 @@ public class ColorPickDialog extends Dialog{
         }
 
         keyDown(key -> {
-            if(key == Keys.ESCAPE || key == Keys.BACK)
+            if(key == KeyCode.escape || key == KeyCode.back)
                 hide();
         });
 

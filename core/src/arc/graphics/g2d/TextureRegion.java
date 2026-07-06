@@ -320,4 +320,8 @@ public class TextureRegion{
         ", height=" + height +
         '}';
     }
+
+    public int getRegionX() {
+        return 0;
+    }
 }

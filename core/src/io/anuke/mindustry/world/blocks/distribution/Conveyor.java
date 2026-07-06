@@ -299,7 +299,6 @@ public class Conveyor extends Block implements Autotiler{
         return removed;
     }
 
-    @Override
     public void getStackOffset(Item item, Tile tile, Translator trns){
         trns.trns(tile.getRotation() * 90 + 180f, tilesize / 2f);
     }

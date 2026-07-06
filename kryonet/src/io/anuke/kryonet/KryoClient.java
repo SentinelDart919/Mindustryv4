@@ -2,6 +2,7 @@ package io.anuke.kryonet;
 
 import arc.Core;
 import arc.struct.Seq;
+import arc.util.pooling.Pooling;
 import com.esotericsoftware.kryonet.*;
 import io.anuke.mindustry.net.Host;
 import io.anuke.mindustry.net.Net;
@@ -50,7 +51,7 @@ public class KryoClient implements ClientProvider{
                         return;
                     }
                 }
-                Core.app.postRunnable(() -> lastCallback.get(host));
+                Core.app.post(() -> lastCallback.get(host));
                 foundAddresses.add(datagramPacket.getAddress());
             }
 
@@ -194,9 +195,9 @@ public class KryoClient implements ClientProvider{
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
                     Host host = NetworkIO.readServerData(packet.getAddress().getHostAddress(), buffer);
 
-                    Core.app.postRunnable(() -> valid.get(host));
+                    Core.app.post(() -> valid.get(host));
                 }catch(Exception e){
-                    Core.app.postRunnable(() -> invalid.get(e));
+                    Core.app.post(() -> invalid.get(e));
                 }
             }
         });
@@ -209,7 +210,7 @@ public class KryoClient implements ClientProvider{
                 foundAddresses.clear();
                 lastCallback = callback;
                 client.discoverHosts(port, 3000);
-                Core.app.postRunnable(done);
+                Core.app.post(done);
             }
         });
     }
@@ -231,9 +232,9 @@ public class KryoClient implements ClientProvider{
 
     private void handleException(Exception e){
         if(e instanceof KryoNetException){
-            Core.app.postRunnable(() -> Net.showError(new IOException("mismatch")));
+            Core.app.post(() -> Net.showError(new IOException("mismatch")));
         }else{
-            Core.app.postRunnable(() -> Net.showError(e));
+            Core.app.post(() -> Net.showError(e));
         }
     }
 

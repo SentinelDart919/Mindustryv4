@@ -34,10 +34,10 @@ public class ItemBuffer{
     public Item poll(){
         if(index > 0){
             long l = buffer[0];
-            float time = NumberUtils.intBitsToFloat(Bits.getLeftInt(l));
+            float time =         NumberUtils.intToFloat((int)(l >>> 32));
 
             if(Timers.time() >= time + speed || Timers.time() < time){
-                return content.item(Bits.getLeftShort(Bits.getRightInt(l)));
+                return content.item(Bits.getLeftShort((int)l));
             }
         }
         return null;
@@ -46,10 +46,10 @@ public class ItemBuffer{
     public short pollData(){
         if(index > 0){
             long l = buffer[0];
-            float time = NumberUtils.intBitsToFloat(Bits.getLeftInt(l));
+            float time =         NumberUtils.intToFloat((int)(l >>> 32));
 
             if(Timers.time() >= time + speed || Timers.time() < time){
-                return Bits.getRightShort(Bits.getRightInt(l));
+                return Bits.getRightShort((int)l);
             }
         }
         return -1;

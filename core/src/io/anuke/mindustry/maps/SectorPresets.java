@@ -14,8 +14,6 @@ import io.anuke.mindustry.maps.missions.*;
 import io.anuke.mindustry.type.Item;
 import arc.struct.GridMap;
 
-import arc.util.Structs;
-
 import static io.anuke.mindustry.Vars.mobile;
 
 public class SectorPresets{
@@ -31,7 +29,7 @@ public class SectorPresets{
 
         //command center mission
         add(new SectorPreset(0, 1,
-            Structs.array(
+            Seq.<Mission>withArrays(
                 Missions.blockRecipe(UnitBlocks.daggerFactory),
                 new UnitMission(UnitTypes.dagger),
                 Missions.blockRecipe(UnitBlocks.commandCenter),
@@ -43,7 +41,7 @@ public class SectorPresets{
 
         //pad mission
         add(new SectorPreset(0, -2,
-            Structs.array(
+            Seq.<Mission>withArrays(
                 Missions.blockRecipe(mobile ? UpgradeBlocks.alphaPad : UpgradeBlocks.dartPad),
                 new MechMission(mobile ? Mechs.alpha : Mechs.dart),
                 new WaveMission(15)
@@ -52,7 +50,7 @@ public class SectorPresets{
 
         //oil mission
         add(new SectorPreset(-2, 0,
-            Structs.array(
+            Seq.<Mission>withArrays(
                 Missions.blockRecipe(ProductionBlocks.cultivator),
                 Missions.blockRecipe(ProductionBlocks.waterExtractor),
                 new ContentMission(Items.biomatter),

@@ -476,4 +476,15 @@ public class Settings{
     public synchronized int keySize(){
         return values.size();
     }
+
+    private static ObjectMap<Class<?>, TypeSerializer<?>> serializers = new ObjectMap<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> TypeSerializer<T> getSerializer(Class<T> type){
+        return (TypeSerializer<T>)serializers.get(type);
+    }
+
+    public static <T> void setSerializer(Class<T> type, TypeSerializer<T> serializer){
+        serializers.put(type, serializer);
+    }
 }

@@ -122,7 +122,7 @@ public class PlacementFragment extends Fragment{
                             unlocked[0] = ulock;
 
                             if(!ulock){
-                                button.replaceImage(new Image(Core.skin.getDrawable("icon-locked")));
+                                button.replaceImage(new Image(Core.scene.skin.getDrawable("icon-locked")));
                             }else{
                                 button.replaceImage(new ImageStack(recipe.result.getCompactIcon()));
                             }

@@ -303,7 +303,28 @@ public class TextureAtlas implements Disposable{
         final Seq<Region> regions = new Seq<>();
 
         public TextureAtlasData(Fi packFile, Fi imagesDir, boolean flip){
-            try(Reads read = packFile.reads()){
+            try{
+                byte[] data = packFile.readBytes();
+                if(isBinaryAtlas(data)){
+                    parseBinary(new Reads(new DataInputStream(new ByteArrayInputStream(data))), packFile, imagesDir, flip);
+                }else{
+                    parseText(packFile.readString(), imagesDir, flip);
+                }
+            }catch(Exception e){
+                throw new ArcRuntimeException("Error reading pack file: " + packFile, e);
+            }
+        }
+
+        private boolean isBinaryAtlas(byte[] data){
+            if(data.length < formatHeader.length + 1) return false;
+            for(int i = 0; i < formatHeader.length; i++){
+                if(data[i] != formatHeader[i]) return false;
+            }
+            return true;
+        }
+
+        private void parseBinary(Reads read, Fi packFile, Fi imagesDir, boolean flip){
+            try(read){
                 for(byte b : formatHeader){
                     if(read.b() != b){
                         throw new IOException("Invalid binary header. Have you re-packed sprites?");
@@ -336,7 +357,6 @@ public class TextureAtlas implements Disposable{
                         region.width = read.s();
                         region.height = read.s();
 
-                        //offsets
                         if(read.bool()){
                             region.offsetX = read.s();
                             region.offsetY = read.s();
@@ -344,12 +364,10 @@ public class TextureAtlas implements Disposable{
                             region.originalHeight = read.s();
                         }
 
-                        //splits
                         if(read.bool()){
                             region.splits = new int[]{read.s(), read.s(), read.s(), read.s()};
                         }
 
-                        //pads
                         if(read.bool()){
                             region.pads = new int[]{read.s(), read.s(), read.s(), read.s()};
                         }
@@ -357,8 +375,135 @@ public class TextureAtlas implements Disposable{
                         regions.add(region);
                     }
                 }
-            }catch(Exception e){
+            }catch(IOException e){
                 throw new ArcRuntimeException("Error reading pack file: " + packFile, e);
+            }
+        }
+
+        private void parseText(String text, Fi imagesDir, boolean flip) throws IOException{
+            String[] lines = text.replace("\r", "").split("\n");
+            PageState state = null;
+            AtlasPage page = null;
+            Region region = null;
+
+            for(String raw : lines){
+                if(raw == null) continue;
+                String line = raw.trim();
+                if(line.isEmpty()) continue;
+
+                boolean indented = raw.startsWith(" ") || raw.startsWith("\t");
+                if(!indented){
+                    if(line.endsWith(".png")){
+                        state = new PageState(line, imagesDir.child(line));
+                        page = null;
+                        region = null;
+                    }else{
+                        if(state == null) throw new IOException("Region found before page header: " + line);
+                        if(page == null){
+                            page = state.create();
+                            pages.add(page);
+                        }
+                        region = new Region();
+                        region.flip = flip;
+                        region.page = page;
+                        region.name = line;
+                        regions.add(region);
+                    }
+                    continue;
+                }
+
+                if(state == null) throw new IOException("Property found before page header: " + line);
+                if(region == null){
+                    state.readPageProperty(line);
+                }else{
+                    readRegionProperty(region, line);
+                }
+            }
+        }
+
+        private void readRegionProperty(Region region, String line) throws IOException{
+            if(line.startsWith("rotate:")){
+                region.rotate = Boolean.parseBoolean(line.substring(7).trim());
+            }else if(line.startsWith("xy:")){
+                int[] values = parseInts(line.substring(3), 2);
+                region.left = values[0];
+                region.top = values[1];
+            }else if(line.startsWith("size:")){
+                int[] values = parseInts(line.substring(5), 2);
+                region.width = values[0];
+                region.height = values[1];
+            }else if(line.startsWith("orig:")){
+                int[] values = parseInts(line.substring(5), 2);
+                region.originalWidth = values[0];
+                region.originalHeight = values[1];
+            }else if(line.startsWith("offset:")){
+                int[] values = parseInts(line.substring(7), 2);
+                region.offsetX = values[0];
+                region.offsetY = values[1];
+            }else if(line.startsWith("split:")){
+                region.splits = parseInts(line.substring(6), 4);
+            }else if(line.startsWith("pad:")){
+                region.pads = parseInts(line.substring(4), 4);
+            }
+        }
+
+        private int[] parseInts(String value, int count) throws IOException{
+            String[] parts = value.split(",");
+            if(parts.length < count) throw new IOException("Invalid atlas value: " + value);
+            int[] out = new int[count];
+            for(int i = 0; i < count; i++){
+                out[i] = Integer.parseInt(parts[i].trim());
+            }
+            return out;
+        }
+
+        private TextureFilter parseFilter(String value){
+            return TextureFilter.valueOf(value.trim().toLowerCase(java.util.Locale.ROOT));
+        }
+
+        private TextureWrap parseWrap(String value){
+            value = value.trim().toLowerCase(java.util.Locale.ROOT);
+            return switch(value){
+                case "x", "y", "both", "repeat" -> TextureWrap.repeat;
+                case "mirroredrepeat" -> TextureWrap.mirroredRepeat;
+                default -> TextureWrap.clampToEdge;
+            };
+        }
+
+        private class PageState{
+            final String name;
+            final Fi file;
+            int width;
+            int height;
+            TextureFilter min = TextureFilter.nearest;
+            TextureFilter mag = TextureFilter.nearest;
+            TextureWrap wrapX = TextureWrap.clampToEdge;
+            TextureWrap wrapY = TextureWrap.clampToEdge;
+
+            PageState(String name, Fi file){
+                this.name = name;
+                this.file = file;
+            }
+
+            void readPageProperty(String line) throws IOException{
+                if(line.startsWith("size:")){
+                    int[] values = parseInts(line.substring(5), 2);
+                    width = values[0];
+                    height = values[1];
+                }else if(line.startsWith("filter:")){
+                    String[] values = line.substring(7).split(",");
+                    if(values.length < 2) throw new IOException("Invalid filter line in atlas: " + line);
+                    min = parseFilter(values[0]);
+                    mag = parseFilter(values[1]);
+                }else if(line.startsWith("repeat:")){
+                    TextureWrap wrap = parseWrap(line.substring(7));
+                    wrapX = wrap;
+                    wrapY = wrap;
+                }
+            }
+
+            AtlasPage create(){
+                return new AtlasPage(file, width, height, min.isMipMap(), min, mag, wrapX, wrapY);
             }
         }
 

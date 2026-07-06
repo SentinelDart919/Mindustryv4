@@ -1,12 +1,14 @@
 package io.anuke.mindustry.input;
 
 import arc.Core;
-import arc.Input;
-import arc.graphics.CapStyle;
-import arc.input.Input.Buttons;
+import arc.graphics.Gfx;
 import arc.graphics.g2d.TextureRegion;
+import arc.input.KeyBinds;
+import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.struct.IntSet;
+import arc.util.Inputs;
+import arc.util.Timers;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -25,8 +27,6 @@ import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
-import arc.input.KeyBinds;
-import arc.Settings;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
@@ -51,10 +51,12 @@ public class DesktopInput extends InputHandler{
     private final Vec2 unitSelectEnd = new Vec2();
     private boolean leftWasDown, rightWasDown;
     private UnitOrderType activeOrderType = UnitOrderType.move;
+    private TextureRegion bridgeRegion;
 
     public DesktopInput(Player player){
         super(player);
         this.section = "player_" + (player.playerIndex + 1);
+        this.bridgeRegion = Core.atlas.find("bridge-joint");
     }
 
     /**Draws a placement icon for a specific block.*/
@@ -84,20 +86,20 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public void drawOutlined(){
-        int cursorX = tileX(Core.input.getX());
-        int cursorY = tileY(Core.input.getY());
+        int cursorX = tileX(Core.input.mouseX());
+        int cursorY = tileY(Core.input.mouseY());
 
         //draw selection(s)
         if(mode == placing && recipe != null){
             NormalizeResult result = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, true, maxLength);
 
             for(int i = 0; i <= result.getLength(); i += recipe.result.size){
-                int x = selectX + i * Mathf.sign(cursorX - selectX) * Mathf.bool(result.isX());
-                int y = selectY + i * Mathf.sign(cursorY - selectY) * Mathf.bool(!result.isX());
+                int x = selectX + i * Mathf.sign(cursorX - selectX) * Mathf.num(result.isX());
+                int y = selectY + i * Mathf.sign(cursorY - selectY) * Mathf.num(!result.isX());
 
                 if(i + recipe.result.size > result.getLength() && recipe.result.rotate){
                     Draw.color(!validPlace(x, y, recipe.result, result.rotation) ? Palette.remove : Palette.placeRotate);
-                    Draw.grect("place-arrow", x * tilesize + recipe.result.offset(),
+                    Draw.rect("place-arrow", x * tilesize + recipe.result.offset(),
                             y * tilesize + recipe.result.offset(), result.rotation * 90 - 90);
                 }
 
@@ -145,7 +147,7 @@ public class DesktopInput extends InputHandler{
         }else if(isPlacing()){
             if(recipe.result.rotate){
                 Draw.color(!validPlace(cursorX, cursorY, recipe.result, rotation) ? Palette.remove : Palette.placeRotate);
-                Draw.grect("place-arrow", cursorX * tilesize + recipe.result.offset(),
+                Draw.rect("place-arrow", cursorX * tilesize + recipe.result.offset(),
                         cursorY * tilesize + recipe.result.offset(), rotation * 90 - 90);
             }
             drawPlace(cursorX, cursorY, recipe.result, rotation);
@@ -165,8 +167,8 @@ public class DesktopInput extends InputHandler{
             ui.mapfrag.toggle();
         }
 
-        int cursorX = tileX(Core.input.getX());
-        int cursorY = tileY(Core.input.getY());
+        int cursorX = tileX(Core.input.mouseX());
+        int cursorY = tileY(Core.input.mouseY());
 
         if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
 
@@ -178,8 +180,8 @@ public class DesktopInput extends InputHandler{
             recipe = null;
             mode = copying;
             schematic = null;
-            cursorX = tileX(Core.input.getX());
-            cursorY = tileY(Core.input.getY());
+            cursorX = tileX(Core.input.mouseX());
+            cursorY = tileY(Core.input.mouseY());
             selectX = cursorX;
             selectY = cursorY;
         }
@@ -199,7 +201,7 @@ public class DesktopInput extends InputHandler{
 
         if(state.is(State.menu) || ui.hasDialog()) return;
 
-        boolean controller = KeyBinds.getSection(section).device.type == Inputs.DeviceType.controller;
+        boolean controller = KeyBinds.getSection(section).device == arc.scene.ui.DeviceType.controller;
 
         //zoom and rotate things
         if(Inputs.getAxisActive("zoom") && (Inputs.keyDown(section, "zoom_hold") || controller)){
@@ -241,7 +243,7 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        Tile cursor = tileAt(Core.input.getX(), Core.input.getY());
+        Tile cursor = tileAt(Core.input.mouseX(), Core.input.mouseY());
 
         if(player.isDead()){
             cursorType = normal;
@@ -263,33 +265,31 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        if(!ui.hasMouse()){
-            cursorType.set();
-        }
+        cursorType.set();
 
         cursorType = normal;
     }
 
     void pollInput(){
-        Tile selected = tileAt(Core.input.getX(), Core.input.getY());
-        int cursorX = tileX(Core.input.getX());
-        int cursorY = tileY(Core.input.getY());
+        Tile selected = tileAt(Core.input.mouseX(), Core.input.mouseY());
+        int cursorX = tileX(Core.input.mouseX());
+        int cursorY = tileY(Core.input.mouseY());
         Vec2 mouseWorld = Gfx.mouseWorld();
-        boolean leftDown = Core.input.isButtonPressed(Buttons.LEFT);
-        boolean rightDown = Core.input.isButtonPressed(Buttons.RIGHT);
+        boolean leftDown = Core.input.keyDown(KeyCode.mouseLeft);
+        boolean rightDown = Core.input.keyDown(KeyCode.mouseRight);
         boolean leftJustPressed = leftDown && !leftWasDown;
         boolean rightJustPressed = rightDown && !rightWasDown;
 
-        if(Inputs.keyTap(section, "deselect") && !rightJustPressed){
+        if(Inputs.keyTap("deselect") && !rightJustPressed){
             player.setMineTile(null);
             selectedUnits.clear();
         }
 
-        boolean shift = Core.input.isKeyPressed(Keys.SHIFT_LEFT) || Core.input.isKeyPressed(Keys.SHIFT_RIGHT);
-        boolean rtsModifier = Core.input.isKeyPressed(Keys.ALT_LEFT) || Core.input.isKeyPressed(Keys.ALT_RIGHT)
-            || Core.input.isKeyPressed(Keys.CONTROL_LEFT) || Core.input.isKeyPressed(Keys.CONTROL_RIGHT);
+        boolean shift = Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.shiftRight);
+        boolean rtsModifier = Core.input.keyDown(KeyCode.altLeft) || Core.input.keyDown(KeyCode.altRight)
+            || Core.input.keyDown(KeyCode.controlLeft) || Core.input.keyDown(KeyCode.controlRight);
         boolean unitCommandMode = hasSelectedUnits();
-        if((rtsModifier || unitCommandMode) && !ui.hasMouse() && leftJustPressed){
+        if((rtsModifier || unitCommandMode) && leftJustPressed){
             selectingUnits = true;
             unitSelectStart.set(mouseWorld);
             unitSelectEnd.set(mouseWorld);
@@ -306,7 +306,7 @@ public class DesktopInput extends InputHandler{
             return;
         }
 
-        if(!ui.hasMouse() && rightJustPressed && unitCommandMode){
+        if(rightJustPressed && unitCommandMode){
             Tile clickTile = world.tileWorld(mouseWorld.x, mouseWorld.y);
             if(clickTile != null) clickTile = clickTile.target();
             Unit enemyUnit = Units.getClosestEnemy(player.getTeam(), mouseWorld.x, mouseWorld.y, 18f, u -> !u.isDead());
@@ -337,10 +337,10 @@ public class DesktopInput extends InputHandler{
             return;
         }
 
-        if(Inputs.keyTap(section, "select") && !ui.hasMouse()){
+        if(Inputs.keyTap(section, "select")){
             if(mode == PlaceMode.schematic && schematic != null){
                 schematics.place(schematic, cursorX, cursorY, player.getTeam());
-                if(!Inputs.keyDown(Input.CONTROL_LEFT)){
+                if(!Inputs.keyDown(KeyCode.controlLeft)){
                     mode = none;
                     schematic = null;
                 }
@@ -365,11 +365,11 @@ public class DesktopInput extends InputHandler{
 
             recipe = null;
             mode = none;
-        }else if(Inputs.keyTap(section, "break") && !ui.hasMouse()){
+        }else if(Inputs.keyTap(section, "break")){
             //is recalculated because setting the mode to breaking removes potential multiblock cursor offset
             mode = breaking;
-            selectX = tileX(Core.input.getX());
-            selectY = tileY(Core.input.getY());
+            selectX = tileX(Core.input.mouseX());
+            selectY = tileY(Core.input.mouseY());
         }
 
 
@@ -379,8 +379,8 @@ public class DesktopInput extends InputHandler{
                 NormalizeResult result = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, true, maxLength);
 
                 for(int i = 0; i <= result.getLength(); i += recipe.result.size){
-                    int x = selectX + i * Mathf.sign(cursorX - selectX) * Mathf.bool(result.isX());
-                    int y = selectY + i * Mathf.sign(cursorY - selectY) * Mathf.bool(!result.isX());
+                    int x = selectX + i * Mathf.sign(cursorX - selectX) * Mathf.num(result.isX());
+                    int y = selectY + i * Mathf.sign(cursorY - selectY) * Mathf.num(!result.isX());
 
                     rotation = result.rotation;
 
@@ -558,7 +558,7 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public void drawUnderUnitsAndBlocks(){
-        if(!Settings.getBool("massai-debug", false)) return;
+        if(!Core.settings.getBool("massai-debug", false)) return;
 
         IntSet.IntSetIterator it = selectedUnits.iterator();
         while(it.hasNext){
@@ -570,7 +570,7 @@ public class DesktopInput extends InputHandler{
 
             Draw.color(Palette.command);
             Lines.stroke(1.4f);
-            Lines.line(bridgeRegion, unit.x, unit.y, ox, oy, CapStyle.None.ordinal(), -tilesize / 2f);
+            Lines.line(bridgeRegion, unit.x, unit.y, ox, oy, true);
             Lines.circle(ox, oy, 4f);
 
             if(unit instanceof GroundUnit){
@@ -584,13 +584,13 @@ public class DesktopInput extends InputHandler{
                 for(int i = cursor; i < size; i++){
                     Tile t = world.tile(g.getOrderPathTilePacked(i));
                     if(t == null) continue;
-                    Lines.line(bridgeRegion, lastx, lasty, t.worldx(), t.worldy(), CapStyle.None.ordinal(), -tilesize / 2f);
+                    Lines.line(bridgeRegion, lastx, lasty, t.worldx(), t.worldy(), true);
                     lastx = t.worldx();
                     lasty = t.worldy();
                 }
 
                 if(size > cursor){
-                    Lines.line(bridgeRegion, lastx, lasty, ox, oy, CapStyle.None.ordinal(), -tilesize / 2f);
+                    Lines.line(bridgeRegion, lastx, lasty, ox, oy, true);
                 }
             }
         }
@@ -604,12 +604,12 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public float getMouseX(){
-        return !controlling ? Core.input.getX() : controlx;
+        return !controlling ? Core.input.mouseX() : controlx;
     }
 
     @Override
     public float getMouseY(){
-        return !controlling ? Core.input.getY() : controly;
+        return !controlling ? Core.input.mouseY() : controly;
     }
 
     @Override
@@ -621,13 +621,13 @@ public class DesktopInput extends InputHandler{
     public void updateController(){
         //TODO no controller support
         //TODO move controller input to new class, ControllerInput
-        boolean mousemove = Core.input.getDeltaX() > 1 || Core.input.getDeltaY() > 1;
+        boolean mousemove = Core.input.deltaX() > 1 || Core.input.deltaY() > 1;
 
         if(state.is(State.menu)){
             droppingItem = false;
         }
 
-        if(KeyBinds.getSection(section).device.type == Inputs.DeviceType.controller && (!mousemove || player.playerIndex > 0)){
+        if(!mousemove || player.playerIndex > 0){
             if(player.playerIndex > 0){
                 controlling = true;
             }
@@ -636,7 +636,7 @@ public class DesktopInput extends InputHandler{
             float ya = Inputs.getAxis(section, "cursor_y");
 
             if(Math.abs(xa) > controllerMin || Math.abs(ya) > controllerMin){
-                float scl = Settings.getInt("sensitivity", 100) / 100f;
+                float scl = Core.settings.getInt("sensitivity", 100) / 100f;
                 controlx += xa * baseControllerSpeed * scl;
                 controly -= ya * baseControllerSpeed * scl;
                 controlling = true;
@@ -645,19 +645,19 @@ public class DesktopInput extends InputHandler{
                     Core.input.setCursorCatched(true);
                 }
 
-                Inputs.getProcessor().touchDragged((int) getMouseX(), (int) getMouseY(), player.playerIndex);
+                Core.input.getInputProcessors().first().touchDragged((int) getMouseX(), (int) getMouseY(), player.playerIndex);
             }
 
-            controlx = Mathf.clamp(controlx, 0, Core.Gfx.getWidth());
-            controly = Mathf.clamp(controly, 0, Core.Gfx.getHeight());
+            controlx = Mathf.clamp(controlx, 0, Core.graphics.getWidth());
+            controly = Mathf.clamp(controly, 0, Core.graphics.getHeight());
         }else{
             controlling = false;
             Core.input.setCursorCatched(false);
         }
 
         if(!controlling){
-            controlx = Core.input.getX();
-            controly = Core.input.getY();
+            controlx = Core.input.mouseX();
+            controly = Core.input.mouseY();
         }
     }
 

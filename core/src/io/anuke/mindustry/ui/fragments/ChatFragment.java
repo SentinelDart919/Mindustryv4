@@ -35,7 +35,7 @@ public class ChatFragment extends Table{
     private float fadetime;
     private boolean chatOpen = false;
     private TextField chatfield;
-    private Label fieldlabel = new Label(">");
+    private Label fieldlabel;
     private Font font;
     private GlyphLayout layout = new GlyphLayout();
     private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
@@ -48,6 +48,7 @@ public class ChatFragment extends Table{
     private Fragment container = new Fragment(){
         @Override
         public void build(Group parent){
+            setup();
             scene.add(ChatFragment.this);
         }
     };
@@ -56,7 +57,6 @@ public class ChatFragment extends Table{
         super();
 
         setFillParent(true);
-        font = Core.scene.getSkin().getFont("default-font");
 
         visible(() -> {
             if(!Net.active() && messages.size > 0){
@@ -91,7 +91,6 @@ public class ChatFragment extends Table{
         });
 
         history.insert(0, "");
-        setup();
     }
 
     public Fragment container(){
@@ -105,6 +104,10 @@ public class ChatFragment extends Table{
     }
 
     private void setup(){
+        if(fieldlabel != null) return;
+
+        font = Core.scene.getSkin().getFont("default-font");
+        fieldlabel = new Label(">");
         fieldlabel.setStyle(new LabelStyle(fieldlabel.getStyle()));
         fieldlabel.getStyle().font = font;
         fieldlabel.setStyle(fieldlabel.getStyle());

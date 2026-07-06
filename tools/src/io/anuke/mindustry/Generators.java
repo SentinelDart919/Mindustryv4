@@ -2,6 +2,8 @@ package io.anuke.mindustry;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.util.Hue;
+import arc.Core;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
@@ -10,8 +12,6 @@ import io.anuke.mindustry.type.Mech;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.OreBlock;
-import arc.graphics.g2d.Draw;
-import arc.graphics.Color;
 import static io.anuke.mindustry.Vars.*;
 
 public class Generators {
@@ -27,7 +27,7 @@ public class Generators {
                 }
 
                 if(block.turretIcon){
-                    Color color = Color.ROYAL;
+                    Color color = Color.royal;
 
                     Image image = context.get(block.name);
 
@@ -87,7 +87,7 @@ public class Generators {
                     image.drawCenter(mech.region);
                 }
 
-                int off = (image.width() - mech.weapon.equipRegion.getRegionWidth())/2;
+                int off = (image.width() - mech.weapon.equipRegion.width)/2;
 
                 image.draw(mech.weapon.equipRegion, -(int)mech.weaponOffsetX + off, (int)mech.weaponOffsetY + off, false, false);
                 image.draw(mech.weapon.equipRegion, (int)mech.weaponOffsetX + off, (int)mech.weaponOffsetY + off, true, false);
@@ -114,12 +114,12 @@ public class Generators {
                     image.draw(type.region);
 
                     if(!type.isTank)image.draw(type.weapon.equipRegion,
-                            -(int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
-                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
+                            -(int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.width)/2,
+                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.height)/2 + 1,
                             false, false);
                     if(!type.isTank)image.draw(type.weapon.equipRegion,
-                            (int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
-                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
+                            (int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.width)/2,
+                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.height)/2 + 1,
                             true, false);
                 }
 
@@ -146,7 +146,7 @@ public class Generators {
             for(Block block : content.blocks()){
                 if(!(block instanceof Floor)) continue;
                 Floor floor = (Floor)block;
-                if(floor.getIcon().length > 0 && !Draw.hasRegion(floor.name + "-cliff-side")){
+                if(floor.getIcon().length > 0 && !Core.atlas.has(floor.name + "-cliff-side")){
                     Image floori = context.get(floor.getIcon()[0]);
                     Color color = floori.getColor(0, 0).mul(1.3f, 1.3f, 1.3f, 1f);
 

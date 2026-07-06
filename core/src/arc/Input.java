@@ -371,6 +371,13 @@ public abstract class Input{
         return code.value;
     }
 
+    public void setCursorCatched(boolean catched){
+    }
+
+    public boolean isCursorCatched(){
+        return false;
+    }
+
     public enum Orientation{
         landscape, portrait
     }

@@ -133,11 +133,6 @@ public class Shader implements Disposable{
 
     protected String preprocess(String source, boolean fragment){
 
-        //disallow gles qualifiers
-        if(source.contains("#ifdef GL_ES")){
-            throw new ArcRuntimeException("Shader contains GL_ES specific code; this should be handled by the preprocessor. Code: \n```\n" + source + "\n```");
-        }
-
         //disallow explicit versions
         if(source.contains("#version")){
             throw new ArcRuntimeException("Shader contains explicit version requirement; this should be handled by the preprocessor. Code: \n```\n" + source + "\n```");

@@ -15,6 +15,7 @@ import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
 import arc.Events;
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
 import arc.graphics.Pixmap;
 import arc.math.Mathf;
 

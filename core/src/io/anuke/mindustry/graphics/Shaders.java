@@ -3,8 +3,6 @@ package io.anuke.mindustry.graphics;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
-import arc.Core;
-import arc.util.Time;
 import arc.graphics.g2d.Draw;
 import arc.graphics.gl.Shader;
 import arc.util.Timers;
@@ -40,15 +38,23 @@ public class Shaders{
         build = new UnitBuild();
         mix = new MixShader();
         fog = new FogShader();
-        fullMix = new Shader("fullmix", "default");
+        fullMix = new Shader(vert("default"), frag("fullmix"));
         menu = new MenuShader();
+    }
+
+    private static String vert(String name){
+        return Core.files.internal("shaders/" + name + ".vertex").readString();
+    }
+
+    private static String frag(String name){
+        return Core.files.internal("shaders/" + name + ".fragment").readString();
     }
 
     public static class MenuShader extends Shader{
         float time = 0f;
 
         public MenuShader(){
-            super("menu", "default");
+            super(vert("default"), frag("menu"));
         }
 
         @Override
@@ -65,7 +71,7 @@ public class Shaders{
 
     public static class FogShader extends Shader{
         public FogShader(){
-            super("fog", "default");
+            super(vert("default"), frag("fog"));
         }
     }
 
@@ -73,7 +79,7 @@ public class Shaders{
         public Color color = new Color(Color.white);
 
         public MixShader(){
-            super("mix", "default");
+            super(vert("default"), frag("mix"));
         }
 
         @Override
@@ -102,7 +108,7 @@ public class Shaders{
         public TextureRegion region;
 
         public UnitBuild(){
-            super("build", "default");
+            super(vert("default"), frag("build"));
         }
 
         @Override
@@ -121,7 +127,7 @@ public class Shaders{
         public TextureRegion region;
 
         public Outline(){
-            super("outline", "default");
+            super(vert("default"), frag("outline"));
         }
 
         @Override
@@ -137,7 +143,7 @@ public class Shaders{
         public TextureRegion region;
 
         public BlockBuild(){
-            super("blockbuild", "default");
+            super(vert("default"), frag("blockbuild"));
         }
 
         @Override
@@ -156,7 +162,7 @@ public class Shaders{
         public TextureRegion region;
 
         public BlockPreview(){
-            super("blockpreview", "default");
+            super(vert("default"), frag("blockpreview"));
         }
 
         @Override
@@ -171,7 +177,7 @@ public class Shaders{
     public static class Shield extends Shader{
 
         public Shield(){
-            super("shield", "default");
+            super(vert("default"), frag("shield"));
         }
 
         @Override
@@ -189,7 +195,7 @@ public class Shaders{
     public static class SurfaceShader extends Shader{
 
         public SurfaceShader(String frag){
-            super(frag, "default");
+            super(vert("default"), Shaders.frag(frag));
         }
 
         @Override

@@ -5,8 +5,6 @@ import arc.files.Fi;
 import arc.util.I18NBundle;
 import arc.util.Timers;
 import io.anuke.mindustry.Vars;
-import arc.Core;
-import arc.Settings;
 import arc.util.Time;
 import arc.util.Log;
 
@@ -18,7 +16,8 @@ public class BundleLoader{
 
     public static void load(){
         Core.settings.defaults("locale", "default");
-        Settings.load(Vars.appName, headless ? "io.anuke.mindustry.server" : "io.anuke.mindustry");
+        Core.settings.setAppName(Vars.appName);
+        Core.settings.load();
         loadBundle();
     }
 
@@ -40,7 +39,6 @@ public class BundleLoader{
     }
 
     private static void loadBundle(){
-        I18NBundle.setExceptionOnMissingKey(false);
         try{
             //try loading external bundle
             Fi handle = Core.files.local("bundle");

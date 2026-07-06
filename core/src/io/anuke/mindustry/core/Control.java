@@ -63,7 +63,7 @@ public class Control extends Module{
         Effects.setShakeFalloff(10000f);
 
         content.initialize(Content::init);
-        Core.atlas = new TextureAtlas("sprites.atlas");
+        Core.atlas = new TextureAtlas("sprites/sprites.atlas");
         Core.atlas.setErrorRegion("error");
         content.initialize(Content::load);
 
@@ -276,7 +276,9 @@ public class Control extends Module{
         Platform.instance.onGameExit();
         content.dispose();
         Net.dispose();
-        ui.editor.dispose();
+        if(ui != null && ui.editor != null){
+            ui.editor.dispose();
+        }
         inputs = new InputHandler[]{};
         players = new Player[]{};
     }
