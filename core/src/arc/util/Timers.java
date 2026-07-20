@@ -17,7 +17,7 @@ public class Timers{
     }
 
     public static synchronized void runTask(float delay, Runnable r){
-        Time.run(delay, r);
+        run(delay, r);
     }
 
     public static float time(){ return (float)time; }

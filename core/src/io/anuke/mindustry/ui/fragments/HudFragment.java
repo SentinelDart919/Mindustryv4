@@ -177,12 +177,12 @@ public class HudFragment extends Fragment{
         //paused table
         parent.fill(t -> {
             t.top().visible(() -> state.is(State.paused) && !Net.active());
-            t.table(Core.scene.getSkin().get("button", ButtonStyle.class).up, top -> top.add("$text.paused").pad(6f));
+            t.table(Core.scene.getStyle(ButtonStyle.class).up, top -> top.add("$text.paused").pad(6f));
         });
 
         parent.fill(t -> {
             t.visible(() -> netServer.isWaitingForPlayers() && !state.is(State.menu));
-            t.table(Core.scene.getSkin().get("button", ButtonStyle.class).up, c -> c.add("$text.waiting.players"));
+            t.table(Core.scene.getStyle(ButtonStyle.class).up, c -> c.add("$text.waiting.players"));
         });
 
         //'core is under attack' table
@@ -220,7 +220,7 @@ public class HudFragment extends Fragment{
 
                 return coreAttackOpacity > 0;
             });
-            t.table(Core.scene.getSkin().get("button", ButtonStyle.class).up, top -> top.add("$text.coreattack").pad(2)
+            t.table(Core.scene.getStyle(ButtonStyle.class).up, top -> top.add("$text.coreattack").pad(2)
             .update(label -> label.setColor(Hue.mix(Color.orange, Color.scarlet, Mathf.absin(Timers.time(), 2f, 1f)))));
         });
 
@@ -243,7 +243,7 @@ public class HudFragment extends Fragment{
 
                 return biomassAlertOpacity > 0;
             });
-            t.table(Core.scene.getSkin().get("button", ButtonStyle.class).up, top -> top.add("").pad(2)
+            t.table(Core.scene.getStyle(ButtonStyle.class).up, top -> top.add("").pad(2)
                     .update(label -> {
                         ((Label)label).setText(biomassAlertText);
                     label.setColor(Hue.mix(Color.scarlet, Color.purple, Mathf.absin(Timers.time(), 2f, 1f)));
@@ -265,7 +265,7 @@ public class HudFragment extends Fragment{
                 ((DesktopInput)control.input(0)).isUnitCommandMode()
             );
 
-            t.table(Core.scene.getSkin().get("button", ButtonStyle.class).up, pane -> {
+            t.table(Core.scene.getStyle(ButtonStyle.class).up, pane -> {
                 pane.left().margin(6f);
                 pane.label(() -> {
                     DesktopInput input = (DesktopInput)control.input(0);

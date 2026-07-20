@@ -100,7 +100,7 @@ public class Scene implements InputProcessor{
     }
 
     public Group getRoot(){
-        return new Group();
+        return root;
     }
 
     public @Nullable Element getHoverElement(){

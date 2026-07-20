@@ -247,7 +247,7 @@ public class Sectors {
             }
         }
 
-        Core.settings.put(campaignSettingsKey(activeCampaign), out);
+        Core.settings.putObject(campaignSettingsKey(activeCampaign), out);
         launchManager.save();
         Core.settings.save();
     }

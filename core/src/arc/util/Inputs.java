@@ -2,8 +2,9 @@ package arc.util;
 
 import arc.Core;
 import arc.input.InputProcessor;
-import arc.input.KeyCode;
+import arc.input.KeyBind;
 import arc.input.KeyBinds;
+import arc.input.KeyCode;
 
 public class Inputs{
     public enum DeviceType{
@@ -30,11 +31,13 @@ public class Inputs{
     }
 
     public static boolean keyDown(KeyBinds.Section section, String name){
-        return Core.input.keyDown(KeyCode.valueOf(name));
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyDown(entry.key);
     }
 
     public static boolean keyDown(String section, String name){
-        return Core.input.keyDown(KeyCode.valueOf(name));
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyDown(entry.key);
     }
 
     public static boolean keyTap(String name){
@@ -42,11 +45,13 @@ public class Inputs{
     }
 
     public static boolean keyTap(KeyBinds.Section section, String name){
-        return Core.input.keyTap(KeyCode.valueOf(name));
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyTap(entry.key);
     }
 
     public static boolean keyTap(String section, String name){
-        return Core.input.keyTap(KeyCode.valueOf(name));
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyTap(entry.key);
     }
 
     public static boolean keyRelease(String name){
@@ -66,15 +71,30 @@ public class Inputs{
     }
 
     public static float getAxisTapped(KeyBinds.Section section, String name){
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        if(entry != null){
+            KeyCode key = resolveAxisKey(entry);
+            if(key != null) return Core.input.axis(key);
+        }
         return 0f;
     }
 
     public static float getAxisTapped(String section, String name){
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        if(entry != null){
+            KeyCode key = resolveAxisKey(entry);
+            if(key != null) return Core.input.axis(key);
+        }
         return 0f;
     }
 
     public static float getAxis(String section, String name){
-        return Core.input.axis(KeyCode.valueOf(name));
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        if(entry != null){
+            KeyCode key = resolveAxisKey(entry);
+            if(key != null) return Core.input.axis(key);
+        }
+        return 0f;
     }
 
     public static float getAxis(String name){
@@ -83,5 +103,15 @@ public class Inputs{
 
     public static float scroll(){
         return 0f;
+    }
+
+    private static KeyCode resolveAxisKey(KeyBinds.Entry entry){
+        if(entry.value instanceof KeyCode){
+            return (KeyCode)entry.value;
+        }else if(entry.value instanceof KeyBind.Axis){
+            KeyBind.Axis axis = (KeyBind.Axis)entry.value;
+            return axis.key != null ? axis.key : axis.min;
+        }
+        return entry.key;
     }
 }

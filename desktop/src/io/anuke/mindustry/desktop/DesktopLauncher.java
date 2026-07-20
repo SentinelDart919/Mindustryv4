@@ -23,7 +23,7 @@ public class DesktopLauncher extends SdlApplication{
             config.maximized = true;
             config.width = 960;
             config.height = 540;
-            config.setWindowIcon(Files.FileType.classpath, "sprites/icon.png");
+            config.setWindowIcon(Files.FileType.internal, "sprites/icon.png");
 
             Platform.instance = new DesktopPlatform(arg);
 

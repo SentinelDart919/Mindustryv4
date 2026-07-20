@@ -367,6 +367,7 @@ public class Renderer extends RendererModule{
 
     @Override
     public void resize(int width, int height){
+        if(Core.camera == null) return;
         float lastX = camera.position.x, lastY = camera.position.y;
         super.resize(width, height);
         for(Player player : players){

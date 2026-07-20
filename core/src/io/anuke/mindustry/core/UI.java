@@ -1,6 +1,7 @@
 package io.anuke.mindustry.core;
 
 import arc.Core;
+import arc.input.KeyCode;
 import arc.input.KeyCode.Keys;
 import arc.graphics.Color;
 import arc.graphics.Colors;
@@ -30,13 +31,24 @@ import arc.graphics.g2d.Interpolation;
 import arc.scene.ui.TooltipManager;
 import arc.util.Timers;
 import arc.scene.SceneModule;
+import arc.scene.ui.Button.ButtonStyle;
+import arc.scene.ui.CheckBox.CheckBoxStyle;
 import arc.scene.ui.Dialog;
+import arc.scene.ui.Dialog.DialogStyle;
+import arc.scene.ui.ImageButton.ImageButtonStyle;
+import arc.scene.ui.Label.LabelStyle;
+import arc.scene.ui.ProgressBar.ProgressBarStyle;
+import arc.scene.ui.ScrollPane.ScrollPaneStyle;
+import arc.scene.ui.Slider.SliderStyle;
+import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.TextField;
+import arc.scene.ui.TextField.TextFieldStyle;
 import arc.scene.ui.TextField.TextFieldFilter;
 import arc.scene.ui.TooltipManager;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.Scl;
 import arc.util.Strings;
+import arc.util.Log;
 import arc.graphics.Gfx;
 
 import static io.anuke.mindustry.Vars.*;
@@ -45,6 +57,7 @@ import static arc.scene.actions.Actions.*;
 public class UI extends SceneModule{
     public Skin skin;
     private FreeTypeFontGenerator generator;
+    private boolean wasTouched;
 
     public final MenuFragment menufrag = new MenuFragment();
     public final HudFragment hudfrag = new HudFragment();
@@ -125,12 +138,52 @@ public class UI extends SceneModule{
     @Override
     protected void loadSkin(){
         skin = new Skin(Core.atlas);
+        Core.scene.skin = skin;
         generateFonts();
-        skin.load(Core.files.internal("ui/uiskin.json"));
+        try{
+            skin.load(Core.files.internal("ui/uiskin.json"));
+        }catch(Throwable t){
+            Log.err("Failed to load skin", t);
+        }
 
         for(BitmapFont font : skin.getAll(BitmapFont.class).values()){
             font.setUseIntegerPositions(true);
             //font.getData().setScale(Vars.fontScale);
+        }
+
+        if(!Core.scene.hasStyle(DialogStyle.class)){
+            DialogStyle style = new DialogStyle();
+            style.titleFont = skin.getFont("default-font");
+            if(style.titleFont == null) style.titleFont = skin.get("default-font", arc.graphics.g2d.Font.class);
+            style.titleFontColor = skin.getColor("accent");
+            Core.scene.addStyle(DialogStyle.class, style);
+        }
+        if(!Core.scene.hasStyle(ButtonStyle.class)){
+            Core.scene.addStyle(ButtonStyle.class, skin.getButtonStyle());
+        }
+        if(!Core.scene.hasStyle(TextButtonStyle.class)){
+            Core.scene.addStyle(TextButtonStyle.class, skin.getTextButtonStyle());
+        }
+        if(!Core.scene.hasStyle(ImageButtonStyle.class)){
+            Core.scene.addStyle(ImageButtonStyle.class, skin.getImageButtonStyle());
+        }
+        if(!Core.scene.hasStyle(LabelStyle.class)){
+            Core.scene.addStyle(LabelStyle.class, skin.getLabelStyle());
+        }
+        if(!Core.scene.hasStyle(CheckBoxStyle.class)){
+            Core.scene.addStyle(CheckBoxStyle.class, skin.getCheckBoxStyle());
+        }
+        if(!Core.scene.hasStyle(SliderStyle.class)){
+            Core.scene.addStyle(SliderStyle.class, skin.getSliderStyle());
+        }
+        if(!Core.scene.hasStyle(ScrollPaneStyle.class)){
+            Core.scene.addStyle(ScrollPaneStyle.class, skin.getScrollPaneStyle());
+        }
+        if(!Core.scene.hasStyle(TextFieldStyle.class)){
+            Core.scene.addStyle(TextFieldStyle.class, skin.getTextFieldStyle());
+        }
+        if(!Core.scene.hasStyle(ProgressBarStyle.class)){
+            Core.scene.addStyle(ProgressBarStyle.class, skin.getProgressBarStyle());
         }
     }
 
@@ -143,6 +196,22 @@ public class UI extends SceneModule{
         act();
 
         Gfx.begin();
+
+        boolean nowTouched = Core.input.keyDown(KeyCode.mouseLeft);
+        int mx = Core.input.mouseX();
+        int my = Core.input.mouseY();
+
+        Core.scene.mouseMoved(mx, my);
+
+        if(nowTouched && !wasTouched){
+            Core.scene.touchDown(mx, my, 0, KeyCode.mouseLeft);
+        }else if(!nowTouched && wasTouched){
+            Core.scene.touchUp(mx, my, 0, KeyCode.mouseLeft);
+        }
+        wasTouched = nowTouched;
+
+        Core.scene.act();
+        Core.scene.draw();
 
         for(int i = 0; i < players.length; i++){
             InputHandler input = control.input(i);
@@ -162,6 +231,7 @@ public class UI extends SceneModule{
 
     @Override
     public void init(){
+        loadSkin();
         editor = new MapEditorDialog();
         controls = new ControlsDialog();
         restart = new RestartDialog();
@@ -202,6 +272,7 @@ public class UI extends SceneModule{
     @Override
     public void resize(int width, int height){
         super.resize(width, height);
+        Core.scene.resize(width, height);
 
         Events.fire(new ResizeEvent());
     }
@@ -209,7 +280,9 @@ public class UI extends SceneModule{
     @Override
     public void dispose(){
         super.dispose();
-        generator.dispose();
+        if(generator != null){
+            generator.dispose();
+        }
     }
 
     public void loadGraphics(Runnable call){

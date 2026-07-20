@@ -28,6 +28,7 @@ public class Mindustry extends arc.modules.ModuleCore{
         schematics.load();
 
         Core.scene = new Scene();
+        Core.input.addProcessor(Core.scene);
 
         module(logic = new Logic());
         module(world = new World());

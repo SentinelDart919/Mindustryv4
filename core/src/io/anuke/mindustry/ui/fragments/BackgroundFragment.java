@@ -22,9 +22,9 @@ public class BackgroundFragment extends Fragment{
             Draw.colorl(0.1f);
             Fill.crect(0, 0, w, h);
             Draw.color(Palette.accent);
-            Gfx.shader(Shaders.menu);
+            Draw.shader(Shaders.menu);
             Fill.crect(0, 0, w, h);
-            Gfx.shader();
+            Draw.shader();
             Draw.color();
 
             boolean portrait = Core.Gfx.getWidth() < Core.Gfx.getHeight();

@@ -136,6 +136,8 @@ public class Vars{
     public static final Translator[] tmptr = new Translator[]{new Translator(), new Translator(), new Translator(), new Translator()};
 
     public static void init(){
+        Core.camera = new arc.math.geom.OrthographicCamera();
+        Core.Gfx = Core.graphics;
         Serialization.init();
 
         //load locales

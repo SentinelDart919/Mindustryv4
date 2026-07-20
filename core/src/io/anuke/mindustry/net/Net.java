@@ -353,7 +353,7 @@ public class Net{
     }
 
     public static void http(String url, String method, String body, Cons<String> listener, Cons<Throwable> failure){
-        Http.request(Http.HttpMethod.valueOf(method.toLowerCase()), url)
+        Http.request(Http.HttpMethod.valueOf(method.toUpperCase()), url)
             .content(body)
             .error(failure)
             .submit(res -> {
