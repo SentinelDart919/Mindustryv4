@@ -140,7 +140,7 @@ public class BlockRenderer{
             }
         }
 
-        Gfx.surface();
+        shadows.getBuffer().end();
         Gfx.end();
         Draw.proj(camera);
         Gfx.begin();

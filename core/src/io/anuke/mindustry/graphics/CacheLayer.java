@@ -65,18 +65,18 @@ public enum CacheLayer{
     }
 
     protected void beginShader(){
-        //renderer.getBlocks().endFloor();
         renderer.effectSurface.getBuffer().begin();
         Gfx.clear(Color.clear);
-        //renderer.getBlocks().beginFloor();
     }
 
     public void endShader(Shader shader){
         renderer.blocks.endFloor();
 
-        //renderer.effectSurface.getBuffer().end();
+        renderer.effectSurface.getBuffer().end();
 
-        renderer.pixelSurface.getBuffer().begin();
+        if(!renderer.pixelSurface.getBuffer().isBound()){
+            renderer.pixelSurface.getBuffer().begin();
+        }
 
         Gfx.shader(shader);
         Gfx.begin();

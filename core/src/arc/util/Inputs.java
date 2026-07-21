@@ -23,7 +23,7 @@ public class Inputs{
     }
 
     public static boolean keyDown(String name){
-        return Core.input.keyDown(KeyCode.valueOf(name));
+        return keyDown("default", name);
     }
 
     public static boolean keyDown(KeyCode key){
@@ -41,7 +41,7 @@ public class Inputs{
     }
 
     public static boolean keyTap(String name){
-        return Core.input.keyTap(KeyCode.valueOf(name));
+        return keyTap("default", name);
     }
 
     public static boolean keyTap(KeyBinds.Section section, String name){
@@ -55,18 +55,33 @@ public class Inputs{
     }
 
     public static boolean keyRelease(String name){
-        return false;
+        return keyRelease("default", name);
     }
 
     public static boolean keyRelease(KeyBinds.Section section, String name){
-        return false;
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyRelease(entry.key);
     }
 
     public static boolean keyRelease(String section, String name){
-        return false;
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        return entry != null && Core.input.keyRelease(entry.key);
     }
 
     public static boolean getAxisActive(String name){
+        return getAxisActive("default", name);
+    }
+
+    public static boolean getAxisActive(String section, String name){
+        KeyBinds.Entry entry = KeyBinds.get(section, name);
+        if(entry != null && entry.value instanceof arc.input.KeyBind.Axis){
+            arc.input.KeyBind.Axis axis = (arc.input.KeyBind.Axis)entry.value;
+            if(axis.key != null){
+                return Core.input.axis(axis.key) != 0;
+            }else{
+                return Core.input.axis(axis.min) != 0 || Core.input.axis(axis.max) != 0;
+            }
+        }
         return false;
     }
 
@@ -98,7 +113,7 @@ public class Inputs{
     }
 
     public static float getAxis(String name){
-        return 0f;
+        return getAxis("default", name);
     }
 
     public static float scroll(){
@@ -110,7 +125,10 @@ public class Inputs{
             return (KeyCode)entry.value;
         }else if(entry.value instanceof KeyBind.Axis){
             KeyBind.Axis axis = (KeyBind.Axis)entry.value;
-            return axis.key != null ? axis.key : axis.min;
+            if(axis.key != null) return axis.key;
+            if(Core.input.keyDown(axis.max)) return axis.max;
+            if(Core.input.keyDown(axis.min)) return axis.min;
+            return axis.min;
         }
         return entry.key;
     }

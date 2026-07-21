@@ -323,7 +323,7 @@ public class Renderer extends RendererModule{
         }
 
         Draw.color(0, 0, 0, 0.15f);
-        Gfx.flushSurface();
+        effectSurface.getBuffer().end();
         Draw.color();
     }
 

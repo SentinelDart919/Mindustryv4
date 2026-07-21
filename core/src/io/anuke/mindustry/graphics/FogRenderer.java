@@ -149,7 +149,9 @@ public class FogRenderer implements Disposable{
 
         Draw.proj(Core.camera);
         Gfx.shader(Shaders.fog);
-        renderer.pixelSurface.getBuffer().begin();
+        if(!renderer.pixelSurface.getBuffer().isBound()){
+            renderer.pixelSurface.getBuffer().begin();
+        }
         Gfx.begin();
 
         Draw.rect(region, px + vw/2f, py + vh/2f, vw, vh);

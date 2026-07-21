@@ -28,6 +28,7 @@ public class Shaders{
 
     public static void init(){
         outline = new Outline();
+        outline.region = Draw.getBlankRegion();
         blockbuild = new BlockBuild();
         blockpreview = new BlockPreview();
         shield = new Shield();

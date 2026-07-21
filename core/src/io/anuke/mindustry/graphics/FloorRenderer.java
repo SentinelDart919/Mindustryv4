@@ -219,7 +219,7 @@ public class FloorRenderer{
     }
 
     private void cacheChunkLayer(int cx, int cy, Chunk chunk, CacheLayer layer){
-
+        arc.graphics.g2d.Batch prev = arc.Core.batch;
         Draw.batch(cbatch);
         cbatch.beginCache();
 
@@ -245,6 +245,7 @@ public class FloorRenderer{
         }
 
         chunk.caches[layer.ordinal()] = cbatch.endCache();
+        Draw.batch(prev);
     }
 
     public void clearTiles(){
