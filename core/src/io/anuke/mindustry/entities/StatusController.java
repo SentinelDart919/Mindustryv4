@@ -3,6 +3,7 @@ package io.anuke.mindustry.entities;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.StatusEffects;
+import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.traits.Saveable;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.StatusEffect;
@@ -31,6 +32,8 @@ public class StatusController implements Saveable{
 
     public void handleApply(Unit unit, StatusEffect effect, float intensity){
         if(effect == StatusEffects.none) return; //don't apply empty effects
+
+        if(unit instanceof BaseUnit && ((BaseUnit) unit).getType().immunities.contains(effect)) return; //immune to this effect
 
         float newTime = effect.baseDuration * intensity;
 

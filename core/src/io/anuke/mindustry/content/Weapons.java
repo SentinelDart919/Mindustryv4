@@ -8,7 +8,7 @@ import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze, kamikazeDrone, lichMissiles, chaos,
+    kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
     artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
@@ -89,17 +89,32 @@ public class Weapons implements ContentList{
             ammo = AmmoTypes.weaponMissile;
         }};
 
+        revenantMissiles = new Weapon("revenant-missiles"){{
+            length = 3f;
+            reload = 70f;
+            width = 10f;
+            shots = 2;
+            inaccuracy = 2f;
+            roundrobin = true;
+            ejectEffect = Fx.none;
+            velocityRnd = 0.2f;
+            spacing = 1f;
+            setShootSound("shootMissileSmall");
+            ammo = AmmoTypes.weaponMissileSwarm;
+        }};
+
         lichMissiles = new Weapon("lich-missiles"){{
-        length = 4f;
-        reload = 160f;
-        shots = 16;
-        spacing = 1f;
-        velocityRnd = 0.2f;
-        width = 14f;
-        roundrobin = true;
-        ejectEffect = Fx.none;
-        setShootSound("shootMissileSmall");
-        ammo = AmmoTypes.missileExplosive;
+            length = 4f;
+            reload = 160f;
+            shots = 16;
+            spacing = 1f;
+            velocityRnd = 0.2f;
+            width = 22f;
+            roundrobin = true;
+            inaccuracy = 10f;
+            ejectEffect = Fx.none;
+            setShootSound("shootArtillery");
+            ammo = AmmoTypes.weaponMissileSwarm;
         }};
 
         swarmer = new Weapon("swarmer"){{
@@ -177,7 +192,7 @@ public class Weapons implements ContentList{
             length = 1f;
             reload = 60f;
             roundrobin = true;
-            recoil = 5f;
+            recoil = 4f;
             shake = 2f;
             ejectEffect = ShootFx.shellEjectMedium;
             ammo = AmmoTypes.unitArtillery;
@@ -279,6 +294,7 @@ public class Weapons implements ContentList{
             spacing = 4f;
             ejectEffect = ShootFx.shellEjectMedium;
             ammo = AmmoTypes.flakSurge;
+            setShootSound("shootBig");
         }};
 
         debugtankturret = new Weapon("debugtankturret"){{

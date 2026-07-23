@@ -9,6 +9,7 @@ import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
+import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.ucore.util.Mathf;
 
 public class UnitTypes implements ContentList{
@@ -90,10 +91,10 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.mineBlaster;
             isFlying = true;
             drag = 0.01f;
-            speed = 0.19f;
-            maxVelocity = 0.61f;
+            speed = 0.3f;
+            maxVelocity = 1.2f;
             range = 55f;
-            health = 40;
+            health = 80;
             toMine = ObjectSet.with(Items.copper, Items.lead);
             spawnsInSiegeMode = false;
             playerControllable = false;
@@ -104,10 +105,10 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.healBlasterDrone;
             isFlying = true;
             drag = 0.01f;
-            speed = 0.2f;
-            maxVelocity = 0.8f;
+            speed = 0.42f;
+            maxVelocity = 1.6f;
             range = 50f;
-            health = 60;
+            health = 100;
             spawnsInSiegeMode = false;
             rtsAIControllable = false;
         }};
@@ -134,13 +135,12 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             drag = 0.01f;
             mass = 2f;
-            speed = 0.25f;
+            speed = 0.45f;
             maxVelocity = 1.9f;
             range = 70f;
             itemCapacity = 70;
-            health = 220;
-            buildPower = 0.9f;
-            minePower = 1.2f;
+            health = 400;
+            buildPower = 0.4f;
             toMine = ObjectSet.with(Items.lead, Items.copper, Items.titanium, Items.thorium);
             spawnsInSiegeMode = false;
             rtsAIControllable = false;
@@ -159,12 +159,12 @@ public class UnitTypes implements ContentList{
 
         crawler = new UnitType("crawler", Crawler.class, Crawler::new){{
             weapon = Weapons.kamikaze;
-            maxVelocity = 1.25f;
-            speed = 0.36f;
-            drag = 0.01f;
+            maxVelocity = 1.27f;
+            speed = 0.285f;
+            drag = 0.4f;
             hitsize = 8f;
             mass = 1.75f;
-            health = 100f;
+            health = 120f;
             unitCost = 30;
         }};
 
@@ -208,18 +208,19 @@ public class UnitTypes implements ContentList{
 
         titan = new UnitType("titan", Titan.class, Titan::new){{
             maxVelocity = 0.8f;
-            speed = 0.18f;
+            speed = 0.22f;
             drag = 0.4f;
             mass = 3.5f;
             hitsize = 9f;
             rotatespeed = 0.1f;
             weapon = Weapons.flamethrower;
-            health = 440;
+            health = 460;
             unitCost = 25;
+            immunities.add(StatusEffects.burning);
         }};
 
         fortress = new UnitType("fortress", Fortress.class, Fortress::new){{
-            maxVelocity = 0.8f;
+            maxVelocity = 0.78f;
             speed = 0.15f;
             drag = 0.4f;
             mass = 5f;
@@ -228,7 +229,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 1;
             targetAir = false;
             weapon = Weapons.artillery;
-            health = 800;
+            health = 750;
             unitCost = 100;
         }};
 
@@ -246,16 +247,16 @@ public class UnitTypes implements ContentList{
         wraith = new UnitType("wraith", Wraith.class, Wraith::new){{
             speed = 0.3f;
             maxVelocity = 1.9f;
-            drag = 0.005f;
+            drag = 0.01f;
             mass = 1.5f;
             weapon = Weapons.chainBlaster;
             isFlying = true;
-            health = 70;
+            health = 75;
             unitCost = 20;
         }};
 
         ghoul = new UnitType("ghoul", Ghoul.class, Ghoul::new){{
-            health = 250;
+            health = 220;
             speed = 0.2f;
             maxVelocity = 1.4f;
             mass = 3f;
@@ -267,23 +268,26 @@ public class UnitTypes implements ContentList{
         }};
 
         revenant = new UnitType("revenant", Revenant.class, Revenant::new){{
-            health = 250;
+            health = 1000;
             mass = 5f;
-            hitsize = 12f;
-            speed = 0.14f;
-            maxVelocity = 1.3f;
+            hitsize = 20f;
+            speed = 0.1f;
+            maxVelocity = 1f;
             drag = 0.01f;
             range = 80f;
             shootCone = 40f;
-            attackLength = 90f;
             isFlying = true;
-            weapon = Weapons.laserBurster;
+            rotateWeapon = true;
+            rotatespeed = 0.01f;
+            attackLength = 90f;
+            baseRotateSpeed = 0.06f;
+            weapon = Weapons.revenantMissiles;
             unitCost = 300;
         }};
 
         lich = new UnitType("lich", Lich.class, Lich::new){{
 
-            health = 7000;
+            health = 6000;
             mass = 20f;
             hitsize = 40f;
             speed = 0.01f;
@@ -297,6 +301,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetY = -3f;
             attackLength = 90f;
             shootCone = 20f;
+            rotateWeapon = true;
             weapon = Weapons.lichMissiles;
             unitCost = 2000;
         }};

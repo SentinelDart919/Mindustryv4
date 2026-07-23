@@ -26,6 +26,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
     }
     protected static Translator vec = new Translator();
     protected static float wobblyness = 0.6f;
+    protected float[] weaponAngles = {0, 0};
     protected boolean customTrail = false;
     protected boolean itWobbles = true;
     protected Trail trail = new Trail(8);
@@ -91,8 +92,25 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                 if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity) //bombers and such don't care about rotation
                         && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
-                    getWeapon().update(FlyingUnit.this, to.x, to.y);
+
+                    if(type.rotateWeapon){
+                        for(boolean left : new boolean[]{true, false}){
+                            int wi = left ? 1 : 0;
+                            float side = left ? 1f : -1f;
+                            float mountAngle = rotation - 90;
+                            float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
+                            float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
+
+                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()), 0.1f);
+
+                            float tipX = wx + Angles.trnsx(weaponAngles[wi], getWeapon().length);
+                            float tipY = wy + Angles.trnsy(weaponAngles[wi], getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, weaponAngles[wi], left);
+                        }
+                    }else{
+                        Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                        getWeapon().update(FlyingUnit.this, to.x, to.y);
+                    }
                 }
             } else {
                 target = getClosestCore();
@@ -133,8 +151,25 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                 if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)
                         && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
                     AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
-                    getWeapon().update(FlyingUnit.this, to.x, to.y);
+
+                    if(type.rotateWeapon){
+                        for(boolean left : new boolean[]{true, false}){
+                            int wi = left ? 1 : 0;
+                            float side = left ? 1f : -1f;
+                            float mountAngle = rotation - 90;
+                            float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
+                            float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
+
+                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()), 0.1f);
+
+                            float tipX = wx + Angles.trnsx(weaponAngles[wi], getWeapon().length);
+                            float tipY = wy + Angles.trnsy(weaponAngles[wi], getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, weaponAngles[wi], left);
+                        }
+                    }else{
+                        Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+                        getWeapon().update(FlyingUnit.this, to.x, to.y);
+                    }
                 }
             }
         }
@@ -300,6 +335,20 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
         Draw.alpha(hitTime / hitDuration);
 
         Draw.rect(type.name, x, y, rotation - 90);
+
+        if(type.rotateWeapon){
+            Draw.alpha(1f);
+
+            for(int i : new int[]{1, -1}){
+                boolean left = i > 0;
+                if(!getWeapon().weaponMirror && !left) continue;
+                float tra = rotation - 90,
+                        trY = -getWeapon().getRecoil(this, left) + type.weaponOffsetY;
+                float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
+                        wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
+                Draw.rect(getWeapon().equipRegion, wx, wy, weaponAngles[left ? 1 : 0] - 90);
+            }
+        }
 
         drawItems();
 

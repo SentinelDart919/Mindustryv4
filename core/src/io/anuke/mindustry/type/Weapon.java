@@ -151,6 +151,16 @@ public class Weapon extends Content{
         }
     }
 
+    public void update(ShooterTrait shooter, float mountX, float mountY, float angle, boolean left){
+        if(shooter.getTimer().get(shooter.getShootTimer(left), reload)){
+            if(roundrobin){
+                shooter.getTimer().reset(shooter.getShootTimer(!left), reload / 2f);
+            }
+
+            shoot(shooter, mountX - shooter.getX(), mountY - shooter.getY(), angle, left);
+        }
+    }
+
     public float getRecoil(ShooterTrait player, boolean left){
         return (1f - Mathf.clamp(player.getTimer().getTime(player.getShootTimer(left)) / reload)) * recoil;
     }

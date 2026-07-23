@@ -4,12 +4,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.mindustry.content.Items;
+import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.Weapons;
 import io.anuke.mindustry.entities.traits.TypeTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.type.StatusEffect;
 import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.ui.ContentDisplay;
 import io.anuke.ucore.function.Supplier;
@@ -36,6 +38,7 @@ public class UnitType extends UnlockableContent{
     public boolean isTank;
     public boolean living;
     public boolean isHealer;
+    public boolean rotateWeapon = false;
     public boolean playerControllable = true;
     public boolean rtsAIControllable = true;
     public boolean targetAir = true;
@@ -55,6 +58,7 @@ public class UnitType extends UnlockableContent{
     public float weaponOffsetX, weaponOffsetY;
     public float healTurretOffsetX, healTurretOffsetY;
     public Color trailColor = Color.valueOf("ffa665");
+    public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
     public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;
 

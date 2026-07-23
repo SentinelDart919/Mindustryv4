@@ -79,6 +79,7 @@ public class MissileBullets extends BulletList implements ContentList{
                 bulletShrink = 0f;
                 drag = -0.003f;
                 keepVelocity = false;
+                homingRange = 200f;
                 splashDamageRadius = 20f;
                 splashDamage = 1f;
                 lifetime = 90f;
@@ -102,7 +103,7 @@ public class MissileBullets extends BulletList implements ContentList{
                 bulletHeight = 8f;
                 bulletShrink = 0f;
                 drag = -0.003f;
-                homingRange = 60f;
+                homingRange = 200f;
                 keepVelocity = false;
                 splashDamageRadius = 25f;
                 splashDamage = 10f;
