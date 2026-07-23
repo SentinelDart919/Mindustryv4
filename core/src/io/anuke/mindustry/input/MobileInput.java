@@ -532,13 +532,49 @@ public class MobileInput extends InputHandler implements GestureListener{
 
                 rotation = result.rotation;
 
-                //place blocks on line
+                //collect all placement positions
+                Array<int[]> plans = new Array<>();
                 for(int i = 0; i <= result.getLength(); i += recipe.result.size){
                     int x = lineStartX + i * Mathf.sign(tileX - lineStartX) * Mathf.bool(result.isX());
                     int y = lineStartY + i * Mathf.sign(tileY - lineStartY) * Mathf.bool(!result.isX());
+                    plans.add(new int[]{x, y, result.rotation, 0});
+                }
 
-                    if(!checkOverlapPlacement(x, y, recipe.result) && validPlace(x, y, recipe.result, result.rotation)){
-                        PlaceRequest request = new PlaceRequest(x * tilesize + recipe.result.offset(), y * tilesize + recipe.result.offset(), recipe, result.rotation);
+                //let the block handle line placement (e.g. bridge replacement)
+                recipe.result.handlePlacementLine(plans);
+
+                //place blocks on line, handling bridge/junction replacements
+                for(int[] plan : plans){
+                    int px = plan[0], py = plan[1], prot = plan[2];
+
+                    io.anuke.mindustry.world.Block bridgeBlock = null;
+                    io.anuke.mindustry.world.Block junctionBlock = null;
+
+                    if(recipe.result instanceof io.anuke.mindustry.world.blocks.distribution.Conveyor){
+                        io.anuke.mindustry.world.blocks.distribution.Conveyor conv = (io.anuke.mindustry.world.blocks.distribution.Conveyor) recipe.result;
+                        bridgeBlock = conv.bridgeReplacement;
+                        junctionBlock = conv.junctionReplacement;
+                    }else if(recipe.result instanceof io.anuke.mindustry.world.blocks.distribution.Conduit){
+                        io.anuke.mindustry.world.blocks.distribution.Conduit conduit = (io.anuke.mindustry.world.blocks.distribution.Conduit) recipe.result;
+                        bridgeBlock = conduit.bridgeReplacement;
+                        junctionBlock = conduit.junctionReplacement;
+                    }
+
+                    Recipe placeRecipe = recipe;
+                    if(plan.length > 3 && plan[3] == -1 && bridgeBlock != null){
+                        Recipe bridgeRecipe = Recipe.getByResult(bridgeBlock);
+                        if(bridgeRecipe != null){
+                            placeRecipe = bridgeRecipe;
+                        }
+                    }else if(plan.length > 3 && plan[3] == -2 && junctionBlock != null){
+                        Recipe junctionRecipe = Recipe.getByResult(junctionBlock);
+                        if(junctionRecipe != null){
+                            placeRecipe = junctionRecipe;
+                        }
+                    }
+
+                    if(!checkOverlapPlacement(px, py, placeRecipe.result) && validPlace(px, py, placeRecipe.result, prot)){
+                        PlaceRequest request = new PlaceRequest(px * tilesize + placeRecipe.result.offset(), py * tilesize + placeRecipe.result.offset(), placeRecipe, prot);
                         request.scale = 1f;
                         selection.add(request);
                     }

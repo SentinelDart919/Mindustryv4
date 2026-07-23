@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.LongArray;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.content.blocks.Blocks;
+import io.anuke.mindustry.content.blocks.DistributionBlocks;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.graphics.Layer;
@@ -35,6 +37,7 @@ public class Conveyor extends Block implements Autotiler{
     public static ItemPos pos2 = new ItemPos();
     public final Translator tr1 = new Translator();
     public final Translator tr2 = new Translator();
+    public Block junctionReplacement, bridgeReplacement;
 
     private TextureRegion[][] regions = new TextureRegion[7][4];
 
@@ -54,10 +57,184 @@ public class Conveyor extends Block implements Autotiler{
         setAmbientSound("loopConveyor", 0.03f, 4);
     }
 
+    @Override
+    public void init(){
+        super.init();
+        if(junctionReplacement == null) junctionReplacement = DistributionBlocks.junction;
+        if(bridgeReplacement == null) bridgeReplacement = DistributionBlocks.itemBridge;
+    }
+
+    @Override
+    public Block getReplacement(int x, int y, int rotation){
+        return getReplacement(x, y, rotation, null);
+    }
+
+    @Override
+    public Block getReplacement(int x, int y, int rotation, Array<int[]> plans){
+        if(junctionReplacement == null) return null;
+
+        Tile tile = world.tile(x, y);
+        if(tile == null || tile.block() == Blocks.air || !(tile.block() instanceof Conveyor)) return null;
+        if(Mathf.mod(tile.getRotation() - rotation, 2) != 1) return null;
+
+        if(plans != null){
+            boolean hasFront = false, hasBack = false;
+            for(int[] plan : plans){
+                if(plan[0] == x + Geometry.d4[rotation].x && plan[1] == y + Geometry.d4[rotation].y){
+                    Block b = getBlockAtPlan(plan);
+                    hasFront = b instanceof Conveyor || b instanceof Junction;
+                }
+                if(plan[0] == x + Geometry.d4[Mathf.mod(rotation - 2, 4)].x && plan[1] == y + Geometry.d4[Mathf.mod(rotation - 2, 4)].y){
+                    Block b = getBlockAtPlan(plan);
+                    hasBack = b instanceof Conveyor || b instanceof Junction;
+                }
+            }
+
+            return hasFront && hasBack ? junctionReplacement : null;
+        }
+
+        return null;
+    }
+
+    private Block getBlockAtPlan(int[] plan){
+        Tile tile = world.tile(plan[0], plan[1]);
+        if(tile == null) return Blocks.air;
+        return tile.block();
+    }
+
+    @Override
+    public void handlePlacementLine(Array<int[]> plans){
+        if(plans.size == 0) return;
+
+        boolean hasJunction = junctionReplacement != null;
+
+        if(plans.size > 1){
+            int[] first = plans.get(0);
+            int[] second = plans.get(1);
+            int dx = Math.abs(first[0] - second[0]);
+            int dy = Math.abs(first[1] - second[1]);
+            boolean isHorizontal = dx > dy;
+            boolean rotIsHorizontal = first[2] % 2 == 0;
+            if(isHorizontal != rotIsHorizontal) return;
+        }
+
+        int startX = plans.get(0)[0], startY = plans.get(0)[1];
+        int endX = plans.get(plans.size - 1)[0], endY = plans.get(plans.size - 1)[1];
+        if(startX != endX && startY != endY) return;
+
+        if(hasJunction){
+            for(int i = 0; i < plans.size; i++){
+                int[] plan = plans.get(i);
+                Tile tile = world.tile(plan[0], plan[1]);
+                if(tile != null && tile.block() instanceof Conveyor
+                    && Mathf.mod(tile.getRotation() - plan[2], 2) == 1){
+                    int frontX = plan[0] + Geometry.d4[plan[2]].x;
+                    int frontY = plan[1] + Geometry.d4[plan[2]].y;
+                    int backX = plan[0] - Geometry.d4[plan[2]].x;
+                    int backY = plan[1] - Geometry.d4[plan[2]].y;
+                    boolean hasFront = false, hasBack = false;
+                    for(int j = 0; j < plans.size; j++){
+                        int[] other = plans.get(j);
+                        if(other[0] == frontX && other[1] == frontY) hasFront = true;
+                        if(other[0] == backX && other[1] == backY) hasBack = true;
+                    }
+                    if(hasFront && hasBack){
+                        plan[3] = -2;
+                    }
+                }
+            }
+        }
+
+        if(bridgeReplacement != null){
+            Array<int[]> result = new Array<>();
+
+            for(int i = 0; i < plans.size;){
+                int[] cur = plans.get(i);
+                result.add(cur);
+
+                boolean curPlaceable = cur[3] == -2 || isPlanPlaceable(cur);
+
+                if(i < plans.size - 1 && curPlaceable && cur[3] != -2 && !isPlanPlaceable(plans.get(i + 1))){
+                    boolean wereSame = true;
+
+                    for(int j = i + 1; j < plans.size; j++){
+                        int[] other = plans.get(j);
+
+                        if(other[3] == -2){
+                            for(int k = i + 1; k <= j; k++){
+                                if(k < plans.size) result.add(plans.get(k));
+                            }
+                            i = j + 1;
+                            break;
+                        }
+
+                        if(!bridgePositionsValid(cur[0], cur[1], other[0], other[1])){
+                            for(int k = i + 1; k < j; k++){
+                                result.add(plans.get(k));
+                            }
+                            i = j;
+                            break;
+                        }else if(isPlanPlaceable(other)){
+                            if(wereSame){
+                                i++;
+                                break;
+                            }else{
+                                cur[3] = -1;
+                                other[3] = -1;
+                                i = j;
+                                break;
+                            }
+                        }
+
+                        Tile t = world.tile(other[0], other[1]);
+                        if(t != null && !(t.block() instanceof Conveyor)){
+                            wereSame = false;
+                        }
+
+                        if(j == plans.size - 1){
+                            for(int k = i + 1; k <= j; k++){
+                                if(k < plans.size) result.add(plans.get(k));
+                            }
+                            i = plans.size;
+                            break;
+                        }
+                    }
+
+                    if(i == plans.size) break;
+                    continue;
+                }else{
+                    i++;
+                }
+            }
+
+            plans.clear();
+            plans.addAll(result);
+        }
+    }
+
+    private boolean isPlanPlaceable(int[] plan){
+        Tile tile = world.tile(plan[0], plan[1]);
+        if(tile == null) return false;
+
+        if(tile.hasCliffs() || !tile.floor().placeableOn) return false;
+
+        int rotation = plan[2];
+
+        if(tile.block() == Blocks.air || tile.block().alwaysReplace) return true;
+        if(tile.block() instanceof Conveyor && Mathf.mod(tile.getRotation() - rotation, 2) != 1) return true;
+        return false;
+    }
+
     private static int compareItems(long a, long b){
         pos1.set(a, ItemPos.packShorts);
         pos2.set(b, ItemPos.packShorts);
         return Float.compare(pos1.y, pos2.y);
+    }
+
+    private boolean bridgePositionsValid(int x1, int y1, int x2, int y2){
+        if(x1 != x2 && y1 != y2) return false;
+        int dist = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2));
+        return dist > 0 && dist <= 4;
     }
 
     @Override
@@ -122,6 +299,11 @@ public class Conveyor extends Block implements Autotiler{
         }else if((bits[3] & (1 << 3)) != 0 && (bits[3] & (1 << 1)) == 0){
             entity.blendshadowrot = 1;
         }
+    }
+
+    @Override
+    public boolean canReplace(Block other){
+        return super.canReplace(other) && !(other instanceof StackConveyor);
     }
 
     @Override
@@ -266,6 +448,8 @@ public class Conveyor extends Block implements Autotiler{
         entity.ambientSoundEnabled = true;
         if(minremove != Integer.MAX_VALUE) entity.convey.truncate(minremove);
     }
+
+
 
     @Override
     public boolean isAccessible(){

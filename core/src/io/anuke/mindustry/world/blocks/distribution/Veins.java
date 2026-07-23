@@ -29,6 +29,13 @@ public class Veins extends Conveyor{//Conveinsyors now exist
     }
 
     @Override
+    public void init(){
+        super.init();
+        junctionReplacement = null;
+        bridgeReplacement = null;
+    }
+
+    @Override
     public void load(){
         super.load();
         for(int i = 0; i < variantRegions.length; i++){

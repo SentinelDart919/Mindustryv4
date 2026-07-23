@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.content.blocks.Blocks;
@@ -385,12 +386,30 @@ public abstract class InputHandler extends InputAdapter{
     }
 
     public void tryPlaceBlock(int x, int y){
-        tryPlaceBlock(x, y, recipe, rotation);
+        tryPlaceBlock(x, y, recipe, rotation, null);
+    }
+
+    public void tryPlaceBlock(int x, int y, Array<int[]> plans){
+        tryPlaceBlock(x, y, recipe, rotation, plans);
     }
 
     public void tryPlaceBlock(int x, int y, Recipe recipe, int rotation){
-        if(recipe != null && validPlace(x, y, recipe.result, rotation) && cursorNear()){
-            placeBlock(x, y, recipe, rotation);
+        tryPlaceBlock(x, y, recipe, rotation, null);
+    }
+
+    public void tryPlaceBlock(int x, int y, Recipe recipe, int rotation, Array<int[]> plans){
+        if(recipe != null && cursorNear()){
+            Block replacement = recipe.result.getReplacement(x, y, rotation, plans);
+            if(replacement != null && replacement != recipe.result){
+                Recipe replacementRecipe = Recipe.getByResult(replacement);
+                if(replacementRecipe != null && validPlace(x, y, replacement, rotation)){
+                    placeBlock(x, y, replacementRecipe, rotation);
+                    return;
+                }
+            }
+            if(validPlace(x, y, recipe.result, rotation)){
+                placeBlock(x, y, recipe, rotation);
+            }
         }
     }
 

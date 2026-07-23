@@ -455,6 +455,21 @@ public class Block extends BaseBlock {
         return (other != this || rotate) && this.group != BlockGroup.none && other.group == this.group;
     }
 
+    /** Returns a replacement block for this block when placed at (x, y) with the given rotation.
+     *  Used for automatic junction/bridge replacement on conveyors. Returns null to keep the original block. */
+    public Block getReplacement(int x, int y, int rotation){
+        return null;
+    }
+
+    /** Returns a replacement block, checking the plan list for conflicts (e.g. bridge positions). */
+    public Block getReplacement(int x, int y, int rotation, Array<int[]> plans){
+        return getReplacement(x, y, rotation);
+    }
+
+    /** Called before a line of blocks is placed. Allows blocks (e.g. conveyors) to modify the placement list,
+     *  e.g. inserting bridge replacements where conveyors cross over other conveyors. */
+    public void handlePlacementLine(Array<int[]> plans){}
+
     public float handleDamage(Tile tile, float amount){
         return amount;
     }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
@@ -381,13 +382,51 @@ public class DesktopInput extends InputHandler{
             if(mode == placing){ //touch up while placing, place everything in selection
                 NormalizeResult result = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, true, maxLength);
 
+                //collect all placement positions
+                Array<int[]> plans = new Array<>();
                 for(int i = 0; i <= result.getLength(); i += recipe.result.size){
                     int x = selectX + i * Mathf.sign(cursorX - selectX) * Mathf.bool(result.isX());
                     int y = selectY + i * Mathf.sign(cursorY - selectY) * Mathf.bool(!result.isX());
+                    plans.add(new int[]{x, y, result.rotation, 0});
+                }
 
-                    rotation = result.rotation;
+                //let the block handle line placement (e.g. bridge replacement)
+                recipe.result.handlePlacementLine(plans);
 
-                    tryPlaceBlock(x, y);
+                //place blocks, handling bridge/junction replacements
+                for(int[] plan : plans){
+                    rotation = plan[2];
+
+                    io.anuke.mindustry.world.Block bridgeBlock = null;
+                    io.anuke.mindustry.world.Block junctionBlock = null;
+
+                    if(recipe.result instanceof io.anuke.mindustry.world.blocks.distribution.Conveyor){
+                        io.anuke.mindustry.world.blocks.distribution.Conveyor conv = (io.anuke.mindustry.world.blocks.distribution.Conveyor) recipe.result;
+                        bridgeBlock = conv.bridgeReplacement;
+                        junctionBlock = conv.junctionReplacement;
+                    }else if(recipe.result instanceof io.anuke.mindustry.world.blocks.distribution.Conduit){
+                        io.anuke.mindustry.world.blocks.distribution.Conduit conduit = (io.anuke.mindustry.world.blocks.distribution.Conduit) recipe.result;
+                        bridgeBlock = conduit.bridgeReplacement;
+                        junctionBlock = conduit.junctionReplacement;
+                    }
+
+                    if(plan.length > 3 && plan[3] == -1 && bridgeBlock != null){
+                        io.anuke.mindustry.type.Recipe bridgeRecipe = io.anuke.mindustry.type.Recipe.getByResult(bridgeBlock);
+                        if(bridgeRecipe != null && validPlace(plan[0], plan[1], bridgeBlock, plan[2])){
+                            placeBlock(plan[0], plan[1], bridgeRecipe, plan[2]);
+                            continue;
+                        }
+                        tryPlaceBlock(plan[0], plan[1]);
+                    }else if(plan.length > 3 && plan[3] == -2 && junctionBlock != null){
+                        io.anuke.mindustry.type.Recipe junctionRecipe = io.anuke.mindustry.type.Recipe.getByResult(junctionBlock);
+                        if(junctionRecipe != null && validPlace(plan[0], plan[1], junctionBlock, plan[2])){
+                            placeBlock(plan[0], plan[1], junctionRecipe, plan[2]);
+                            continue;
+                        }
+                        tryPlaceBlock(plan[0], plan[1]);
+                    }else{
+                        tryPlaceBlock(plan[0], plan[1]);
+                    }
                 }
             }else if(mode == breaking){ //touch up while breaking, break everything in selection
                 NormalizeResult result = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, false, maxLength);
