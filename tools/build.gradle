@@ -1,7 +1,8 @@
 apply plugin: "java"
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 sourceSets.main.java.srcDirs = [ "src/" ]
 
 
@@ -76,7 +77,7 @@ task cleanup(){
 task generateSprites(dependsOn: classes, type: JavaExec) {
     file(textureFolder).mkdirs()
 
-    main = "io.anuke.mindustry.PackerLauncher"
+    mainClass = "io.anuke.mindustry.PackerLauncher"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = textureFolder
@@ -85,7 +86,7 @@ task generateSprites(dependsOn: classes, type: JavaExec) {
 task updateBundles(dependsOn: classes, type: JavaExec) {
     file(textureFolder).mkdirs()
 
-    main = "io.anuke.mindustry.BundleLauncher"
+    mainClass = "io.anuke.mindustry.BundleLauncher"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = "../core/assets/bundles/"

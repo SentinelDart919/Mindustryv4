@@ -4,7 +4,6 @@ buildscript {
         mavenCentral()
         google()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        jcenter()
     }
     dependencies {
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.0'
@@ -88,15 +87,17 @@ project(":desktop") {
     apply plugin: "java"
 
     dependencies {
-        compile project(":core")
-        compile project(":kryonet")
-        if(new File(projectDir.parent, '../debug').exists() && System.properties["release"] == null) compile project(":debug")
+        implementation project(":core")
+        implementation project(":kryonet")
+        if(new File(projectDir.parent, '../debug').exists() && System.properties["release"] == null) implementation project(":debug")
 
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        compile 'com.github.MinnDevelopment:java-discord-rpc:v2.0.0'
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        implementation "com.github.anuken:ucore:$uCoreVersion"
+        implementation 'com.github.MinnDevelopment:java-discord-rpc:v2.0.0'
     }
 }
 
@@ -141,14 +142,14 @@ project(":ios") {
     build.dependsOn(copyGen)
 
     dependencies {
-        compile project(":core")
+        implementation project(":core")
         implementation project(":kryonet")
 
-        compile "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
-        compile "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
-        compile "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-ios"
+        implementation "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
+        implementation "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
+        implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-ios"
         compileOnly project(":annotations")
     }
 }
@@ -167,18 +168,18 @@ project(":core") {
         if(!comp) println("Note: Compiling release build.")
 
         if(new File(projectDir.parent, '../uCore').exists() && comp){
-            compile project(":uCore")
+            implementation project(":uCore")
         }else{
-            compile "com.github.anuken:ucore:$uCoreVersion"
+            implementation "com.github.anuken:ucore:$uCoreVersion"
         }
 
         if(new File(projectDir.parent, '../GDXGifRecorder').exists() && comp) {
-            compile project(":GDXGifRecorder")
+            implementation project(":GDXGifRecorder")
         }
 
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         compileOnly project(":annotations")
         annotationProcessor project(":annotations")
@@ -190,16 +191,16 @@ project(":server") {
 
     configurations {
         if(findProject(":android") != null){
-            compile.exclude module: android
+            implementation.exclude module: android
         }
     }
     
     dependencies {
 
-        compile project(":core")
-        compile project(":kryonet")
-        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation project(":core")
+        implementation project(":kryonet")
+        implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
 
@@ -224,7 +225,7 @@ project(":tools") {
     apply plugin: "java"
 
     dependencies {
-        compile project(":core")
+        implementation project(":core")
     }
 }
 
@@ -232,7 +233,7 @@ project(":annotations") {
     apply plugin: "java"
 
     dependencies {
-        compile 'com.squareup:javapoet:1.11.0'
+        implementation 'com.squareup:javapoet:1.11.0'
     }
 }
 
@@ -240,9 +241,11 @@ project(":kryonet") {
     apply plugin: "java"
 
     dependencies {
-        compile project(":core")
-        compile "org.lz4:lz4-java:1.4.1"
-        compile 'com.github.Anuken:kryonet:53b10247b1'
-        compile 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'
+        implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        implementation "com.github.anuken:ucore:$uCoreVersion"
+        implementation "org.lz4:lz4-java:1.4.1"
+        implementation 'com.github.Anuken:kryonet:53b10247b1'
+        implementation 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'
     }
 }

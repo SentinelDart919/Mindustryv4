@@ -1,7 +1,9 @@
 apply plugin: "java"
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 sourceSets.main.java.srcDirs = [ "src/" ]
 
 project.ext.mainClassName = "io.anuke.mindustry.desktop.DesktopLauncher"
@@ -30,7 +32,7 @@ ext.getPlatform = {
 }
 
 task run(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
+    mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
@@ -43,12 +45,12 @@ task run(dependsOn: classes, type: JavaExec) {
     }
 
     if(args.contains("debug")){
-        main = "io.anuke.mindustry.DebugLauncher"
+        mainClass = "io.anuke.mindustry.DebugLauncher"
     }
 }
 
 task debug(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
+    mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
@@ -63,7 +65,7 @@ task dist(type: Jar) {
 
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
+    from {configurations.runtimeClasspath.collect {zipTree(it)}}
     from files(project.assetsDir)
 
     manifest {
