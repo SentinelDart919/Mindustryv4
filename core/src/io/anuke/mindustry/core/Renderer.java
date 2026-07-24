@@ -263,9 +263,18 @@ public class Renderer extends RendererModule{
         drawAndInterpolate(playerGroup, p -> true, Player::drawBuildRequests);
 
         Graphics.beginShaders(Shaders.shield);
-        EntityDraw.draw(shieldGroup);
-        EntityDraw.drawWith(shieldGroup, shield -> true, shield -> ((ShieldEntity)shield).drawOver());
-        Draw.color(Palette.accent);
+        shieldGroup.forEach(s -> {
+            Shaders.shield.teamColor.set(s.getTeam().color);
+            Shaders.shield.apply();
+            s.draw();
+            batch.flush();
+        });
+        shieldGroup.forEach(s -> {
+            Shaders.shield.teamColor.set(s.getTeam().color);
+            Shaders.shield.apply();
+            s.drawOver();
+            batch.flush();
+        });
         Graphics.endShaders();
         Draw.color();
 

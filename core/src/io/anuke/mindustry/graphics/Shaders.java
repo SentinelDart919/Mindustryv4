@@ -165,6 +165,7 @@ public class Shaders{
     }
 
     public static class Shield extends Shader{
+        public Color teamColor = new Color();
 
         public Shield(){
             super("shield", "default");
@@ -179,6 +180,7 @@ public class Shaders{
                     Core.camera.position.y - Core.camera.viewportHeight / 2 * Core.camera.zoom);
             shader.setUniformf("u_texsize", Core.camera.viewportWidth * Core.camera.zoom,
             Core.camera.viewportHeight * Core.camera.zoom);
+            shader.setUniformf("u_teamColor", teamColor);
         }
     }
 

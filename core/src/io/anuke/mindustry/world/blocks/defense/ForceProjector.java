@@ -6,6 +6,7 @@ import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.traits.AbsorbTrait;
+import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
@@ -23,7 +24,6 @@ import io.anuke.ucore.entities.impl.BaseEntity;
 import io.anuke.ucore.entities.trait.DrawTrait;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
-import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
 import java.io.DataInput;
@@ -256,6 +256,10 @@ public class ForceProjector extends Block {
         }
 
 
+
+        public Team getTeam(){
+            return entity.getTeam();
+        }
 
         @Override
         public EntityGroup targetGroup(){
