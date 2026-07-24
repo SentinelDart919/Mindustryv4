@@ -412,14 +412,25 @@ public class MobileInput extends InputHandler implements GestureListener{
                 Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
 
             }else if(mode == copying){
-                int minx = Math.min(lineStartX, tileX);
-                int miny = Math.min(lineStartY, tileY);
-                int maxx = Math.max(lineStartX, tileX);
-                int maxy = Math.max(lineStartY, tileY);
+                NormalizeDrawResult result = PlaceUtils.normalizeDrawArea(Blocks.air, lineStartX, lineStartY, tileX, tileY, false, maxLength, 1f);
+                NormalizeResult dresult = PlaceUtils.normalizeArea(lineStartX, lineStartY, tileX, tileY, rotation, false, maxLength);
 
+                for(int x = dresult.x; x <= dresult.x2; x++){
+                    for(int y = dresult.y; y <= dresult.y2; y++){
+                        Tile tile = world.tile(x, y);
+                        if(tile == null || tile.block() == Blocks.air) continue;
+
+                        Draw.color(Palette.accentBack);
+                        Lines.square(tile.drawx(), tile.drawy()-1, tile.block().size * tilesize / 2f - 1);
+                        Draw.color(Palette.accent);
+                        Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f - 1);
+                    }
+                }
+
+                Draw.color(Palette.accentBack);
+                Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);
                 Draw.color(Palette.accent);
-                Lines.stroke(2f);
-                Lines.rect(minx * tilesize, miny * tilesize, (maxx - minx + 1) * tilesize, (maxy - miny + 1) * tilesize);
+                Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
                 Draw.reset();
             }
 

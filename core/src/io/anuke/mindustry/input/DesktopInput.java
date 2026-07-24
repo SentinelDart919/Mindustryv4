@@ -131,14 +131,25 @@ public class DesktopInput extends InputHandler{
             Draw.color(Palette.remove);
             Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
         }else if(mode == copying){
-            int minx = Math.min(selectX, cursorX);
-            int miny = Math.min(selectY, cursorY);
-            int maxx = Math.max(selectX, cursorX);
-            int maxy = Math.max(selectY, cursorY);
+            NormalizeDrawResult result = PlaceUtils.normalizeDrawArea(Blocks.air, selectX, selectY, cursorX, cursorY, false, maxLength, 1f);
+            NormalizeResult dresult = PlaceUtils.normalizeArea(selectX, selectY, cursorX, cursorY, rotation, false, maxLength);
 
+            for(int x = dresult.x; x <= dresult.x2; x++){
+                for(int y = dresult.y; y <= dresult.y2; y++){
+                    Tile tile = world.tile(x, y);
+                    if(tile == null || tile.block() == Blocks.air) continue;
+
+                    Draw.color(Palette.accentBack);
+                    Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f);
+                    Draw.color(Palette.accent);
+                    Lines.square(tile.drawx(), tile.drawy(), tile.block().size * tilesize / 2f);
+                }
+            }
+
+            Draw.color(Palette.accentBack);
+            Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
             Draw.color(Palette.accent);
-            Lines.stroke(2f);
-            Lines.rect(minx * tilesize, miny * tilesize, (maxx - minx + 1) * tilesize, (maxy - miny + 1) * tilesize);
+            Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
             Draw.reset();
         }else if(mode == PlaceMode.schematic && schematic != null){
             for(Schematic.Stile tile : schematic.tiles){
