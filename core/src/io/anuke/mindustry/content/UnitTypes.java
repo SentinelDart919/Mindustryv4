@@ -10,13 +10,14 @@ import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.content.StatusEffects;
+import io.anuke.mindustry.graphics.Palette;
 import io.anuke.ucore.util.Mathf;
 
 public class UnitTypes implements ContentList{
     public static UnitType
         scavenger, draug, spirit, ghost, phantom,
         alphaDrone, defenseDrone,
-        scrapper , wraith, ghoul, revenant, lich,
+        scrapper , wraith, ghoul, revenant, lich, reaper,
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray,
         debugtank, nova,
@@ -283,6 +284,7 @@ public class UnitTypes implements ContentList{
             baseRotateSpeed = 0.06f;
             weapon = Weapons.revenantMissiles;
             unitCost = 300;
+            engineOffsetY = -10f;
         }};
 
         lich = new UnitType("lich", Lich.class, Lich::new){{
@@ -304,6 +306,9 @@ public class UnitTypes implements ContentList{
             rotateWeapon = true;
             weapon = Weapons.lichMissiles;
             unitCost = 2000;
+            engineOffsetY = -21f;
+            engineSize = 8f;
+            trailColor = Palette.lighterOrange;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
@@ -570,6 +575,7 @@ public class UnitTypes implements ContentList{
             weaponOffsetX = 0;
             weaponOffsetY = 0;
             trailColor = Color.valueOf("871e1e");
+            engineOffsetY = -21f;
             spawnsInSiegeMode = false;
             living = true;
         }

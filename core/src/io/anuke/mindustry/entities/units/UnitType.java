@@ -58,6 +58,10 @@ public class UnitType extends UnlockableContent{
     public float weaponOffsetX, weaponOffsetY;
     public float healTurretOffsetX, healTurretOffsetY;
     public Color trailColor = Color.valueOf("ffa665");
+    public float engineOffsetX = 0f;
+    public float engineOffsetY = -6f;
+    public boolean engineMirror = false;
+    public float engineSize = 5f;
     public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
     public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;

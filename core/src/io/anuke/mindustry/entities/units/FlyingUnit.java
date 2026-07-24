@@ -27,9 +27,9 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
     protected static Translator vec = new Translator();
     protected static float wobblyness = 0.6f;
     protected float[] weaponAngles = {0, 0};
-    protected boolean customTrail = false;
     protected boolean itWobbles = true;
     protected Trail trail = new Trail(8);
+    protected Trail trail2 = new Trail(8);
     protected CarriableTrait carrying;
     protected final UnitState
 
@@ -244,8 +244,21 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             wobble();
         }
 
-        if(!customTrail)trail.update(x + Angles.trnsx(rotation + 180f, 6f) + Mathf.range(wobblyness),
-        y + Angles.trnsy(rotation + 180f, 6f) + Mathf.range(wobblyness));
+        if(type.engineMirror){
+            trail.update(
+                x + Angles.trnsx(rotation, type.engineOffsetY, -type.engineOffsetX) + Mathf.range(wobblyness),
+                y + Angles.trnsy(rotation, type.engineOffsetY, -type.engineOffsetX) + Mathf.range(wobblyness)
+            );
+            trail2.update(
+                x + Angles.trnsx(rotation, type.engineOffsetY, type.engineOffsetX) + Mathf.range(wobblyness),
+                y + Angles.trnsy(rotation, type.engineOffsetY, type.engineOffsetX) + Mathf.range(wobblyness)
+            );
+        }else{
+            trail.update(
+                x + Angles.trnsx(rotation, type.engineOffsetY, type.engineOffsetX) + Mathf.range(wobblyness),
+                y + Angles.trnsy(rotation, type.engineOffsetY, type.engineOffsetX) + Mathf.range(wobblyness)
+            );
+        }
     }
 
     @Override
@@ -357,7 +370,10 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
     @Override
     public void drawOver(){
-        trail.draw(type.trailColor, 5f);
+        trail.draw(type.trailColor, type.engineSize);
+        if(type.engineMirror){
+            trail2.draw(type.trailColor, type.engineSize);
+        }
     }
 
     @Override

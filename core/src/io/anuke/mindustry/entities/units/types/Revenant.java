@@ -22,7 +22,6 @@ public class Revenant extends FlyingUnit{
     protected Weapon weapon;
 
     public Revenant(){
-        customTrail = true;
         itWobbles = false;
     }
 
@@ -82,17 +81,6 @@ public class Revenant extends FlyingUnit{
         }
 
         Draw.alpha(1f);
-    }
-
-    @Override
-    public void update(){
-        super.update();
-        float back = -type.hitsize * 0.5f;
-        float side = 0f;
-        trail.update(
-                x + Angles.trnsx(rotation, back, side),
-                y + Angles.trnsy(rotation, back, side)
-        );
     }
 
     @Override

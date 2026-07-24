@@ -5,7 +5,6 @@ import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.FlyingUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.game.Team;
-import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
@@ -24,7 +23,6 @@ import static io.anuke.mindustry.Vars.content;
 public class Lich extends FlyingUnit{
     protected Weapon weapon;
     public Lich() {
-        customTrail = true;
         itWobbles = false;
     }
     public void init(UnitType type, Team team){
@@ -87,21 +85,6 @@ public class Lich extends FlyingUnit{
             Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
 
         }
-    }
-
-    @Override
-    public void update(){
-        super.update();
-        float back = -21f;
-        float side = 0f;
-        trail.update(
-                x + Angles.trnsx(rotation, back, side),
-                y + Angles.trnsy(rotation, back, side)
-        );
-    }
-    @Override
-    public void drawOver(){
-        trail.draw(Palette.lighterOrange, 8f);
     }
 
     @Override
