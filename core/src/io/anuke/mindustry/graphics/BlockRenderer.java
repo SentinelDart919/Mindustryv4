@@ -1,7 +1,6 @@
 package io.anuke.mindustry.graphics;
 
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.Sort;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
@@ -22,16 +21,18 @@ import static io.anuke.ucore.core.Core.camera;
 public class BlockRenderer{
     private final static int initialRequests = 32 * 32;
     private final static int expandr = 6;
+    private static final int teamCount = Team.all.length;
 
     private FloorRenderer floorRenderer;
 
     private Array<BlockRequest> requests = new Array<>(true, initialRequests, BlockRequest.class);
-    private IntSet teamChecks = new IntSet();
-    private int lastCamX, lastCamY, lastRangeX, lastRangeY;
+    private boolean[] teamChecks = new boolean[teamCount];
+    private int lastCamX = -99, lastCamY = -99, lastRangeX, lastRangeY;
     private Layer lastLayer;
     private int requestidx = 0;
     private int iterateidx = 0;
     private Surface shadows = Graphics.createSurface().setSize(2, 2);
+    private boolean blocksDirty = false;
 
     public BlockRenderer(){
         floorRenderer = new FloorRenderer();
@@ -41,7 +42,7 @@ public class BlockRenderer{
         }
 
         Events.on(WorldLoadGraphicsEvent.class, event -> {
-            lastCamY = lastCamX = -99; //invalidate camera position so blocks get updated
+            lastCamY = lastCamX = -99;
         });
 
         Events.on(TileChangeEvent.class, event -> {
@@ -52,7 +53,7 @@ public class BlockRenderer{
                 int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
 
                 if(Math.abs(avgx - event.tile.x) <= rangex && Math.abs(avgy - event.tile.y) <= rangey){
-                    lastCamY = lastCamX = -99; //invalidate camera position so blocks get updated
+                    blocksDirty = true;
                 }
             });
         });
@@ -68,10 +69,10 @@ public class BlockRenderer{
     }
 
     public boolean isTeamShown(Team team){
-        return teamChecks.contains(team.ordinal());
+        return teamChecks[team.ordinal()];
     }
 
-    /**Process all blocks to draw, simultaneously updating the block shadow framebuffer.*/
+    /**Process all blocks to draw, simultaneously updating the block shadow framebuffer when camera moves.*/
     public void processBlocks(){
         iterateidx = 0;
         lastLayer = null;
@@ -82,26 +83,31 @@ public class BlockRenderer{
         int rangex = (int) (camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
         int rangey = (int) (camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
 
-        if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
-            return;
-        }
+        boolean cameraMoved = avgx != lastCamX || avgy != lastCamY || lastRangeX != rangex || lastRangeY != rangey;
 
-        int shadowW = rangex * tilesize*2, shadowH = rangey * tilesize*2;
+        if(!cameraMoved && !blocksDirty) return;
 
-        teamChecks.clear();
+        blocksDirty = false;
+
+        java.util.Arrays.fill(teamChecks, false);
         requestidx = 0;
-
-        Graphics.end();
-        if(shadows.width() != shadowW || shadows.height() != shadowH){
-            shadows.setSize(shadowW, shadowH);
-        }
-        Core.batch.getProjectionMatrix().setToOrtho2D(Mathf.round(Core.camera.position.x, tilesize)-shadowW/2f, Mathf.round(Core.camera.position.y, tilesize)-shadowH/2f, shadowW, shadowH);
-        Graphics.surface(shadows);
 
         int minx = Math.max(avgx - rangex - expandr, 0);
         int miny = Math.max(avgy - rangey - expandr, 0);
         int maxx = Math.min(world.width() - 1, avgx + rangex + expandr);
         int maxy = Math.min(world.height() - 1, avgy + rangey + expandr);
+
+        int shadowW = rangex * tilesize * 2, shadowH = rangey * tilesize * 2;
+
+        Graphics.end();
+        if(shadows.width() != shadowW || shadows.height() != shadowH){
+            shadows.setSize(shadowW, shadowH);
+        }
+        Core.batch.getProjectionMatrix().setToOrtho2D(
+            Mathf.round(Core.camera.position.x, tilesize) - shadowW / 2f,
+            Mathf.round(Core.camera.position.y, tilesize) - shadowH / 2f,
+            shadowW, shadowH);
+        Graphics.surface(shadows);
 
         for(int x = minx; x <= maxx; x++){
             for(int y = miny; y <= maxy; y++){
@@ -119,7 +125,7 @@ public class BlockRenderer{
                     if(block != Blocks.air){
                         if(!expanded){
                             addRequest(tile, Layer.block);
-                            teamChecks.add(team.ordinal());
+                            teamChecks[team.ordinal()] = true;
                         }
 
                         if(block.expanded || !expanded){
@@ -239,9 +245,6 @@ public class BlockRenderer{
             requests.add(new BlockRequest());
         }
         BlockRequest r = requests.get(requestidx);
-        if(r == null){
-            requests.set(requestidx, r = new BlockRequest());
-        }
         r.tile = tile;
         r.layer = layer;
         requestidx++;

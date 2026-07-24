@@ -55,6 +55,8 @@ public enum CacheLayer{
     },
     normal;
 
+    private static final Color clearColor = new Color(0, 0, 0, 0);
+
     public void begin(){
 
     }
@@ -64,17 +66,14 @@ public enum CacheLayer{
     }
 
     protected void beginShader(){
-        //renderer.getBlocks().endFloor();
         renderer.effectSurface.getBuffer().begin();
-        Graphics.clear(Color.CLEAR);
-        //renderer.getBlocks().beginFloor();
+        Graphics.clear(clearColor);
     }
 
     public void endShader(Shader shader){
         renderer.blocks.endFloor();
 
-        //renderer.effectSurface.getBuffer().end();
-
+        renderer.effectSurface.getBuffer().end();
         renderer.pixelSurface.getBuffer().begin();
 
         Graphics.shader(shader);

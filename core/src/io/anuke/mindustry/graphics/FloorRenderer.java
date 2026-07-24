@@ -4,144 +4,99 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.IntSet.IntSetIterator;
-import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
-import io.anuke.mindustry.maps.Sector;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.CacheBatch;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
 import io.anuke.ucore.util.Log;
 import io.anuke.ucore.util.Mathf;
-import io.anuke.ucore.util.Structs;
-
-import java.util.Arrays;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.Vars.world;
 
 public class FloorRenderer{
-    private final static int chunksize = 64;
+    private final static int chunksize = 30;
+    private static final int numLayers = CacheLayer.values().length;
 
     private Chunk[][] cache;
+    private boolean[][] dirty;
     private CacheBatch cbatch;
-    private IntSet drawnLayerSet = new IntSet();
-    private IntArray drawnLayers = new IntArray();
-    private IntSet dirtyChunks = new IntSet();
-    private int incrementalUpdates = 0;
-    private volatile boolean dirty = false;
+    private boolean[] usedLayers = new boolean[numLayers];
+    private int chunksx, chunksy;
+    private boolean initialized = false;
 
     public FloorRenderer(){
         Events.on(WorldLoadGraphicsEvent.class, event -> {
-            synchronized(dirtyChunks){
-                dirty = true;
-                dirtyChunks.clear();
-            }
+            reload();
         });
         Events.on(TileChangeEvent.class, event -> {
-            synchronized(dirtyChunks){
-                if(cache != null){
-                    int cx = event.tile.x / chunksize;
-                    int cy = event.tile.y / chunksize;
-                    if(Structs.inBounds(cx, cy, cache)){
-                        dirtyChunks.add(cx + cy * cache.length);
-                        dirty = true;
-                    }
-                }
-            }
+            recacheTile(event.tile.x, event.tile.y);
         });
+    }
+
+    public void recacheTile(int x, int y){
+        if(dirty == null) return;
+        int cx = x / chunksize;
+        int cy = y / chunksize;
+        if(cx >= 0 && cy >= 0 && cx < dirty.length && cy < dirty[0].length){
+            dirty[cx][cy] = true;
+        }
     }
 
     public void drawFloor(){
-        synchronized(dirtyChunks){
-            if(dirty){
-                if(cache != null && !dirtyChunks.isEmpty() && incrementalUpdates < 40){
-                    IntSetIterator it = dirtyChunks.iterator();
-                    while(it.hasNext){
-                        int packed = it.next();
-                        int cx = packed % cache.length;
-                        int cy = packed / cache.length;
-                        cacheChunk(cx, cy);
-                        incrementalUpdates++;
-                    }
-                    dirtyChunks.clear();
-                }else{
-                    clearTiles();
-                }
-                dirty = false;
-            }
+        if(cache == null) return;
 
-            if(cache == null){
-                return;
-            }
+        OrthographicCamera camera = Core.camera;
 
-            OrthographicCamera camera = Core.camera;
+        int minx = Math.max((int)((camera.position.x - camera.viewportWidth * camera.zoom / 2f) / (chunksize * tilesize)), 0);
+        int miny = Math.max((int)((camera.position.y - camera.viewportHeight * camera.zoom / 2f) / (chunksize * tilesize)), 0);
+        int maxx = Math.min(Mathf.ceil((camera.position.x + camera.viewportWidth * camera.zoom / 2f) / (chunksize * tilesize)), chunksx);
+        int maxy = Math.min(Mathf.ceil((camera.position.y + camera.viewportHeight * camera.zoom / 2f) / (chunksize * tilesize)), chunksy);
 
-            int crangex = (int) (camera.viewportWidth * camera.zoom / (chunksize * tilesize)) + 1;
-            int crangey = (int) (camera.viewportHeight * camera.zoom / (chunksize * tilesize)) + 1;
+        CacheLayer[] layers = CacheLayer.values();
 
-            int camx = Mathf.scl(camera.position.x, chunksize * tilesize);
-            int camy = Mathf.scl(camera.position.y, chunksize * tilesize);
+        Graphics.end();
 
-            int layers = CacheLayer.values().length;
-
-            drawnLayers.clear();
-            drawnLayerSet.clear();
-
-            //preliminary layer check
-            for(int x = -crangex; x <= crangex; x++){
-                for(int y = -crangey; y <= crangey; y++){
-                    int worldx = camx + x;
-                    int worldy = camy + y;
-
-                    if(!Structs.inBounds(worldx, worldy, cache))
-                        continue;
-
-                    Chunk chunk = cache[worldx][worldy];
-
-                    //loop through all layers, and add layer index if it exists
-                    for(int i = 0; i < layers; i++){
-                        if(chunk.caches[i] != -1){
-                            drawnLayerSet.add(i);
-                        }
-                    }
+        for(int x = minx; x < maxx; x++){
+            for(int y = miny; y < maxy; y++){
+                if(dirty[x][y]){
+                    dirty[x][y] = false;
+                    cacheChunk(x, y);
                 }
             }
-
-            IntSetIterator it = drawnLayerSet.iterator();
-            while(it.hasNext){
-                drawnLayers.add(it.next());
-            }
-
-            drawnLayers.sort();
-
-            Graphics.end();
-            beginDraw();
-
-            for(int i = 0; i < drawnLayers.size; i++){
-                CacheLayer layer = CacheLayer.values()[drawnLayers.get(i)];
-
-                drawLayer(layer);
-            }
-
-            endDraw();
-            Graphics.begin();
         }
+
+        beginDraw();
+
+        for(int i = 0; i < numLayers; i++){
+            CacheLayer layer = layers[i];
+
+            layer.begin();
+
+            for(int x = minx; x < maxx; x++){
+                for(int y = miny; y < maxy; y++){
+                    Chunk chunk = cache[x][y];
+                    if(chunk == null || chunk.caches[i] == -1) continue;
+                    cbatch.drawCache(chunk.caches[i]);
+                }
+            }
+
+            layer.end();
+        }
+
+        endDraw();
+        Graphics.begin();
     }
 
     public void beginDraw(){
-        if(cache == null){
-            return;
-        }
+        if(cache == null) return;
 
         cbatch.setProjectionMatrix(Core.camera.combined);
         cbatch.beginDraw();
@@ -150,89 +105,95 @@ public class FloorRenderer{
     }
 
     public void endDraw(){
-        if(cache == null){
-            return;
-        }
+        if(cache == null) return;
 
         cbatch.endDraw();
     }
 
+    // unused code, relic from the past rn not deleted bc cna be usefull in posterior
+    /*
     public void drawLayer(CacheLayer layer){
-        if(cache == null){
-            return;
-        }
+        if(cache == null) return;
 
         OrthographicCamera camera = Core.camera;
 
-        int crangex = (int) (camera.viewportWidth * camera.zoom / (chunksize * tilesize)) + 1;
-        int crangey = (int) (camera.viewportHeight * camera.zoom / (chunksize * tilesize)) + 1;
+        int minx = Math.max((int)((camera.position.x - camera.viewportWidth * camera.zoom / 2f) / (chunksize * tilesize)), 0);
+        int miny = Math.max((int)((camera.position.y - camera.viewportHeight * camera.zoom / 2f) / (chunksize * tilesize)), 0);
+        int maxx = Math.min(Mathf.ceil((camera.position.x + camera.viewportWidth * camera.zoom / 2f) / (chunksize * tilesize)), chunksx);
+        int maxy = Math.min(Mathf.ceil((camera.position.y + camera.viewportHeight * camera.zoom / 2f) / (chunksize * tilesize)), chunksy);
+
+        int layerOrd = layer.ordinal();
+
+        for(int x = minx; x < maxx; x++){
+            for(int y = miny; y < maxy; y++){
+                if(dirty[x][y]){
+                    dirty[x][y] = false;
+                    cacheChunk(x, y);
+                }
+            }
+        }
 
         layer.begin();
 
-        for(int x = -crangex; x <= crangex; x++){
-            for(int y = -crangey; y <= crangey; y++){
-                int worldx = Mathf.scl(camera.position.x, chunksize * tilesize) + x;
-                int worldy = Mathf.scl(camera.position.y, chunksize * tilesize) + y;
-
-                if(!Structs.inBounds(worldx, worldy, cache)){
-                    continue;
-                }
-
-                Chunk chunk = cache[worldx][worldy];
-                if(chunk.caches[layer.ordinal()] == -1) continue;
-                cbatch.drawCache(chunk.caches[layer.ordinal()]);
+        for(int x = minx; x < maxx; x++){
+            for(int y = miny; y < maxy; y++){
+                Chunk chunk = cache[x][y];
+                if(chunk == null || chunk.caches[layerOrd] == -1) continue;
+                cbatch.drawCache(chunk.caches[layerOrd]);
             }
         }
 
         layer.end();
     }
-
-    private void fillChunk(float x, float y){
-        Draw.color(Color.BLACK);
-        Fill.crect(x, y, chunksize * tilesize, chunksize * tilesize);
-        Draw.color();
-    }
+    */
 
     private void cacheChunk(int cx, int cy){
         Chunk chunk = cache[cx][cy];
-        Arrays.fill(chunk.caches, -1);
+        if(chunk == null){
+            chunk = cache[cx][cy] = new Chunk();
+        }
+        java.util.Arrays.fill(chunk.caches, -1);
 
-        ObjectSet<CacheLayer> used = new ObjectSet<>();
+        java.util.Arrays.fill(usedLayers, false);
 
-        Sector sector = world.getSector();
+        int startX = cx * chunksize;
+        int startY = cy * chunksize;
+        int endX = Math.min(startX + chunksize, world.width());
+        int endY = Math.min(startY + chunksize, world.height());
 
-        for(int tilex = cx * chunksize; tilex < (cx + 1) * chunksize; tilex++){
-            for(int tiley = cy * chunksize; tiley < (cy + 1) * chunksize; tiley++){
-                Tile tile = world.tile(tilex, tiley);
-
+        for(int tilex = startX; tilex < endX; tilex++){
+            for(int tiley = startY; tiley < endY; tiley++){
+                Tile tile = world.rawTile(tilex, tiley);
                 if(tile != null){
-                    used.add(tile.floor().cacheLayer);
+                    usedLayers[tile.floor().cacheLayer.ordinal()] = true;
                 }
             }
         }
 
-        for(CacheLayer layer : used){
-            cacheChunkLayer(cx, cy, chunk, layer);
+        CacheLayer[] layers = CacheLayer.values();
+        for(int i = 0; i < numLayers; i++){
+            if(usedLayers[i]){
+                cacheChunkLayer(cx, cy, chunk, layers[i]);
+            }
         }
     }
 
     private void cacheChunkLayer(int cx, int cy, Chunk chunk, CacheLayer layer){
-
         Graphics.useBatch(cbatch);
         cbatch.begin();
 
-        Sector sector = world.getSector();
+        int startX = cx * chunksize;
+        int startY = cy * chunksize;
+        int endX = Math.min(startX + chunksize, world.width());
+        int endY = Math.min(startY + chunksize, world.height());
 
-        for(int tilex = cx * chunksize; tilex < (cx + 1) * chunksize; tilex++){
-            for(int tiley = cy * chunksize; tiley < (cy + 1) * chunksize; tiley++){
-                Tile tile = world.tile(tilex , tiley);
-                Floor floor;
+        for(int tilex = startX; tilex < endX; tilex++){
+            for(int tiley = startY; tiley < endY; tiley++){
+                Tile tile = world.rawTile(tilex, tiley);
 
-                if(tile == null){
-                    continue;
-                }else{
-                    floor = tile.floor();
-                }
+                if(tile == null) continue;
+
+                Floor floor = tile.floor();
 
                 if(floor.cacheLayer == layer){
                     floor.draw(tile);
@@ -247,30 +208,27 @@ public class FloorRenderer{
         chunk.caches[layer.ordinal()] = cbatch.getLastCache();
     }
 
-    public void clearTiles(){
-        dirtyChunks.clear();
-        incrementalUpdates = 0;
+    public void reload(){
         if(cbatch != null) cbatch.dispose();
 
-        int chunksx = Mathf.ceil((float) (world.width()) / chunksize),
-            chunksy = Mathf.ceil((float) (world.height()) / chunksize) ;
+        chunksx = Mathf.ceil((float)(world.width()) / chunksize);
+        chunksy = Mathf.ceil((float)(world.height()) / chunksize);
         cache = new Chunk[chunksx][chunksy];
+        dirty = new boolean[chunksx][chunksy];
         cbatch = new CacheBatch(world.width() * world.height() * 4 * 6);
-
-        Timers.mark();
 
         for(int x = 0; x < chunksx; x++){
             for(int y = 0; y < chunksy; y++){
-                cache[x][y] = new Chunk();
-
-                cacheChunk(x, y);
+                dirty[x][y] = true;
             }
         }
 
-        Log.info("Time to cache: {0}", Timers.elapsed());
+        initialized = true;
+
+        Log.info("Floor cache allocated: {0}x{1} chunks", chunksx, chunksy);
     }
 
     private class Chunk{
-        int[] caches = new int[CacheLayer.values().length];
+        int[] caches = new int[numLayers];
     }
 }

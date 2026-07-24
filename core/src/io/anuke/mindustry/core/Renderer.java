@@ -59,6 +59,12 @@ public class Renderer extends RendererModule{
     private Rectangle rect = new Rectangle(), rect2 = new Rectangle();
     private Vector2 avgPosition = new Translator();
 
+    private boolean currentFlying;
+    private Team currentTeam;
+    private final Predicate<BaseUnit> unitFlyingFilter = u -> u.isFlying() == currentFlying && !u.isDead();
+    private final Predicate<BaseUnit> unitFlyingTeamFilter = u -> u.isFlying() == currentFlying && u.getTeam() == currentTeam;
+    private final Predicate<Player> playerFlyingFilter = p -> p.isFlying() == currentFlying && p.getTeam() == currentTeam;
+
     public Renderer(){
         Core.batch = new SpriteBatch(4096);
 
@@ -306,28 +312,34 @@ public class Renderer extends RendererModule{
     }
 
     private void drawAllTeams(boolean flying){
+        currentFlying = flying;
+
         for(Team team : Team.all){
             EntityGroup<BaseUnit> group = unitGroups[team.ordinal()];
 
-            if(group.count(p -> p.isFlying() == flying) +
-                    playerGroup.count(p -> p.isFlying() == flying && p.getTeam() == team) == 0 && flying) continue;
+            if(group.isEmpty() && playerGroup.count(p -> p.isFlying() == flying && p.getTeam() == team) == 0) continue;
 
-            drawAndInterpolate(unitGroups[team.ordinal()], u -> u.isFlying() == flying && !u.isDead(), Unit::drawUnder);
-            drawAndInterpolate(playerGroup, p -> p.isFlying() == flying && p.getTeam() == team, Unit::drawUnder);
+            if(flying && group.count(p -> p.isFlying()) == 0 &&
+                    playerGroup.count(p -> p.isFlying() && p.getTeam() == team) == 0) continue;
+
+            currentTeam = team;
+
+            drawAndInterpolate(unitGroups[team.ordinal()], unitFlyingFilter, Unit::drawUnder);
+            drawAndInterpolate(playerGroup, playerFlyingFilter, Unit::drawUnder);
 
             Shaders.outline.color.set(team.color);
             Shaders.mix.color.set(Color.WHITE);
 
             Graphics.beginShaders(Shaders.outline);
             Graphics.shader(Shaders.mix, true);
-            drawAndInterpolate(unitGroups[team.ordinal()], u -> u.isFlying() == flying && !u.isDead(), Unit::drawAll);
-            drawAndInterpolate(playerGroup, p -> p.isFlying() == flying && p.getTeam() == team, Unit::drawAll);
+            drawAndInterpolate(unitGroups[team.ordinal()], unitFlyingFilter, Unit::drawAll);
+            drawAndInterpolate(playerGroup, playerFlyingFilter, Unit::drawAll);
             Graphics.shader();
             blocks.drawTeamBlocks(Layer.turret, team);
             Graphics.endShaders();
 
-            drawAndInterpolate(unitGroups[team.ordinal()], u -> u.isFlying() == flying && !u.isDead(), Unit::drawOver);
-            drawAndInterpolate(playerGroup, p -> p.isFlying() == flying && p.getTeam() == team, Unit::drawOver);
+            drawAndInterpolate(unitGroups[team.ordinal()], unitFlyingFilter, Unit::drawOver);
+            drawAndInterpolate(playerGroup, playerFlyingFilter, Unit::drawOver);
         }
     }
 
@@ -361,10 +373,18 @@ public class Renderer extends RendererModule{
 
     public Vector2 averagePosition(){
         avgPosition.setZero();
+        int count = 0;
 
-        drawAndInterpolate(playerGroup, p -> p.isLocal, p -> avgPosition.add(p.x, p.y));
+        for(Player player : players){
+            if(player.isLocal){
+                avgPosition.add(player.x, player.y);
+                count++;
+            }
+        }
 
-        avgPosition.scl(1f / players.length);
+        if(count > 0){
+            avgPosition.scl(1f / count);
+        }
         return avgPosition;
     }
 

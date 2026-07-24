@@ -92,9 +92,9 @@ public class OverlayRenderer{
                         float dst = Vector2.dst(player.x, player.y, core.drawx(), core.drawy());
                         if(dst < state.mode.enemyCoreBuildRadius * 1.5f){
                             Draw.color(Color.DARK_GRAY);
-                            Lines.poly(core.drawx(), core.drawy() - 2, 200, state.mode.enemyCoreBuildRadius);
+                            Lines.poly(core.drawx(), core.drawy() - 2, 60, state.mode.enemyCoreBuildRadius);
                             Draw.color(Palette.accent, enemy.color, 0.5f + Mathf.absin(Timers.time(), 10f, 0.5f));
-                            Lines.poly(core.drawx(), core.drawy(), 200, state.mode.enemyCoreBuildRadius);
+                            Lines.poly(core.drawx(), core.drawy(), 60, state.mode.enemyCoreBuildRadius);
                         }
                     }
                 }
@@ -113,7 +113,6 @@ public class OverlayRenderer{
                     if(showBlockDebug && target.entity != null){
                         Draw.color(Color.RED);
                         Lines.crect(target.drawx(), target.drawy(), target.block().size * tilesize, target.block().size * tilesize);
-                        Vector2 v = new Vector2();
 
                         Draw.tcolor(Color.YELLOW);
                         Draw.tscl(0.25f);
@@ -125,10 +124,10 @@ public class OverlayRenderer{
                             result.append(arr.get(i * 2 + 1));
                             result.append("\n");
                         }
-                        Draw.textc(result.toString(), target.drawx(), target.drawy(), v);
+                        Draw.textc(result.toString(), target.drawx(), target.drawy(), Tmp.v1);
                         Draw.color(0f, 0f, 0f, 0.5f);
-                        Fill.rect(target.drawx(), target.drawy(), v.x, v.y);
-                        Draw.textc(result.toString(), target.drawx(), target.drawy(), v);
+                        Fill.rect(target.drawx(), target.drawy(), Tmp.v1.x, Tmp.v1.y);
+                        Draw.textc(result.toString(), target.drawx(), target.drawy(), Tmp.v1);
                         Draw.tscl(1f);
                         Draw.reset();
                     }

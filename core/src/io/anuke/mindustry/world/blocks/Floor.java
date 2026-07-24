@@ -174,6 +174,10 @@ public class Floor extends Block{
     protected void drawEdges(Tile tile, boolean sameLayer){
         if(!blend || tile.getCliffs() > 0) return;
 
+        int tileElevation = tile.getElevation();
+        int thisCacheOrd = this.cacheLayer.ordinal();
+        int thisId = this.id;
+
         for(int i = 0; i < 8; i++){
             int dx = Geometry.d8[i].x, dy = Geometry.d8[i].y;
 
@@ -183,8 +187,14 @@ public class Floor extends Block{
 
             Floor floor = other.floor();
 
-            if(floor.edgeRegions == null || (floor.id <= this.id && !(tile.getElevation() != -1 && other.getElevation() > tile.getElevation())) || (!blends.test(floor) && !tileBlends.test(tile, other)) || (floor.cacheLayer.ordinal() > this.cacheLayer.ordinal() && !sameLayer) ||
-                    (sameLayer && floor.cacheLayer == this.cacheLayer)) continue;
+            if(floor.edgeRegions == null) continue;
+
+            int floorCacheOrd = floor.cacheLayer.ordinal();
+
+            if(sameLayer && floorCacheOrd == thisCacheOrd) continue;
+            if(!sameLayer && floorCacheOrd > thisCacheOrd) continue;
+            if(floor.id <= thisId && !(tileElevation != -1 && other.getElevation() > tileElevation)) continue;
+            if(!blends.test(floor) && !tileBlends.test(tile, other)) continue;
 
             TextureRegion region = floor.edgeRegions[i];
 
