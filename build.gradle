@@ -227,6 +227,8 @@ project(":tools") {
 
     dependencies {
         implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        implementation "com.github.anuken:ucore:$uCoreVersion"
     }
 }
 

@@ -8,7 +8,7 @@ import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, chaos,
+    kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, reaperGun, chaos,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
     artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
@@ -293,6 +293,19 @@ public class Weapons implements ContentList{
             shots = 4;
             spacing = 4f;
             ejectEffect = ShootFx.shellEjectMedium;
+            ammo = AmmoTypes.flakSurge;
+            setShootSound("shootBig");
+        }};
+
+        reaperGun = new Weapon("reaper-gun"){{
+            length = 3f;
+            reload = 10f;
+            width = 32f;
+            shots = 1;
+            shake = 1f;
+            roundrobin = true;
+            inaccuracy = 3f;
+            ejectEffect = Fx.none;
             ammo = AmmoTypes.flakSurge;
             setShootSound("shootBig");
         }};

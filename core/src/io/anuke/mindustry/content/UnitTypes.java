@@ -288,7 +288,6 @@ public class UnitTypes implements ContentList{
         }};
 
         lich = new UnitType("lich", Lich.class, Lich::new){{
-
             health = 6000;
             mass = 20f;
             hitsize = 40f;
@@ -309,6 +308,26 @@ public class UnitTypes implements ContentList{
             engineOffsetY = -21f;
             engineSize = 8f;
             trailColor = Palette.lighterOrange;
+        }};
+
+        reaper = new UnitType("reaper", Lich.class, Lich::new ){{
+            health = 11000;
+            mass = 30f;
+            hitsize = 56f;
+            speed = 0.01f;
+            maxVelocity = 0.6f;
+            drag = 0.02f;
+            range = 80f;
+            shootCone = 30f;
+            isFlying = true;
+            rotateWeapon = true;
+            engineOffsetY = -40f;
+            engineSize = 7.3f;
+            rotatespeed = 0.01f;
+            baseRotateSpeed = 0.04f;
+            trailColor = Palette.lighterOrange;
+            weaponOffsetX = 32f;
+            weapon = Weapons.reaperGun;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
