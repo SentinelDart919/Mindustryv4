@@ -199,6 +199,7 @@ project(":server") {
 
         implementation project(":core")
         implementation project(":kryonet")
+        implementation "com.github.anuken:ucore:$uCoreVersion"
         implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
