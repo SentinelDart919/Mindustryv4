@@ -215,7 +215,7 @@ public class FloorRenderer{
         chunksy = Mathf.ceil((float)(world.height()) / chunksize);
         cache = new Chunk[chunksx][chunksy];
         dirty = new boolean[chunksx][chunksy];
-        cbatch = new CacheBatch(world.width() * world.height() * 4 * 6);
+        cbatch = new CacheBatch(world.width() * world.height() * numLayers);
 
         for(int x = 0; x < chunksx; x++){
             for(int y = 0; y < chunksy; y++){
