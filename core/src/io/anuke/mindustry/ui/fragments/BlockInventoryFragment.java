@@ -80,10 +80,9 @@ public class BlockInventoryFragment extends Fragment{
     }
 
     public void hide(){
-        table.actions(Actions.scaleTo(0f, 1f, 0.06f, Interpolation.pow3Out), Actions.visible(false), Actions.run(() -> {
-            itemTable.clear();
-            table.update(null);
-        }));
+        table.clearActions();
+        itemTable.clear();
+        table.update(null);
         table.setTouchable(Touchable.disabled);
         tile = null;
     }
@@ -184,6 +183,7 @@ public class BlockInventoryFragment extends Fragment{
         updateTablePosition();
 
         if(actions){
+            table.clearActions();
             table.setTransform(true);
             table.actions(Actions.scaleTo(0f, 1f), Actions.visible(true),
                     Actions.scaleTo(1f, 1f, 0.07f, Interpolation.pow3Out), Actions.run(() -> table.setTransform(false)));
