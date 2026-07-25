@@ -4,11 +4,10 @@ buildscript {
         mavenCentral()
         google()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        jcenter()
     }
-    
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:9.0.0'
     }
 }
 
@@ -17,28 +16,22 @@ apply plugin: "com.android.application"
 configurations { natives }
 
 repositories {
-	mavenCentral()
-    jcenter()
-    maven {
-    	url "https://maven.google.com"
-    }
+    mavenCentral()
+    google()
 }
 
 dependencies {
     implementation project(":core")
     implementation project(":kryonet")
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation "com.github.anuken:ucore:$uCoreVersion"
     //implementation 'org.sufficientlysecure:donations:2.5'
-    implementation 'com.google.android.gms:play-services-auth:16.0.1'
 
     implementation "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
-    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
     implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a"
     natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
@@ -55,8 +48,11 @@ task deploy(type: Copy){
 }
 
 android {
-    buildToolsVersion '28.0.3'
-    compileSdkVersion 28
+    namespace "io.anuke.mindustry"
+    compileSdk 34
+    buildFeatures {
+        buildConfig true
+    }
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -70,8 +66,10 @@ android {
 
         androidTest.setRoot('tests')
     }
-    packagingOptions {
-        exclude 'META-INF/robovm/ios/robovm.xml'
+    packaging {
+        resources {
+            excludes += 'META-INF/robovm/ios/robovm.xml'
+        }
     }
 
     defaultConfig {
@@ -92,8 +90,8 @@ android {
         }
 
         applicationId "io.anuke.mindustryv"
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdk 19
+        targetSdk 34
         versionCode code
         versionName versionNameResult
     }
@@ -103,7 +101,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    flavorDimensions "google"
+    flavorDimensions = ["google"]
 
     productFlavors {
         google {
@@ -134,24 +132,24 @@ android {
 // the natives configuration, and extracts them to the proper libs/ folders
 // so they get packed with the APK.
 task copyAndroidNatives() {
-    file("libs/armeabi/").mkdirs()
-    file("libs/armeabi-v7a/").mkdirs()
-    file("libs/arm64-v8a/").mkdirs()
-    file("libs/x86_64/").mkdirs()
-    file("libs/x86/").mkdirs()
+    doFirst {
+        file("libs/armeabi-v7a/").mkdirs()
+        file("libs/arm64-v8a/").mkdirs()
+        file("libs/x86_64/").mkdirs()
+        file("libs/x86/").mkdirs()
 
-    configurations.natives.files.each { jar ->
-        def outputDir = null
-        if (jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
-        if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
-        if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
-        if (jar.name.endsWith("natives-x86_64.jar")) outputDir = file("libs/x86_64")
-        if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
-        if (outputDir != null) {
-            copy {
-                from zipTree(jar)
-                into outputDir
-                include "*.so"
+        configurations.natives.files.each { jar ->
+            def outputDir = null
+            if (jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
+            if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
+            if (jar.name.endsWith("natives-x86_64.jar")) outputDir = file("libs/x86_64")
+            if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
+            if (outputDir != null) {
+                copy {
+                    from zipTree(jar)
+                    into outputDir
+                    include "*.so"
+                }
             }
         }
     }
@@ -183,21 +181,5 @@ task run(type: Exec) {
 idea {
     module {
         sourceDirs += file("src")
-        scopes = [COMPILE: [plus: [project.configurations.compile]]]
-
-        iml {
-            withXml {
-                def node = it.asNode()
-                def builder = NodeBuilder.newInstance()
-                builder.current = node
-                builder.component(name: "FacetManager") {
-                    facet(type: "android", name: "Android") {
-                        configuration {
-                            option(name: "UPDATE_PROPERTY_FILES", value: "true")
-                        }
-                    }
-                }
-            }
-        }
     }
 }

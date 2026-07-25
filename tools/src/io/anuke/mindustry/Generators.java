@@ -109,8 +109,8 @@ public class Generators {
                     image.draw(type.baseRegion);
                     if(!type.isTank) image.draw(type.legRegion);
                     if(!type.isTank) image.draw(type.legRegion, true, false);
-                    if(type.isTank) image.draw(type.trackRegion);
-                    if(type.isTank) image.draw(type.trackRegion, true, false);
+                    if(type.isTank) image.draw(type.treadRegion);
+                    if(type.isTank) image.draw(type.treadRegion, true, false);
                     image.draw(type.region);
 
                     if(!type.isTank)image.draw(type.weapon.equipRegion,

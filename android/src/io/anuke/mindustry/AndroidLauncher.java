@@ -10,15 +10,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Base64Coder;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.security.ProviderInstaller;
 import io.anuke.kryonet.KryoClient;
 import io.anuke.kryonet.KryoServer;
 import io.anuke.mindustry.core.Platform;
@@ -109,14 +104,6 @@ public class AndroidLauncher extends PatchedAndroidApplication {
             }
         };
 
-        try {
-            ProviderInstaller.installIfNeeded(this);
-        } catch (GooglePlayServicesRepairableException e) {
-            GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-            apiAvailability.getErrorDialog(this, e.getConnectionStatusCode(), 0).show();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            Log.e("SecurityException", "Google Play Services not available.");
-        }
         if (doubleScaleTablets && isTablet(this.getContext())) {
             Unit.dp.addition = 0.5f;
         }
@@ -145,20 +132,23 @@ public class AndroidLauncher extends PatchedAndroidApplication {
             if (uri != null) {
                 File myFile = null;
                 String scheme = uri.getScheme();
+                if (scheme == null) return;
                 if (scheme.equals("file")) {
                     String fileName = uri.getEncodedPath();
                     myFile = new File(fileName);
                 } else if (!scheme.equals("content")) {
-                    //error
                     return;
                 }
-                boolean save = uri.getPath().endsWith(saveExtension);
-                boolean map = uri.getPath().endsWith(mapExtension);
+                String path = uri.getPath();
+                if (path == null) return;
+                boolean save = path.endsWith(saveExtension);
+                boolean map = path.endsWith(mapExtension);
                 InputStream inStream;
                 if (myFile != null) inStream = new FileInputStream(myFile);
                 else inStream = getContentResolver().openInputStream(uri);
+                if (inStream == null) return;
                 Gdx.app.postRunnable(() -> {
-                    if (save) { //open save
+                    if (save) {
                         System.out.println("Opening save.");
                         FileHandle file = Gdx.files.local("temp-save." + saveExtension);
                         file.write(inStream, false);
@@ -172,7 +162,7 @@ public class AndroidLauncher extends PatchedAndroidApplication {
                         } else {
                             ui.showError("$text.save.import.invalid");
                         }
-                    } else if (map) { //open map
+                    } else if (map) {
                         Gdx.app.postRunnable(() -> {
                             System.out.println("Opening map.");
                             if (!ui.editor.isShown()) {
@@ -183,7 +173,7 @@ public class AndroidLauncher extends PatchedAndroidApplication {
                     }
                 });
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -202,4 +192,3 @@ public class AndroidLauncher extends PatchedAndroidApplication {
         return manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE;
     }
 }
-

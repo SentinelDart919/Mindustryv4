@@ -9,12 +9,6 @@ public class PatchedAndroidApplication extends AndroidApplication {
 
     @Override
     protected void onPause () {
-        if(useImmersiveMode) {
-            exec.submit(() -> {
-                try {Thread.sleep(100);} catch (InterruptedException ignored) {}
-                graphics.onDrawFrame(null);
-            });
-        }
         super.onPause();
     }
 }

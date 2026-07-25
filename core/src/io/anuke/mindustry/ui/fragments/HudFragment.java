@@ -255,35 +255,36 @@ public class HudFragment extends Fragment{
             t.table("button", pane -> {
                 pane.left().margin(6f);
                 pane.label(() -> {
+                    if(!(control.input(0) instanceof DesktopInput)) return "";
                     DesktopInput input = (DesktopInput)control.input(0);
                     UnitOrderType type = input.getActiveOrderType();
                     return "Units: " + (type == UnitOrderType.attackMove ? "Attack-Move" : type == UnitOrderType.move ? "Move" : "Clear");
                 }).padRight(8f);
 
-                pane.addButton("Move", "clear-partial", () -> ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.move))
+                pane.addButton("Move", "clear-partial", () -> { if(control.input(0) instanceof DesktopInput) ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.move); })
                     .size(78f, 42f)
-                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.move));
+                    .update(b -> { if(control.input(0) instanceof DesktopInput) b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.move); });
 
-                pane.addButton("Attack", "clear-partial", () -> ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.attackMove))
+                pane.addButton("Attack", "clear-partial", () -> { if(control.input(0) instanceof DesktopInput) ((DesktopInput)control.input(0)).setActiveOrderType(UnitOrderType.attackMove); })
                     .size(78f, 42f)
                     .padLeft(4f)
-                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.attackMove));
+                    .update(b -> { if(control.input(0) instanceof DesktopInput) b.setChecked(((DesktopInput)control.input(0)).getActiveOrderType() == UnitOrderType.attackMove); });
 
-                pane.addButton("Clear", "clear-partial", () -> ((DesktopInput)control.input(0)).clearUnitSelection())
+                pane.addButton("Clear", "clear-partial", () -> { if(control.input(0) instanceof DesktopInput) ((DesktopInput)control.input(0)).clearUnitSelection(); })
                     .size(78f, 42f)
                     .padLeft(4f);
 
-                pane.addButton("Normal", "clear-partial", () -> ((DesktopInput)control.input(0)).setSelectedDronesFollow(false))
+                pane.addButton("Normal", "clear-partial", () -> { if(control.input(0) instanceof DesktopInput) ((DesktopInput)control.input(0)).setSelectedDronesFollow(false); })
                     .size(84f, 42f)
                     .padLeft(8f)
-                    .visible(() -> ((DesktopInput)control.input(0)).hasSelectedDrones())
-                    .update(b -> b.setChecked(!((DesktopInput)control.input(0)).selectedDronesFollowing()));
+                    .visible(() -> control.input(0) instanceof DesktopInput && ((DesktopInput)control.input(0)).hasSelectedDrones())
+                    .update(b -> { if(control.input(0) instanceof DesktopInput) b.setChecked(!((DesktopInput)control.input(0)).selectedDronesFollowing()); });
 
-                pane.addButton("Follow", "clear-partial", () -> ((DesktopInput)control.input(0)).setSelectedDronesFollow(true))
+                pane.addButton("Follow", "clear-partial", () -> { if(control.input(0) instanceof DesktopInput) ((DesktopInput)control.input(0)).setSelectedDronesFollow(true); })
                     .size(84f, 42f)
                     .padLeft(4f)
-                    .visible(() -> ((DesktopInput)control.input(0)).hasSelectedDrones())
-                    .update(b -> b.setChecked(((DesktopInput)control.input(0)).selectedDronesFollowing()));
+                    .visible(() -> control.input(0) instanceof DesktopInput && ((DesktopInput)control.input(0)).hasSelectedDrones())
+                    .update(b -> { if(control.input(0) instanceof DesktopInput) b.setChecked(((DesktopInput)control.input(0)).selectedDronesFollowing()); });
             }).margin(8f);
         });
 

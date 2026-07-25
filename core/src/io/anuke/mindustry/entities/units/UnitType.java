@@ -64,7 +64,7 @@ public class UnitType extends UnlockableContent{
     public float engineSize = 5f;
     public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
-    public TextureRegion iconRegion, legRegion, trackRegion, baseRegion, region;
+    public TextureRegion iconRegion, legRegion, treadRegion, baseRegion, region;
 
     public <T extends BaseUnit> UnitType(String name, Class<T> type, Supplier<T> mainConstructor){
         this.name = name;
@@ -102,7 +102,7 @@ public class UnitType extends UnlockableContent{
         if(!isFlying){
             if(!isTank)legRegion = Draw.region(name + "-leg");
             baseRegion = Draw.region(name + "-base");
-            if(isTank)trackRegion = Draw.region(name + "-track");
+            if(isTank)treadRegion = Draw.region(name + "-tread");
         }
     }
 

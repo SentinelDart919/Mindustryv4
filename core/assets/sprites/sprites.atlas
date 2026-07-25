@@ -9188,7 +9188,7 @@ debugtank-base
   orig: 16, 24
   offset: 0, 0
   index: -1
-debugtank-track
+debugtank-tread
   rotate: false
   xy: 213, 99
   size: 16, 24

@@ -1,3 +1,17 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		google()
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	}
+	dependencies {
+		classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.0'
+	}
+}
+
+apply plugin: "robovm"
+
 sourceSets.main.java.srcDirs = [ "src/" ]
 
 java {

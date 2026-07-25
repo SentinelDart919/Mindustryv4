@@ -6,7 +6,6 @@ buildscript {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.0'
         classpath "com.badlogicgames.gdx:gdx-tools:1.9.8"
     }
 }
@@ -77,6 +76,7 @@ allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        google()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
         maven { url 'https://jitpack.io' }
@@ -103,7 +103,6 @@ project(":desktop") {
 
 project(":ios") {
     apply plugin: "java"
-    apply plugin: "robovm"
 
     task copyGen{
         copy{
@@ -191,7 +190,7 @@ project(":server") {
 
     configurations {
         if(findProject(":android") != null){
-            implementation.exclude module: android
+            implementation.exclude module: 'android'
         }
     }
     
