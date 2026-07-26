@@ -33,7 +33,7 @@ public class Weapons implements ContentList{
         }};
 
         blaster = new Weapon("blaster"){{
-            length = 1.5f;
+            length = 0f;
             reload = 14f;
             roundrobin = true;
             ejectEffect = ShootFx.shellEjectSmall;
@@ -41,7 +41,8 @@ public class Weapons implements ContentList{
         }};
 
         blasterSmall = new Weapon("blaster"){{
-            length = 1.5f;
+            length = 0f;
+            width = 3f;
             reload = 15f;
             roundrobin = true;
             ejectEffect = ShootFx.shellEjectSmall;
@@ -351,7 +352,7 @@ public class Weapons implements ContentList{
             weaponMirror = false;
             length = 8f;
             reload = 20f;
-            width = -2f;
+            width = -0f;
             roundrobin = false;
             recoil = 1f;
             ejectEffect = Fx.none;

@@ -89,8 +89,8 @@ public class Generators {
 
                 int off = (image.width() - mech.weapon.equipRegion.getRegionWidth())/2;
 
-                image.draw(mech.weapon.equipRegion, -(int)mech.weaponOffsetX + off, (int)mech.weaponOffsetY + off, false, false);
-                image.draw(mech.weapon.equipRegion, (int)mech.weaponOffsetX + off, (int)mech.weaponOffsetY + off, true, false);
+                image.draw(mech.weapon.equipRegion, -(int)mech.weapon.width + off, off, false, false);
+                image.draw(mech.weapon.equipRegion, (int)mech.weapon.width + off, off, true, false);
 
 
                 image.save("mech-icon-" + mech.name);
@@ -114,12 +114,12 @@ public class Generators {
                     image.draw(type.region);
 
                     if(!type.isTank)image.draw(type.weapon.equipRegion,
-                            -(int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
-                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
+                            -(int)type.weapon.width + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
+                            (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
                             false, false);
                     if(!type.isTank)image.draw(type.weapon.equipRegion,
-                            (int)type.weaponOffsetX + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
-                            (int)type.weaponOffsetY - (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
+                            (int)type.weapon.width + (image.width() - type.weapon.equipRegion.getRegionWidth())/2,
+                            (image.height() - type.weapon.equipRegion.getRegionHeight())/2 + 1,
                             true, false);
                 }
 

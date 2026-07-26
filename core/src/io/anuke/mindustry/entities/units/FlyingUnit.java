@@ -89,32 +89,44 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
             }else if(target != null){
                 attack(type.attackLength);
 
-                if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity) //bombers and such don't care about rotation
-                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
-                    AmmoType ammo = getWeapon().getAmmo();
+                boolean inRange = distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range);
 
-                    if(type.rotateWeapon){
-                        for(boolean left : new boolean[]{true, false}){
-                            int wi = left ? 1 : 0;
-                            float side = left ? 1f : -1f;
-                            float mountAngle = rotation - 90;
-                            float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
-                            float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
+                if(type.rotateWeapon){
+                    for(boolean left : new boolean[]{true, false}){
+                        int wi = left ? 1 : 0;
+                        float side = left ? 1f : -1f;
+                        float mountAngle = rotation - 90;
+                        float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
+                        float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
 
-                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()), 0.1f);
-
-                            float tipX = wx + Angles.trnsx(weaponAngles[wi], getWeapon().length);
-                            float tipY = wy + Angles.trnsy(weaponAngles[wi], getWeapon().length);
-                            getWeapon().update(FlyingUnit.this, tipX, tipY, weaponAngles[wi], left);
+                        if(inRange){
+                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()) - rotation, 0.1f);
+                        }else{
+                            weaponAngles[wi] = 0f;
                         }
-                    }else{
-                        Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+
+                        if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
+                            float worldAngle = rotation - 90 + weaponAngles[wi];
+                            float tipX = wx + Angles.trnsx(worldAngle, getWeapon().length);
+                            float tipY = wy + Angles.trnsy(worldAngle, getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, worldAngle, left);
+                        }
+                    }
+                }else{
+                    if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
+                        Vector2 to = Predict.intercept(FlyingUnit.this, target, getWeapon().getAmmo().bullet.speed);
                         getWeapon().update(FlyingUnit.this, to.x, to.y);
                     }
                 }
             } else {
                 target = getClosestCore();
                 moveTo(Math.max(type.range, 120f));
+                if(type.rotateWeapon){
+                    for(boolean left : new boolean[]{true, false}){
+                        int wi = left ? 1 : 0;
+                        weaponAngles[wi] = 0f;
+                    }
+                }
             }
         }
     },
@@ -144,30 +156,42 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
         public void update(){
             if(Units.invalidateTarget(target, team, x, y) || distanceTo(target) > getType().pursueRange){
                 target = null;
+                if(type.rotateWeapon){
+                    for(boolean left : new boolean[]{true, false}){
+                        int wi = left ? 1 : 0;
+                        weaponAngles[wi] = 0f;
+                    }
+                }
                 onCommand(getCommand());
             }else{
                 attack(type.attackLength);
 
-                if ((Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)
-                        && distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range)) {
-                    AmmoType ammo = getWeapon().getAmmo();
+                boolean inRange = distanceTo(target) < Math.max(getWeapon().getAmmo().getRange(), type.range);
 
-                    if(type.rotateWeapon){
-                        for(boolean left : new boolean[]{true, false}){
-                            int wi = left ? 1 : 0;
-                            float side = left ? 1f : -1f;
-                            float mountAngle = rotation - 90;
-                            float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
-                            float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
+                if(type.rotateWeapon){
+                    for(boolean left : new boolean[]{true, false}){
+                        int wi = left ? 1 : 0;
+                        float side = left ? 1f : -1f;
+                        float mountAngle = rotation - 90;
+                        float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
+                        float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
 
-                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()), 0.1f);
-
-                            float tipX = wx + Angles.trnsx(weaponAngles[wi], getWeapon().length);
-                            float tipY = wy + Angles.trnsy(weaponAngles[wi], getWeapon().length);
-                            getWeapon().update(FlyingUnit.this, tipX, tipY, weaponAngles[wi], left);
+                        if(inRange){
+                            weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()) - rotation, 0.1f);
+                        }else{
+                            weaponAngles[wi] = 0f;
                         }
-                    }else{
-                        Vector2 to = Predict.intercept(FlyingUnit.this, target, ammo.bullet.speed);
+
+                        if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
+                            float worldAngle = rotation - 90 + weaponAngles[wi];
+                            float tipX = wx + Angles.trnsx(worldAngle, getWeapon().length);
+                            float tipY = wy + Angles.trnsy(worldAngle, getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, worldAngle, left);
+                        }
+                    }
+                }else{
+                    if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
+                        Vector2 to = Predict.intercept(FlyingUnit.this, target, getWeapon().getAmmo().bullet.speed);
                         getWeapon().update(FlyingUnit.this, to.x, to.y);
                     }
                 }
@@ -354,7 +378,7 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
 
             if(Units.invalidateTarget(target, this)){
                 for(int wi = 0; wi < 2; wi++){
-                    weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], rotation, 0.1f);
+                    weaponAngles[wi] = 0f;
                 }
             }
 
@@ -362,10 +386,10 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                 boolean left = i > 0;
                 if(!getWeapon().weaponMirror && !left) continue;
                 float tra = rotation - 90,
-                        trY = -getWeapon().getRecoil(this, left) + type.weaponOffsetY;
-                float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
-                        wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
-                Draw.rect(getWeapon().equipRegion, wx, wy, weaponAngles[left ? 1 : 0] - 90);
+                        trY = -getWeapon().getRecoil(this, left);
+                float wx = x + Angles.trnsx(tra, getWeapon().width * i, trY),
+                        wy = y + Angles.trnsy(tra, getWeapon().width * i, trY);
+                Draw.rect(getWeapon().equipRegion, wx, wy, rotation - 90 + weaponAngles[left ? 1 : 0]);
             }
         }
 

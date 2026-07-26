@@ -630,10 +630,10 @@ public class TankUnit extends BaseUnit{
         Draw.rect(type.region, x, y, baseRotation - 90);
 
         // Turret
-        float trY = -weapon.getRecoil(this, true) + type.weaponOffsetY;
+        float trY = -weapon.getRecoil(this, true);
         Draw.rect(weapon.equipRegion,
-                x + Angles.trnsx(rotation - 90, type.weaponOffsetX, trY),
-                y + Angles.trnsy(rotation - 90, type.weaponOffsetX, trY),
+                x + Angles.trnsx(rotation - 90, weapon.width, trY),
+                y + Angles.trnsy(rotation - 90, weapon.width, trY),
                 weaponRotation - 90);
 
         // Items

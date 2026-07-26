@@ -55,7 +55,6 @@ public class UnitType extends UnlockableContent{
     public ObjectSet<Item> toMine = ObjectSet.with(Items.lead, Items.copper);
     public float buildPower = 0.3f, minePower = 0.7f;
     public Weapon weapon = Weapons.blaster;
-    public float weaponOffsetX, weaponOffsetY;
     public float healTurretOffsetX, healTurretOffsetY;
     public Color trailColor = Color.valueOf("ffa665");
     public float engineOffsetX = 0f;

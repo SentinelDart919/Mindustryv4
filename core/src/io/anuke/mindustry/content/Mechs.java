@@ -90,8 +90,6 @@ public class Mechs implements ContentList{
                 itemCapacity = 15;
                 mass = 0.9f;
                 armor = 30f;
-                weaponOffsetX = -1;
-                weaponOffsetY = -1;
                 weapon = Weapons.shockgun;
                 trailColorTo = Color.valueOf("d3ddff");
             }
@@ -120,8 +118,6 @@ public class Mechs implements ContentList{
                 drillPower = 4;
                 mineSpeed = 3f;
                 itemCapacity = 70;
-                weaponOffsetY = -1;
-                weaponOffsetX = 1;
                 healTurretOffsetX = 5f;
                 healTurretOffsetY = -2f;
                 mass = 1.75f;
@@ -221,8 +217,6 @@ public class Mechs implements ContentList{
                 boostSpeed = 0.6f;
                 mass = 4f;
                 shake = 4f;
-                weaponOffsetX = 1;
-                weaponOffsetY = 0;
                 weapon = Weapons.swarmer;
                 trailColorTo = Color.valueOf("feb380");
                 armor = 45f;
@@ -279,8 +273,6 @@ public class Mechs implements ContentList{
             drag = 0.1f;
             armor = 10f;
             weapon = Weapons.blasterSmall;
-            weaponOffsetX = -1;
-            weaponOffsetY = -1;
             trailColor = Palette.lightTrail;
             cellTrnsY = 1f;
         }};

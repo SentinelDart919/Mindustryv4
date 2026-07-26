@@ -36,7 +36,6 @@ public class Mech extends UnlockableContent{
     public int itemCapacity = 30;
     public boolean turnCursor = true;
 
-    public float weaponOffsetX, weaponOffsetY;
     public float healTurretOffsetX, healTurretOffsetY;
     public Weapon weapon = Weapons.blaster;
 

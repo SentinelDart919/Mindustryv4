@@ -72,7 +72,7 @@ public class Revenant extends FlyingUnit{
         if(type.rotateWeapon){
             if(Units.invalidateTarget(target, this)){
                 for(int wi = 0; wi < 2; wi++){
-                    weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], rotation, 0.1f);
+                    weaponAngles[wi] = 0f;
                 }
             }
 
@@ -81,10 +81,10 @@ public class Revenant extends FlyingUnit{
                 if(!getWeapon().weaponMirror && !left) continue;
                 Draw.alpha(hitTime / hitDuration);
                 float tra = rotation - 90,
-                        trY = -getWeapon().getRecoil(this, left) + type.weaponOffsetY;
-                float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
-                        wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
-                Draw.rect(weapon.equipRegion, wx, wy, weaponAngles[left ? 1 : 0] - 90);
+                        trY = -getWeapon().getRecoil(this, left);
+                float wx = x + Angles.trnsx(tra, getWeapon().width * i, trY),
+                        wy = y + Angles.trnsy(tra, getWeapon().width * i, trY);
+                Draw.rect(weapon.equipRegion, wx, wy, rotation - 90 + weaponAngles[left ? 1 : 0]);
             }
         }
     }

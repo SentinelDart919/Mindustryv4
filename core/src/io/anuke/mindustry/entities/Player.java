@@ -353,11 +353,11 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
         for(int i : Mathf.signs){
             if(!mech.weapon.weaponMirror && i < 0) continue;
-            float tra = rotation - 90, trY = -mech.weapon.getRecoil(this, i > 0) + mech.weaponOffsetY;
+            float tra = rotation - 90, trY = -mech.weapon.getRecoil(this, i > 0);
             float w = i > 0 ? -mech.weapon.equipRegion.getRegionWidth() : mech.weapon.equipRegion.getRegionWidth();
             Draw.rect(mech.weapon.equipRegion,
-                    x + Angles.trnsx(tra, (mech.weaponOffsetX + mech.spreadX(this)) * i, trY),
-                    y + Angles.trnsy(tra, (mech.weaponOffsetX + mech.spreadX(this)) * i, trY), w, mech.weapon.equipRegion.getRegionHeight(), rotation - 90);
+                    x + Angles.trnsx(tra, (mech.weapon.width + mech.spreadX(this)) * i, trY),
+                    y + Angles.trnsy(tra, (mech.weapon.width + mech.spreadX(this)) * i, trY), w, mech.weapon.equipRegion.getRegionHeight(), rotation - 90);
         }
 
         float backTrns = 4f, itemSize = 5f;

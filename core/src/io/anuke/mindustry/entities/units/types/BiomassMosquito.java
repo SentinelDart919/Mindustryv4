@@ -107,9 +107,9 @@ public class BiomassMosquito extends BiomassAirUnit {
             if(!getWeapon().weaponMirror && i < 0) continue;
             Draw.alpha(hitTime / hitDuration);
             float tra = rotation - 90,
-                    trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
-            float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
-                    wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
+                    trY = -getWeapon().getRecoil(this, i > 0);
+            float wx = x + Angles.trnsx(tra, getWeapon().width * i, trY),
+                    wy = y + Angles.trnsy(tra, getWeapon().width * i, trY);
             if(weapon != null && weapon.equipRegion != null){
                 Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
             }

@@ -227,7 +227,6 @@ public class UnitTypes implements ContentList{
             mass = 5f;
             hitsize = 10f;
             rotatespeed = 0.06f;
-            weaponOffsetX = 1;
             targetAir = false;
             weapon = Weapons.artillery;
             health = 750;
@@ -282,7 +281,6 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.01f;
             attackLength = 90f;
             baseRotateSpeed = 0.06f;
-            weaponOffsetX = -10f;
             weapon = Weapons.revenantMissiles;
             unitCost = 300;
             engineOffsetY = -10f;
@@ -299,8 +297,6 @@ public class UnitTypes implements ContentList{
             isFlying = true;
             rotatespeed = 0.01f;
             baseRotateSpeed = 0.04f;
-            weaponOffsetX = 14f;
-            weaponOffsetY = -3f;
             attackLength = 90f;
             shootCone = 20f;
             rotateWeapon = true;
@@ -327,7 +323,6 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.01f;
             baseRotateSpeed = 0.04f;
             trailColor = Palette.lighterOrange;
-            weaponOffsetX = 32f;
             weapon = Weapons.reaperGun;
         }};
 
@@ -339,8 +334,6 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.68f;
             drag = 0.4f;
             rotatespeed = 0.06f;
-            weaponOffsetX = 17f;
-            weaponOffsetY = 2f;
             weapon = Weapons.chaos;
             unitCost = 1500;
         }};
@@ -355,8 +348,6 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             baseRotateSpeed = 0.04f;
             range = 80f;
-            weaponOffsetX = 0;
-            weaponOffsetY = 0;
             weapon = Weapons.debugtankturret;
             weapon.weaponMirror = false;
             spawnsInSiegeMode = false;
@@ -537,8 +528,6 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.68f;
             drag = 0.4f;
             rotatespeed = 0.06f;
-            weaponOffsetX = 17f;
-            weaponOffsetY = 2f;
             weapon = Weapons.exterminatorweapon;
             spawnsInSiegeMode = false;
             living = true;
@@ -592,8 +581,6 @@ public class UnitTypes implements ContentList{
             mass = 0.1f;
             range = 30f;
             weapon = Weapons.mosquitoweapon;
-            weaponOffsetX = 0;
-            weaponOffsetY = 0;
             trailColor = Color.valueOf("871e1e");
             engineOffsetY = -21f;
             spawnsInSiegeMode = false;
