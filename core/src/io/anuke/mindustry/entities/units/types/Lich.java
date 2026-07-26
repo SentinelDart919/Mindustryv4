@@ -64,26 +64,29 @@ public class Lich extends FlyingUnit{
     }
     @Override
     public void draw(){
-
         Draw.alpha(hitTime / hitDuration);
 
         Draw.rect(type.name, x, y, rotation - 90);
-
         drawItems();
-
         Draw.alpha(1f);
 
+        if(type.rotateWeapon){
+            if(Units.invalidateTarget(target, this)){
+                for(int wi = 0; wi < 2; wi++){
+                    weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], rotation, 0.1f);
+                }
+            }
 
-
-        for(int i : Mathf.signs){
-            if(!getWeapon().weaponMirror && i < 0) continue;
-            Draw.alpha(hitTime / hitDuration);
-            float tra = rotation - 90,
-                    trY = -getWeapon().getRecoil(this, i > 0) + type.weaponOffsetY;
-            float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
-                    wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
-            Draw.rect(weapon.equipRegion, wx , wy, rotation - 90);
-
+            for(int i : new int[]{1, -1}){
+                boolean left = i > 0;
+                if(!getWeapon().weaponMirror && !left) continue;
+                Draw.alpha(hitTime / hitDuration);
+                float tra = rotation - 90,
+                        trY = -getWeapon().getRecoil(this, left) + type.weaponOffsetY;
+                float wx = x + Angles.trnsx(tra, type.weaponOffsetX * i, trY),
+                        wy = y + Angles.trnsy(tra, type.weaponOffsetX * i, trY);
+                Draw.rect(weapon.equipRegion, wx, wy, weaponAngles[left ? 1 : 0] - 90);
+            }
         }
     }
 

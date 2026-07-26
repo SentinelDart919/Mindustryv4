@@ -282,6 +282,7 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.01f;
             attackLength = 90f;
             baseRotateSpeed = 0.06f;
+            weaponOffsetX = -10f;
             weapon = Weapons.revenantMissiles;
             unitCost = 300;
             engineOffsetY = -10f;

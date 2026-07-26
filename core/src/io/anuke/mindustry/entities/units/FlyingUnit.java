@@ -352,6 +352,12 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
         if(type.rotateWeapon){
             Draw.alpha(1f);
 
+            if(Units.invalidateTarget(target, this)){
+                for(int wi = 0; wi < 2; wi++){
+                    weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], rotation, 0.1f);
+                }
+            }
+
             for(int i : new int[]{1, -1}){
                 boolean left = i > 0;
                 if(!getWeapon().weaponMirror && !left) continue;
