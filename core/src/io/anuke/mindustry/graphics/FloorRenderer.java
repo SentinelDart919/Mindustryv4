@@ -64,9 +64,26 @@ public class FloorRenderer{
 
         Graphics.end();
 
+        boolean anyDirty = false;
         for(int x = minx; x < maxx; x++){
             for(int y = miny; y < maxy; y++){
                 if(dirty[x][y]){
+                    anyDirty = true;
+                    break;
+                }
+            }
+            if(anyDirty) break;
+        }
+
+        if(anyDirty){
+            cbatch.clear();
+            for(int x = 0; x < chunksx; x++){
+                for(int y = 0; y < chunksy; y++){
+                    dirty[x][y] = true;
+                }
+            }
+            for(int x = minx; x < maxx; x++){
+                for(int y = miny; y < maxy; y++){
                     dirty[x][y] = false;
                     cacheChunk(x, y);
                 }
