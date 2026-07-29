@@ -197,6 +197,21 @@ public class Waves{
                     effect = StatusEffects.overdrive;
                 }},
 
+                new SpawnGroup(UnitTypes.reaper){{
+                    begin = 84;
+                    spacing = 84;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                }},
+
+                new SpawnGroup(UnitTypes.reaper){{
+                    begin = 168;
+                    spacing = 84;
+                    unitScaling = 1;
+                    unitAmount = 2;
+                    effect = StatusEffects.overdrive;
+                }},
+
             new SpawnGroup(UnitTypes.ghoul){{
                 begin = 40;
                 unitAmount = 2;
