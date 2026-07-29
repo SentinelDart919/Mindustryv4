@@ -37,7 +37,7 @@ public class StorageBlocks extends BlockList implements ContentList{
         }};
 
         unloader = new SortedUnloader("unloader"){{
-            speed = 12f;
+            speed = 60f / 11f;
         }};
 
         hive = new HiveBlock("hive"){{

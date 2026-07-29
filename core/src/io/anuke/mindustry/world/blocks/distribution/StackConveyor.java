@@ -49,6 +49,12 @@ public class StackConveyor extends Block implements Autotiler{
     }
 
     @Override
+    public boolean canUnload(Tile tile, Item item){
+        StackConveyorEntity e = tile.entity();
+        return e.state != stateLoad && e.items.has(item);
+    }
+
+    @Override
     public void setStats(){
         super.setStats();
         stats.add(BlockStat.itemSpeed, itemCapacity * speed * 60f, StatUnit.itemsSecond);
@@ -108,6 +114,16 @@ public class StackConveyor extends Block implements Autotiler{
         e.blendbits = bits[0];
         e.blendsclx = bits[1];
         e.blendscly = bits[2];
+
+        if(e.state == stateLoad){
+            for(Tile near : tile.entity.proximity()){
+                if(near.block() instanceof StackConveyor
+                    && near.relativeTo(tile.x, tile.y) == near.getRotation()){
+                    e.state = stateMove;
+                    break;
+                }
+            }
+        }
 
         if(lastState != e.state){
             for(Tile near : tile.entity.proximity()){

@@ -73,6 +73,11 @@ public class ItemBridge extends Block{
     }
 
     @Override
+    public boolean canUnload(Tile tile, Item item){
+        return false;
+    }
+
+    @Override
     public void load(){
         super.load();
 

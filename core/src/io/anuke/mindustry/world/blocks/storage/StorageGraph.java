@@ -148,4 +148,15 @@ public class StorageGraph{
         return items;
     }
 
+    public void removeWithoutSplit(Tile tile){
+        if(!tiles.contains(tile)) return;
+
+        tiles.remove(tile);
+        capacity -= tile.block().itemCapacity;
+
+        StorageEntity entity = tile.entity();
+        entity.graph = null;
+        entity.items = new ItemModule();
+    }
+
 }

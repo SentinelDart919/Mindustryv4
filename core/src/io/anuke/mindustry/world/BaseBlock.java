@@ -70,6 +70,11 @@ public abstract class BaseBlock extends MappableContent{
         return hasItems;
     }
 
+    /**Returns whether items can be unloaded from this block by an unloader.*/
+    public boolean canUnload(Tile tile, Item item){
+        return hasItems && tile.entity != null && tile.entity.items != null && tile.entity.items.has(item);
+    }
+
     /**Returns offset for stack placement.*/
     public void getStackOffset(Item item, Tile tile, Translator trns){
 

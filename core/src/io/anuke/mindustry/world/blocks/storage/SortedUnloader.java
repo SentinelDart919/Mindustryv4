@@ -7,6 +7,7 @@ import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.world.Edges;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.SelectionTrait;
 import io.anuke.ucore.graphics.Draw;
@@ -29,25 +30,75 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
     public static void setSortedUnloaderItem(Player player, Tile tile, Item item){
         SortedUnloaderEntity entity = tile.entity();
-        entity.items.clear();
         entity.sortItem = item;
+    }
+
+    public boolean canUnload(Tile tile, Item item){
+        boolean hasProvider = false;
+        boolean hasReceiver = false;
+
+        for(Tile other : tile.entity.proximity()){
+            if(other.getTeam() != tile.getTeam()) continue;
+            Tile in = Edges.getFacingEdge(tile, other);
+            boolean canLoad = other.block().acceptItem(item, other, in) && canDump(tile, other, item);
+            boolean canUnload = other.block().canUnload(other, item);
+            hasProvider |= canUnload;
+            hasReceiver |= canLoad;
+            if(hasProvider && hasReceiver) return true;
+        }
+        return false;
     }
 
     @Override
     public void update(Tile tile){
         SortedUnloaderEntity entity = tile.entity();
 
-        if(tile.entity.timer.get(timerUnload, speed) && tile.entity.items.total() == 0){
-            for(Tile other : tile.entity.proximity()){
-                if(other.getTeam() == tile.getTeam() && other.block() instanceof StorageBlock && entity.items.total() == 0 &&
-                ((entity.sortItem == null && other.entity.items.total() > 0) || ((StorageBlock) other.block()).hasItem(other, entity.sortItem))){
-                    offloadNear(tile, ((StorageBlock) other.block()).removeItem(other, entity.sortItem));
+        entity.unloadTimer += entity.delta();
+        if(entity.unloadTimer < speed) return;
+
+        Item item = null;
+
+        if(entity.sortItem != null){
+            if(canUnload(tile, entity.sortItem)){
+                item = entity.sortItem;
+            }
+        }else{
+            for(int i = 0; i < content.items().size; i++){
+                int id = (entity.rotations + i + 1) % content.items().size;
+                Item possible = content.items().get(id);
+                if(canUnload(tile, possible)){
+                    item = possible;
+                    break;
                 }
             }
         }
 
-        if(entity.items.total() > 0){
-            tryDump(tile);
+        if(item != null){
+            entity.rotations = item.id;
+            Tile source = null;
+            Tile dest = null;
+
+            for(Tile other : tile.entity.proximity()){
+                if(other.getTeam() != tile.getTeam()) continue;
+                if(source == null && other.block().canUnload(other, item)){
+                    source = other;
+                }
+                Tile in = Edges.getFacingEdge(tile, other);
+                if(dest == null && other.block().acceptItem(item, other, in) && canDump(tile, other, item)){
+                    dest = other;
+                }
+                if(source != null && dest != null) break;
+            }
+
+            if(source != null && dest != null && source != dest){
+                source.entity.items.remove(item, 1);
+                dest.block().handleItem(item, dest, Edges.getFacingEdge(tile, dest));
+                entity.unloadTimer -= speed;
+            }else{
+                entity.unloadTimer = Math.min(entity.unloadTimer, speed);
+            }
+        }else{
+            entity.unloadTimer = Math.min(entity.unloadTimer, speed);
         }
     }
 
@@ -75,6 +126,8 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
 
     public static class SortedUnloaderEntity extends TileEntity{
         public Item sortItem = null;
+        public float unloadTimer = 0f;
+        public int rotations = 0;
 
         @Override
         public void writeConfig(DataOutput stream) throws IOException{

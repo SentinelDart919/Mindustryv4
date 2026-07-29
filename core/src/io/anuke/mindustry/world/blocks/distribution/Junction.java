@@ -24,6 +24,11 @@ public class Junction extends Block{
     }
 
     @Override
+    public boolean canUnload(Tile tile, Item item){
+        return false;
+    }
+
+    @Override
     public boolean outputsItems(){
         return true;
     }

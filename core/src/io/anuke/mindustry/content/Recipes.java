@@ -27,6 +27,7 @@ public class Recipes implements ContentList{
         new Recipe(units, UnitBlocks.heavyHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, CraftingBlocks.biomassGenerator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(distribution, DistributionBlocks.veins).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DistributionBlocks.stackRouter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, ProductionBlocks.biomassBulb).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(production, ProductionBlocks.corruptedcultivator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(effect, StorageBlocks.hive).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
@@ -74,7 +75,6 @@ public class Recipes implements ContentList{
         new Recipe(effect, DefenseBlocks.overdriveProjector, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 150), new ItemStack(Items.titanium, 150), new ItemStack(Items.silicon, 250));
         new Recipe(effect, DefenseBlocks.forceProjector, new ItemStack(Items.lead, 200), new ItemStack(Items.densealloy, 150), new ItemStack(Items.titanium, 150), new ItemStack(Items.silicon, 250));
 
-        new Recipe(effect, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
         new Recipe(effect, StorageBlocks.container, new ItemStack(Items.densealloy, 200));
         new Recipe(effect, StorageBlocks.vault, new ItemStack(Items.densealloy, 500), new ItemStack(Items.thorium, 250));
         new Recipe(effect, LogisticBlocks.miningPostT1, new ItemStack(Items.densealloy, 150), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150));
@@ -126,6 +126,8 @@ public class Recipes implements ContentList{
         new Recipe(distribution, DistributionBlocks.overflowGate, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.itemBridge, new ItemStack(Items.densealloy, 8), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.massDriver, new ItemStack(Items.densealloy, 250), new ItemStack(Items.silicon, 150), new ItemStack(Items.lead, 250), new ItemStack(Items.thorium, 100));
+        new Recipe(distribution, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
+
 
         //CRAFTING
 

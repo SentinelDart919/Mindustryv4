@@ -58,6 +58,11 @@ public class Conveyor extends Block implements Autotiler{
     }
 
     @Override
+    public boolean canUnload(Tile tile, Item item){
+        return false;
+    }
+
+    @Override
     public void init(){
         super.init();
         if(junctionReplacement == null) junctionReplacement = DistributionBlocks.junction;

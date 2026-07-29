@@ -34,6 +34,11 @@ public class Sorter extends Block implements SelectionTrait{
     }
 
     @Override
+    public boolean canUnload(Tile tile, Item item){
+        return false;
+    }
+
+    @Override
     public boolean outputsItems(){
         return true;
     }
