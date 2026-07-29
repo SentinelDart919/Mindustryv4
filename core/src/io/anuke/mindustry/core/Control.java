@@ -353,7 +353,7 @@ public class Control extends Module{
                 }
             }
 
-            if(Inputs.keyTap("pause") && !ui.restart.isShown() && (state.is(State.paused) || state.is(State.playing))){
+            if(Inputs.keyTap("pause") && !ui.chatfrag.chatOpen() && !ui.mapfrag.isOpen() && !ui.restart.isShown() && (state.is(State.paused) || state.is(State.playing))){
                 state.set(state.is(State.playing) ? State.paused : State.playing);
             }
 
