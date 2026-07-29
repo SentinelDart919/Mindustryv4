@@ -446,5 +446,23 @@ public class UnitFactoryAdvanced extends Block{
                 }
             }
         }
+
+        @Override
+        public Object config(){
+            return (int)unitNumber;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Integer){
+                unitNumber = (Integer)config;
+                if(tile != null && tile.block() instanceof UnitFactoryAdvanced){
+                    UnitFactoryAdvanced factory = (UnitFactoryAdvanced)tile.block();
+                    if(factory.types != null && factory.types.length > 0 && unitNumber >= 0 && unitNumber < factory.types.length){
+                        unitSource = factory.types[unitNumber];
+                    }
+                }
+            }
+        }
     }
 }

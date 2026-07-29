@@ -3,9 +3,12 @@ package io.anuke.mindustry.game;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Base64Coder;
+import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.type.ContentType;
+import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Block;
@@ -21,6 +24,7 @@ import static io.anuke.mindustry.Vars.content;
 
 public class Schematics {
     private Array<Schematic> all = new Array<>();
+    private LongMap<Object> pendingConfigs = new LongMap<>();
 
     public void load() {
         all.clear();
@@ -60,13 +64,30 @@ public class Schematics {
     }
 
     public void place(Schematic schem, int x, int y, Team team) {
-        for (Schematic.Stile tile : schem.tiles) {
-            if (tile.block == null) continue;
-            //Convert bottom-left back to v4 origin
-            int ox = x + tile.x + (tile.block.size - 1) / 2;
-            int oy = y + tile.y + (tile.block.size - 1) / 2;
-            Vars.control.input(0).tryPlaceBlock(ox, oy, Recipe.getByResult(tile.block), tile.rotation);
+        for (Schematic.Stile stile : schem.tiles) {
+            if (stile.block == null) continue;
+            int ox = x + stile.x + (stile.block.size - 1) / 2;
+            int oy = y + stile.y + (stile.block.size - 1) / 2;
+            if(stile.config != null){
+                pendingConfigs.put(key(ox, oy), stile.config);
+            }
+            Vars.control.input(0).tryPlaceBlock(ox, oy, Recipe.getByResult(stile.block), stile.rotation);
         }
+    }
+
+    public void applyConfig(Tile tile){
+        long k = key(tile.x, tile.y);
+        Object config = pendingConfigs.get(k);
+        if(config != null){
+            pendingConfigs.remove(k);
+            if(tile.entity != null){
+                tile.entity.configured(config);
+            }
+        }
+    }
+
+    private static long key(int x, int y){
+        return ((long)x << 32) | (y & 0xffffffffL);
     }
 
     public Schematic create(int x, int y, int x2, int y2) {
@@ -89,7 +110,7 @@ public class Schematics {
                 int ox = ix - (tile.block().size - 1) / 2;
                 int oy = iy - (tile.block().size - 1) / 2;
 
-                tiles.add(new Schematic.Stile(tile.block(), ox, oy, null, tile.getRotation()));
+                tiles.add(new Schematic.Stile(tile.block(), ox, oy, tile.entity != null ? tile.entity.config() : null, tile.getRotation()));
                 minTileX = Math.min(minTileX, ox);
                 minTileY = Math.min(minTileY, oy);
                 maxTileX = Math.max(maxTileX, ox + tile.block().size - 1);
@@ -151,9 +172,10 @@ public class Schematics {
             short x = stream.readShort();
             short y = stream.readShort();
             byte rotation = stream.readByte();
+            Object config = version >= 2 ? readTileConfig(stream) : null;
             
             if(blockIndex < blocks.length && blocks[blockIndex] != null){
-                tiles.add(new Schematic.Stile(blocks[blockIndex], x, y, null, rotation));
+                tiles.add(new Schematic.Stile(blocks[blockIndex], x, y, config, rotation));
             }
         }
 
@@ -169,7 +191,7 @@ public class Schematics {
 
     public void write(Schematic schematic, DataOutputStream stream) throws IOException {
         stream.writeBytes("MSCH");
-        stream.writeByte(1); // version
+        stream.writeByte(2); // version
         stream.writeShort(schematic.width);
         stream.writeShort(schematic.height);
 
@@ -201,6 +223,46 @@ public class Schematics {
             stream.writeShort(tile.x);
             stream.writeShort(tile.y);
             stream.writeByte(tile.rotation);
+            writeTileConfig(stream, tile.config);
+        }
+    }
+
+    private void writeTileConfig(DataOutputStream stream, Object config) throws IOException {
+        if (config == null) {
+            stream.writeByte(0);
+        } else if (config instanceof Item) {
+            stream.writeByte(1);
+            stream.writeShort(((Item) config).id);
+        } else if (config instanceof Liquid) {
+            stream.writeByte(2);
+            stream.writeShort(((Liquid) config).id);
+        } else if (config instanceof Integer) {
+            stream.writeByte(3);
+            stream.writeInt((Integer) config);
+        } else if (config instanceof int[]) {
+            stream.writeByte(4);
+            int[] arr = (int[]) config;
+            stream.writeShort(arr.length);
+            for (int i : arr) stream.writeInt(i);
+        } else {
+            stream.writeByte(0);
+        }
+    }
+
+    private Object readTileConfig(DataInputStream stream) throws IOException {
+        byte type = stream.readByte();
+        switch (type) {
+            case 0: return null;
+            case 1: return Vars.content.item(stream.readShort());
+            case 2: return Vars.content.liquid(stream.readShort());
+            case 3: return stream.readInt();
+            case 4: {
+                int len = stream.readUnsignedShort();
+                int[] arr = new int[len];
+                for (int i = 0; i < len; i++) arr[i] = stream.readInt();
+                return arr;
+            }
+            default: return null;
         }
     }
 

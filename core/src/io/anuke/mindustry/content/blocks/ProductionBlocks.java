@@ -10,6 +10,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.Cultivator;
 import io.anuke.mindustry.world.blocks.production.Drill;
+import io.anuke.mindustry.world.blocks.production.HiveDrill;
 import io.anuke.mindustry.world.blocks.production.Fracker;
 import io.anuke.mindustry.world.blocks.production.SolidPump;
 import io.anuke.ucore.core.Timers;
@@ -131,7 +132,7 @@ public class ProductionBlocks extends BlockList implements ContentList{
                 return tile != null && tile.floor() == infectedGrass;
             }
         };
-        biomassBulb = new Drill("biomass-bulb"){{
+        biomassBulb = new HiveDrill("biomass-bulb"){{
             health = 580;
             update = true;
             size = 2;

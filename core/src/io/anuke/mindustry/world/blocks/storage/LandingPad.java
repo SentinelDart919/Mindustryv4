@@ -239,5 +239,19 @@ public class LandingPad extends Block {
             landingTimer = stream.readFloat();
             hasPod = stream.readBoolean();
         }
+
+        @Override
+        public Object config(){
+            return targetItem;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Item){
+                targetItem = (Item)config;
+            }else{
+                targetItem = null;
+            }
+        }
     }
 }

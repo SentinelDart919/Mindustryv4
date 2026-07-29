@@ -14,6 +14,7 @@ import io.anuke.mindustry.game.EventType.WorldLoadEvent;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.content.blocks.UnitBlocks;
+import io.anuke.mindustry.world.blocks.units.UnitHiveSpawner;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.content.blocks.TurretBlocks;
 import io.anuke.mindustry.type.AmmoEntry;
@@ -61,6 +62,7 @@ public class MassAI {
     private static Array<BuildingLine> activeLines = new Array<>();
     private static Array<SubSection> activeSubsections = new Array<>();
     private static float spawnTimer = 0;
+    private static float unitQueueTimer = 0;
     private static float turretTimer = 0;
     private static float nextTurretTime = 0;
     private static float damageTurretTimer = 0;
@@ -90,6 +92,7 @@ public class MassAI {
             activeSubsections.clear();
             coreExpanded.clear();
             spawnTimer = 0;
+            unitQueueTimer = 0;
             turretTimer = 0;
             damageTurretTimer = 0;
             nextDamageTurretTime = 0;
@@ -324,6 +327,12 @@ public class MassAI {
             checkCoreExpansion();
             trySpawnSpawners();
             trySpawnBiomassGenerators();
+        }
+
+        unitQueueTimer += Timers.delta();
+        if (unitQueueTimer >= 2f * 60f) {
+            unitQueueTimer = 0;
+            tryQueueUnits();
         }
 
         for (int i = activeSubsections.size - 1; i >= 0; i--) {
@@ -971,6 +980,34 @@ public class MassAI {
             }
         }
         return false;
+    }
+
+    private static void tryQueueUnits() {
+        for (Tile core : Vars.state.teams.get(Team.themass).cores) {
+            int radius = 30;
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    Tile t = world.tile(core.x + dx, core.y + dy);
+                    if (t == null || !(t.block() instanceof UnitHiveSpawner)) continue;
+                    if (t.getTeam() != Team.themass) continue;
+
+                    UnitHiveSpawner spawner = (UnitHiveSpawner) t.block();
+                    UnitHiveSpawner.UnitHiveSpawnerEntity entity = t.entity();
+                    if (entity == null) continue;
+
+                    int queueTarget = 3;
+                    int attempts = 0;
+                    while (entity.queue.size < queueTarget && attempts < 10) {
+                        int typeIdx = Mathf.random(0, spawner.types.length - 1);
+                        if (!spawner.addToQueue(t, typeIdx)) {
+                            attempts++;
+                            continue;
+                        }
+                        attempts = 0;
+                    }
+                }
+            }
+        }
     }
 
     private static void checkCoreExpansion() {

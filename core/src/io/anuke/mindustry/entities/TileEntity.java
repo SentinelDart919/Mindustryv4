@@ -150,6 +150,15 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
 
     public void readConfig(DataInput stream) throws IOException{}
 
+    /** Returns the configuration object for schematic serialization, or null if no config. */
+    public Object config(){
+        return null;
+    }
+
+    /** Applies a configuration object after schematic placement. */
+    public void configured(Object config){
+    }
+
     public boolean collide(Bullet other){
         return true;
     }

@@ -139,5 +139,19 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
             byte id = stream.readByte();
             sortItem = id == -1 ? null : content.items().get(id);
         }
+
+        @Override
+        public Object config(){
+            return sortItem;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Item){
+                sortItem = (Item)config;
+            }else if(config == null){
+                sortItem = null;
+            }
+        }
     }
 }

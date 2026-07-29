@@ -2,6 +2,7 @@ package io.anuke.mindustry.world.blocks.power;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -419,4 +420,50 @@ public class PowerNode extends PowerBlock{
         }
     }
 
+    @Override
+    public TileEntity newEntity(){
+        return new PowerNodeEntity();
+    }
+
+    public static class PowerNodeEntity extends TileEntity{
+        @Override
+        public Object config(){
+            if(power == null) return null;
+            IntArray links = power.links;
+            if(links.size == 0) return null;
+            int[] relLinks = new int[links.size];
+            for(int i = 0; i < links.size; i++){
+                Tile other = world.tile(links.get(i));
+                if(other != null){
+                    int dx = other.x - tile.x;
+                    int dy = other.y - tile.y;
+                    relLinks[i] = (dx << 16) | (dy & 0xFFFF);
+                }else{
+                    relLinks[i] = 0;
+                }
+            }
+            return relLinks;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof int[]){
+                int[] relLinks = (int[])config;
+                power.links.clear();
+                for(int i = 0; i < relLinks.length; i++){
+                    int rel = relLinks[i];
+                    int dx = rel >> 16;
+                    int dy = (short)(rel & 0xFFFF);
+                    Tile other = world.tile(tile.x + dx, tile.y + dy);
+                    if(other != null && other.block().hasPower && other.getTeamID() == tile.getTeamID()){
+                        power.links.add(other.packedPosition());
+                    }
+                }
+                if(power.graph != null){
+                    power.graph.reflow(tile);
+                    power.graph.update();
+                }
+            }
+        }
+    }
 }

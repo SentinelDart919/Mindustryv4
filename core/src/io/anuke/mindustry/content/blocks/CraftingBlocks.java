@@ -360,7 +360,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.65f);
         }};
 
-        biomassGenerator = new GenericCrafter("biomass-generator"){{
+        biomassGenerator = new HiveCrafter("biomass-generator"){{
             itemCapacity = 2;
             craftTime = Mathf.random(1290f , 1990f);
             hasItems = true;

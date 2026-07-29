@@ -127,5 +127,20 @@ public class CommandCenter extends Block{
         public void readConfig(DataInput stream) throws IOException{
             command = UnitCommand.values()[stream.readByte()];
         }
+
+        @Override
+        public Object config(){
+            return (int)command.ordinal();
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Integer){
+                int ord = (Integer)config;
+                if(ord >= 0 && ord < UnitCommand.values().length){
+                    command = UnitCommand.values()[ord];
+                }
+            }
+        }
     }
 }

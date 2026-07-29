@@ -2,6 +2,7 @@ package io.anuke.mindustry.world.blocks.distribution;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.IntSet.IntSetIterator;
@@ -351,6 +352,29 @@ public class ItemBridge extends Block{
             byte links = stream.readByte();
             for(int i = 0; i < links; i++){
                 incoming.add(stream.readInt());
+            }
+        }
+
+        @Override
+        public Object config(){
+            if(link == -1) return null;
+            Tile other = world.tile(link);
+            if(other == null) return null;
+            int dx = other.x - tile.x;
+            int dy = other.y - tile.y;
+            return (dx << 16) | (dy & 0xFFFF);
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Integer){
+                int rel = (Integer)config;
+                int dx = rel >> 16;
+                int dy = (short)(rel & 0xFFFF);
+                Tile other = world.tile(tile.x + dx, tile.y + dy);
+                if(other != null && other.block() == tile.block()){
+                    link = other.packedPosition();
+                }
             }
         }
     }

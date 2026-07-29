@@ -113,5 +113,19 @@ public class LogicImporter extends LogicBlock {
             int id = stream.readShort();
             selectedItem = id == -1 ? null : Vars.content.item(id);
         }
+
+        @Override
+        public Object config(){
+            return selectedItem;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Item){
+                selectedItem = (Item)config;
+            }else{
+                selectedItem = null;
+            }
+        }
     }
 }

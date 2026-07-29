@@ -146,5 +146,17 @@ public class Sorter extends Block implements SelectionTrait{
         public void readConfig(DataInput stream) throws IOException{
             sortItem = content.items().get(stream.readByte());
         }
+
+        @Override
+        public Object config(){
+            return sortItem;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Item){
+                sortItem = (Item)config;
+            }
+        }
     }
 }

@@ -299,5 +299,17 @@ public class DebugBlocks extends BlockList implements ContentList{
         public void readConfig(DataInput stream) throws IOException{
             source = content.liquid(stream.readByte());
         }
+
+        @Override
+        public Object config(){
+            return source;
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Liquid){
+                source = (Liquid)config;
+            }
+        }
     }
 }

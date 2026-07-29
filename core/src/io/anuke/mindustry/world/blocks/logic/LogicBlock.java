@@ -11,6 +11,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import static io.anuke.mindustry.Vars.*;
+
 public class LogicBlock extends Block {
 
     public LogicBlock(String name) {
@@ -58,6 +60,29 @@ public class LogicBlock extends Block {
         @Override
         public void readConfig(DataInput stream) throws IOException {
             targetPos = stream.readInt();
+        }
+
+        @Override
+        public Object config(){
+            if(targetPos == -1) return null;
+            Tile other = world.tile(targetPos);
+            if(other == null) return null;
+            int dx = other.x - tile.x;
+            int dy = other.y - tile.y;
+            return (dx << 16) | (dy & 0xFFFF);
+        }
+
+        @Override
+        public void configured(Object config){
+            if(config instanceof Integer){
+                int rel = (Integer)config;
+                int dx = rel >> 16;
+                int dy = (short)(rel & 0xFFFF);
+                Tile other = world.tile(tile.x + dx, tile.y + dy);
+                if(other != null && other.block() instanceof LogicBlock){
+                    targetPos = other.packedPosition();
+                }
+            }
         }
     }
 }

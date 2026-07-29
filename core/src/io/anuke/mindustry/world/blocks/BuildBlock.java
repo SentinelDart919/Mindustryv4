@@ -62,6 +62,7 @@ public class BuildBlock extends Block{
         if(tile == null) return;
         tile.setRotation(rotation);
         world.setBlock(tile, block, team);
+        Vars.schematics.applyConfig(tile);
         Effects.effect(Fx.placeBlock, tile.drawx(), tile.drawy(), block.size);
         Sound sound = blockPlace;
         if(Vars.soundController != null && sound != null){
