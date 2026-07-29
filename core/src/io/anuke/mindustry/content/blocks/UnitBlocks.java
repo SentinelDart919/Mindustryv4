@@ -206,6 +206,7 @@ public class UnitBlocks extends BlockList implements ContentList{
             types = new UnitType[]{
                     UnitTypes.lich,
                     UnitTypes.chaosarray,
+                    UnitTypes.reaper,
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -223,16 +224,27 @@ public class UnitBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.titanium, 200),
                             new ItemStack(Items.chromium, 150),
                             new ItemStack(Items.surgealloy, 300),
-                    }
+                    },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 900),
+                            new ItemStack(Items.lead, 1000),
+                            new ItemStack(Items.thorium, 550),
+                            new ItemStack(Items.plastanium, 650),
+                            new ItemStack(Items.chromium, 320),
+                            new ItemStack(Items.surgealloy, 450),
+                            new ItemStack(Items.bluemicrochip, 50),
+                    },
 
             };
             producerTimes = new float[]{
                     17000f,
-                    18000f
+                    18000f,
+                    21000f,
             };
             maxSpawn = new int[]{
                     2,
-                    2
+                    2,
+                    1,
             };
             size = 8;
             consumes.power(0.64f);
@@ -277,9 +289,18 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.evilTanky,
                     UnitTypes.explosiveBiomass
             };
+            evoUnlock = new int[]{0, 1, 2};
+            producerTimes = new float[]{
+                    60f * 8,
+                    60f * 15,
+                    60f * 12
+            };
+            maxSpawn = new int[]{
+                    15,
+                    8,
+                    10
+            };
             shadow = "hive-spawner-shadow";
-            minSpawnTimer = 15f;
-            maxSpawnTimer = 45f;
         }};
         airHiveSpawner = new UnitHiveSpawner("air-hive-spawner"){{
             size = 2;
@@ -302,9 +323,18 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.FlyingExplosiveBiomass,
                     UnitTypes.acidMosquito
             };
+            evoUnlock = new int[]{0, 1, 2};
+            producerTimes = new float[]{
+                    60f * 10,
+                    60f * 14,
+                    60f * 18
+            };
+            maxSpawn = new int[]{
+                    12,
+                    8,
+                    6
+            };
             shadow = "air-hive-spawnershadow";
-            minSpawnTimer = 15f;
-            maxSpawnTimer = 45f;
         }};
         heavyHiveSpawner = new UnitHiveSpawner("heavy-hive-spawner"){{
             size = 3;
@@ -323,9 +353,16 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.exterminatorBiomass,
                     UnitTypes.artilleryBiomass
             };
+            evoUnlock = new int[]{2, 3};
+            producerTimes = new float[]{
+                    60f * 30,
+                    60f * 25
+            };
+            maxSpawn = new int[]{
+                    4,
+                    6
+            };
             shadow = "heavy-hive-spawnershadow";
-            minSpawnTimer = 30f;
-            maxSpawnTimer = 90f;
         }};
     }
 }
