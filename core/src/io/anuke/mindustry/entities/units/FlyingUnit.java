@@ -106,10 +106,10 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                         }
 
                         if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
-                            float worldAngle = rotation - 90 + weaponAngles[wi];
-                            float tipX = wx + Angles.trnsx(worldAngle, getWeapon().length);
-                            float tipY = wy + Angles.trnsy(worldAngle, getWeapon().length);
-                            getWeapon().update(FlyingUnit.this, tipX, tipY, worldAngle, left);
+                            float fireAngle = rotation + weaponAngles[wi];
+                            float tipX = wx + Angles.trnsx(fireAngle, getWeapon().length);
+                            float tipY = wy + Angles.trnsy(fireAngle, getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, fireAngle, left);
                         }
                     }
                 }else{
@@ -183,10 +183,10 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
                         }
 
                         if(inRange && (Mathf.angNear(angleTo(target), rotation, type.shootCone) || !getWeapon().getAmmo().bullet.keepVelocity)){
-                            float worldAngle = rotation - 90 + weaponAngles[wi];
-                            float tipX = wx + Angles.trnsx(worldAngle, getWeapon().length);
-                            float tipY = wy + Angles.trnsy(worldAngle, getWeapon().length);
-                            getWeapon().update(FlyingUnit.this, tipX, tipY, worldAngle, left);
+                            float fireAngle = rotation + weaponAngles[wi];
+                            float tipX = wx + Angles.trnsx(fireAngle, getWeapon().length);
+                            float tipY = wy + Angles.trnsy(fireAngle, getWeapon().length);
+                            getWeapon().update(FlyingUnit.this, tipX, tipY, fireAngle, left);
                         }
                     }
                 }else{
