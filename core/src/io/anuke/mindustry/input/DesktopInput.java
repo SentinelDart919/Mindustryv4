@@ -172,6 +172,11 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public void update(){
+        int cursorX = tileX(Gdx.input.getX());
+        int cursorY = tileY(Gdx.input.getY());
+
+        if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
+
         if(Net.active() && Inputs.keyTap("player_list")){
             ui.listfrag.toggle();
         }
@@ -179,11 +184,6 @@ public class DesktopInput extends InputHandler{
         if(Inputs.keyTap(section, "map")){
             ui.mapfrag.toggle();
         }
-
-        int cursorX = tileX(Gdx.input.getX());
-        int cursorY = tileY(Gdx.input.getY());
-
-        if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
 
         if(Inputs.keyTap(section, "schematic_select")){
             ui.schematics.show();
