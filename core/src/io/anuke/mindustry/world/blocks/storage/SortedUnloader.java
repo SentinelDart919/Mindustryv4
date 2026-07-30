@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.storage;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -34,14 +35,27 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
     }
 
     public boolean canUnload(Tile tile, Item item){
+        return canUnload(tile, item, true);
+    }
+
+    private boolean canUnload(Tile tile, Item item, boolean checkNeighbors){
         boolean hasProvider = false;
         boolean hasReceiver = false;
 
-        for(Tile other : tile.entity.proximity()){
+        Array<Tile> proximity = tile.entity.proximity();
+        for(int i = 0; i < proximity.size; i++){
+            Tile other = proximity.get(i);
             if(other.getTeam() != tile.getTeam()) continue;
             Tile in = Edges.getFacingEdge(tile, other);
             boolean canLoad = other.block().acceptItem(item, other, in) && canDump(tile, other, item);
-            boolean canUnload = other.block().canUnload(other, item);
+            boolean canUnload = false;
+            if(other.block() instanceof SortedUnloader){
+                if(checkNeighbors){
+                    canUnload = ((SortedUnloader)other.block()).canUnload(other, item, false);
+                }
+            }else{
+                canUnload = other.block().canUnload(other, item);
+            }
             hasProvider |= canUnload;
             hasReceiver |= canLoad;
             if(hasProvider && hasReceiver) return true;
@@ -78,7 +92,9 @@ public class SortedUnloader extends Unloader implements SelectionTrait{
             Tile source = null;
             Tile dest = null;
 
-            for(Tile other : tile.entity.proximity()){
+            Array<Tile> proximity = tile.entity.proximity();
+            for(int i = 0; i < proximity.size; i++){
+                Tile other = proximity.get(i);
                 if(other.getTeam() != tile.getTeam()) continue;
                 if(source == null && other.block().canUnload(other, item)){
                     source = other;
