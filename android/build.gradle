@@ -124,7 +124,9 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if(project.hasProperty("RELEASE_STORE_FILE")) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
