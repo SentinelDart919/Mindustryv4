@@ -51,7 +51,7 @@ public class ContentDisplay{
 
             if(map.size == 0) continue;
 
-            table.add("$text.category." + cat.name()).color(Palette.accent).fillX();
+            table.add(cat.localized()).color(Palette.accent).fillX();
             table.row();
 
             for(BlockStat stat : map.keys()){

@@ -16,6 +16,10 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.ucore.scene.ui.layout.Table;
 import io.anuke.ucore.util.Mathf;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import static io.anuke.mindustry.Vars.tilesize;
 
 public class LogicExporter extends LogicBlock {
@@ -32,15 +36,6 @@ public class LogicExporter extends LogicBlock {
     public void update(Tile tile) {
         LogicExporterEntity entity = tile.entity();
 
-        if (entity.droneIDs.size < maxDrones && (entity.spawnTimer += Timers.delta()) >= 60f * 5) {
-            BaseUnit unit = droneType.create(tile.getTeam());
-            unit.setSpawner(tile);
-            unit.set(tile.worldx(), tile.worldy());
-            unit.add();
-            entity.droneIDs.add(unit.id);
-            entity.spawnTimer = 0;
-        }
-
         if (entity.targetPos == -1) {//automatic mode buh
             if ((entity.findTimer += Timers.delta()) >= 60f) {
                 entity.findTimer = 0;
@@ -52,6 +47,17 @@ public class LogicExporter extends LogicBlock {
                 entity.targetImporter = (LogicImporter.LogicImporterEntity) target.entity();
             } else {
                 entity.targetImporter = null;
+            }
+        }
+
+        if (entity.targetImporter != null && (entity.targetPos != -1 || entity.targetImporter.selectedItem != null)) {
+            if (entity.droneIDs.size < maxDrones && (entity.spawnTimer += Timers.delta()) >= 60f * 5) {
+                BaseUnit unit = droneType.create(tile.getTeam());
+                unit.setSpawner(tile);
+                unit.set(tile.worldx(), tile.worldy());
+                unit.add();
+                entity.droneIDs.add(unit.id);
+                entity.spawnTimer = 0;
             }
         }
     }
@@ -82,7 +88,9 @@ public class LogicExporter extends LogicBlock {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         LogicExporterEntity entity = tile.entity();
-        entity.droneIDs.removeValue(unit.id);
+        if (entity != null) {
+            entity.droneIDs.removeValue(unit.id);
+        }
     }
 
     @Override
@@ -111,14 +119,17 @@ public class LogicExporter extends LogicBlock {
     @Override
     public void buildTable(Tile tile, Table table) {
         LogicExporterEntity entity = tile.entity();
-        table.add("Logic Exporter").row();//more uselesss text bc yes
+        table.add("$text.logic.exporter").row();//more uselesss text bc yes
         
         table.addImageButton("icon-cancel", "clear-toggle", 24, () -> {
             setLogicTarget(null, tile, -1);
             entity.targetImporter = null;
         }).size(38).pad(1).get().setChecked(entity.targetPos == -1);
         
-        table.add("Auto-link").left();
+        table.add("$text.logic.autolink").left();
+        
+        table.row();
+        table.add(io.anuke.ucore.util.Bundles.format("text.logic.target", (entity.targetPos == -1 ? io.anuke.ucore.util.Bundles.get("text.logic.target.auto") : Vars.world.tile(entity.targetPos).x + ", " + Vars.world.tile(entity.targetPos).y))).left();
     }
 
     @Override
@@ -131,5 +142,24 @@ public class LogicExporter extends LogicBlock {
         public float spawnTimer;
         public float findTimer;
         public LogicImporter.LogicImporterEntity targetImporter;
+
+        @Override
+        public void write(DataOutput stream) throws IOException {
+            super.write(stream);
+            stream.writeShort(droneIDs.size);
+            for(int i = 0; i < droneIDs.size; i++){
+                stream.writeInt(droneIDs.get(i));
+            }
+        }
+
+        @Override
+        public void read(DataInput stream) throws IOException {
+            super.read(stream);
+            int amount = stream.readShort();
+            droneIDs.clear();
+            for(int i = 0; i < amount; i++){
+                droneIDs.add(stream.readInt());
+            }
+        }
     }
 }

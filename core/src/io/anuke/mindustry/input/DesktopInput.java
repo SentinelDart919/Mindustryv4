@@ -23,6 +23,7 @@ import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeDrawResult;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeResult;
 import io.anuke.mindustry.net.Net;
+import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Graphics;
@@ -385,6 +386,15 @@ public class DesktopInput extends InputHandler{
             mode = breaking;
             selectX = tileX(Gdx.input.getX());
             selectY = tileY(Gdx.input.getY());
+        }else if(Inputs.keyTap(section, "pick_block") && !ui.hasMouse()){
+            Tile target = selected == null ? null : selected.target();
+            if(target != null && target.block() != Blocks.air){
+                Recipe targetRecipe = Recipe.getByResult(target.block());
+                if(targetRecipe != null && control.unlocks.isUnlocked(targetRecipe)){
+                    this.recipe = targetRecipe;
+                    this.rotation = target.getRotation();
+                }
+            }
         }
 
 

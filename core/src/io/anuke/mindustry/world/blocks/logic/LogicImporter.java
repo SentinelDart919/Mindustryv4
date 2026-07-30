@@ -42,7 +42,7 @@ public class LogicImporter extends LogicBlock {
     @Override
     public void buildTable(Tile tile, Table table) {
         LogicImporterEntity entity = tile.entity();
-        table.add("Importer Item Selection:").row();
+        table.add("$text.logic.importer.select").row();
 
         table.table(t -> {
             ButtonGroup<ImageButton> group = new ButtonGroup<>();
@@ -79,7 +79,10 @@ public class LogicImporter extends LogicBlock {
     @Override
     public boolean acceptItem(Item item, Tile tile, Tile source) {
         LogicImporterEntity entity = tile.entity();
-        return item == entity.selectedItem && entity.items.get(item) < getMaximumAccepted(tile, item);
+        // If it's a manual connection, we might not have a selected item, so accept anything
+        // However, we don't have easy access to the exporter here without searching.
+        // But the drone is the one calling acceptStack usually.
+        return (entity.selectedItem == null || item == entity.selectedItem) && entity.items.get(item) < getMaximumAccepted(tile, item);
     }
 
     @Override

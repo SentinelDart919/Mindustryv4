@@ -51,6 +51,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftEffect = BlockFx.smeltsmoke;
             result = Items.densealloy;
             itemOutputAmount = 3;
+            itemCapacity = 80;
             craftTime = 65f;
             size = 3;
 
@@ -94,6 +95,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftEffect = BlockFx.smeltsmoke;
             result = Items.silicon;
             itemOutputAmount = 6;
+            itemCapacity = 80;
             craftTime = 90f;
             powerCapacity = 20f;
             size = 4;
@@ -151,6 +153,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             craftEffect = BlockFx.smeltsmoke;
             result = Items.surgealloy;
             itemOutputAmount = 3;
+            itemCapacity = 80;
             craftTime = 115;
             powerCapacity = 140f;
             size = 3;

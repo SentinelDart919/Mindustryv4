@@ -4736,6 +4736,13 @@ stack-router
   orig: 8, 8
   offset: 0, 0
   index: -1
+block-icon-stack-router
+  rotate: false
+  xy: 464, 146
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
 block-icon-rtg-generator
   rotate: false
   xy: 848, 345

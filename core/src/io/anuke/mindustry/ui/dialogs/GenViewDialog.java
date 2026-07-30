@@ -26,7 +26,7 @@ public class GenViewDialog extends FloatingDialog{
     Array<Item> ores = Array.with(Items.copper, Items.lead, Items.coal);
 
     public GenViewDialog(){
-        super("generate view");
+        super("$text.editor.generateview");
 
         content().add(new GenView()).grow();
     }

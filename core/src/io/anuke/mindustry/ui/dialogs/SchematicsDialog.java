@@ -9,7 +9,7 @@ import static io.anuke.mindustry.Vars.*;
 
 public class SchematicsDialog extends FloatingDialog {
     public SchematicsDialog() {
-        super("Schematics");
+        super("$text.schematics");
         addCloseButton();
         shown(this::rebuild);
     }
@@ -28,7 +28,7 @@ public class SchematicsDialog extends FloatingDialog {
             }).size(400, 50).pad(4);
             
             table.addImageButton("icon-trash", "clear", 40, () -> {
-                ui.showConfirm("Delete Schematic", "Are you sure you want to delete '" + s.name() + "'?", () -> {
+                ui.showConfirm("$text.schematic.delete.title", io.anuke.ucore.util.Bundles.format("text.schematic.delete.text", s.name()), () -> {
                     schematics.remove(s);
                     rebuild();
                 });

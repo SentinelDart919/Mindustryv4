@@ -36,7 +36,7 @@ public class BansDialog extends FloatingDialog{
             Table res = new Table("button");
             res.margin(14f);
 
-            res.labelWrap("IP: [LIGHT_GRAY]" + info.lastIP + "\n[]Name: [LIGHT_GRAY]" + info.lastName).width(w - h - 24f);
+            res.labelWrap(io.anuke.ucore.util.Bundles.format("text.server.bans.ipname", info.lastIP, info.lastName)).width(w - h - 24f);
             res.add().growX();
             res.addImageButton("icon-cancel", 14 * 3, () -> {
                 ui.showConfirm("$text.confirm", "$text.confirmunban", () -> {

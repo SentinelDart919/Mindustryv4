@@ -30,8 +30,9 @@ public class LogicBlock extends Block {
 
     @Override
     public boolean onConfigureTileTapped(Tile tile, Tile other) {
-        if (tile != other && other.block() instanceof LogicBlock) {
-            setLogicTarget(null, tile, other.id());
+        Tile target = other.target();
+        if (tile != target && target.block() instanceof LogicBlock) {
+            setLogicTarget(null, tile, target.id());
             return false;
         }
         return super.onConfigureTileTapped(tile, other);
@@ -80,7 +81,7 @@ public class LogicBlock extends Block {
                 int dy = (short)(rel & 0xFFFF);
                 Tile other = world.tile(tile.x + dx, tile.y + dy);
                 if(other != null && other.block() instanceof LogicBlock){
-                    targetPos = other.packedPosition();
+                    targetPos = other.id();
                 }
             }
         }

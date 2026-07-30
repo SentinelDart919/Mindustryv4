@@ -57,17 +57,17 @@ public class PlacementFragment extends Fragment{
                 full.bottom().left().visible(() -> !state.is(State.menu) && (control.input(0).mode == PlaceMode.schematic || control.input(0).mode == PlaceMode.copying));
                 full.table("button-edge-1", t -> {
                     t.margin(4);
-                    t.addButton("Flip X", () -> {
+                    t.addButton("$text.flip.x", () -> {
                         if(control.input(0).schematic != null) control.input(0).schematic.flipX();
                     }).size(80, 40);
-                    t.addButton("Flip Y", () -> {
+                    t.addButton("$text.flip.y", () -> {
                         if(control.input(0).schematic != null) control.input(0).schematic.flipY();
                     }).size(80, 40).padLeft(4);
 
                     t.addImageButton("icon-save", "clear-partial", 8*3, () -> {
                         Schematic schematic = control.input(0).schematic;
                         if(schematic != null){
-                            ui.showTextInput("Save Schematic", "Name:", schematic.name(), name -> {
+                            ui.showTextInput("$text.schematic.save", "$text.name", schematic.name(), name -> {
                                 schematic.tags.put("name", name);
                                 schematic.save();
                             });
@@ -153,7 +153,7 @@ public class PlacementFragment extends Fragment{
                                 header.labelWrap(() -> lastSchematic.name()).left().width(190f).padLeft(5);
                                 header.add().growX();
                                 header.addImageButton("icon-save", "clear-partial", 8*4, () -> {
-                                    ui.showTextInput("Save Schematic", "Name:", lastSchematic.name(), name -> {
+                                    ui.showTextInput("$text.schematic.save", "$text.name", lastSchematic.name(), name -> {
                                         lastSchematic.tags.put("name", name);
                                         lastSchematic.save();
                                     });
@@ -284,11 +284,11 @@ public class PlacementFragment extends Fragment{
             });
             hint.table("button-edge-1", t -> {
                 t.margin(4);
-                t.label(() -> "Rotate: [accent]Scroll[] | Flip: [accent]X / Y[]").color(Color.WHITE);
+                t.label(() -> Bundles.get("text.placement.hint")).color(Color.WHITE);
                 t.addImageButton("icon-save", "clear-partial", 8*3, () -> {
                     Schematic schematic = control.input(0).schematic;
                     if(schematic != null){
-                        ui.showTextInput("Save Schematic", "Name:", schematic.name(), name -> {
+                        ui.showTextInput("$text.schematic.save", "$text.name", schematic.name(), name -> {
                             schematic.tags.put("name", name);
                             schematic.save();
                         });

@@ -8,5 +8,9 @@ public enum StatCategory{
     items,
     crafting,
     shooting,
-    optional,
+    optional;
+
+    public String localized(){
+        return io.anuke.ucore.util.Bundles.get("text.category." + name());
+    }
 }

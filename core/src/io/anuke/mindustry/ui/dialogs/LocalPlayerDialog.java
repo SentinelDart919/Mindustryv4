@@ -44,7 +44,7 @@ public class LocalPlayerDialog extends FloatingDialog{
 
             stack.add(img);
 
-            table.add("Player " + (player.playerIndex + 1)).update(label -> label.setColor(player.color));
+            table.add(io.anuke.ucore.util.Bundles.format("text.player.index", (player.playerIndex + 1))).update(label -> label.setColor(player.color));
             table.row();
             table.add(stack).size(size);
 

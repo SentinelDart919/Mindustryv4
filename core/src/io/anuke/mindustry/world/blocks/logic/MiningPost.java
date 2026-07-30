@@ -61,7 +61,9 @@ public class MiningPost extends Block {
     @Override
     public void unitRemoved(Tile tile, Unit unit) {
         MiningPostEntity entity = tile.entity();
-        entity.droneIDs.removeValue(unit.id);
+        if (entity != null) {
+            entity.droneIDs.removeValue(unit.id);
+        }
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
@@ -79,7 +81,7 @@ public class MiningPost extends Block {
     public void buildTable(Tile tile, Table table) {
         MiningPostEntity entity = tile.entity();
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
-        table.add("Mining Options: ").row(); // first time I use text for tables, just for testing
+        table.add("$text.logic.mining.options").row(); // first time I use text for tables, just for testing
 
         table.table(t -> {
             int i = 0;
@@ -117,6 +119,10 @@ public class MiningPost extends Block {
         public void write(DataOutput stream) throws IOException {
             super.write(stream);
             stream.writeShort(selectedItem == null ? -1 : selectedItem.id);
+            stream.writeShort(droneIDs.size);
+            for(int i = 0; i < droneIDs.size; i++){
+                stream.writeInt(droneIDs.get(i));
+            }
         }
 
         @Override
@@ -124,6 +130,11 @@ public class MiningPost extends Block {
             super.read(stream);
             int id = stream.readShort();
             selectedItem = id == -1 ? null : Vars.content.item(id);
+            int amount = stream.readShort();
+            droneIDs.clear();
+            for(int i = 0; i < amount; i++){
+                droneIDs.add(stream.readInt());
+            }
         }
 
         @Override

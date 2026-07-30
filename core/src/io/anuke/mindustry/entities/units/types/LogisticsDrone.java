@@ -67,7 +67,14 @@ public class LogisticsDrone extends FlyingUnit {
                 LogicExporterEntity exporter = spawner.entity();
                 LogicImporterEntity targetImporter = exporter.targetImporter;
 
-                if (targetImporter == null || targetImporter.selectedItem == null) {
+                if (exporter.targetPos != -1) {
+                    Tile targetTile = Vars.world.tile(exporter.targetPos);
+                    if (targetTile != null && targetTile.entity() instanceof LogicImporterEntity) {
+                        targetImporter = (LogicImporterEntity) targetTile.entity();
+                    }
+                }
+
+                if (targetImporter == null) {
                     circle(40f, type.speed);
                     if (inventory.hasItem()) {
                         setState(deliver);
@@ -76,6 +83,24 @@ public class LogisticsDrone extends FlyingUnit {
                 }
 
                 Item targetItem = targetImporter.selectedItem;
+
+                if (targetItem == null) { // Manual target with no filter - pick any item from exporter
+                    if (inventory.isFull()) {
+                        setState(deliver);
+                        return;
+                    }
+
+                    if (inventory.hasItem()) {
+                        targetItem = inventory.getItem().item;
+                    } else {
+                        targetItem = exporter.items.first(); // Just pick first available item
+                    }
+
+                    if (targetItem == null) {
+                        circle(20f, type.speed);
+                        return;
+                    }
+                }
 
                 if (inventory.isFull() || (inventory.hasItem() && inventory.getItem().item != targetItem)) {
                     setState(deliver);
@@ -113,20 +138,30 @@ public class LogisticsDrone extends FlyingUnit {
                 LogicExporterEntity exporter = spawner.entity();
                 LogicImporterEntity targetImporter = exporter.targetImporter;
 
+                if (exporter.targetPos != -1) {
+                    Tile targetTile = Vars.world.tile(exporter.targetPos);
+                    if (targetTile != null && targetTile.entity() instanceof LogicImporterEntity) {
+                        targetImporter = (LogicImporterEntity) targetTile.entity();
+                    }
+                }
+
                 if (targetImporter == null || targetImporter.tile == null) {
                     Item item = inventory.getItem().item;
-                    for (int x = 0; x < Vars.world.width(); x++) {
-                        for (int y = 0; y < Vars.world.height(); y++) {
-                            Tile other = Vars.world.tile(x, y);
-                            if (other != null && other.entity() instanceof LogicImporterEntity) {
-                                LogicImporterEntity importer = (LogicImporterEntity) other.entity();
-                                if (importer.selectedItem == item) {
-                                    targetImporter = importer;
-                                    break;
+                    // Only search for other importers if we don't have a manual target
+                    if (exporter.targetPos == -1) {
+                        for (int x = 0; x < Vars.world.width(); x++) {
+                            for (int y = 0; y < Vars.world.height(); y++) {
+                                Tile other = Vars.world.tile(x, y);
+                                if (other != null && other.entity() instanceof LogicImporterEntity) {
+                                    LogicImporterEntity importer = (LogicImporterEntity) other.entity();
+                                    if (importer.selectedItem == item) {
+                                        targetImporter = importer;
+                                        break;
+                                    }
                                 }
                             }
+                            if (targetImporter != null) break;
                         }
-                        if (targetImporter != null) break;
                     }
                 }
 

@@ -22,6 +22,7 @@ public class DefaultKeybinds{
                 "select", Input.MOUSE_LEFT,
                 "deselect", Input.MOUSE_RIGHT,
                 "break", Input.MOUSE_RIGHT,
+                "pick_block", Input.MOUSE_MIDDLE,
                 "rotate", new Axis(Input.SCROLL),
                 "dash", Input.SHIFT_LEFT,
                 "drop_unit", Input.SHIFT_LEFT,

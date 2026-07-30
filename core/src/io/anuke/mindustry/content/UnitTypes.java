@@ -324,6 +324,7 @@ public class UnitTypes implements ContentList{
             baseRotateSpeed = 0.04f;
             trailColor = Palette.lighterOrange;
             weapon = Weapons.reaperGun;
+            unitCost = 4000;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
