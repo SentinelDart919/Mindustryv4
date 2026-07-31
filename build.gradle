@@ -6,7 +6,29 @@ buildscript {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath "com.badlogicgames.gdx:gdx-tools:1.9.8"
+        classpath "com.badlogicgames.gdx:gdx-tools:1.14.2"
+    }
+}
+
+task setupUCore {
+    description = 'Clones/pulls uCoreV4 into the local uCore directory for use as a project dependency'
+    group = 'setup'
+    doLast {
+        def ucoreDir = file('uCore')
+        if (ucoreDir.exists()) {
+            println 'uCore already exists. Pulling latest...'
+            ant.exec(executable: 'git', dir: ucoreDir) {
+                arg(value: 'pull')
+            }
+        } else {
+            println 'Cloning uCoreV4...'
+            ant.exec(executable: 'git', dir: rootDir) {
+                arg(value: 'clone')
+                arg(value: 'https://github.com/SentinelDart919/uCoreV4.git')
+                arg(value: 'uCore')
+            }
+        }
+        println 'uCore is ready for local compilation.'
     }
 }
 
@@ -22,7 +44,7 @@ allprojects {
         versionType = 'unofficial'
         appName = 'Mindustry'
         gdxVersion = '1.14.2'
-        gdxControllersVersion = '2.2.3'
+        gdxControllersVersion = '1.9.13'
         roboVMVersion = '2.3.0'
         uCoreVersion = '3dfb820142a0fc583ad19413a24fc5038aa29d89'
 
@@ -100,7 +122,7 @@ project(":desktop") {
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        implementation "com.badlogicgames.gdx:gdx-controllers-lwjgl3:1.9.13"
+        implementation "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxControllersVersion"
         implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         if(new File(projectDir.parent, 'uCore').exists()){
             implementation project(":uCore")
@@ -192,7 +214,7 @@ project(":core") {
         }
 
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-        implementation "com.badlogicgames.gdx:gdx-controllers:1.9.13"
+        implementation "com.badlogicgames.gdx:gdx-controllers:$gdxControllersVersion"
         implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         compileOnly project(":annotations")
