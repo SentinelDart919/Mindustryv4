@@ -1,4 +1,4 @@
 apply plugin: "java"
 java {
-    sourceCompatibility = 1.8
+    sourceCompatibility = 17
 }

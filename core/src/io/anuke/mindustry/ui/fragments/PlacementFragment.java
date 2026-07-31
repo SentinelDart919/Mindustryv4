@@ -168,21 +168,21 @@ public class PlacementFragment extends Fragment{
                                         line.left();
                                         line.addImage(stack.item.region).size(8*2);
                                         line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
-                                        line.labelWrap(() -> {
-                                            TileEntity core = players[0].getClosestCore();
-                                            if(core == null || state.mode.infiniteResources) return "*/*";
-                                            int amount = core.items.get(stack.item);
-                                            String color = (amount < stack.amount / 2f ? "[red]" : amount < stack.amount ? "[accent]" : "[white]");
-                                            return color + ui.formatAmount(amount) + "[white]/" + stack.amount;
-                                        }).padLeft(5);
-                                    }).left();
-                                    req.row();
-                                }
-                            }).growX().left().margin(3);
-                            return;
-                        }
+                                            line.labelWrap(() -> {
+                                                TileEntity core = players[0].getClosestCore();
+                                                if(core == null || state.mode.infiniteResources) return "*"+"/"+"*";
+                                                int amount = core.items.get(stack.item);
+                                                String color = (amount < stack.amount / 2f ? "[red]" : amount < stack.amount ? "[accent]" : "[white]");
+                                                return color + ui.formatAmount(amount) + "[white]/" + stack.amount;
+                                            }).padLeft(5);
+                                        }).left();
+                                        req.row();
+                                    }
+                                }).growX().left().margin(3);
+                                return;
+                            }
 
-                        if((tileDisplayBlock() == null && lastDisplay == getSelected()) ||
+                            if((tileDisplayBlock() == null && lastDisplay == getSelected()) ||
                         (tileDisplayBlock() != null && lastDisplay == tileDisplayBlock())) return;
 
                         lastSchematic = null;
@@ -220,7 +220,7 @@ public class PlacementFragment extends Fragment{
                                             line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
                                             line.labelWrap(() -> {
                                                 TileEntity core = players[0].getClosestCore();
-                                                if(core == null || state.mode.infiniteResources) return "*/*";
+                                                if(core == null || state.mode.infiniteResources) return "*";
 
                                                 int amount = core.items.get(stack.item);
                                                 String color = (amount < stack.amount / 2f ? "[red]" : amount < stack.amount ? "[accent]" : "[white]");

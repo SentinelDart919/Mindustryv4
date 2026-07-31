@@ -1,6 +1,7 @@
 package io.anuke.mindustry.core;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.Mechs;
@@ -52,7 +53,7 @@ public class Control extends Module{
 
         Inputs.useControllers(true);
 
-        Gdx.input.setCatchBackKey(true);
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
         Effects.setShakeFalloff(10000f);
 

@@ -1,8 +1,8 @@
 apply plugin: "java"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 sourceSets.main.java.srcDirs = [ "src/main/java/" ]
 sourceSets.main.resources.srcDirs = [ "src/main/resources/" ]
