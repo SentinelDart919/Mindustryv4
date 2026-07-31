@@ -15,9 +15,9 @@ if(new File(settingsDir, 'local.properties').exists()){
 }
 
 if(System.properties["release"] == null || System.properties["release"] == "false"){
-    if (new File(settingsDir, '../uCore').exists()) {
+    if (new File(settingsDir, 'uCore').exists()) {
         include ':uCore'
-        project(':uCore').projectDir = new File(settingsDir, '../uCore')
+        project(':uCore').projectDir = new File(settingsDir, 'uCore')
     }
 
     if (new File(settingsDir, '../GDXGifRecorder').exists()) {

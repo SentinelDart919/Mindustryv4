@@ -21,7 +21,8 @@ allprojects {
         versionModifier = 'Modded by B919'
         versionType = 'unofficial'
         appName = 'Mindustry'
-        gdxVersion = '1.9.9'
+        gdxVersion = '1.14.2'
+        gdxControllersVersion = '2.2.3'
         roboVMVersion = '2.3.0'
         uCoreVersion = '3dfb820142a0fc583ad19413a24fc5038aa29d89'
 
@@ -85,6 +86,11 @@ allprojects {
 
 project(":desktop") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     dependencies {
         implementation project(":core")
@@ -94,9 +100,13 @@ project(":desktop") {
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        implementation "com.badlogicgames.gdx:gdx-controllers-lwjgl3:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers-lwjgl3:1.9.13"
         implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        implementation "com.github.anuken:ucore:$uCoreVersion"
+        if(new File(projectDir.parent, 'uCore').exists()){
+            implementation project(":uCore")
+        }else{
+            implementation "com.github.anuken:ucore:$uCoreVersion"
+        }
         implementation 'com.github.MinnDevelopment:java-discord-rpc:v2.0.0'
     }
 }
@@ -155,6 +165,11 @@ project(":ios") {
 
 project(":core") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     task finish {
         generateLocales()
@@ -166,7 +181,7 @@ project(":core") {
         def comp = System.properties["release"] == null || System.properties["release"] == "false"
         if(!comp) println("Note: Compiling release build.")
 
-        if(new File(projectDir.parent, '../uCore').exists() && comp){
+        if(new File(projectDir.parent, 'uCore').exists() && comp){
             implementation project(":uCore")
         }else{
             implementation "com.github.anuken:ucore:$uCoreVersion"
@@ -177,7 +192,7 @@ project(":core") {
         }
 
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-        implementation "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers:1.9.13"
         implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         compileOnly project(":annotations")
@@ -187,6 +202,11 @@ project(":core") {
 
 project(":server") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     configurations {
         if(findProject(":android") != null){
@@ -198,7 +218,11 @@ project(":server") {
 
         implementation project(":core")
         implementation project(":kryonet")
-        implementation "com.github.anuken:ucore:$uCoreVersion"
+        if(new File(projectDir.parent, 'uCore').exists()){
+            implementation project(":uCore")
+        }else{
+            implementation "com.github.anuken:ucore:$uCoreVersion"
+        }
         implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
@@ -206,6 +230,11 @@ project(":server") {
 
 project(":tests"){
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     dependencies {
         testImplementation project(":core")
@@ -223,16 +252,30 @@ project(":tests"){
 
 project(":tools") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     dependencies {
         implementation project(":core")
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-        implementation "com.github.anuken:ucore:$uCoreVersion"
+        if(new File(projectDir.parent, 'uCore').exists()){
+            implementation project(":uCore")
+        }else{
+            implementation "com.github.anuken:ucore:$uCoreVersion"
+        }
     }
 }
 
 project(":annotations") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     dependencies {
         implementation 'com.squareup:javapoet:1.11.0'
@@ -241,11 +284,20 @@ project(":annotations") {
 
 project(":kryonet") {
     apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     dependencies {
         implementation project(":core")
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-        implementation "com.github.anuken:ucore:$uCoreVersion"
+        if(new File(projectDir.parent, 'uCore').exists()){
+            implementation project(":uCore")
+        }else{
+            implementation "com.github.anuken:ucore:$uCoreVersion"
+        }
         implementation "org.lz4:lz4-java:1.4.1"
         implementation 'com.github.Anuken:kryonet:53b10247b1'
         implementation 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'

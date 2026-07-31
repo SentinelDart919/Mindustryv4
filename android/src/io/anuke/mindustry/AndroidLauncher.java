@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import com.badlogic.gdx.Gdx;
@@ -42,6 +43,9 @@ public class AndroidLauncher extends PatchedAndroidApplication {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        migrateData();
+
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useImmersiveMode = true;
         Platform.instance = new Platform() {
@@ -107,7 +111,7 @@ public class AndroidLauncher extends PatchedAndroidApplication {
         if (doubleScaleTablets && isTablet(this.getContext())) {
             Unit.dp.addition = 0.5f;
         }
-        config.hideStatusBar = true;
+        // config.hideStatusBar = true;
         Net.setClientProvider(new KryoClient());
         Net.setServerProvider(new KryoServer());
         initialize(new Mindustry(), config);
@@ -190,5 +194,62 @@ public class AndroidLauncher extends PatchedAndroidApplication {
     private boolean isTablet(Context context) {
         TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE;
+    }
+
+    private void migrateData() {
+        try {
+            File oldDir = new File(Environment.getExternalStorageDirectory(), "MindustryV4");
+            File newDir = getExternalFilesDir(null);
+
+            if (newDir != null && oldDir.exists() && oldDir.isDirectory() && (!newDir.exists() || newDir.list() == null || newDir.list().length == 0)) {
+                moveRecursive(oldDir, newDir);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void moveRecursive(File source, File target) {
+        if (source.isDirectory()) {
+            if (!target.exists()) {
+                target.mkdirs();
+            }
+
+            String[] children = source.list();
+            if (children != null) {
+                for (String child : children) {
+                    moveRecursive(new File(source, child), new File(target, child));
+                }
+            }
+            source.delete();
+        } else {
+            File targetDir = target.getParentFile();
+            if (targetDir != null && !targetDir.exists()) {
+                targetDir.mkdirs();
+            }
+
+            if (source.renameTo(target)) {
+                // Success
+            } else {
+                // Fallback to copy if rename fails
+                try {
+                    copyFile(source, target);
+                    source.delete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void copyFile(File source, File target) throws IOException {
+        try (InputStream in = new FileInputStream(source);
+             java.io.OutputStream out = new java.io.FileOutputStream(target)) {
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        }
     }
 }
