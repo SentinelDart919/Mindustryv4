@@ -3,7 +3,6 @@ package io.anuke.mindustry.ui;
 import com.badlogic.gdx.utils.Align;
 import io.anuke.ucore.scene.ui.ImageButton;
 import io.anuke.ucore.scene.ui.Label;
-import io.anuke.ucore.scene.ui.layout.Unit;
 
 public class MobileButton extends ImageButton{
 
@@ -12,8 +11,8 @@ public class MobileButton extends ImageButton{
         resizeImage(isize);
         clicked(listener);
         row();
-        Label label = add(text).growX().wrap().center().get();
+        Label label = add(text).growX().center().get();
         label.setAlignment(Align.center, Align.center);
-        label.setFontScale(0.85f / Unit.dp.scl(1f));
+        label.setWrap(true);
     }
 }
