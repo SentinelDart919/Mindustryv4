@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Align;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
@@ -157,7 +158,7 @@ public class PlacementFragment extends Fragment{
                                         lastSchematic.tags.put("name", name);
                                         lastSchematic.save();
                                     });
-                                }).size(8 * 5).padTop(-5).padRight(-5).right();
+                                }).size(8 * 5).right().get().getImageCell().padBottom(2);
                             }).growX().left();
                             topTable.row();
 
@@ -168,13 +169,13 @@ public class PlacementFragment extends Fragment{
                                         line.left();
                                         line.addImage(stack.item.region).size(8*2);
                                         line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
-                                            line.labelWrap(() -> {
-                                                TileEntity core = players[0].getClosestCore();
-                                                if(core == null || state.mode.infiniteResources) return "*"+"/"+"*";
-                                                int amount = core.items.get(stack.item);
-                                                String color = (amount < stack.amount / 2f ? "[red]" : amount < stack.amount ? "[accent]" : "[white]");
-                                                return color + ui.formatAmount(amount) + "[white]/" + stack.amount;
-                                            }).padLeft(5);
+                                        line.label(() -> {
+                                            TileEntity core = players[0].getClosestCore();
+                                            if(core == null || state.mode.infiniteResources) return "*/*";
+                                            int amount = core.items.get(stack.item);
+                                            String color = (amount < stack.amount / 2f ? "[red]" : amount < stack.amount ? "[accent]" : "[white]");
+                                            return color + ui.formatAmount(amount) + "[white]/" + stack.amount;
+                                        }).padLeft(5);
                                         }).left();
                                         req.row();
                                     }
@@ -203,7 +204,7 @@ public class PlacementFragment extends Fragment{
                                 Recipe recipe = Recipe.getByResult(lastDisplay);
                                 if(recipe != null && control.unlocks.isUnlocked(recipe)){
                                     header.addButton("?", "clear-partial", () -> ui.content.show(recipe))
-                                        .size(8 * 5).padTop(-5).padRight(-5).right().grow();
+                                        .size(8 * 5).right();
                                 }
                             }).growX().left();
                             topTable.row();
@@ -218,7 +219,7 @@ public class PlacementFragment extends Fragment{
                                             line.left();
                                             line.addImage(stack.item.region).size(8*2);
                                             line.add(stack.item.localizedName()).color(Color.LIGHT_GRAY).padLeft(2).left();
-                                            line.labelWrap(() -> {
+                                            line.label(() -> {
                                                 TileEntity core = players[0].getClosestCore();
                                                 if(core == null || state.mode.infiniteResources) return "*";
 
