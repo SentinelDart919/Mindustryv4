@@ -3,12 +3,13 @@ package io.anuke.mindustry.content;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.content.fx.ShootFx;
 import io.anuke.mindustry.game.ContentList;
+import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Weapon;
 
 public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
-    kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, reaperGun, chaos,
+    kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, reaperGun, chaos, eradicator,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
     debugtankturret,
     artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
@@ -376,6 +377,21 @@ public class Weapons implements ContentList{
             recoil = 1f;
             ejectEffect = Fx.none;
             ammo = AmmoTypes.flamerThermite;
+        }};
+
+        eradicator = new Weapon("eradicator-weapon"){{
+            length = 13f;
+            reload = 30f;
+            width = 22f;
+            roundrobin = true;
+            recoil = 3f;
+            shake = 2f;
+            inaccuracy = 3f;
+            shots = 4;
+            spacing = 0f;
+            ejectEffect = ShootFx.shellEjectMedium;
+            ammo = AmmoTypes.bulletThoriumBig;
+            setShootSound("shootBig");
         }};
     }
 

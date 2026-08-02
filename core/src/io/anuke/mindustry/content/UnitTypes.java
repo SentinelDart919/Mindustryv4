@@ -2,14 +2,10 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
-import io.anuke.mindustry.entities.units.BiomassAirUnit;
-import io.anuke.mindustry.entities.units.BiomassGroundUnit;
-import io.anuke.mindustry.entities.units.TankUnit;
-import io.anuke.mindustry.entities.units.UnitType;
+import io.anuke.mindustry.entities.units.*;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
-import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.ucore.util.Mathf;
 
@@ -19,7 +15,7 @@ public class UnitTypes implements ContentList{
         alphaDrone, defenseDrone,
         scrapper , wraith, ghoul, revenant, lich, reaper,
         crawler, bombDrone,
-        scrappeon, dagger, titan, fortress, chaosarray,
+        scrappeon, dagger, titan, fortress, chaosarray, eradicator,
         debugtank, nova,
         trainEngine,
         minerDroneT1, minerDroneT2, logisticsDrone,
@@ -337,6 +333,18 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             weapon = Weapons.chaos;
             unitCost = 1500;
+        }};
+
+        eradicator = new UnitType("eradicator", Eradicator.class, Eradicator::new){{
+            health = 9000;
+            maxVelocity = 0.68f;
+            speed = 0.12f;
+            drag = 0.4f;
+            mass = 5f;
+            hitsize = 20f;
+            rotatespeed = 0.06f;
+            unitCost = 3500;
+            weapon = Weapons.eradicator;
         }};
 
         debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{

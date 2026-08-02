@@ -204,7 +204,8 @@ public class DebugBlocks extends BlockList implements ContentList{
                     UnitTypes.acidMosquito,
                     UnitTypes.exterminatorBiomass,
                     UnitTypes.nova,
-                    UnitTypes.reaper
+                    UnitTypes.reaper,
+                    UnitTypes.eradicator
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -217,6 +218,8 @@ public class DebugBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.silicon, 30),
                             new ItemStack(Items.lead, 30),
                             new ItemStack(Items.densealloy, 5)},
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 5)},
                     new ItemStack[]{
                             new ItemStack(Items.silicon, 5)},
                     new ItemStack[]{
@@ -250,8 +253,10 @@ public class DebugBlocks extends BlockList implements ContentList{
                     1000f,
                     1000f,
                     1000f,
+                    1000f,
             };
             maxSpawn = new int[]{
+                    5,
                     5,
                     5,
                     5,
