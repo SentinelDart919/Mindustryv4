@@ -72,7 +72,7 @@ public class MassAI {
     private static final int[] oreLimits = {6, 6, 6, 5, 4, 4, 4};
     private static int[] oreBoosts = new int[7];
     private static ObjectMap<Tile, Boolean> coreExpanded = new ObjectMap<>();
-    private static UnitCommand currentCommand = UnitCommand.patrol;
+    private static UnitCommand currentCommand = UnitCommand.attack;
     private static float commandTimer = 0;
     private static float enemyNearbyTimer = 0;
     private static float squadTaskTimer = 0f;
@@ -414,7 +414,7 @@ public class MassAI {
             for(SquadOrder order : squadOrders){
                 if(order.task == null){
                     order.task = SquadTask.PATROL_HIVES;
-                    order.command = UnitCommand.patrol;
+                    order.command = UnitCommand.attack;
                 }
             }
         }
