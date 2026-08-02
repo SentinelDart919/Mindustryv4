@@ -51,6 +51,9 @@ public class PowerNode extends PowerBlock{
         configurable = true;
         consumesPower = false;
         outputsPower = false;
+
+        emitLight = true;
+        lightAmplification = 2f;
     }
 
     @Remote(targets = Loc.both, called = Loc.server, forward = true)

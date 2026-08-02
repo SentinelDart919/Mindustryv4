@@ -1,0 +1,34 @@
+#ifdef GL_ES
+    #define PRECISION mediump
+    precision PRECISION float;
+#else
+    #define PRECISION
+#endif
+
+varying vec2 v_texCoord;
+varying vec4 v_color;
+
+uniform sampler2D u_texture0;
+uniform sampler2D u_lightmap;
+uniform vec4 u_ambient;
+
+uniform int u_type;
+uniform vec2 u_uv;
+uniform vec2 u_uv2;
+uniform vec2 u_texsize;
+
+void main(){
+    if(u_type == 0){
+        vec2 coords = (v_texCoord - u_uv) / (u_uv2 - u_uv);
+        float dist = distance(coords, vec2(0.5));
+        float alpha = pow(clamp(1.0 - dist * 2.0, 0.0, 1.0), 1.0);
+        gl_FragColor = v_color * alpha * 1.5;
+    }else{
+        vec4 colors = texture2D(u_texture0, v_texCoord);
+        vec4 light = texture2D(u_lightmap, v_texCoord);
+
+        vec3 finalLight = max(vec3(1.0 - u_ambient.a), light.rgb);
+
+        gl_FragColor = vec4(colors.rgb * finalLight, colors.a);
+    }
+}

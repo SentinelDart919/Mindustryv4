@@ -201,6 +201,11 @@ public class CustomGameDialog extends FloatingDialog{
         table.row();
         table.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
         table.row();
+
+        table.add("Map Darkness: " + (int)(state.darkness * 100) + "%").update(l -> l.setText("Map Darkness: " + (int)(state.darkness * 100) + "%")).padTop(8f).left();
+        table.row();
+        table.addSlider(0f, 1f, 0.01f, state.darkness, f -> state.darkness = f).width(200f).left();
+        table.row();
         table.add("RTS AI Teams").padTop(8f).left();
         table.row();
 

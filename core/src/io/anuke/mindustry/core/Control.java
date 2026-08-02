@@ -229,6 +229,9 @@ public class Control extends Module{
     }
 
     public void playMap(Map map){
+        if(map.meta.tags != null){
+            map.meta.tags.put("darkness", Float.toString(state.darkness));
+        }
         ui.loadLogic(() -> {
             logic.reset();
             world.loadMap(map);

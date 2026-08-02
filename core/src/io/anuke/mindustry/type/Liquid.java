@@ -30,7 +30,9 @@ public class Liquid extends UnlockableContent{
     public StatusEffect effect = StatusEffects.none;
     /**Pump tier. Controls which pumps can use this liquid.*/
     public int tier;
-    /**Displayed icon.*/
+    /** Whether this liquid should glow when rendered. */
+    public boolean emitLight = false;
+    /** Displayed icon. */
     public TextureRegion iconRegion;
 
     public Liquid(String name, Color color){

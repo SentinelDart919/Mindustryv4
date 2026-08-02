@@ -460,7 +460,23 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     @Override
     public void draw(){
+    }
 
+    @Override
+    public void drawLight(){
+        boolean emit = emitLight != null ? emitLight : type.emitLight;
+        float radius = (lightRadius < 0 ? type.lightRadius : lightRadius);
+        float opacity = (lightOpacity < 0 ? type.lightOpacity : lightOpacity);
+        Color color = lightColor == null ? type.lightColor : lightColor;
+
+        if(emit && radius > 0.001f){
+            Draw.color(color);
+            io.anuke.mindustry.graphics.Shaders.light.region = Draw.region("circle");
+            Draw.alpha(opacity);
+            Draw.rect("circle", x, y, radius * 2, radius * 2);
+            Draw.alpha(opacity * 0.5f);
+            Draw.rect("circle", x, y, radius * 2, radius * 2);
+        }
     }
 
     @Override

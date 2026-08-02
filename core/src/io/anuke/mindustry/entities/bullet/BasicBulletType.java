@@ -43,6 +43,9 @@ public class BasicBulletType extends BulletType{
     public BasicBulletType(float speed, float damage, String bulletSprite){
         super(speed, damage);
         this.bulletSprite = bulletSprite;
+        this.emitLight = true;
+        this.lightRadius = 30f;
+        this.lightOpacity = 0.4f;
     }
 
     @Override

@@ -50,7 +50,12 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
+
         });
+        nuclearcloud.emitLight = true;
+        nuclearcloud.lightRadius = 100f;
+        nuclearcloud.lightOpacity = 0.8f;
+        nuclearcloud.lightColor = Color.valueOf("bf92f9");
 
         fissionCloud = new Effect(180, 400f, e -> {
             Angles.randLenVectors(e.id, 35, e.finpow() * 180f, (x, y) -> {
@@ -60,6 +65,11 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.reset();
             });
         });
+        fissionCloud.emitLight = true;
+        fissionCloud.lightRadius = 150f;
+        fissionCloud.lightOpacity = 0.6f;
+        fissionCloud.lightColor = Color.valueOf("ffd969");
+
         redgeneratespark = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 5, e.fin() * 8f, (x, y) -> {
                 float len = e.fout() * 4f;

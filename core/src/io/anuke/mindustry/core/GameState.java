@@ -33,6 +33,8 @@ public class GameState{
     public Team enemyTeam = Team.red;
     /**Bitmask of teams that should use RTS AI.*/
     public long rtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
+    /**Current map darkness level.*/
+    public float darkness = 0f;
     /**Current game state.*/
     private State state = State.menu;
 

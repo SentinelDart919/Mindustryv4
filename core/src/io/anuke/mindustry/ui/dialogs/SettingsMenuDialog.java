@@ -214,6 +214,10 @@ public class SettingsMenuDialog extends SettingsDialog{
         graphics.checkPref("indicators", true);
         graphics.checkPref("lasers", true);
         graphics.checkPref("minimap", !mobile); //minimap is disabled by default on mobile devices
+
+        graphics.checkPref("bloom", "Bloom", true);
+        graphics.sliderPref("bloomintensity", "Bloom Intensity", 14, 5, 40, i -> (i / 10f) + "x");
+        graphics.sliderPref("bloomblur", "Bloom Blur", 2, 1, 16, s -> s + "x");
     }
 
     private void back(){

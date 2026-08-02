@@ -56,6 +56,7 @@ public class PowerSmelter extends PowerBlock{
         update = true;
         solid = true;
         itemCapacity = 20;
+        layerLight = true;
         setAmbientSound("loopSmelter", 0.09f);
     }
 
@@ -69,7 +70,7 @@ public class PowerSmelter extends PowerBlock{
     @Override
     public void load(){
         super.load();
-        topRegion = Draw.region(name + "-top");
+        topRegion = Draw.region(name + "-top", Draw.getClearRegion());
     }
 
     @Override
@@ -205,6 +206,18 @@ public class PowerSmelter extends PowerBlock{
 
             Draw.color();
         }
+    }
+
+    @Override
+    public void drawLayerLight(Tile tile){
+        PowerSmelterEntity entity = tile.entity();
+        if(entity.heat <= 0f || flameColor.a <= 0.001f) return;
+
+        //pulse the light along with the smelter's flame effect
+        float g = 0.3f;
+        float pulse = (1f - g) + Mathf.absin(Timers.time(), 8f, g);
+        drawLight(tile.drawx(), tile.drawy(), layerLightRadius * tilesize,
+                layerLightOpacity * entity.heat * Mathf.clamp(pulse), flameColor);
     }
 
     @Override

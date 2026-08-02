@@ -3,30 +3,35 @@ package io.anuke.mindustry.core;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
+import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
+import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.entities.traits.BelowLiquidTrait;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.*;
+
+import io.anuke.mindustry.world.Tile;
+import io.anuke.mindustry.world.blocks.production.*;
+import io.anuke.ucore.util.Tmp;
 import io.anuke.mindustry.world.blocks.defense.ForceProjector.ShieldEntity;
-import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Effects;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Settings;
+import io.anuke.ucore.core.*;
 import io.anuke.ucore.entities.EntityDraw;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.impl.EffectEntity;
@@ -50,20 +55,28 @@ import static io.anuke.ucore.core.Core.camera;
 
 public class Renderer extends RendererModule{
     public final Surface effectSurface;
+    public final Surface lightSurface;
     public final BlockRenderer blocks = new BlockRenderer();
     public final MinimapRenderer minimap = new MinimapRenderer();
     public final OverlayRenderer overlays = new OverlayRenderer();
     public final FogRenderer fog = new FogRenderer();
 
+    private Bloom bloom;
+    private boolean lastBloom;
+
     private int targetscale = baseCameraScale;
     private Rectangle rect = new Rectangle(), rect2 = new Rectangle();
     private Vector2 avgPosition = new Translator();
+    private Color ambient = new Color();
 
     private boolean currentFlying;
     private Team currentTeam;
     private final Predicate<BaseUnit> unitFlyingFilter = u -> u.isFlying() == currentFlying && !u.isDead();
     private final Predicate<BaseUnit> unitFlyingTeamFilter = u -> u.isFlying() == currentFlying && u.getTeam() == currentTeam;
     private final Predicate<Player> playerFlyingFilter = p -> p.isFlying() == currentFlying && p.getTeam() == currentTeam;
+
+    /** How far (in tiles) beyond the screen lights are still drawn, so big lights don't pop in/out at the edges. */
+    private static final int lightMargin = 200;
 
     public Renderer(){
         Core.batch = new SpriteBatch(4096);
@@ -125,6 +138,15 @@ public class Renderer extends RendererModule{
 
         effectSurface = Graphics.createSurface(Core.cameraScale);
         pixelSurface = Graphics.createSurface(Core.cameraScale);
+        lightSurface = Graphics.createSurface(Core.cameraScale);
+
+        Settings.defaults("bloom", true);
+        Settings.defaults("bloomintensity", 14);
+        Settings.defaults("bloomblur", 2);
+
+        lastBloom = Settings.getBool("bloom");
+
+        rebuildPost();
     }
 
     @Override
@@ -135,6 +157,8 @@ public class Renderer extends RendererModule{
     public void update(){
         //TODO hack, find source of this bug
         Color.WHITE.set(1f, 1f, 1f, 1f);
+
+        checkPostSettings();
 
         if(Core.cameraScale != targetscale){
             float targetzoom = (float) Core.cameraScale / targetscale;
@@ -203,6 +227,11 @@ public class Renderer extends RendererModule{
         if(Float.isNaN(Core.camera.position.x) || Float.isNaN(Core.camera.position.y)){
             Core.camera.position.x = players[0].x;
             Core.camera.position.y = players[0].y;
+        }
+
+        if(bloom != null){
+            bloom.setBloomIntensity(Settings.getInt("bloomintensity") / 10f);
+            bloom.blurPasses = Settings.getInt("bloomblur");
         }
 
         Graphics.clear(clearColor);
@@ -280,13 +309,34 @@ public class Renderer extends RendererModule{
 
         overlays.drawTop();
 
-        if(showFog){
+        boolean postActive = bloom != null && Settings.getBool("bloom");
+
+        if(state.darkness > 0.01f){
+            drawLights();
+            drawLightmap();
             Graphics.surface();
+            batch.end();
+            if(postActive){
+                drawPost();
+            }else{
+                Gdx.gl.glEnable(GL20.GL_BLEND);
+                Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                batch.setProjectionMatrix(camera.combined);
+                batch.begin();
+                blitPixelSurface();
+                batch.end();
+            }
+        }else if(showFog){
+            Graphics.surface();
+            batch.end();
+        }else if(postActive){
+            Graphics.surface();
+            batch.end();
+            drawPost();
         }else{
             Graphics.flushSurface();
+            batch.end();
         }
-
-        batch.end();
 
         if(showFog){
             fog.draw();
@@ -298,6 +348,150 @@ public class Renderer extends RendererModule{
         EntityDraw.setClip(true);
         Graphics.end();
         Draw.color();
+    }
+
+    public void drawLights(){
+        //fill the lightmap with the ambient light level. light sources get added on top
+        ambient.set(1f - state.darkness, 1f - state.darkness, 1f - state.darkness, 1f);
+
+        Graphics.surface(lightSurface, false, true);
+        Graphics.clear(ambient);
+        batch.setProjectionMatrix(camera.combined);
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+
+        //draw lights over a wider area than the visible blocks
+        int avgx = Mathf.scl(camera.position.x, tilesize);
+        int avgy = Mathf.scl(camera.position.y, tilesize);
+        int rangex = (int)(camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
+        int rangey = (int)(camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+
+        int minx = Math.max(avgx - rangex - lightMargin, 0);
+        int miny = Math.max(avgy - rangey - lightMargin, 0);
+        int maxx = Math.min(world.width() - 1, avgx + rangex + lightMargin);
+        int maxy = Math.min(world.height() - 1, avgy + rangey + lightMargin);
+
+        Shaders.light.type = 0;
+        Graphics.shader(Shaders.light);
+
+        //Blocks
+        for(int x = minx; x <= maxx; x++){
+            for(int y = miny; y <= maxy; y++){
+                Tile tile = world.rawTile(x, y);
+                if(tile != null && tile.block() != Blocks.air){
+                    tile.block().drawLight(tile);
+                    tile.block().drawLayerLight(tile);
+                }
+            }
+        }
+
+        //Bullets
+        for(Entity entity : bulletGroup.all()){
+            if(entity instanceof Bullet){
+                Bullet bullet = (Bullet) entity;
+                bullet.getBulletType().drawLight(bullet);
+            }
+        }
+        //Units
+        for(EntityGroup<? extends BaseUnit> group : unitGroups){
+            for(BaseUnit unit : group.all()){
+                if(!unit.isDead()){
+                    unit.drawLight();
+                }
+            }
+        }
+
+        //Players
+        for(Player player : playerGroup.all()){
+            if(!player.isDead()){
+                player.drawLight();
+            }
+        }
+
+        //Effects
+        for(Entity entity : effectGroup.all()){
+            if(entity instanceof EffectEntity){
+                drawEffectLight((EffectEntity) entity);
+            }
+        }
+        for(DrawTrait entity : groundEffectGroup.all()){
+            if(entity instanceof EffectEntity){
+                drawEffectLight((EffectEntity) entity);
+            }
+        }
+
+        Graphics.shader();
+        Draw.color();
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Graphics.surface();
+    }
+
+    private void drawEffectLight(EffectEntity entity){
+        Effects.Effect effect = entity.effect;
+        if(effect == null) return;
+
+        boolean emit = entity.emitLight != null ? entity.emitLight : effect.emitLight;
+        float radius = entity.lightRadius < 0 ? effect.lightRadius : entity.lightRadius;
+        float opacity = entity.lightOpacity < 0 ? effect.lightOpacity : entity.lightOpacity;
+        Color color = entity.lightColor != null ? entity.lightColor : effect.lightColor;
+
+        if(!emit) return;
+
+        float fin = entity.fin();
+        float fade;
+        if(entity instanceof GroundEffectEntity && ((GroundEffect) effect).isStatic){
+            fade = 1f;
+        }else{
+            fade = Mathf.clamp(fin < 0.2f ? fin / 0.2f : (1f - fin) / 0.8f, 0f, 1f);
+        }
+
+        radius *= fade;
+        opacity *= fade;
+
+        if(radius > 0.001f && opacity > 0.001f){
+            Draw.color(color);
+            Shaders.light.region = Draw.region("circle");
+            Draw.alpha(opacity);
+            Draw.rect("circle", entity.x, entity.y, radius * 2, radius * 2);
+            Draw.alpha(opacity * 0.5f);
+            Draw.rect("circle", entity.x, entity.y, radius * 2, radius * 2);
+        }
+    }
+
+    // multiplies the scene (pixelSurface) by the lightmap (lightSurface): scene * (ambient + light)
+    private void drawLightmap(){
+        batch.flush();
+        batch.setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ZERO);
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, pixelSurface.width(), pixelSurface.height()));
+        batch.draw(lightSurface.texture(), 0, 0, pixelSurface.width(), pixelSurface.height(), 0, 0, 1, 1);
+        batch.flush();
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        batch.setProjectionMatrix(camera.combined);
+    }
+
+    private void blitPixelSurface(){
+        batch.draw(pixelSurface.texture(),
+                camera.position.x - camera.viewportWidth / 2 * camera.zoom,
+                camera.position.y + camera.viewportHeight / 2 * camera.zoom,
+                camera.viewportWidth * camera.zoom, -camera.viewportHeight * camera.zoom);
+    }
+
+    //applies the bloom chain (threshold -> blur -> photographic combine) to the composed
+    //scene and draws the result to the screen. The batch must not be drawing when this is called (crash)
+    private void drawPost(){
+        if(bloom == null || !bloom.isReady()){
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            batch.setProjectionMatrix(camera.combined);
+            batch.begin();
+            blitPixelSurface();
+            batch.end();
+            return;
+        }
+
+        bloom.render(pixelSurface.texture());
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private void drawFlyerShadows(){
@@ -373,11 +567,48 @@ public class Renderer extends RendererModule{
         }
         camera.update();
         camera.position.set(lastX, lastY, 0f);
+
+        effectSurface.onResize();
+        pixelSurface.onResize();
+        lightSurface.onResize();
+
+        rebuildPost();
     }
 
     @Override
     public void dispose(){
         fog.dispose();
+        effectSurface.dispose();
+        pixelSurface.dispose();
+        lightSurface.dispose();
+        if(bloom != null) bloom.dispose();
+    }
+
+    private void checkPostSettings(){
+        boolean bloomOn = Settings.getBool("bloom");
+        if(bloomOn != lastBloom){
+            lastBloom = bloomOn;
+            rebuildPost();
+        }
+    }
+
+    /** Rebuilds the bloom effect to match the current screen size and settings. Safe to call between frames. */
+    public void rebuildPost(){
+        if(bloom != null){
+            bloom.dispose();
+            bloom = null;
+        }
+
+        if(!Settings.getBool("bloom")) return;
+
+        int width = Math.max(Gdx.graphics.getWidth(), 1);
+        int height = Math.max(Gdx.graphics.getHeight(), 1);
+
+        bloom = new Bloom(width, height);
+        bloom.setThreshold(0.5f);
+        bloom.setOriginalIntensity(1f);
+        bloom.setBloomIntensity(Settings.getInt("bloomintensity") / 10f);
+        bloom.blurPasses = Settings.getInt("bloomblur");
     }
 
     public Vector2 averagePosition(){

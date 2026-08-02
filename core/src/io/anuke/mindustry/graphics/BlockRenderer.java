@@ -32,6 +32,7 @@ public class BlockRenderer{
     private int requestidx = 0;
     private int iterateidx = 0;
     private Surface shadows = Graphics.createSurface().setSize(2, 2);
+    private Array<Tile> visibleTiles = new Array<>();
     private boolean blocksDirty = false;
 
     public BlockRenderer(){
@@ -72,6 +73,10 @@ public class BlockRenderer{
         return teamChecks[team.ordinal()];
     }
 
+    public Array<Tile> getVisibleTiles(){
+        return visibleTiles;
+    }
+
     /**Process all blocks to draw, simultaneously updating the block shadow framebuffer when camera moves.*/
     public void processBlocks(){
         iterateidx = 0;
@@ -88,6 +93,7 @@ public class BlockRenderer{
         if(!cameraMoved && !blocksDirty) return;
 
         blocksDirty = false;
+        visibleTiles.clear();
 
         java.util.Arrays.fill(teamChecks, false);
         requestidx = 0;
@@ -120,6 +126,7 @@ public class BlockRenderer{
 
                     if(!expanded && block != Blocks.air && world.isAccessible(x, y)){
                         tile.block().drawShadow(tile);
+                        visibleTiles.add(tile);
                     }
 
                     if(block != Blocks.air){

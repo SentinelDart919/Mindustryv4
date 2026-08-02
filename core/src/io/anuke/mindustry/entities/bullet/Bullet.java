@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities.bullet;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -10,6 +11,8 @@ import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.entities.traits.TeamTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.core.Graphics;
+import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.impl.BulletEntity;
@@ -33,6 +36,12 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     private Team team;
     private Object data;
     private boolean supressCollision, supressOnce, initialized;
+
+    /**Light overrides for this bullet; null/negative values use the bullet type's values instead.*/
+    public Boolean emitLight = null;
+    public float lightRadius = -1f;
+    public float lightOpacity = -1f;
+    public Color lightColor = null;
 
     /**Internal use only!*/
     public Bullet(){
@@ -174,6 +183,11 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
     @Override
     public void draw(){
+        if(type.bloom && Settings.getBool("bloom")){
+            Graphics.setAdditiveBlending();
+            //type.drawBloom(this);
+            Graphics.setNormalBlending();
+        }
         type.draw(this);
     }
 

@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.production;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
@@ -37,16 +38,25 @@ public class Smelter extends Block{
     protected Effect craftEffect = BlockFx.smelt, burnEffect = BlockFx.fuelburn;
     protected Color flameColor = Color.valueOf("ffb879");
 
+    protected TextureRegion topRegion;
+
     public Smelter(String name){
         super(name);
         update = true;
         hasItems = true;
         solid = true;
         itemCapacity = 20;
+        layerLight = true;
         setAmbientSound("loopSmelter", 0.09f);
         consumes.require(ConsumeItems.class);
         consumes.require(ConsumeItem.class);
 
+    }
+
+    @Override
+    public void load(){
+        super.load();
+        topRegion = Draw.region(name + "-top", Draw.getClearRegion());
     }
 
     @Override
@@ -185,10 +195,22 @@ public class Smelter extends Block{
             Draw.tint(flameColor);
             Fill.circle(tile.drawx(), tile.drawy(), 2f + Mathf.absin(Timers.time(), 5f, 0.8f));
             Draw.color(1f, 1f, 1f, entity.heat);
+            Draw.rect(topRegion, tile.drawx(), tile.drawy());
             Fill.circle(tile.drawx(), tile.drawy(), 1f + Mathf.absin(Timers.time(), 5f, 0.7f));
 
             Draw.color();
         }
+    }
+
+    @Override
+    public void drawLayerLight(Tile tile){
+        SmelterEntity entity = tile.entity();
+        if(entity.heat <= 0f) return;
+        //pulse the light along with the smelter's flame effect
+        float g = 0.1f;
+        float pulse = (1f - g) + Mathf.absin(Timers.time(), 8f, g);
+        drawLight(tile.drawx(), tile.drawy(), layerLightRadius * tilesize,
+                layerLightOpacity * entity.heat * Mathf.clamp(pulse), flameColor);
     }
 
     @Override

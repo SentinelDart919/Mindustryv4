@@ -20,6 +20,7 @@ import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.graphics.CacheLayer;
 import io.anuke.mindustry.graphics.Layer;
 import io.anuke.mindustry.graphics.Palette;
+import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.input.CursorType;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.type.ContentType;
@@ -120,6 +121,28 @@ public class Block extends BaseBlock {
     public int maxDefenseDrones = 3;
     /** Unit type to spawn as defense drone. */
     public UnitType defenseDroneType;
+    /** Whether this block emits light. */
+    public boolean emitLight = false;
+    /** Amplification of the light emitted by this block. The light radius scales with the block size. */
+    public float lightAmplification = 1f;
+    /** Color of the light emitted by this block. */
+    public Color lightColor = Color.WHITE;
+    /** Opacity of the light emitted by this block. */
+    public float lightOpacity = 0.5f;
+
+    /** Returns the radius of the light emitted by this block, based on its size and light amplification. */
+    public float lightRadius(){
+        return size * lightAmplification;
+    }
+
+    /** Whether this block's layer texture emits light. The light is drawn in addition to the layer, not instead of it. */
+    public boolean layerLight = false;
+    /** Radius of the light emitted by this block's layer, in tiles. */
+    public float layerLightRadius = 4f;
+    /** Opacity of the light emitted by this block's layer. */
+    public float layerLightOpacity = 0.5f;
+    /** Color of the light emitted by this block's layer. */
+    public Color layerLightColor = Color.WHITE;
 
     protected Array<Tile> tempTiles = new Array<>();
     protected Color tempColor = new Color();
@@ -648,6 +671,55 @@ public class Block extends BaseBlock {
 
     public void drawShadow(Tile tile){
         Draw.rect(shadowRegion, tile.drawx(), tile.drawy());
+    }
+
+    public void drawLight(Tile tile){
+        boolean emit = emitLight;
+        float radius = lightRadius() * tilesize;
+        float opacity = lightOpacity;
+        Color color = lightColor;
+        TileEntity entity = tile.entity();
+
+        if(entity != null){
+            if(entity.emitLight != null) emit = entity.emitLight;
+            if(entity.lightRadius >= 0f) radius = entity.lightRadius;
+            if(entity.lightOpacity >= 0f) opacity = entity.lightOpacity;
+            if(entity.lightColor != null) color = entity.lightColor;
+        }
+
+        if(emit && radius > 0.001f){
+            drawLight(tile.drawx(), tile.drawy(), radius, opacity, color);
+        }
+    }
+
+    /** Draws the light emitted by this block's layer texture, on top of the layer itself. */
+    public void drawLayerLight(Tile tile){
+        boolean emit = layerLight;
+        float radius = layerLightRadius * tilesize;
+        float opacity = layerLightOpacity;
+        Color color = layerLightColor;
+        TileEntity entity = tile.entity();
+
+        if(entity != null){
+            if(entity.layerLight != null) emit = entity.layerLight;
+            if(entity.layerLightRadius >= 0f) radius = entity.layerLightRadius;
+            if(entity.layerLightOpacity >= 0f) opacity = entity.layerLightOpacity;
+            if(entity.layerLightColor != null) color = entity.layerLightColor;
+        }
+
+        if(emit && radius > 0.001f){
+            drawLight(tile.drawx(), tile.drawy(), radius, opacity, color);
+        }
+    }
+
+    /** Draws a radial light centered on the given world position. */
+    protected void drawLight(float x, float y, float radius, float opacity, Color color){
+        Draw.color(color);
+        Shaders.light.region = Draw.region("circle");
+        Draw.alpha(opacity);
+        Draw.rect("circle", x, y, radius * 2, radius * 2);
+        Draw.alpha(opacity * 0.5f);
+        Draw.rect("circle", x, y, radius * 2, radius * 2);
     }
 
     /** Offset for placing and drawing multiblocks. */

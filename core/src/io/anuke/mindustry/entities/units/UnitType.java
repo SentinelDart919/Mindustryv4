@@ -61,6 +61,10 @@ public class UnitType extends UnlockableContent{
     public float engineOffsetY = -6f;
     public boolean engineMirror = false;
     public float engineSize = 5f;
+    public boolean emitLight = true;
+    public float lightRadius = 60f;
+    public Color lightColor = Color.WHITE;
+    public float lightOpacity = 0.5f;
     public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
     public TextureRegion iconRegion, legRegion, treadRegion, baseRegion, region;

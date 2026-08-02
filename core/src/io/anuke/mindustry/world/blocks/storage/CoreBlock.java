@@ -61,6 +61,9 @@ public class CoreBlock extends StorageBlock{
         flags = EnumSet.of(BlockFlag.resupplyPoint, BlockFlag.target);
         setAmbientSound("loopUnitBuilding", 0.09f);
         setBuildPlayerSound("unitCreate");
+
+        emitLight = true;
+        lightAmplification = 4f;
     }
 
     public void setBuildPlayerSound(String name){
