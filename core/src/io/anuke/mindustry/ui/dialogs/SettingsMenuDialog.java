@@ -138,9 +138,9 @@ public class SettingsMenuDialog extends SettingsDialog{
         game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Bundles.format("setting.seconds", i));
         game.checkPref("planet3d", true);
         game.checkPref("massai-debug", false, MassAI::setDebug);
-
+        game.sliderPref("zoom", 100, 100, 1000, i -> i + "%");
         if(!mobile){
-            game.checkPref("crashreport", true);
+            game.checkPref("crashreport", false);
         }
 
         game.pref(new Setting(){
