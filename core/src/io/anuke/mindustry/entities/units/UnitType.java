@@ -38,6 +38,7 @@ public class UnitType extends UnlockableContent{
     public boolean isTank;
     public boolean living;
     public boolean isHealer;
+    public boolean isBoss = false;
     public boolean rotateWeapon = false;
     public boolean playerControllable = true;
     public boolean rtsAIControllable = true;

@@ -301,6 +301,7 @@ public class UnitTypes implements ContentList{
             engineOffsetY = -21f;
             engineSize = 8f;
             trailColor = Palette.lighterOrange;
+            isBoss = true;
         }};
 
         reaper = new UnitType("reaper", Lich.class, Lich::new ){{
@@ -321,6 +322,7 @@ public class UnitTypes implements ContentList{
             trailColor = Palette.lighterOrange;
             weapon = Weapons.reaperGun;
             unitCost = 4000;
+            isBoss = true;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
@@ -333,6 +335,7 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             weapon = Weapons.chaos;
             unitCost = 1500;
+            isBoss = true;
         }};
 
         eradicator = new UnitType("eradicator", Eradicator.class, Eradicator::new){{
@@ -345,6 +348,7 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             unitCost = 3500;
             weapon = Weapons.eradicator;
+            isBoss = true;
         }};
 
         debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{

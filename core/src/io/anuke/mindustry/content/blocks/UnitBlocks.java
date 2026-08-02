@@ -207,6 +207,7 @@ public class UnitBlocks extends BlockList implements ContentList{
                     UnitTypes.lich,
                     UnitTypes.chaosarray,
                     UnitTypes.reaper,
+                    UnitTypes.eradicator
             };
             consumerStacks = new ItemStack[][]{
                     new ItemStack[]{
@@ -234,16 +235,26 @@ public class UnitBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.surgealloy, 450),
                             new ItemStack(Items.bluemicrochip, 50),
                     },
+                    new ItemStack[]{
+                            new ItemStack(Items.silicon, 1000),
+                            new ItemStack(Items.lead, 1100),
+                            new ItemStack(Items.thorium, 700),
+                            new ItemStack(Items.titanium, 550),
+                            new ItemStack(Items.chromium, 420),
+                            new ItemStack(Items.surgealloy, 600),
+                    },
 
             };
             producerTimes = new float[]{
                     17000f,
                     18000f,
                     21000f,
+                    22000f,
             };
             maxSpawn = new int[]{
                     2,
                     2,
+                    1,
                     1,
             };
             size = 8;
