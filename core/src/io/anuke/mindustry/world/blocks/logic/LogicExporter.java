@@ -9,6 +9,9 @@ import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
+import io.anuke.mindustry.world.meta.BlockStat;
+import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.UnitListValue;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
@@ -30,6 +33,17 @@ public class LogicExporter extends LogicBlock {
         super(name);
         hasItems = true;
         itemCapacity = 100;
+    }
+
+    @Override
+    public void setStats() {
+        super.setStats();
+
+        if (droneType != null) {
+            stats.add(BlockStat.spawnUnit, new UnitListValue(droneType));
+        }
+
+        stats.add(BlockStat.maxUnits, maxDrones, StatUnit.none);
     }
 
     @Override
@@ -58,6 +72,7 @@ public class LogicExporter extends LogicBlock {
                 unit.add();
                 entity.droneIDs.add(unit.id);
                 entity.spawnTimer = 0;
+                useContent(tile, droneType);
             }
         }
     }

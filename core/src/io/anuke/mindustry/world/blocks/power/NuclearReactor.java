@@ -78,7 +78,12 @@ public class NuclearReactor extends PowerGenerator{
     @Override
     public void setStats(){
         super.setStats();
+
+        stats.remove(BlockStat.inputItem);
+        stats.add(BlockStat.inputFuel, consumes.item());
+        stats.add(BlockStat.fuelBurnTime, fuelUseTime / 60f, StatUnit.seconds);
         stats.add(BlockStat.inputLiquid, new LiquidFilterValue(liquid -> liquid.temperature <= 0.5f));
+        stats.add(BlockStat.liquidFuelUse, maxLiquidUse * 60f, StatUnit.liquidSecond);
         stats.add(BlockStat.basePowerGeneration, powerMultiplier * 60f * 0.5f, StatUnit.powerSecond);
     }
 

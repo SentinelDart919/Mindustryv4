@@ -192,7 +192,7 @@ public class SettingsMenuDialog extends SettingsDialog{
             }
         });
 
-        graphics.sliderPref("fpscap", 125, 5, 125, 5, s -> (s > 120 ? Bundles.get("setting.fpscap.none") : Bundles.format("setting.fpscap.text", s)));
+        graphics.sliderPref("fpscap", 125, 5, 240, 5, s -> (s > 240 ? Bundles.get("setting.fpscap.none") : Bundles.format("setting.fpscap.text", s)));
 
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Gdx.graphics.setVSync(b));
@@ -215,6 +215,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         graphics.checkPref("lasers", true);
         graphics.checkPref("minimap", !mobile); //minimap is disabled by default on mobile devices
 
+        graphics.sliderPref("renderer", "Render Scale", 100, 50, 100, i -> i + "%");
         graphics.checkPref("bloom", "Bloom", true);
         graphics.sliderPref("bloomintensity", "Bloom Intensity", 14, 5, 40, i -> (i / 10f) + "x");
         graphics.sliderPref("bloomblur", "Bloom Blur", 2, 1, 16, s -> s + "x");

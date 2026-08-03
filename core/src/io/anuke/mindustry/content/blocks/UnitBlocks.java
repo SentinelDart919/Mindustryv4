@@ -242,6 +242,7 @@ public class UnitBlocks extends BlockList implements ContentList{
                             new ItemStack(Items.titanium, 550),
                             new ItemStack(Items.chromium, 420),
                             new ItemStack(Items.surgealloy, 600),
+                            new ItemStack(Items.bluemicrochip, 50),
                     },
 
             };

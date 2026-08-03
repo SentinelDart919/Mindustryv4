@@ -5,6 +5,9 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeLiquidFilter;
+import io.anuke.mindustry.world.meta.BlockStat;
+import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.LiquidFilterValue;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
@@ -29,6 +32,16 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
     @Override
     public void init(){
         super.init();
+    }
+
+    @Override
+    public void setStats(){
+        super.setStats();
+
+        //show liquid as required fuel instead of an optional boost
+        stats.remove(BlockStat.boostLiquid);
+        stats.add(BlockStat.inputLiquidFuel, new LiquidFilterValue(liquid -> getLiquidEfficiency(liquid) >= minLiquidEfficiency));
+        stats.add(BlockStat.liquidFuelUse, maxLiquidGenerate * 60f, StatUnit.liquidSecond);
     }
 
     @Override

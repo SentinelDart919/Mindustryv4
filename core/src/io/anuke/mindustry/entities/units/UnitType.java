@@ -3,7 +3,6 @@ package io.anuke.mindustry.entities.units;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ObjectSet;
-import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.Weapons;
 import io.anuke.mindustry.entities.traits.TypeTrait;
@@ -53,7 +52,7 @@ public class UnitType extends UnlockableContent{
     public float carryWeight = 1f;
     public int itemCapacity = 30;
     public float shootCone = 15f;
-    public ObjectSet<Item> toMine = ObjectSet.with(Items.lead, Items.copper);
+    public ObjectSet<Item> toMine = new ObjectSet<>();
     public float buildPower = 0.3f, minePower = 0.7f;
     public Weapon weapon = Weapons.blaster;
     public float healTurretOffsetX, healTurretOffsetY;

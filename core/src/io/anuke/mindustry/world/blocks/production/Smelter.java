@@ -70,11 +70,14 @@ public class Smelter extends Block{
     public void setStats(){
         super.setStats();
 
-        //TODO
-        //stats.add(BlockStat.inputFuel, fuel);
+        if(consumes.has(ConsumeItem.class) && consumes.get(ConsumeItem.class).isOptional()){
+            stats.remove(BlockStat.boostItem);
+            stats.add(BlockStat.inputFuel, new ItemStack(consumes.item(), consumes.itemAmount()));
+        }
         stats.add(BlockStat.fuelBurnTime, burnDuration / 60f, StatUnit.seconds);
         stats.add(BlockStat.outputItem, result);
         stats.add(BlockStat.craftSpeed, 60f / craftTime, StatUnit.itemsSecond);
+        stats.add(BlockStat.craftTime, craftTime / 60f, StatUnit.seconds);
         stats.add(BlockStat.inputItemCapacity, itemCapacity, StatUnit.items);
         stats.add(BlockStat.outputItemCapacity, itemCapacity, StatUnit.items);
     }

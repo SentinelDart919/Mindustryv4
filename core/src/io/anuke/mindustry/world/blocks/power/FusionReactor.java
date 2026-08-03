@@ -54,6 +54,8 @@ public class FusionReactor extends PowerGenerator{
     public void setStats(){
         super.setStats();
 
+        stats.remove(BlockStat.inputItem);
+        stats.add(BlockStat.inputFuel, consumes.item());
         stats.add(BlockStat.basePowerGeneration, maxPowerProduced * 60f, StatUnit.powerSecond);
     }
 

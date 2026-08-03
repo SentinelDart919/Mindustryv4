@@ -13,6 +13,7 @@ public enum BlockStat{
     inputItemCapacity(StatCategory.items),
     outputItemCapacity(StatCategory.items),
     itemSpeed(StatCategory.items),
+    mineItems(StatCategory.items),
 
     liquidCapacity(StatCategory.liquids),
     liquidOutput(StatCategory.liquids),
@@ -36,10 +37,13 @@ public enum BlockStat{
     inputFuel(StatCategory.crafting),
     fuelBurnTime(StatCategory.crafting),
     craftSpeed(StatCategory.crafting),
+    craftTime(StatCategory.crafting),
     outputItem(StatCategory.crafting),
     drillTier(StatCategory.crafting),
     drillSpeed(StatCategory.crafting),
     maxUnits(StatCategory.crafting),
+    outputUnit(StatCategory.crafting),
+    spawnUnit(StatCategory.crafting),
 
     shootRange(StatCategory.shooting),
     inaccuracy(StatCategory.shooting),

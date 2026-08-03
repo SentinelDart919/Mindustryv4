@@ -106,6 +106,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 1.6f;
             range = 50f;
             health = 100;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             rtsAIControllable = false;
         }};
@@ -394,6 +395,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.90f;
             range = 55f;
             health = 40;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             playerControllable = false;
             rtsAIControllable = false;
@@ -410,6 +412,7 @@ public class UnitTypes implements ContentList{
             itemCapacity = 70;
             health = 220;
             minePower = 1.2f;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             playerControllable = false;
             rtsAIControllable = false;

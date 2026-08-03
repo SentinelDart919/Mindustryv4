@@ -7,6 +7,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterEntity;
 import io.anuke.mindustry.world.meta.BlockStat;
+import io.anuke.mindustry.world.meta.StatUnit;
 
 public class PowerCrafter extends Block{
     protected final int timerDump = timers++;
@@ -59,6 +60,8 @@ public class PowerCrafter extends Block{
         if(outputLiquid != null){
             stats.add(BlockStat.liquidOutput, outputLiquid);
         }
+
+        stats.add(BlockStat.craftTime, craftTime / 60f, StatUnit.seconds);
     }
 
     @Override

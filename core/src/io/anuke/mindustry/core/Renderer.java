@@ -20,13 +20,14 @@ import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.bullet.Bullet;
+import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.entities.traits.BelowLiquidTrait;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.*;
-
+import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
 import io.anuke.ucore.util.Tmp;
@@ -75,8 +76,18 @@ public class Renderer extends RendererModule{
     private final Predicate<BaseUnit> unitFlyingTeamFilter = u -> u.isFlying() == currentFlying && u.getTeam() == currentTeam;
     private final Predicate<Player> playerFlyingFilter = p -> p.isFlying() == currentFlying && p.getTeam() == currentTeam;
 
-    /** How far (in tiles) beyond the screen lights are still drawn, so big lights don't pop in/out at the edges. */
-    private static final int lightMargin = 200;
+    /** How far (in tiles) beyond the screen lights are still drawn, so big lights don't pop in/out at the edges.
+     * Kept slightly above the largest light radius in the game (the fusion shockwave), while lights further away
+     * are culled per-light against the visible area below. */ // hehe optimizations hehe hehe i hate java
+    private static final int lightMargin = 48;
+    /** Light radius of a player, used to cull player lights. */
+    private static final float playerLightRadius = 140f;
+    /** Default light radius of units, used to cull unit lights. */
+    private static final float unitLightRadius = 60f;
+    /** Visible area in world units, used to cull lights that can't be seen. */
+    private final Rectangle lightRect = new Rectangle();
+    /** Last applied render scale setting, used to detect changes and rebuild the surfaces. */
+    private int lastRenderScale;
 
     public Renderer(){
         Core.batch = new SpriteBatch(4096);
@@ -136,9 +147,12 @@ public class Renderer extends RendererModule{
 
         clearColor = new Color(0f, 0f, 0f, 1f);
 
-        effectSurface = Graphics.createSurface(Core.cameraScale);
-        pixelSurface = Graphics.createSurface(Core.cameraScale);
-        lightSurface = Graphics.createSurface(Core.cameraScale);
+        Settings.defaults("renderer", 100);
+        lastRenderScale = Settings.getInt("renderer", 100);
+
+        effectSurface = Graphics.createSurface(renderScale());
+        pixelSurface = Graphics.createSurface(renderScale());
+        lightSurface = Graphics.createSurface(renderScale());
 
         Settings.defaults("bloom", true);
         Settings.defaults("bloomintensity", 14);
@@ -159,6 +173,7 @@ public class Renderer extends RendererModule{
         Color.WHITE.set(1f, 1f, 1f, 1f);
 
         checkPostSettings();
+        checkRendererSettings();
 
         if(Core.cameraScale != targetscale){
             float targetzoom = (float) Core.cameraScale / targetscale;
@@ -370,6 +385,10 @@ public class Renderer extends RendererModule{
         int maxx = Math.min(world.width() - 1, avgx + rangex + lightMargin);
         int maxy = Math.min(world.height() - 1, avgy + rangey + lightMargin);
 
+        lightRect.set(camera.position.x - camera.viewportWidth * camera.zoom / 2f,
+                camera.position.y - camera.viewportHeight * camera.zoom / 2f,
+                camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom);
+
         Shaders.light.type = 0;
         Graphics.shader(Shaders.light);
 
@@ -378,8 +397,12 @@ public class Renderer extends RendererModule{
             for(int y = miny; y <= maxy; y++){
                 Tile tile = world.rawTile(x, y);
                 if(tile != null && tile.block() != Blocks.air){
-                    tile.block().drawLight(tile);
-                    tile.block().drawLayerLight(tile);
+                    Block block = tile.block();
+                    float radius = Math.max(block.lightRadius() * tilesize, block.layerLightRadius * tilesize) + tilesize * 2f;
+                    if(lightVisible(tile.drawx(), tile.drawy(), radius)){
+                        block.drawLight(tile);
+                        block.drawLayerLight(tile);
+                    }
                 }
             }
         }
@@ -388,13 +411,16 @@ public class Renderer extends RendererModule{
         for(Entity entity : bulletGroup.all()){
             if(entity instanceof Bullet){
                 Bullet bullet = (Bullet) entity;
-                bullet.getBulletType().drawLight(bullet);
+                BulletType type = bullet.getBulletType();
+                if(lightVisible(bullet.x, bullet.y, Math.max(type.lightRadius, bullet.lightRadius))){
+                    type.drawLight(bullet);
+                }
             }
         }
         //Units
         for(EntityGroup<? extends BaseUnit> group : unitGroups){
             for(BaseUnit unit : group.all()){
-                if(!unit.isDead()){
+                if(!unit.isDead() && lightVisible(unit.x, unit.y, Math.max(unit.lightRadius, unitLightRadius))){
                     unit.drawLight();
                 }
             }
@@ -402,7 +428,7 @@ public class Renderer extends RendererModule{
 
         //Players
         for(Player player : playerGroup.all()){
-            if(!player.isDead()){
+            if(!player.isDead() && lightVisible(player.x, player.y, playerLightRadius)){
                 player.drawLight();
             }
         }
@@ -423,6 +449,12 @@ public class Renderer extends RendererModule{
         Draw.color();
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Graphics.surface();
+    }
+
+    /** Whether a light at (x, y) with the given radius (in world units) overlaps the visible area. */
+    private boolean lightVisible(float x, float y, float radius){
+        return x + radius >= lightRect.x && x - radius <= lightRect.x + lightRect.width &&
+                y + radius >= lightRect.y && y - radius <= lightRect.y + lightRect.height;
     }
 
     private void drawEffectLight(EffectEntity entity){
@@ -448,6 +480,7 @@ public class Renderer extends RendererModule{
         opacity *= fade;
 
         if(radius > 0.001f && opacity > 0.001f){
+            if(!lightVisible(entity.x, entity.y, radius)) return;
             Draw.color(color);
             Shaders.light.region = Draw.region("circle");
             Draw.alpha(opacity);
@@ -592,6 +625,28 @@ public class Renderer extends RendererModule{
         }
     }
 
+    /** Rebuilds all surfaces to match the current camera scale and render scale setting. */
+    private void applyScale(){
+        for(Surface surface : Graphics.getSurfaces()){
+            surface.setScale(renderScale());
+        }
+    }
+
+    /** The scale factor used by the render surfaces. Larger = smaller surfaces.
+     *  A render scale below 100% renders at a lower resolution and upscales to the screen, cutting GPU fill rate. */
+    private int renderScale(){
+        return Math.max(1, Math.round(targetscale * 100f / Math.max(Settings.getInt("renderer", 100), 1)));
+    }
+
+    /** Detects render scale changes and rebuilds the surfaces when it changes. */
+    private void checkRendererSettings(){
+        int rs = Settings.getInt("renderer", 100);
+        if(rs != lastRenderScale){
+            lastRenderScale = rs;
+            applyScale();
+        }
+    }
+
     /** Rebuilds the bloom effect to match the current screen size and settings. Safe to call between frames. */
     public void rebuildPost(){
         if(bloom != null){
@@ -631,10 +686,7 @@ public class Renderer extends RendererModule{
     public void setCameraScale(int amount){
         targetscale = amount;
         clampScale();
-        //scale up all surfaces in preparation for the zoom
-        for(Surface surface : Graphics.getSurfaces()){
-            surface.setScale(targetscale);
-        }
+        applyScale();
     }
 
     public void scaleCamera(int amount){
@@ -643,7 +695,8 @@ public class Renderer extends RendererModule{
 
     public void clampScale(){
         float s = io.anuke.ucore.scene.ui.layout.Unit.dp.scl(1f);
-        targetscale = Mathf.clamp(targetscale, Math.round(s * 2), Math.round(s * 5));
+        int amp = Math.max(Settings.getInt("zoom", 100), 100);
+        targetscale = Mathf.clamp(targetscale, Math.max(1, Math.round(s * 2 * 100f / amp)), Math.round(s * 5));
     }
 
     public void takeMapScreenshot(){

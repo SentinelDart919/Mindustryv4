@@ -5,6 +5,7 @@ import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -59,8 +60,9 @@ public class GenericCrafter extends Block{
     @Override
     public void setStats(){
         super.setStats();
-        stats.add(BlockStat.craftSpeed, 60f / craftTime, StatUnit.itemsSecond);
-        stats.add(BlockStat.outputItem, output);
+        stats.add(BlockStat.craftSpeed, 60f / craftTime * itemOutputAmount, StatUnit.itemsSecond);
+        stats.add(BlockStat.craftTime, craftTime / (60f * itemOutputAmount), StatUnit.seconds);
+        stats.add(BlockStat.outputItem, new ItemStack(output, itemOutputAmount));
     }
 
     @Override

@@ -87,8 +87,9 @@ public class PowerSmelter extends PowerBlock{
     public void setStats(){
         super.setStats();
 
-        stats.add(BlockStat.outputItem, result);
-        stats.add(BlockStat.craftSpeed, 60f / craftTime, StatUnit.itemsSecond);
+        stats.add(BlockStat.outputItem, new ItemStack(result, itemOutputAmount));
+        stats.add(BlockStat.craftSpeed, 60f / craftTime * itemOutputAmount, StatUnit.itemsSecond);
+        stats.add(BlockStat.craftTime, craftTime / (60f * itemOutputAmount), StatUnit.seconds);
         stats.add(BlockStat.inputItemCapacity, itemCapacity, StatUnit.items);
         stats.add(BlockStat.outputItemCapacity, itemCapacity, StatUnit.items);
     }
