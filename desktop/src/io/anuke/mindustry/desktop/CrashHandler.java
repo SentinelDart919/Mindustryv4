@@ -83,9 +83,10 @@ public class CrashHandler{
         ex(() -> value.addChild("trace", new JsonValue(parseException(e))));
 
         try{
-            Path path = Paths.get(OS.getAppDataDirectoryString(Vars.appName), "crashes",
-                "crash-report-" + DateTimeFormatter.ofPattern("MM dd yyyy  HH mm ss").format(LocalDateTime.now()) + ".txt");
-            Files.createDirectories(Paths.get(OS.getAppDataDirectoryString(Vars.appName), "crashes"));
+            Path dir = Paths.get(DesktopPlatform.getMainDirectory().getAbsolutePath(), "crashes");
+            Files.createDirectories(dir);
+
+            Path path = dir.resolve("crash-report-" + DateTimeFormatter.ofPattern("MM dd yyyy  HH mm ss").format(LocalDateTime.now()) + ".txt");
 
             Files.write(path, parseException(e).getBytes());
 

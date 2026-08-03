@@ -1,11 +1,11 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.io.versions.Save16;
 import io.anuke.mindustry.io.versions.Save17;
 import io.anuke.mindustry.maps.campaign.Campaign;
@@ -33,7 +33,7 @@ public class SaveIO{
         }
     }
     public void saveCampaigns(Array<Campaign> campaigns){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+        FileHandle fileHandle = Platform.instance.getAppDirectory().child(CAMPAIGNS_SAVE_FILE);
 
         try(DataOutputStream stream = new DataOutputStream(fileHandle.write(false))){
             stream.writeInt(campaignsSaveVersion);
@@ -49,7 +49,7 @@ public class SaveIO{
     }
 
     public Array<Campaign> loadCampaigns(){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+        FileHandle fileHandle = Platform.instance.getAppDirectory().child(CAMPAIGNS_SAVE_FILE);
         if(!fileHandle.exists()){
             return new Array<>();
         }
