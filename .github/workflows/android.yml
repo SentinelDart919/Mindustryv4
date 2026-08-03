@@ -32,6 +32,13 @@ jobs:
           echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
         fi
         cat local.properties
+    - name: Ensure version properties for Android build
+      run: |
+        mkdir -p core/assets
+        echo "androidBuildCode=0" > core/assets/version.properties
+        echo "build=CI" >> core/assets/version.properties
+        echo "Created core/assets/version.properties:" 
+        cat core/assets/version.properties
     - name: Clone uCore
       run: ./gradlew setupUCore
     - name: Build with Gradle
