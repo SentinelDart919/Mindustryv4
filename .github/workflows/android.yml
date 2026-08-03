@@ -22,6 +22,16 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Create local.properties for Android SDK
+      run: |
+        if [ -n "${ANDROID_SDK_ROOT:-}" ]; then
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+        elif [ -n "${ANDROID_HOME:-}" ]; then
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        else
+          echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
+        fi
+        cat local.properties
     - name: Clone uCore
       run: ./gradlew setupUCore
     - name: Build with Gradle
