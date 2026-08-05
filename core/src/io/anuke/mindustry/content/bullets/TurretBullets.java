@@ -29,7 +29,7 @@ import static io.anuke.mindustry.Vars.world;
 
 public class TurretBullets extends BulletList implements ContentList{
     public static BulletType fireball, basicFlame, lancerLaser, burstLaser, meltdownLaser,
-        fuseShot, waterShot, cryoShot, lavaShot, oilShot, lightning, driverBolt, healBullet, arc, damageLightning,
+        fuseShot, waterShot, cryoShot, lavaShot, oilShot, slagShot, lightning, driverBolt, healBullet, arc, damageLightning,
     // Mass
     BloodFuseShot;
 
@@ -290,6 +290,15 @@ public class TurretBullets extends BulletList implements ContentList{
                 drag = 0.03f;
                 status = StatusEffects.tarred;
                 statusIntensity = 0.5f;
+            }
+        };
+        slagShot = new LiquidBulletType(Liquids.slag){
+            {
+                damage = 13;
+                speed = 2.5f;
+                drag = 0.009f;
+                lifetime = 57f;
+                collidesAir = false;
             }
         };
 

@@ -9,7 +9,7 @@ import io.anuke.mindustry.world.blocks.power.*;
 
 public class PowerBlocks extends BlockList implements ContentList{
     public static Block combustionGenerator, thermalGenerator, turbineGenerator,differentialGenerator, rtgGenerator, solarPanel, largeSolarPanel,
-            thoriumReactor, fusionReactor, battery, batteryLarge, powerNode, powerNodeLarge, surgeTower, lightBlock;
+            thoriumReactor, fusionReactor, battery, batteryLarge, powerNode, powerNodeLarge, surgeTower/*, lightBlock*/;
 
     @Override
     public void load(){
@@ -108,11 +108,11 @@ public class PowerBlocks extends BlockList implements ContentList{
             laserRange = 30f;
         }};
 
-        lightBlock = new LightBlock("light-block"){{
+        /*lightBlock = new LightBlock("light-block"){{
             radius = 160f;
             brightness = 0.75f;
             health = 90;
-        }};
+        }};*/
 
     }
 }

@@ -17,6 +17,7 @@ public class UnitTypes implements ContentList{
         crawler, bombDrone,
         scrappeon, dagger, titan, fortress, chaosarray, eradicator,
         debugtank, nova,
+        atrax,
         trainEngine,
         minerDroneT1, minerDroneT2, logisticsDrone,
         evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
@@ -228,6 +229,25 @@ public class UnitTypes implements ContentList{
             weapon = Weapons.artillery;
             health = 750;
             unitCost = 100;
+        }};
+
+        atrax = new UnitType("atrax", Atrax.class, Atrax::new){{
+            speed = 0.6f;
+            drag = 0.4f;
+            maxVelocity = 1.3f;
+            hitsize = 13f;
+            mass = 2.5f;
+            targetAir = false;
+            health = 600;
+            armor = 3f;
+            weapon = Weapons.attraxSpitter;
+            unitCost = 60;
+            legCount = 4;
+            legLength = 15;
+            legForwardScl = 1.2f;
+            legMoveSpace = 1.5f;
+            immunities.add(StatusEffects.burning);
+            immunities.add(StatusEffects.melting);
         }};
 
         scrapper = new UnitType("scrapper", Scrapper.class, Scrapper::new){{

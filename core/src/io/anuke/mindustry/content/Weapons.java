@@ -11,6 +11,7 @@ public class Weapons implements ContentList{
     public static Weapon blaster, blasterSmall, glaiveBlaster, droneBlaster, healBlaster, healBlasterDrone, scrapBlaster, scrapLockBlaster, chainBlaster, shockgun,
     kamikaze, kamikazeDrone, revenantMissiles, lichMissiles, reaperGun, chaos, eradicator,
     sapper, swarmer, bomber, bomberTrident, flakgun, flamethrower, missiles, artillery, laserBurster, healBlasterDrone2, healBlasterDrone3, mineBlaster,
+    attraxSpitter,
     debugtankturret,
     artilleryBiomass, exterminatorweapon, mosquitoweapon, evilDaggerWeapon, evilTankyWeapon;// the mass
 
@@ -147,6 +148,17 @@ public class Weapons implements ContentList{
             roundrobin = true;
             ejectEffect = ShootFx.shellEjectSmall;
             ammo = AmmoTypes.bulletCopper;
+        }};
+
+        attraxSpitter = new Weapon("attrax-weapon"){{
+            width = 7f;
+            length = 3f;
+            reload = 9f;
+            roundrobin = true;
+            ejectEffect = Fx.none;
+            recoil = 1f;
+            ammo = AmmoTypes.slag;
+            setShootSound("shootDart");
         }};
 
         scrapBlaster = new Weapon("scrap-blaster"){{

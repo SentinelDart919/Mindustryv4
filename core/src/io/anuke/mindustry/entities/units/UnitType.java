@@ -67,7 +67,48 @@ public class UnitType extends UnlockableContent{
     public float lightOpacity = 0.5f;
     public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
-    public TextureRegion iconRegion, legRegion, treadRegion, baseRegion, region;
+    //leg unit fields
+    /**number of legs this unit has*/
+    public int legCount = 4;
+    /**size of groups in which legs move. for example, insects (6 legs) usually move legs in groups of 3.*/
+    public int legGroupSize = 2;
+    /**total length of a leg (both segments)*/
+    public float legLength = 10f;
+    /**how fast individual legs move towards their destination (non-linear)*/
+    public float legSpeed = 0.1f;
+    /**scale for how far in front (relative to unit velocity) legs try to place themselves; if legs lag behind a unit, increase this number*/
+    public float legForwardScl = 1f;
+    /**leg offset from the center of the unit*/
+    public float legBaseOffset = 0f;
+    /**scaling for space between leg movements*/
+    public float legMoveSpace = 1f;
+    /**for legs without "joints", this is how much the second leg sprite is moved "back" by, so it covers the joint region*/
+    public float legExtension = 0f;
+    /**higher values of this field make groups of legs move less in-sync with each other.*/
+    public float legPairOffset = 0f;
+    /**scaling for how far away legs *try* to be from the body (not their actual length); e.g. if set to 0.5, legs will appear somewhat folded*/
+    public float legLengthScl = 1f;
+    /**if legStraightness > 0, this is the scale for how far away legs are from the body horizontally*/
+    public float legStraightLength = 1f;
+    /**maximum length of an individual leg as fraction of real length*/
+    public float legMaxLength = 1.75f;
+    /**minimum length of an individual leg as fraction of real length*/
+    public float legMinLength = 0f;
+    /**splash damage dealt when a leg touches the ground*/
+    public float legSplashDamage = 0f;
+    /**splash damage radius of legs*/
+    public float legSplashRange = 5f;
+    /**how straight the leg base/origin is (0 = circular, 1 = line)*/
+    public float baseLegStraightness = 0f;
+    /**how straight the leg outward angles are (0 = circular, 1 = horizontal line)*/
+    public float legStraightness = 0f;
+    /**if true, legs are locked to the base of the unit instead of being on an implicit rotating "mount".*/
+    public boolean lockLegBase = false;
+    /**if true, legs always try to move around even when the unit is not moving (leads to more natural behavior)*/
+    public boolean legContinuousMove = false;
+    public boolean flipBackLegs = true, flipLegSide = false;
+
+    public TextureRegion iconRegion, legRegion, treadRegion, baseRegion, region, jointRegion, footRegion, legBaseRegion, baseJointRegion;
 
     public <T extends BaseUnit> UnitType(String name, Class<T> type, Supplier<T> mainConstructor){
         this.name = name;
@@ -106,6 +147,10 @@ public class UnitType extends UnlockableContent{
             if(!isTank)legRegion = Draw.region(name + "-leg");
             baseRegion = Draw.region(name + "-base");
             if(isTank)treadRegion = Draw.region(name + "-tread");
+            jointRegion = Draw.region(name + "-joint");
+            baseJointRegion = Draw.region(name + "-joint-base");
+            footRegion = Draw.region(name + "-foot");
+            legBaseRegion = Draw.region(name + "-leg-base", legRegion);
         }
     }
 
