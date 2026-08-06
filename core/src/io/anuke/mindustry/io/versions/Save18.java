@@ -1,21 +1,11 @@
-package io.anuke.mindustry.io;
+package io.anuke.mindustry.io.versions;
 
-import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
-import io.anuke.mindustry.entities.traits.SaveTrait;
-import io.anuke.mindustry.entities.traits.TypeTrait;
-import io.anuke.mindustry.game.Content;
-import io.anuke.mindustry.game.Difficulty;
-import io.anuke.mindustry.game.MappableContent;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.Map;
-import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.BlockPart;
-import io.anuke.ucore.entities.Entities;
-import io.anuke.ucore.entities.EntityGroup;
-import io.anuke.ucore.entities.trait.Entity;
 import io.anuke.ucore.util.Bits;
 
 import java.io.DataInputStream;
@@ -24,25 +14,16 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
 
-public abstract class SaveFileVersion{
-    public final int version;
+/**
+ * Save version with short block and floor IDs, allowing more than 256 blocks.
+ */
+public class Save18 extends Save17{
 
-    public SaveFileVersion(int version){
-        this.version = version;
+    public Save18(){
+        super(18);
     }
 
-    public SaveMeta getData(DataInputStream stream) throws IOException{
-        long time = stream.readLong();
-        long playtime = stream.readLong();
-        int build = stream.readInt();
-        int sector = stream.readInt();
-        byte mode = stream.readByte();
-        String map = stream.readUTF();
-        int wave = stream.readInt();
-        byte difficulty = stream.readByte();
-        return new SaveMeta(version, time, playtime, build, sector, mode, map, wave, Difficulty.values()[difficulty]);
-    }
-
+    @Override
     public void writeMap(DataOutputStream stream) throws IOException{
 
         //write world size
@@ -52,8 +33,8 @@ public abstract class SaveFileVersion{
         for(int i = 0; i < world.width() * world.height(); i++){
             Tile tile = world.tile(i);
 
-            stream.writeByte(tile.getFloorID());
-            stream.writeByte(tile.getBlockID());
+            stream.writeShort(tile.getFloorID());
+            stream.writeShort(tile.getBlockID());
             stream.writeByte(tile.getElevation());
 
             if(tile.block() instanceof BlockPart){
@@ -110,6 +91,7 @@ public abstract class SaveFileVersion{
         }
     }
 
+    @Override
     public void readMap(DataInputStream stream) throws IOException{
         short width = stream.readShort();
         short height = stream.readShort();
@@ -126,12 +108,11 @@ public abstract class SaveFileVersion{
 
         for(int i = 0; i < width * height; i++){
             int x = i % width, y = i / width;
-            //legacy save formats stored block/floor IDs as single bytes, so read them unsigned to avoid sign-extension corrupting IDs >= 128
-            int floorid = stream.readUnsignedByte();
-            int wallid = stream.readUnsignedByte();
+            short floorid = stream.readShort();
+            short wallid = stream.readShort();
             byte elevation = stream.readByte();
 
-            Tile tile = new Tile(x, y, (short) floorid, (short) wallid);
+            Tile tile = new Tile(x, y, floorid, wallid);
             tile.setElevation(elevation);
 
             if(wallid == Blocks.blockpart.id){
@@ -165,7 +146,7 @@ public abstract class SaveFileVersion{
 
                 for(int j = i + 1; j < i + 1 + consecutives; j++){
                     int newx = j % width, newy = j / width;
-                    Tile newTile = new Tile(newx, newy, (short) floorid, (short) wallid);
+                    Tile newTile = new Tile(newx, newy, floorid, wallid);
                     newTile.setElevation(elevation);
                     tiles[newx][newy] = newTile;
                 }
@@ -191,85 +172,4 @@ public abstract class SaveFileVersion{
         content.setTemporaryMapper(null);
         world.endMapLoad();
     }
-
-    public void writeEntities(DataOutputStream stream) throws IOException{
-        int groups = 0;
-
-        for(EntityGroup<?> group : Entities.getAllGroups()){
-            if(!group.isEmpty() && group.all().get(0) instanceof SaveTrait){
-                groups++;
-            }
-        }
-
-        stream.writeByte(groups);
-
-        for(EntityGroup<?> group : Entities.getAllGroups()){
-            if(!group.isEmpty() && group.all().get(0) instanceof SaveTrait){
-                stream.writeInt(group.size());
-                for(Entity entity : group.all()){
-                    stream.writeByte(((SaveTrait) entity).getTypeID());
-                    ((SaveTrait) entity).writeSave(stream);
-                }
-            }
-        }
-    }
-
-    public void readEntities(DataInputStream stream) throws IOException{
-        byte groups = stream.readByte();
-
-        for(int i = 0; i < groups; i++){
-            int amount = stream.readInt();
-            for(int j = 0; j < amount; j++){
-                byte typeid = stream.readByte();
-                SaveTrait trait = (SaveTrait) TypeTrait.getTypeByID(typeid).get();
-                trait.readSave(stream);
-            }
-        }
-    }
-
-    public MappableContent[][] readContentHeader(DataInputStream stream) throws IOException{
-
-        byte mapped = stream.readByte();
-
-        MappableContent[][] map = new MappableContent[ContentType.values().length][0];
-
-        for (int i = 0; i < mapped; i++) {
-            ContentType type = ContentType.values()[stream.readByte()];
-            short total = stream.readShort();
-            map[type.ordinal()] = new MappableContent[total];
-
-            for (int j = 0; j < total; j++) {
-                String name = stream.readUTF();
-                map[type.ordinal()][j] = content.getByName(type, name);
-            }
-        }
-
-        return map;
-    }
-
-    public void writeContentHeader(DataOutputStream stream) throws IOException{
-        Array<Content>[] map = content.getContentMap();
-
-        int mappable = 0;
-        for(Array<Content> arr : map){
-            if(arr.size > 0 && arr.first() instanceof MappableContent){
-                mappable++;
-            }
-        }
-
-        stream.writeByte(mappable);
-        for(Array<Content> arr : map){
-            if(arr.size > 0 && arr.first() instanceof MappableContent){
-                stream.writeByte(arr.first().getContentType().ordinal());
-                stream.writeShort(arr.size);
-                for(Content c : arr){
-                    stream.writeUTF(((MappableContent) c).getContentName());
-                }
-            }
-        }
-    }
-
-    public abstract void read(DataInputStream stream) throws IOException;
-
-    public abstract void write(DataOutputStream stream) throws IOException;
 }

@@ -26,7 +26,13 @@ public class CustomGameDialog extends FloatingDialog{
     public CustomGameDialog(){
         super("$text.customgame");
         addCloseButton();
-        shown(this::setup);
+        shown(() -> {
+            state.darkness = 0f;
+            state.rain = false;
+            control.customDarkness = false;
+            control.customRain = false;
+            setup();
+        });
 
         onResize(this::setup);
     }
@@ -204,7 +210,15 @@ public class CustomGameDialog extends FloatingDialog{
 
         table.add("Map Darkness: " + (int)(state.darkness * 100) + "%").update(l -> l.setText("Map Darkness: " + (int)(state.darkness * 100) + "%")).padTop(8f).left();
         table.row();
-        table.addSlider(0f, 1f, 0.01f, state.darkness, f -> state.darkness = f).width(200f).left();
+        table.addSlider(0f, 1f, 0.01f, state.darkness, f -> {
+            state.darkness = f;
+            control.customDarkness = true;
+        }).width(200f).left();
+        table.row();
+        table.addCheck("Rain", state.rain, b -> {
+            state.rain = b;
+            control.customRain = true;
+        }).left();
         table.row();
         table.add("RTS AI Teams").padTop(8f).left();
         table.row();

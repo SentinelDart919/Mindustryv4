@@ -31,12 +31,28 @@ public class GameState{
     public boolean startWithBiomass = false;
     /**The team used as the enemy in waves and custom attack maps.*/
     public Team enemyTeam = Team.red;
+    /**Default bitmask of teams that should use RTS AI.*/
+    public static final long defaultRtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
     /**Bitmask of teams that should use RTS AI.*/
-    public long rtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
+    public long rtsAIBits = defaultRtsAIBits;
     /**Current map darkness level.*/
     public float darkness = 0f;
+    /**Whether rain is forced on for the current map. Set in the custom game dialog.*/
+    public boolean rain = false;
     /**Current game state.*/
     private State state = State.menu;
+
+    /**Resets all custom game settings to their defaults.
+     * Called when loading a sector or a saved game, so settings chosen in the custom game dialog don't leak into other games.*/
+    public void resetCustomSettings(){
+        mode.reset();
+        enemyTeam = Team.red;
+        allowMassInfection = false;
+        startWithBiomass = false;
+        rtsAIBits = defaultRtsAIBits;
+        darkness = 0f;
+        rain = false;
+    }
 
     public int enemies(){
         return Net.client() ? enemies : unitGroups[enemyTeam.ordinal()].size();

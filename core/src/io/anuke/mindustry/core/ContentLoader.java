@@ -143,15 +143,10 @@ public class ContentLoader{
         for(Array<Content> arr : contentMap){
             for(int i = 0; i < arr.size; i++){
                 int id = arr.get(i).id;
-                if(id < 0) id += 256;
                 if(id != i){
                     throw new IllegalArgumentException("Out-of-order IDs for content '" + arr.get(i) + "' (expected " + i + " but got " + id + ")");
                 }
             }
-        }
-
-        if(blocks().size >= 256){
-            throw new ImpendingDoomException("THE TIME HAS COME. More than 256 blocks have been created.");
         }
 
         if(verbose){
@@ -207,9 +202,6 @@ public class ContentLoader{
     }
 
     public <T extends Content> T getByID(ContentType type, int id){
-        //offset negative values by 256, as they are probably a product of byte overflow
-        if(id < 0) id += 256;
-
         if(temporaryMapper != null && temporaryMapper[type.ordinal()] != null && temporaryMapper[type.ordinal()].length != 0){
             if(temporaryMapper[type.ordinal()].length <= id || temporaryMapper[type.ordinal()][id] == null){
                 return getByID(type, 0); //default value is always ID 0

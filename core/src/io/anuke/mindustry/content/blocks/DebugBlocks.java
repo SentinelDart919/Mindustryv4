@@ -307,7 +307,7 @@ public class DebugBlocks extends BlockList implements ContentList{
 
         @Override
         public void readConfig(DataInput stream) throws IOException{
-            source = content.liquid(stream.readByte());
+            source = content.liquid(stream.readByte() & 0xFF);
         }
 
         @Override

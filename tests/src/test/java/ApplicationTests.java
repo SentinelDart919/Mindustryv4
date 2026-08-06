@@ -2,6 +2,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.UnitTypes;
@@ -17,8 +18,12 @@ import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Content;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.io.BundleLoader;
+import io.anuke.mindustry.io.MapIO;
 import io.anuke.mindustry.io.SaveIO;
 import io.anuke.mindustry.maps.Map;
+import io.anuke.mindustry.maps.MapMeta;
+import io.anuke.mindustry.maps.MapTileData;
+import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Edges;
@@ -31,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.DataInputStream;
 import java.io.File;
 
 import static io.anuke.mindustry.Vars.*;
@@ -245,5 +251,94 @@ public class ApplicationTests{
 
         tile.block().handleStack(item, 1, tile, unit);
         assertEquals(capacity, tile.entity.items.get(item));
+    }
+
+    @Test // test made to check if old maps works without data coruption
+    void contentIdShiftPreservesSave(){
+        assertTrue(world.maps.all().size > 0);
+
+        world.loadMap(world.maps.all().first());
+        int bx = 20, by = 20;
+        world.setBlock(world.tile(bx, by), StorageBlocks.core, Team.blue);
+
+        Block a = null, b = null;
+        for(Block block : content.blocks()){
+            if(block != Blocks.air && block != Blocks.blockpart && block != StorageBlocks.core){
+                if(a == null) a = block;
+                else if(b == null) b = block;
+                else break;
+            }
+        }
+        assertNotNull(a);
+        assertNotNull(b);
+
+        java.io.File tmp = new java.io.File("test_files/idshift.msav");
+        tmp.getParentFile().mkdirs();
+        com.badlogic.gdx.files.FileHandle file = com.badlogic.gdx.Gdx.files.local(tmp.getPath());
+
+        SaveIO.write(file);
+
+        int ia = a.id, ib = b.id;
+        Array<Block> blocks = content.blocks();
+
+        setContentId(a, (short) ib);
+        setContentId(b, (short) ia);
+        Block hold = blocks.get(ia);
+        blocks.set(ia, blocks.get(ib));
+        blocks.set(ib, hold);
+
+        try{
+            SaveIO.load(file);
+
+            assertEquals(StorageBlocks.core, world.tile(bx, by).block(), "Block IDs shifted but core must resolve by name");
+        }finally{
+            Block hold2 = blocks.get(ib);
+            blocks.set(ib, blocks.get(ia));
+            blocks.set(ia, hold2);
+            setContentId(a, (short) ia);
+            setContentId(b, (short) ib);
+        }
+
+        assertEquals(a, blocks.get(ia));
+        assertEquals(b, blocks.get(ib));
+        assertEquals(ia, a.id);
+        assertEquals(ib, b.id);
+    }
+
+    @Test
+    void legacyMapsLoadUncorrupted(){
+        for(Map map : world.maps.all()){
+            try(DataInputStream ds = new DataInputStream(map.stream.get())){
+                MapMeta meta = MapIO.readMapMeta(ds);
+
+                for(com.badlogic.gdx.utils.IntIntMap.Entry entry : meta.blockMap.entries()){
+                    assertTrue(entry.key >= 0, "Legacy map '" + map.meta.name() + "' has a negative remap key");
+                }
+
+                MapTileData data = MapIO.readTileData(ds, meta, false);
+                int rawWalls = 0;
+                for(int y = 0; y < data.height(); y++){
+                    for(int x = 0; x < data.width(); x++){
+                        short floor = data.read(x, y, DataPosition.floor);
+                        short wall = data.read(x, y, DataPosition.wall);
+                        assertTrue(floor >= 0 && wall >= 0, "Remapped tile ID must never be negative");
+                        if(wall != 0) rawWalls++;
+                    }
+                }
+                Log.info("legacy map {0} loaded with {1} walls", map.meta.name(), rawWalls);
+            }catch(Exception e){
+                fail("Failed to load legacy map " + map.meta.name() + ": " + e.getMessage());
+            }
+        }
+    }
+
+    static void setContentId(Content content, short id){
+        try{
+            java.lang.reflect.Field field = Content.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(content, id);
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 }

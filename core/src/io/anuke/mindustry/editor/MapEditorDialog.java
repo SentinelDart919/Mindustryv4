@@ -24,6 +24,7 @@ import io.anuke.mindustry.maps.MapTileData;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.blocks.Prop;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.mindustry.world.Tile;
@@ -66,6 +67,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
     private boolean shownWithMap = false;
 
     private ButtonGroup<ImageButton> blockgroup;
+    private ObjectMap<ImageButton, Block> blockButtons = new ObjectMap<>();
 
     public MapEditorDialog(){
         super("", "dialog");
@@ -203,6 +205,8 @@ public class MapEditorDialog extends Dialog implements Disposable{
                                 tiles[x][y] = new Tile(x, y, result.floor.id, result.wall.id, (byte)0, (byte)0, result.elevation);
                             }
                         }
+
+                        generator.spawnTrees(tiles);
 
                         generator.prepareTiles(tiles);
 
@@ -424,9 +428,9 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
     public void updateSelectedBlock(){
         Block block = editor.getDrawBlock();
-        for(int j = 0; j < content.blocks().size; j++){
-            if(block.id == j && j < blockgroup.getButtons().size){
-                blockgroup.getButtons().get(j).setChecked(true);
+        for(ImageButton button : blockgroup.getButtons()){
+            if(blockButtons.get(button) == block){
+                button.setChecked(true);
                 break;
             }
         }
@@ -561,6 +565,26 @@ public class MapEditorDialog extends Dialog implements Disposable{
                     .disabled(b -> editor.getDrawElevation() >= 63).size(size);
                 }).colspan(3).height(size).width(size * 3f);
 
+                mid.row();
+
+                mid.table("underline", t -> {
+                    t.top();
+                    t.addCheck("$text.editor.showfloor", editor.showFloor(), b -> {
+                        editor.setShowFloor(b);
+                        editor.renderer().updateAll();
+                    }).growX().left();
+                    t.row();
+                    t.addCheck("$text.editor.showbuildings", editor.showBuildings(), b -> {
+                        editor.setShowBuildings(b);
+                        editor.renderer().updateAll();
+                    }).growX().left();
+                }).colspan(3).width(size * 3f).padTop(5);
+
+                if(!mobile){
+                    mid.row();
+                    mid.addButton("$text.editor.center", view::center).colspan(3).width(size * 3f).height(40).padTop(5);
+                }
+
             }).margin(0).left().growY();
 
 
@@ -624,11 +648,35 @@ public class MapEditorDialog extends Dialog implements Disposable{
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         blockgroup = group;
 
+        TextField search = new TextField("");
+        search.setMessageText("$text.editor.search");
+
+        table.table("underline", t -> {
+            t.addImage("icon-zoom").size(24f).padLeft(4).padRight(4);
+            t.add(search).growX().padTop(3).padBottom(3).padRight(4);
+        }).growX();
+
+        table.row();
+
+        table.table("underline", extra -> extra.labelWrap(() -> editor.getDrawBlock().formalName).width(200f).center()).growX();
+        table.row();
+        table.add(pane).growY().fillX();
+
+        rebuildBlockSelection(content, group, search);
+
+        search.changed(() -> rebuildBlockSelection(content, group, search));
+    }
+
+    private void rebuildBlockSelection(Table content, ButtonGroup<ImageButton> group, TextField search){
+        content.clearChildren();
+        group.clear();
+        blockButtons.clear();
+        String query = search.getText().toLowerCase();
         int i = 0;
 
         for(Block block : Vars.content.blocks()){
             TextureRegion[] regions = block.getCompactIcon();
-            if((block.synthetic() && (Recipe.getByResult(block) == null || !control.unlocks.isUnlocked(Recipe.getByResult(block))))
+            if((block.synthetic() && !(block instanceof Prop) && (Recipe.getByResult(block) == null || !control.unlocks.isUnlocked(Recipe.getByResult(block))))
                     && block != StorageBlocks.core){
                 continue;
             }
@@ -638,6 +686,8 @@ public class MapEditorDialog extends Dialog implements Disposable{
             }
 
             if(regions.length == 0 || regions[0] == Draw.region("jjfgj")) continue;
+
+            if(!query.isEmpty() && !block.formalName.toLowerCase().contains(query)) continue;
 
             Stack stack = new Stack();
 
@@ -653,6 +703,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
             button.getImage().remove();
             button.update(() -> button.setChecked(editor.getDrawBlock() == block));
             group.add(button);
+            blockButtons.put(button, block);
             content.add(button).size(60f);
 
             if(i++ % 3 == 2){
@@ -660,10 +711,6 @@ public class MapEditorDialog extends Dialog implements Disposable{
             }
         }
 
-        group.getButtons().get(2).setChecked(true);
-
-        table.table("underline", extra -> extra.labelWrap(() -> editor.getDrawBlock().formalName).width(220f).center()).growX();
-        table.row();
-        table.add(pane).growY().fillX();
+        updateSelectedBlock();
     }
 }

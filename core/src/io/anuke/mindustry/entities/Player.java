@@ -914,7 +914,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         dead = (bools & 2) != 0;
         boolean boosting = (bools & 4) != 0;
         color.set(buffer.readInt());
-        mech = content.getByID(ContentType.mech, buffer.readByte());
+        mech = content.getByID(ContentType.mech, buffer.readByte() & 0xFF);
         int mine = buffer.readInt();
         int spawner = buffer.readInt();
         float baseRotation = buffer.readShort() / 2f;

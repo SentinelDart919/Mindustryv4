@@ -168,7 +168,7 @@ public class StackRouter extends Block{
         @Override
         public void read(DataInput stream) throws IOException{
             byte id = stream.readByte();
-            current = id == -1 ? null : content.item(id);
+            current = id == -1 ? null : content.item(id & 0xFF);
             unloading = stream.readBoolean();
             progress = stream.readFloat();
             unloadTimer = stream.readFloat();

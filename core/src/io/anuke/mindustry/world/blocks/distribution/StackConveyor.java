@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.sounds.Sounds;
@@ -116,7 +117,9 @@ public class StackConveyor extends Block implements Autotiler{
         e.blendscly = bits[2];
 
         if(e.state == stateLoad){
-            for(Tile near : tile.entity.proximity()){
+            Array<Tile> proximity = tile.entity.proximity();
+            for(int i = 0; i < proximity.size; i++){
+                Tile near = proximity.get(i);
                 if(near.block() instanceof StackConveyor
                     && near.relativeTo(tile.x, tile.y) == near.getRotation()){
                     e.state = stateMove;
@@ -126,7 +129,9 @@ public class StackConveyor extends Block implements Autotiler{
         }
 
         if(lastState != e.state){
-            for(Tile near : tile.entity.proximity()){
+            Array<Tile> proximity = tile.entity.proximity();
+            for(int i = 0; i < proximity.size; i++){
+                Tile near = proximity.get(i);
                 near.block().onProximityUpdate(near);
             }
         }

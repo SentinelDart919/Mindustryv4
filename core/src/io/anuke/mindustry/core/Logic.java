@@ -115,6 +115,10 @@ public class Logic extends Module{
         infection.reset();
         TileEntity.sleepingEntities = 0;
 
+        if(!headless && renderer != null){
+            renderer.weather.setRain(false);
+        }
+
         Events.fire(new ResetEvent());
     }
 
@@ -220,6 +224,10 @@ public class Logic extends Module{
 
             if(!state.isPaused()){
                 Timers.update();
+
+                if(!headless && renderer != null){
+                    renderer.weather.update();
+                }
 
                 boolean SiegeModeTimer = state.mode == GameMode.SiegeMode;
                 boolean canTickWaveTimer = !state.mode.disableWaves && !state.gameOver &&

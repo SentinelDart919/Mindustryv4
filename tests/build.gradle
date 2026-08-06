@@ -8,5 +8,9 @@ tasks.withType(JavaCompile){
 }
 
 dependencies {
-    testImplementation project(":uCore")
+    if(new File(projectDir.parent, 'uCore').exists()){
+        testImplementation project(":uCore")
+    }else{
+        testImplementation "com.github.anuken:ucore:$uCoreVersion"
+    }
 }

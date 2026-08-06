@@ -22,6 +22,10 @@ public enum Layer{
      */
     turret,
     /**
+     * Trees and other tall props, drawn above ground units but under air units.
+     */
+    tree,
+    /**
      * Power lasers.
      */
     power,

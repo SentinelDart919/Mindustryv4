@@ -16,7 +16,7 @@ import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
 public class Blocks extends BlockList implements ContentList{
-    public static Block air, blockpart, spawn, space, metalfloor, deepwater, water, lava, tar, stone, blackstone, dirt, sand, ice, snow, grass, shrub, rock, icerock, blackrock, infectedGrass, infectedSand, infectedDirt, infectedWater, infectedDeepWater, infectedShrub;
+    public static Block air, blockpart, spawn, space, metalfloor, deepwater, water, lava, tar, stone, blackstone, dirt, sand, ice, snow, grass, shrub, rock, icerock, blackrock, tree, deadTree, frozenTree, infectedGrass, infectedSand, infectedDirt, infectedWater, infectedDeepWater, infectedShrub;
 
 
     @Override
@@ -215,6 +215,18 @@ public class Blocks extends BlockList implements ContentList{
 
         blackrock = new Rock("blackrock"){{
             variants = 1;
+        }};
+
+        tree = new TreeBlock("tree"){{
+            variants = 3;
+        }};
+
+        deadTree = new DeadTree("dead-tree"){{
+            variants = 3;
+        }};
+
+        frozenTree = new DeadTree("frozen-tree"){{
+            variants = 3;
         }};
 
         ((Floor)grass).infectedVariant = (Floor)infectedGrass;

@@ -189,6 +189,12 @@ public class MapView extends Element implements GestureListener{
         this.grid = grid;
     }
 
+    public void center(){
+        offsetx = 0;
+        offsety = 0;
+        zoom = 1f;
+    }
+
     public void undo(){
         if(stack.canUndo()){
             stack.undo(editor);

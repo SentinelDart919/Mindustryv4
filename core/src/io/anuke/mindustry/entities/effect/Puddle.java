@@ -262,7 +262,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         this.loadedPosition = stream.readInt();
         this.x = stream.readFloat();
         this.y = stream.readFloat();
-        this.liquid = content.liquid(stream.readByte());
+        this.liquid = content.liquid(stream.readByte() & 0xFF);
         this.amount = stream.readFloat();
         this.generation = stream.readByte();
         add();
@@ -305,7 +305,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
     public void read(DataInput data, long time) throws IOException{
         x = data.readFloat();
         y = data.readFloat();
-        liquid = content.liquid(data.readByte());
+        liquid = content.liquid(data.readByte() & 0xFF);
         targetAmount = data.readShort() / 4f;
         tile = world.tile(data.readInt());
 

@@ -19,9 +19,9 @@ public enum EditorTool{
         public void touched(MapEditor editor, int x, int y){
             if(!Structs.inBounds(x, y, editor.getMap().width(), editor.getMap().height())) return;
 
-            byte bf = editor.getMap().read(x, y, DataPosition.floor);
-            byte bw = editor.getMap().read(x, y, DataPosition.wall);
-            byte link = editor.getMap().read(x, y, DataPosition.link);
+            short bf = editor.getMap().read(x, y, DataPosition.floor);
+            short bw = editor.getMap().read(x, y, DataPosition.wall);
+            byte link = (byte) editor.getMap().read(x, y, DataPosition.link);
 
             if(link != 0){
                 x -= (Bits.getLeftByte(link) - 8);
@@ -80,7 +80,8 @@ public enum EditorTool{
 
         IntArray stack = new IntArray();
         int width;
-        byte be, dest;
+        byte be;
+        short dest;
         boolean floor;
         MapTileData data;
 
@@ -97,14 +98,14 @@ public enum EditorTool{
 
             floor = editor.getDrawBlock() instanceof Floor;
 
-            byte bf = data.read(x, y, DataPosition.floor);
-            byte bw = data.read(x, y, DataPosition.wall);
-            be = data.read(x, y, DataPosition.elevation);
+            short bf = data.read(x, y, DataPosition.floor);
+            short bw = data.read(x, y, DataPosition.wall);
+            be = (byte) data.read(x, y, DataPosition.elevation);
             boolean synth = editor.getDrawBlock().synthetic();
             byte brt = Bits.packByte((byte) editor.getDrawRotation(), (byte) editor.getDrawTeam().ordinal());
 
             dest = floor ? bf : bw;
-            byte draw = editor.getDrawBlock().id;
+            short draw = editor.getDrawBlock().id;
 
             if(dest == draw){
                 return;
@@ -167,9 +168,9 @@ public enum EditorTool{
         }
 
         boolean eq(int px, int py){
-            byte nbf = data.read(px, py, DataPosition.floor);
-            byte nbw = data.read(px, py, DataPosition.wall);
-            byte nbe = data.read(px, py, DataPosition.elevation);
+            short nbf = data.read(px, py, DataPosition.floor);
+            short nbw = data.read(px, py, DataPosition.wall);
+            byte nbe = (byte) data.read(px, py, DataPosition.elevation);
 
             return (floor ? nbf : nbw) == dest && nbe == be;
         }

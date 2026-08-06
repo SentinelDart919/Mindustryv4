@@ -101,7 +101,7 @@ public interface BuilderTrait extends Entity{
             }else{ //place
                 byte recipe = input.readByte();
                 byte rotation = input.readByte();
-                request = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe));
+                request = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe & 0xFF));
             }
 
             request.progress = progress;

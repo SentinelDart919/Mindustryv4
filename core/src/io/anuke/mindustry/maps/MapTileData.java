@@ -11,14 +11,14 @@ import java.nio.ByteBuffer;
 
 public class MapTileData{
     /**
-     * Tile size: 4 bytes. <br>
-     * 0: ground tile <br>
-     * 1: wall tile <br>
-     * 2: rotation + team <br>
-     * 3: link (x/y) <br>
-     * 4: elevation <br>
+     * Tile size: 7 bytes. <br>
+     * 0-1: ground tile <br>
+     * 2-3: wall tile <br>
+     * 4: rotation + team <br>
+     * 5: link (x/y) <br>
+     * 6: elevation <br>
      */
-    private final static int TILE_SIZE = 5;
+    private final static int TILE_SIZE = 7;
 
     private final ByteBuffer buffer;
     private final int width, height;
@@ -98,17 +98,32 @@ public class MapTileData{
     }
 
     /**
-     * Write a byte to a specific position.
+     * Write a short to a specific position.
      */
-    public void write(int x, int y, DataPosition position, byte data){
-        buffer.put((x + width * y) * TILE_SIZE + position.ordinal(), data);
+    public void write(int x, int y, DataPosition position, short data){
+        if(position == DataPosition.floor || position == DataPosition.wall){
+            buffer.putShort((x + width * y) * TILE_SIZE + position.ordinal() * 2, data);
+        }else{
+            buffer.put((x + width * y) * TILE_SIZE + offset(position), (byte) data);
+        }
     }
 
     /**
-     * Gets a byte at a specific position.
+     * Gets a short at a specific position.
      */
-    public byte read(int x, int y, DataPosition position){
-        return buffer.get((x + width * y) * TILE_SIZE + position.ordinal());
+    public short read(int x, int y, DataPosition position){
+        if(position == DataPosition.floor || position == DataPosition.wall){
+            return buffer.getShort((x + width * y) * TILE_SIZE + position.ordinal() * 2);
+        }
+        return buffer.get((x + width * y) * TILE_SIZE + offset(position));
+    }
+
+    private int offset(DataPosition position){
+        switch(position){
+            case link: return 4;
+            case rotationTeam: return 5;
+            default: return 6;
+        }
     }
 
     /**
@@ -142,15 +157,15 @@ public class MapTileData{
     }
 
     public class TileDataMarker{
-        public byte floor, wall;
+        public short floor, wall;
         public byte link;
         public byte rotation;
         public byte team;
         public byte elevation;
 
         public void read(ByteBuffer buffer){
-            floor = buffer.get();
-            wall = buffer.get();
+            floor = buffer.getShort();
+            wall = buffer.getShort();
             link = buffer.get();
             byte rt = buffer.get();
             elevation = buffer.get();
@@ -158,15 +173,15 @@ public class MapTileData{
             team = Bits.getRightByte(rt);
 
             if(map != null){
-                floor = (byte) map.get(floor, Blocks.stone.id);
-                wall = (byte) map.get(wall, 0);
+                floor = (short) map.get(floor, Blocks.stone.id);
+                wall = (short) map.get(wall, 0);
             }
         }
 
         public void write(ByteBuffer buffer){
             if(readOnly) throw new IllegalArgumentException("This data is read-only.");
-            buffer.put(floor);
-            buffer.put(wall);
+            buffer.putShort(floor);
+            buffer.putShort(wall);
             buffer.put(link);
             buffer.put(Bits.packByte(rotation, team));
             buffer.put(elevation);

@@ -33,7 +33,7 @@ import static io.anuke.mindustry.Vars.content;
  * Reads and writes map files.
  */
 public class MapIO{
-    private static final int version = 0;
+    private static final int version = 1;
     private static IntIntMap defaultBlockMap = new IntIntMap();
 
     private static void loadDefaultBlocks(){
@@ -51,7 +51,7 @@ public class MapIO{
         for(int y = 0; y < data.height(); y++){
             for(int x = 0; x < data.width(); x++){
                 data.read(marker);
-                byte elev = y >= data.height() - 1 ? 0 : data.read(x, y + 1, DataPosition.elevation);
+                short elev = y >= data.height() - 1 ? 0 : data.read(x, y + 1, DataPosition.elevation);
                 Block floor = content.block(marker.floor);
                 Block wall = content.block(marker.wall);
                 int color = ColorMapper.colorFor(floor, wall, Team.all[marker.team], marker.elevation + 1, elev > marker.elevation ? (byte)(1 << 6) : (byte)0);
@@ -135,7 +135,31 @@ public class MapIO{
     public static MapTileData readTileData(DataInputStream stream, MapMeta meta, boolean readOnly) throws IOException{
         byte[] bytes = new byte[stream.available()];
         stream.readFully(bytes);
+
+        //legacy maps stored floor and wall as single bytes per tile
+        if(meta.version < 1){
+            bytes = convertLegacyTileData(bytes, meta.width, meta.height);
+        }
         return new MapTileData(bytes, meta.width, meta.height, meta.blockMap, readOnly);
+    }
+
+    /**Converts the old 5-byte-per-tile map data to the new 7-byte format.*/
+    private static byte[] convertLegacyTileData(byte[] data, int width, int height){
+        int size = width * height;
+        byte[] out = new byte[size * 7];
+        for(int i = 0; i < size; i++){
+            int src = i * 5;
+            int dst = i * 7;
+            //legacy floor/wall ids were single signed bytes
+            out[dst] = 0;           //floor high byte
+            out[dst + 1] = data[src]; //floor low byte
+            out[dst + 2] = 0;       //wall high byte
+            out[dst + 3] = data[src + 1]; //wall low byte
+            out[dst + 4] = data[src + 2]; //link
+            out[dst + 5] = data[src + 3]; //rotation + team
+            out[dst + 6] = data[src + 4]; //elevation
+        }
+        return out;
     }
 
     /**
@@ -172,7 +196,8 @@ public class MapIO{
                 //Log.info("Map load info: No block with name {0} found.", name);
                 block = Blocks.air;
             }
-            map.put(id, block.id);
+            //legacy maps stored ids as single signed bytes, so remap keys are negative for ids >= 128
+            map.put(version < 1 ? id & 0xFF : id, block.id);
         }
 
         int width = stream.readShort();

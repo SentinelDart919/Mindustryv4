@@ -10,6 +10,7 @@ import io.anuke.mindustry.maps.MapTileData.DataPosition;
 import io.anuke.mindustry.maps.MapTileData.TileDataMarker;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Floor;
+import io.anuke.mindustry.world.blocks.Prop;
 import io.anuke.ucore.util.Structs;
 import io.anuke.ucore.util.Bits;
 import io.anuke.ucore.util.Mathf;
@@ -26,6 +27,7 @@ public class MapEditor{
     private int rotation;
     private Block drawBlock = Blocks.stone;
     private Team drawTeam = Team.blue;
+    private boolean showFloor = true, showBuildings = true;
 
     public MapTileData getMap(){
         return map;
@@ -92,6 +94,22 @@ public class MapEditor{
         this.brushSize = size;
     }
 
+    public boolean showFloor(){
+        return showFloor;
+    }
+
+    public void setShowFloor(boolean showFloor){
+        this.showFloor = showFloor;
+    }
+
+    public boolean showBuildings(){
+        return showBuildings;
+    }
+
+    public void setShowBuildings(boolean showBuildings){
+        this.showBuildings = showBuildings;
+    }
+
     public void draw(int x, int y){
         draw(x, y, drawBlock);
     }
@@ -101,9 +119,9 @@ public class MapEditor{
             return;
         }
 
-        byte writeID = drawBlock.id;
-        byte partID = Blocks.blockpart.id;
-        byte rotationTeam = Bits.packByte(drawBlock.rotate ? (byte) rotation : 0, drawBlock.synthetic() ? (byte) drawTeam.ordinal() : 0);
+        short writeID = drawBlock.id;
+        short partID = Blocks.blockpart.id;
+        byte rotationTeam = Bits.packByte(drawBlock.rotate ? (byte) rotation : 0, drawBlock.synthetic() && !(drawBlock instanceof Prop) ? (byte) drawTeam.ordinal() : 0);
 
         boolean isfloor = drawBlock instanceof Floor && drawBlock != Blocks.air;
 
@@ -128,8 +146,8 @@ public class MapEditor{
                                 map.write(worldx, worldy, DataPosition.rotationTeam, rotationTeam);
                                 map.write(worldx, worldy, DataPosition.link, Bits.packByte((byte) (dx + offsetx + 8), (byte) (dy + offsety + 8)));
                             }else{
-                                byte link = map.read(worldx, worldy, DataPosition.link);
-                                byte block = map.read(worldx, worldy, DataPosition.wall);
+                                byte link = (byte) map.read(worldx, worldy, DataPosition.link);
+                                short block = map.read(worldx, worldy, DataPosition.wall);
 
                                 if(link != 0){
                                     removeLinked(worldx - (Bits.getLeftByte(link) - 8), worldy - (Bits.getRightByte(link) - 8));
@@ -165,7 +183,7 @@ public class MapEditor{
                         TileDataMarker prev = getPrev(wx, wy, true);
 
                         if(!isfloor){
-                            byte link = map.read(wx, wy, DataPosition.link);
+                            byte link = (byte) map.read(wx, wy, DataPosition.link);
 
                             if(content.block(map.read(wx, wy, DataPosition.wall)).isMultiblock()){
                                 removeLinked(wx, wy);

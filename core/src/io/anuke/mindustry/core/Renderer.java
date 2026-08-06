@@ -61,6 +61,7 @@ public class Renderer extends RendererModule{
     public final MinimapRenderer minimap = new MinimapRenderer();
     public final OverlayRenderer overlays = new OverlayRenderer();
     public final FogRenderer fog = new FogRenderer();
+    public final WeatherRenderer weather = new WeatherRenderer();
 
     private Bloom bloom;
     private boolean lastBloom;
@@ -72,9 +73,9 @@ public class Renderer extends RendererModule{
 
     private boolean currentFlying;
     private Team currentTeam;
-    private final Predicate<BaseUnit> unitFlyingFilter = u -> u.isFlying() == currentFlying && !u.isDead();
-    private final Predicate<BaseUnit> unitFlyingTeamFilter = u -> u.isFlying() == currentFlying && u.getTeam() == currentTeam;
-    private final Predicate<Player> playerFlyingFilter = p -> p.isFlying() == currentFlying && p.getTeam() == currentTeam;
+    private final Predicate<BaseUnit> unitFlyingFilter = u -> (u.isFlying() || u.highAltitude) == currentFlying && !u.isDead();
+    private final Predicate<BaseUnit> unitFlyingTeamFilter = u -> (u.isFlying() || u.highAltitude) == currentFlying && u.getTeam() == currentTeam;
+    private final Predicate<Player> playerFlyingFilter = p -> (p.isFlying() || p.highAltitude) == currentFlying && p.getTeam() == currentTeam;
 
     /** How far (in tiles) beyond the screen lights are still drawn, so big lights don't pop in/out at the edges.
      * Kept slightly above the largest light radius in the game (the fusion shockwave), while lights further away
@@ -157,6 +158,8 @@ public class Renderer extends RendererModule{
         Settings.defaults("bloom", true);
         Settings.defaults("bloomintensity", 14);
         Settings.defaults("bloomblur", 2);
+
+        Settings.defaults("showweather", true);
 
         lastBloom = Settings.getBool("bloom");
 
@@ -259,6 +262,8 @@ public class Renderer extends RendererModule{
 
         blocks.drawFloor();
 
+        weather.drawUnder();
+
         drawAndInterpolate(groundEffectGroup, e -> e instanceof BelowLiquidTrait);
         drawAndInterpolate(puddleGroup);
         drawAndInterpolate(groundEffectGroup, e -> !(e instanceof BelowLiquidTrait));
@@ -294,6 +299,7 @@ public class Renderer extends RendererModule{
         drawAllTeams(false);
 
         blocks.skipLayer(Layer.turret);
+        blocks.drawBlocks(Layer.tree);
         blocks.drawBlocks(Layer.laser);
 
         drawFlyerShadows();
@@ -359,6 +365,7 @@ public class Renderer extends RendererModule{
 
         Graphics.beginCam();
         EntityDraw.setClip(false);
+        weather.drawOver();
         drawAndInterpolate(playerGroup, p -> !p.isDead() && !p.isLocal, Player::drawName);
         EntityDraw.setClip(true);
         Graphics.end();
@@ -553,10 +560,10 @@ public class Renderer extends RendererModule{
         for(Team team : Team.all){
             EntityGroup<BaseUnit> group = unitGroups[team.ordinal()];
 
-            if(group.isEmpty() && playerGroup.count(p -> p.isFlying() == flying && p.getTeam() == team) == 0) continue;
+            if(group.isEmpty() && playerGroup.count(p -> (p.isFlying() || p.highAltitude) == flying && p.getTeam() == team) == 0) continue;
 
-            if(flying && group.count(p -> p.isFlying()) == 0 &&
-                    playerGroup.count(p -> p.isFlying() && p.getTeam() == team) == 0) continue;
+            if(flying && group.count(p -> p.isFlying() || p.highAltitude) == 0 &&
+                    playerGroup.count(p -> (p.isFlying() || p.highAltitude) && p.getTeam() == team) == 0) continue;
 
             currentTeam = team;
 

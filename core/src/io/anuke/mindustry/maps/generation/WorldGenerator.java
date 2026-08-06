@@ -63,7 +63,7 @@ public class WorldGenerator{
             for(int x = 0; x < data.width(); x++){
                 data.read(marker);
 
-                tiles[x][y] = new Tile(x, y, marker.floor, marker.wall == Blocks.blockpart.id ? 0 : marker.wall, marker.rotation, marker.team, marker.elevation);
+                tiles[x][y] = new Tile(x, y, marker.floor, (short)(marker.wall == Blocks.blockpart.id ? 0 : marker.wall), marker.rotation, marker.team, marker.elevation);
             }
         }
 
@@ -171,6 +171,8 @@ public class WorldGenerator{
                 }
             }
 
+            spawnTrees(tiles);
+
             prepareTiles(tiles);
 
             for(int x = 0; x < width; x++){
@@ -266,6 +268,8 @@ public class WorldGenerator{
             }
         }
 
+        spawnTrees(tiles);
+
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
                 Tile tile = tiles[x][y];
@@ -302,8 +306,53 @@ public class WorldGenerator{
         prepareTiles(tiles);
     }
 
-    public GenResult generateTile(int sectorX, int sectorY, int localX, int localY){
-        return generateTile(sectorX, sectorY, localX, localY, true);
+    /**Spawns trees on fully generated terrain: trees on grass, dead trees on sand, both away from water. */
+    public void spawnTrees(Tile[][] tiles){
+        int width = tiles.length, height = tiles[0].length;
+
+        for(int x = 0; x < width; x++){
+            for(int y = 0; y < height; y++){
+                Tile tile = tiles[x][y];
+                if(tile.block() != Blocks.air){
+                    continue;
+                }
+
+                Block floor = tile.floor();
+                if(floor instanceof OreBlock){
+                    floor = ((OreBlock) floor).base;
+                }
+
+                if(floor == Blocks.grass){
+                    if(random.chance(0.015) && hasWaterNear(tiles, x, y, 3.5f)){
+                        tile.setBlock(Blocks.tree);
+                    }
+                }else if(floor == Blocks.sand){
+                    if(random.chance(0.015) && hasWaterNear(tiles, x, y, 7f)){
+                        tile.setBlock(Blocks.deadTree);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean hasWaterNear(Tile[][] tiles, int x, int y, float radius){
+        int r = (int) Math.ceil(radius);
+        for(int dx = -r; dx <= r; dx++){
+            for(int dy = -r; dy <= r; dy++){
+                if(dx * dx + dy * dy > radius * radius){
+                    continue;
+                }
+                int xx = x + dx, yy = y + dy;
+                if(!Structs.inBounds(xx, yy, tiles.length, tiles[0].length)){
+                    continue;
+                }
+                Block floor = tiles[xx][yy].floor();
+                if(floor == Blocks.water || floor == Blocks.deepwater || floor == Blocks.infectedWater || floor == Blocks.infectedDeepWater){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public GenResult generateTile(int sectorX, int sectorY, int localX, int localY, boolean detailed){
@@ -390,6 +439,10 @@ public class WorldGenerator{
 
         if(detailed && wall == Blocks.air && decoration.containsKey(floor) && random.chance(0.03)){
             wall = decoration.get(floor);
+        }
+
+        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.015)){
+            wall = Blocks.frozenTree;
         }
 
         if(ores != null && ((Floor) floor).hasOres){

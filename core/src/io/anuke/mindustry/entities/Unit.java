@@ -52,6 +52,8 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     public float hitTime;
     public boolean isPlayerControllable = true;
     public boolean isRTSAIControllable = true;
+    /**If true, the unit is drawn above trees (like air units). */
+    public boolean highAltitude;
 
     protected final Interpolator interpolator = new Interpolator();
     protected final StatusController status = new StatusController();
