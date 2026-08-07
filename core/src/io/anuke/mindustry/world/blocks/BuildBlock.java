@@ -2,6 +2,7 @@ package io.anuke.mindustry.world.blocks;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.IntArray;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -53,6 +54,17 @@ public class BuildBlock extends Block{
 
     @Remote(called = Loc.server)
     public static void onDeconstructFinish(Tile tile, Block block){
+        if(block instanceof Prop && ((Prop) block).damageWhenDeconstruct){
+            //the deconstruction only plays out as a visual effect; in reality it damages the block until destroyed
+            BuildEntity build = tile.entity instanceof BuildEntity ? (BuildEntity) tile.entity : null;
+            boolean wasStump = build != null && build.previousStump;
+            float prevHealth = build != null && build.previousHealth > 0 ? build.previousHealth : block.health;
+            int builders = build != null ? Math.max(1, build.builders.size) : 1;
+            Effects.effect(Fx.breakBlock, tile.drawx(), tile.drawy(), block.size);
+            tile.setBlock(block);
+            ((Prop) block).onDeconstructDamaged(tile, wasStump, prevHealth, builders);
+            return;
+        }
         Effects.effect(Fx.breakBlock, tile.drawx(), tile.drawy(), block.size);
         world.removeBlock(tile);
     }
@@ -200,6 +212,12 @@ public class BuildBlock extends Block{
          */
         public Block previous;
         public int builderID = -1;
+        /** Whether the prop being deconstructed was already felled (stump), used by damageWhenDeconstruct props. */
+        public boolean previousStump;
+        /** Health of the prop when the deconstruction began, so partial damage persists across deconstructs. */
+        public float previousHealth;
+        /** IDs of all units (player + drones) that helped deconstruct this cycle; damage is multiplied by this count. */
+        public IntArray builders = new IntArray();
 
         private float[] accumulator;
         private float[] totalAccumulator;
@@ -231,6 +249,11 @@ public class BuildBlock extends Block{
         }
 
         public void deconstruct(Unit builder, TileEntity core, float amount){
+            //count every unique unit (player + drones) helping to deconstruct, to scale the damage dealt
+            if(builder != null && !builders.contains(builder.getID())){
+                builders.add(builder.getID());
+            }
+
             Recipe recipe = Recipe.getByResult(previous);
 
             if(recipe != null){

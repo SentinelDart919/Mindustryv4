@@ -323,11 +323,11 @@ public class WorldGenerator{
                 }
 
                 if(floor == Blocks.grass){
-                    if(random.chance(0.015) && hasWaterNear(tiles, x, y, 3.5f)){
+                    if(random.chance(0.0145) && hasWaterNear(tiles, x, y, 3.5f)){
                         tile.setBlock(Blocks.tree);
                     }
                 }else if(floor == Blocks.sand){
-                    if(random.chance(0.015) && hasWaterNear(tiles, x, y, 7f)){
+                    if(random.chance(0.0075) && hasWaterNear(tiles, x, y, 7f)){
                         tile.setBlock(Blocks.deadTree);
                     }
                 }
@@ -441,7 +441,7 @@ public class WorldGenerator{
             wall = decoration.get(floor);
         }
 
-        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.015)){
+        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.0095)){
             wall = Blocks.frozenTree;
         }
 

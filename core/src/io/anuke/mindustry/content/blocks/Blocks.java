@@ -217,16 +217,16 @@ public class Blocks extends BlockList implements ContentList{
             variants = 1;
         }};
 
-        tree = new TreeBlock("tree"){{
-            variants = 3;
+        tree = new LivingTree("tree"){{
+            variants = 2;
         }};
 
         deadTree = new DeadTree("dead-tree"){{
-            variants = 3;
+            //variants = 3;
         }};
 
         frozenTree = new DeadTree("frozen-tree"){{
-            variants = 3;
+            //variants = 3;
         }};
 
         ((Floor)grass).infectedVariant = (Floor)infectedGrass;

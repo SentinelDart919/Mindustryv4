@@ -144,6 +144,7 @@ public class Sounds{
     public static Sound blockPlace;
     public static Sound unitCreate;
     public static Sound unitCreateBig;
+    public static Sound destroyTree;
 
     public static void init(){
         if(Vars.headless || Vars.soundController == null) return;
@@ -212,6 +213,7 @@ public class Sounds{
         register("blockBreak3", Vars.soundController.load("blockBreak3", "sounds/blocks/blockBreak3.ogg"));
         unitCreate = register("unitCreate", Vars.soundController.load("unitCreate", "sounds/blocks/unitCreate.ogg"));
         unitCreateBig = register("unitCreateBig", Vars.soundController.load("unitCreateBig", "sounds/blocks/unitCreateBig.ogg"));
+        destroyTree = register("destroyTree", Vars.soundController.load("destroyTree", "sounds/destroyTree.mp3"));
 
 
         Vars.soundController.createGroup("blockExplode", "blockExplode1", "blockExplode2", "blockExplode3");
