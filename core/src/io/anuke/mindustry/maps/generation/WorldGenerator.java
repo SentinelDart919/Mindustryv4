@@ -441,7 +441,7 @@ public class WorldGenerator{
             wall = decoration.get(floor);
         }
 
-        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.0095)){
+        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.0045)){
             wall = Blocks.frozenTree;
         }
 
