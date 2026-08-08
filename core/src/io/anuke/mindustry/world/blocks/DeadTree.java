@@ -54,6 +54,9 @@ public class DeadTree extends Prop{
 
     @Override
     public boolean isStumped(Tile tile){
+        if(BuildBlock.isFakeDeconstruct(tile)){
+            return ((BuildBlock.BuildEntity) tile.entity).previousStump;
+        }
         return tile.entity instanceof DeadTreeEntity && ((DeadTreeEntity) tile.entity).stump;
     }
 
@@ -91,8 +94,7 @@ public class DeadTree extends Prop{
 
     @Override
     public void drawLayer(Tile tile){
-        DeadTreeEntity entity = tile.entity instanceof DeadTreeEntity ? (DeadTreeEntity) tile.entity : null;
-        boolean stump = entity != null && entity.stump;
+        boolean stump = isStumped(tile);
 
         float x = tile.worldx(), y = tile.worldy();
         float rotStatic = Mathf.randomSeed(tile.id(), 0, 4) * 90;
@@ -122,10 +124,9 @@ public class DeadTree extends Prop{
 
     @Override
     public void drawShadow(Tile tile){
-        DeadTreeEntity entity = tile.entity instanceof DeadTreeEntity ? (DeadTreeEntity) tile.entity : null;
         float rot = Mathf.randomSeed(tile.id(), 0, 4) * 90;
 
-        if(entity != null && entity.stump){
+        if(isStumped(tile)){
             Draw.rect(trunkShadow, tile.drawx(), tile.drawy(), size * tilesize, size * tilesize);
             return;
         }

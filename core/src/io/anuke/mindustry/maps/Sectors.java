@@ -55,6 +55,8 @@ public class Sectors {
     }
 
     public void playSector(Sector sector) {
+        renderer.weather.reset();
+
         if (!headless && sector.hasSave() && SaveIO.breakingVersions.contains(sector.getSave().getBuild())) {
             sector.getSave().delete();
             ui.showInfo("$text.save.old");

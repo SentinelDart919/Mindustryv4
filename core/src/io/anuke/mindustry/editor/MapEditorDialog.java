@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.game.EventType.ResizeEvent;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.core.Platform;
@@ -26,6 +27,7 @@ import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.blocks.Prop;
 import io.anuke.ucore.core.Core;
+import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.util.Geometry;
@@ -62,6 +64,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
     private MapLoadDialog loadDialog;
     private MapResizeDialog resizeDialog;
     private ScrollPane pane;
+    private ScrollPane toolPane;
     private FloatingDialog menu;
     private boolean saved = false;
     private boolean shownWithMap = false;
@@ -283,6 +286,12 @@ public class MapEditorDialog extends Dialog implements Disposable{
         margin(0);
         shown(this::build);
 
+        Events.on(ResizeEvent.class, event -> {
+            if(isShown()){
+                build();
+            }
+        });
+
         update(() -> {
             if(Core.scene.getKeyboardFocus() instanceof Dialog && Core.scene.getKeyboardFocus() != this){
                 return;
@@ -437,7 +446,14 @@ public class MapEditorDialog extends Dialog implements Disposable{
     }
 
     public boolean hasPane(){
-        return Core.scene.getScrollFocus() == pane || Core.scene.getKeyboardFocus() != this;
+        return Core.scene.getScrollFocus() == pane || Core.scene.getKeyboardFocus() != this
+                || isMouseOver(pane) || isMouseOver(toolPane);
+    }
+
+    private boolean isMouseOver(ScrollPane target){
+        if(target == null) return false;
+        Vector2 v = target.stageToLocalCoordinates(Graphics.mouse());
+        return v.x >= 0 && v.y >= 0 && v.x <= target.getWidth() && v.y <= target.getHeight();
     }
 
     public void build(){
@@ -450,9 +466,10 @@ public class MapEditorDialog extends Dialog implements Disposable{
         table(cont -> {
             cont.left();
 
-            cont.table(mid -> {
-                mid.top();
+            Table mid = new Table();
+            mid.top();
 
+            {
                 Table tools = new Table().top();
 
                 ButtonGroup<ImageButton> group = new ButtonGroup<>();
@@ -585,8 +602,14 @@ public class MapEditorDialog extends Dialog implements Disposable{
                     mid.addButton("$text.editor.center", view::center).colspan(3).width(size * 3f).height(40).padTop(5);
                 }
 
-            }).margin(0).left().growY();
+            }
 
+            ScrollPane toolPane = new ScrollPane(mid);
+            toolPane.setFadeScrollBars(false);
+            toolPane.setScrollingDisabled(true, false);
+            this.toolPane = toolPane;
+
+            cont.add(toolPane).width(size * 3f + 10f).growY().top();
 
             cont.table(t -> t.add(view).grow()).grow();
 

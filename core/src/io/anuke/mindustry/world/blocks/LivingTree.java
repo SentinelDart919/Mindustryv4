@@ -91,6 +91,9 @@ public class LivingTree extends Prop{
 
     @Override
     public boolean isStumped(Tile tile){
+        if(BuildBlock.isFakeDeconstruct(tile)){
+            return ((BuildBlock.BuildEntity) tile.entity).previousStump;
+        }
         return tile.entity instanceof LivingTreeEntity && ((LivingTreeEntity) tile.entity).stump;
     }
 
@@ -204,8 +207,7 @@ public class LivingTree extends Prop{
         float scl = 30f, mag = 0.2f;
         float baseHeight = 0.025f;
 
-        LivingTreeEntity entity = tile.entity instanceof LivingTreeEntity ? (LivingTreeEntity) tile.entity : null;
-        boolean stump = entity != null && entity.stump;
+        boolean stump = isStumped(tile);
 
         //trunk below base layer
         if(trunkRegions[variation] != null){
@@ -283,9 +285,7 @@ public class LivingTree extends Prop{
      *  by the engine, same as every other block that casts a framebuffer shadow. */
     @Override
     public void drawShadow(Tile tile){
-        LivingTreeEntity entity = tile.entity instanceof LivingTreeEntity ? (LivingTreeEntity) tile.entity : null;
-
-        if(entity != null && entity.stump){
+        if(isStumped(tile)){
             Draw.rect(trunkShadow, tile.drawx(), tile.drawy(), size * tilesize, size * tilesize);
             return;
         }

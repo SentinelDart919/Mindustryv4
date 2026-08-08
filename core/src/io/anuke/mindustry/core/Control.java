@@ -49,9 +49,6 @@ public class Control extends Module{
     /**Whether the player explicitly changed the darkness setting in the custom game dialog.
      * If false, playing a map keeps the map's own saved darkness instead of inheriting the current session's value.*/
     public boolean customDarkness = false;
-    /**Whether the player explicitly changed the rain setting in the custom game dialog.
-     * If false, playing a map keeps the map's own saved weather instead of inheriting the current session's value.*/
-    public boolean customRain = false;
 
     public Control(){
         saves = new Saves();
@@ -239,11 +236,7 @@ public class Control extends Module{
             if(customDarkness){
                 map.meta.tags.put("darkness", Float.toString(state.darkness));
             }
-            if(customRain){
-                map.meta.tags.put("rain", state.rain ? "1" : "0");
-            }
             customDarkness = false;
-            customRain = false;
         }
         ui.loadLogic(() -> {
             logic.reset();

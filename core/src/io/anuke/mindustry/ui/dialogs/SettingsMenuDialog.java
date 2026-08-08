@@ -16,6 +16,7 @@ import io.anuke.ucore.scene.Element;
 import io.anuke.ucore.scene.event.InputEvent;
 import io.anuke.ucore.scene.event.InputListener;
 import io.anuke.ucore.scene.ui.Image;
+import io.anuke.ucore.scene.ui.Label;
 import io.anuke.ucore.scene.ui.ScrollPane;
 import io.anuke.ucore.scene.ui.SettingsDialog;
 import io.anuke.ucore.scene.ui.SettingsDialog.SettingsTable.Setting;
@@ -139,6 +140,35 @@ public class SettingsMenuDialog extends SettingsDialog{
         game.checkPref("planet3d", true);
         game.checkPref("massai-debug", false, MassAI::setDebug);
         game.sliderPref("zoom", 100, 100, 1000, i -> i + "%");
+
+        game.pref(new SettingsTable.Setting(){
+            @Override
+            public void add(SettingsTable table){
+                Settings.defaults("uisize", 100);
+                Slider slider = new Slider(50, 200, 5, false);
+                slider.setValue(Settings.getInt("uisize", 100));
+
+                Label label = new Label(Bundles.get("setting.uisize.name", "UI Scale"));
+                Label warn = new Label("[orange]" + Bundles.get("setting.uisize.restart", "Restart the game for UI changes to take effect!"));
+                warn.setWrap(true);
+                warn.setAlignment(Align.center, Align.center);
+
+                slider.changed(() -> {
+                    Settings.putInt("uisize", (int) slider.getValue());
+                    Settings.save();
+                    label.setText(Bundles.get("setting.uisize.name", "UI Scale") + ": " + (int) slider.getValue() + "%");
+                    warn.setVisible((int) slider.getValue() != 100);
+                });
+                slider.change();
+
+                table.add(label).minWidth(label.getPrefWidth() + 50).left().padTop(3f);
+                table.add(slider).width(180).padTop(3f);
+                table.row();
+                table.add(warn).colspan(2).left().padTop(4f).width(340f);
+                table.row();
+            }
+        });
+
         if(!mobile){
             game.checkPref("crashreport", false);
         }

@@ -11,10 +11,13 @@ import io.anuke.mindustry.game.Content;
 public abstract class Weather extends Content{
     /**Shared random used for rendering. Seeded every frame for a consistent animation.*/
     public static final RandomXS128 rand = new RandomXS128();
+    /**Name of this weather, e.g. "rain".*/
+    public final String name;
     /**Current opacity of this weather, managed by the renderer.*/
     public float opacity;
 
     public Weather(String name){
+        this.name = name;
     }
 
     @Override

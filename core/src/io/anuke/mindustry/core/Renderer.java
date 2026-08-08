@@ -332,7 +332,7 @@ public class Renderer extends RendererModule{
 
         boolean postActive = bloom != null && Settings.getBool("bloom");
 
-        if(state.darkness > 0.01f){
+        if((weather.isDayNight() ? weather.cycleDarkness() : state.darkness) > 0.01f){
             drawLights();
             drawLightmap();
             Graphics.surface();
@@ -374,7 +374,8 @@ public class Renderer extends RendererModule{
 
     public void drawLights(){
         //fill the lightmap with the ambient light level. light sources get added on top
-        ambient.set(1f - state.darkness, 1f - state.darkness, 1f - state.darkness, 1f);
+        float darkness = weather.isDayNight() ? weather.cycleDarkness() : state.darkness;
+        ambient.set(1f - darkness, 1f - darkness, 1f - darkness, 1f);
 
         Graphics.surface(lightSurface, false, true);
         Graphics.clear(ambient);

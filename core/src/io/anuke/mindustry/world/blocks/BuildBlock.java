@@ -48,6 +48,7 @@ public class BuildBlock extends Block{
         size = Integer.parseInt(name.charAt(name.length() - 1) + "");
         health = 10;
         layer = Layer.placement;
+        layer2 = Layer.tree;
         consumesTap = true;
         solidifes = true;
     }
@@ -60,7 +61,6 @@ public class BuildBlock extends Block{
             boolean wasStump = build != null && build.previousStump;
             float prevHealth = build != null && build.previousHealth > 0 ? build.previousHealth : block.health;
             int builders = build != null ? Math.max(1, build.builders.size) : 1;
-            Effects.effect(Fx.breakBlock, tile.drawx(), tile.drawy(), block.size);
             tile.setBlock(block);
             ((Prop) block).onDeconstructDamaged(tile, wasStump, prevHealth, builders);
             return;
@@ -140,10 +140,19 @@ public class BuildBlock extends Block{
         }
     }
 
+    /** Whether this build entity is a fake deconstruction of a damageWhenDeconstruct prop.
+     *  These must not show the construction/deconstruction ghost; the prop itself is drawn instead. */
+    public static boolean isFakeDeconstruct(Tile tile){
+        return tile != null && tile.entity instanceof BuildEntity &&
+                ((BuildEntity) tile.entity).previous instanceof Prop &&
+                ((Prop) ((BuildEntity) tile.entity).previous).damageWhenDeconstruct;
+    }
+
     @Override
     public void draw(Tile tile){
         BuildEntity entity = tile.entity();
 
+        if(isFakeDeconstruct(tile)) return;
         //When breaking, don't draw the previous block... since it's the thing you were breaking
         if(entity.recipe != null && entity.previous == entity.recipe.result){
             return;
@@ -161,6 +170,8 @@ public class BuildBlock extends Block{
 
         BuildEntity entity = tile.entity();
 
+        if(isFakeDeconstruct(tile)) return;
+
         Shaders.blockbuild.color = Palette.accent;
 
         Block target = entity.recipe == null ? entity.previous : entity.recipe.result;
@@ -175,6 +186,15 @@ public class BuildBlock extends Block{
             Draw.rect(region, tile.drawx(), tile.drawy(), target.rotate ? tile.getRotation() * 90 : 0);
 
             Graphics.flush();
+        }
+    }
+
+    @Override
+    public void drawLayer2(Tile tile){
+        BuildEntity entity = tile.entity();
+
+        if(isFakeDeconstruct(tile) && entity.previous != null){
+            entity.previous.drawLayer(tile);
         }
     }
 

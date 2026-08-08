@@ -6,9 +6,11 @@ import io.anuke.mindustry.world.meta.StatUnit;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.util.EnumSet;
 
+import static io.anuke.mindustry.Vars.*;
+
 public class SolarGenerator extends PowerGenerator{
     /**
-     * power generated per frame
+     * power generated per frame at full daylight
      */
     protected float generation = 0.005f;
 
@@ -26,9 +28,14 @@ public class SolarGenerator extends PowerGenerator{
 
     @Override
     public void update(Tile tile){
-        addPower(tile, generation * Timers.delta());
+        addPower(tile, generation * daylight() * Timers.delta());
 
         tile.entity.power.graph.update();
+    }
+
+    private float daylight(){
+        float darkness = renderer.weather.isDayNight() ? renderer.weather.cycleDarkness() : state.darkness;
+        return Math.max(0f, 1f - darkness);
     }
 
 }

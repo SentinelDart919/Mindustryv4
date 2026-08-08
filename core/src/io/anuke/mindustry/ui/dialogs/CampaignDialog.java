@@ -3,6 +3,8 @@ package io.anuke.mindustry.ui.dialogs;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.maps.campaign.Campaign;
 import io.anuke.mindustry.maps.campaign.CampaignManager;
+import io.anuke.ucore.scene.ui.ScrollPane;
+import io.anuke.ucore.scene.ui.layout.Table;
 
 import static io.anuke.mindustry.Vars.ui;
 import static io.anuke.mindustry.Vars.world;
@@ -25,17 +27,22 @@ public class CampaignDialog extends FloatingDialog {
         campaignManager.loadCampaigns();
         allCampaigns.addAll(campaignManager.getAllCampaigns());
 
-        content().defaults().growX().height(64f).pad(4f);
-
         if(allCampaigns.size == 0){
             content().add("$text.campaign.none").disabled(true);
             return;
         }
 
+        Table table = new Table();
+        table.defaults().growX().height(64f).pad(4f);
+
         for(Campaign campaign : allCampaigns){
-            content().addButton(campaign.name, () -> selectCampaign(campaign));
-            content().row();
+            table.addButton(campaign.name, () -> selectCampaign(campaign));
+            table.row();
         }
+
+        ScrollPane pane = new ScrollPane(table);
+        pane.setFadeScrollBars(false);
+        content().add(pane).grow();
     }
 
     private void selectCampaign(Campaign selectedCampaign) {

@@ -5,8 +5,10 @@ import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.game.EventType.GameLoadEvent;
 import io.anuke.mindustry.io.BundleLoader;
 import io.anuke.ucore.core.Events;
+import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.modules.ModuleCore;
+import io.anuke.ucore.scene.ui.layout.Unit;
 import io.anuke.ucore.util.Log;
 
 import static io.anuke.mindustry.Vars.*;
@@ -21,6 +23,8 @@ public class Mindustry extends ModuleCore{
 
         Log.setUseColors(false);
         BundleLoader.load();
+        Unit.dp.product = Settings.getInt("uisize", 100) / 100f;
+        Unit.dp.reset();
         content.load();
         schematics.load();
 
