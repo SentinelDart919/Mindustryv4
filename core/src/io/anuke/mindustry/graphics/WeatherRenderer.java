@@ -117,12 +117,13 @@ public class WeatherRenderer{
             cycleDarkness = 0f;
             return;
         }
+        float cycleTicks = cycleDuration * 3600f;
         cycleTime += Timers.delta();
-        if(cycleTime >= cycleDuration){
-            cycleTime -= cycleDuration;
+        if(cycleTime >= cycleTicks){
+            cycleTime -= cycleTicks;
             targetDarkness = Mathf.random(0.75f, 1f);
         }
-        float phase = cycleTime / cycleDuration;
+        float phase = cycleTime / cycleTicks;
         float night = phase >= 0.5f ? MathUtils.sinDeg((phase - 0.5f) * 360f) : 0f;
         cycleDarkness = targetDarkness * night;
     }
