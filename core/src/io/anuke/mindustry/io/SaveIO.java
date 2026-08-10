@@ -22,7 +22,7 @@ public class SaveIO{
     /**How many rotated backups are kept for each save slot, on top of the save file itself.*/
     public static final int backupCount = 3;
     public static final IntMap<SaveFileVersion> versions = new IntMap<>();
-    public final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
+    public static final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
     private static final int campaignsSaveVersion = 2;
 
     public static final Array<SaveFileVersion> versionArray = Array.with(

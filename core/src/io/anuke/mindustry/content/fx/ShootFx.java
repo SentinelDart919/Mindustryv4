@@ -13,7 +13,8 @@ import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 public class ShootFx extends FxList implements ContentList{
-    public static Effect shootSmall, shootHeal, shootSmallSmoke, shootBig, shootBig2, shootBigSmoke, shootBigSmoke2, shootSmallFlame, shootLiquid, shellEjectSmall, shellEjectMedium, shellEjectBig, lancerLaserShoot, lancerLaserShootSmoke, lancerLaserCharge, lancerLaserChargeBegin, lightningCharge, lightningShoot;
+    public static Effect shootSmall, shootHeal, shootSmallSmoke, shootBig, shootBig2, shootBigSmoke, shootBigSmoke2, shootSmallFlame, shootLiquid, shellEjectSmall, shellEjectMedium, shellEjectBig, lancerLaserShoot, lancerLaserShootSmoke, lancerLaserCharge, lancerLaserChargeBegin, lightningCharge, lightningShoot,
+            instShoot, casing3Double;
 
     @Override
     public void load(){
@@ -220,6 +221,47 @@ public class ShootFx extends FxList implements ContentList{
             });
 
             Draw.reset();
+        });
+
+        instShoot = new Effect(24f, e -> {
+            e.scaled(10f, b -> {
+                Draw.color(Color.WHITE, Palette.bulletYellowBack, b.fin());
+                Lines.stroke(b.fout() * 3f + 0.2f);
+                Lines.circle(b.x, b.y, b.fin() * 50f);
+            });
+
+            Draw.color(Palette.bulletYellowBack);
+
+            for(int i : Mathf.signs){
+                Shapes.tri(e.x, e.y, 13f * e.fout(), 85f, e.rotation + 90f * i);
+                Shapes.tri(e.x, e.y, 13f * e.fout(), 50f, e.rotation + 20f * i);
+            }
+            Draw.reset();
+        });
+
+        casing3Double = new Effect(40f, e -> {
+            Draw.color(Palette.lightOrange, Palette.lightishGray, Palette.lightishGray, e.fin());
+            Draw.alpha(e.fout(0.5f));
+            float rot = Math.abs(e.rotation) + 90f;
+
+            for(int i : Mathf.signs){
+                float len = (4f + e.finpow() * 9f) * i;
+                float lr = rot + Mathf.randomSeedRange(e.id + i + 6, 20f * e.fin()) * i;
+                Draw.rect("casing",
+                        e.x + Angles.trnsx(lr, len) + Mathf.randomSeedRange(e.id + i + 7, 3f * e.fin()),
+                        e.y + Angles.trnsy(lr, len) + Mathf.randomSeedRange(e.id + i + 8, 3f * e.fin()),
+                        2.5f, 4f, rot + e.fin() * 50f * i);
+            }
+
+            Draw.color(Palette.lightishGray);
+
+            for(int i : Mathf.signs){
+                Angles.randLenVectors(e.id, 4, -e.finpow() * 15f, e.rotation + 90f * i, 25f, (x, y) -> {
+                    Fill.circle(e.x + x, e.y + y, e.fout() * 2f);
+                });
+            }
+
+            Draw.color();
         });
     }
 }

@@ -124,7 +124,8 @@ public class WeatherRenderer{
             targetDarkness = Mathf.random(0.75f, 1f);
         }
         float phase = cycleTime / cycleTicks;
-        float night = phase >= 0.5f ? MathUtils.sinDeg((phase - 0.5f) * 360f) : 0f;
+        float u = (phase - 0.5f) * 2f;
+        float night = u < 0f || u > 1f ? 0f : (1f - MathUtils.cosDeg(u * 360f)) / 2f;
         cycleDarkness = targetDarkness * night;
     }
 

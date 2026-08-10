@@ -7,12 +7,14 @@ import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
 import io.anuke.ucore.graphics.Lines;
+import io.anuke.ucore.graphics.Shapes;
 import io.anuke.ucore.util.Angles;
 import io.anuke.ucore.util.Mathf;
 
 public class BulletFx extends FxList implements ContentList{
     public static Effect hitBulletSmall, hitFuse, hitBulletBig, hitFlameSmall, hitLiquid, hitLaser, hitLancer, hitMeltdown, despawn, flakExplosion, blastExplosion, plasticExplosion,
-            artilleryTrail, incendTrail, missileTrail, absorb, flakExplosionBig, plasticExplosionFlak;
+            artilleryTrail, incendTrail, missileTrail, absorb, flakExplosionBig, plasticExplosionFlak,
+            instHit, instTrail, instBomb, railHit, smokeCloud;
 
     @Override
     public void load(){
@@ -274,6 +276,71 @@ public class BulletFx extends FxList implements ContentList{
                 Lines.lineAngle(e.x + x, e.y + y, Mathf.atan2(x, y), 1f + e.fout() * 3f);
             });
 
+            Draw.reset();
+        });
+
+        instHit = new Effect(20f, 200f, e -> {
+            for(int i = 0; i < 2; i++){
+                Draw.color(i == 0 ? Palette.bulletYellowBack : Palette.bulletYellow);
+
+                float m = i == 0 ? 1f : 0.5f;
+
+                for(int j = 0; j < 5; j++){
+                    float rot = e.rotation + Mathf.randomSeedRange(e.id + j, 50f);
+                    float w = 23f * e.fout() * m;
+                    Shapes.tri(e.x, e.y, w, (80f + Mathf.randomSeedRange(e.id + j, 40f)) * m, rot);
+                    Shapes.tri(e.x, e.y, w, 20f * m, rot + 180f);
+                }
+            }
+            Draw.reset();
+        });
+
+        instTrail = new Effect(30, e -> {
+            for(int i = 0; i < 2; i++){
+                Draw.color(i == 0 ? Palette.bulletYellowBack : Palette.bulletYellow);
+
+                float m = i == 0 ? 1f : 0.5f;
+
+                float rot = e.rotation + 180f;
+                float w = 15f * e.fout() * m;
+                Shapes.tri(e.x, e.y, w, (30f + Mathf.randomSeedRange(e.id, 15f)) * m, rot);
+                Shapes.tri(e.x, e.y, w, 10f * m, rot + 180f);
+            }
+            Draw.reset();
+        });
+
+        instBomb = new Effect(15f, 100f, e -> {
+            Draw.color(Palette.bulletYellowBack);
+            Lines.stroke(e.fout() * 4f);
+            Lines.circle(e.x, e.y, 4f + e.finpow() * 20f);
+
+            for(int i = 0; i < 4; i++){
+                Shapes.tri(e.x, e.y, 6f, 80f * e.fout(), i * 90 + 45);
+            }
+
+            Draw.color();
+            for(int i = 0; i < 4; i++){
+                Shapes.tri(e.x, e.y, 3f, 30f * e.fout(), i * 90 + 45);
+            }
+            Draw.reset();
+        });
+
+        railHit = new Effect(18f, 200f, e -> {
+            Draw.color(Palette.orangeSpark);
+
+            for(int i : Mathf.signs){
+                Shapes.tri(e.x, e.y, 10f * e.fout(), 60f, e.rotation + 140f * i);
+            }
+            Draw.reset();
+        });
+
+        smokeCloud = new Effect(70, e -> {
+            Draw.color(Color.GRAY);
+            Draw.alpha((0.5f - Math.abs(e.fin() - 0.5f)) * 2f);
+
+            Angles.randLenVectors(e.id, 30, 30f * e.fin(), (x, y) -> {
+                Fill.circle(e.x + x, e.y + y, 0.5f + e.fout() * 4f);
+            });
             Draw.reset();
         });
     }

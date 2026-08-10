@@ -136,6 +136,7 @@ public class Sounds{
     public static Sound explosionArtilleryShock;
     public static Sound explosionArtilleryShockBig;
     public static Sound shootFuse;
+    public static Sound shootForeshadow;
     public static Sound explosionCrawler;
     public static Sound explosionReactor;
     public static Sound shockBullet;
@@ -166,6 +167,7 @@ public class Sounds{
         shootMissileSmall = register("shootMissileSmall", Vars.soundController.load("shootMissileSmall", "sounds/shoot/shootMissileSmall.ogg"));
         shootCyclone = register("shootCyclone", Vars.soundController.load("shootCyclone", "sounds/shoot/shootCyclone.ogg"));
         shootFuse = register("shootFuse", Vars.soundController.load("shootFuse", "sounds/shoot/shootFuse.ogg"));
+        shootForeshadow = register("shootForeshadow", Vars.soundController.load("shootForeshadow", "sounds/shoot/shootForeshadow.ogg"));
         shootMeltdown = register("shootMeltdown", Vars.soundController.load("shootMeltdown", "sounds/shoot/shootMeltdown.ogg"));
         loopThoriumReactor = register("loopThoriumReactor", Vars.soundController.load("loopThoriumReactor", "sounds/loops/loopThoriumReactor.ogg"));
         loopCombustion = register("loopCombustion", Vars.soundController.load("loopCombustion", "sounds/loops/loopCombustion.ogg"));
@@ -268,6 +270,7 @@ public class Sounds{
         Vars.soundController.setPriority("shootMissileSmall", 3);
         Vars.soundController.setPriority("shootCyclone", 3);
         Vars.soundController.setPriority("shootFuse", 3);
+        Vars.soundController.setPriority("shootForeshadow", 3);
         Vars.soundController.setPriority("shootMeltdown", 3);
         Vars.soundController.setPriority("unitCreateBig", 3);
 

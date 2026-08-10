@@ -11,6 +11,7 @@ import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.bullet.LiquidBulletType;
+import io.anuke.mindustry.entities.bullet.RailBulletType;
 import io.anuke.mindustry.entities.effect.Fire;
 import io.anuke.mindustry.entities.effect.Lightning;
 import io.anuke.mindustry.game.ContentList;
@@ -31,7 +32,7 @@ public class TurretBullets extends BulletList implements ContentList{
     public static BulletType fireball, basicFlame, lancerLaser, burstLaser, meltdownLaser,
         fuseShot, waterShot, cryoShot, lavaShot, oilShot, slagShot, lightning, driverBolt, healBullet, arc, damageLightning,
     // Mass
-    BloodFuseShot;
+    BloodFuseShot, rail;
 
     @Override
     public void load(){
@@ -467,5 +468,13 @@ public class TurretBullets extends BulletList implements ContentList{
 
             //TODO
         };
+
+        rail = new RailBulletType(1350f){{
+            pierceEffect = BulletFx.railHit;
+            updateEffect = BulletFx.instTrail;
+            despawneffect = BulletFx.instBomb;
+            pierceDamageFactor = 1f;
+            length = 500f;
+        }};
     }
 }

@@ -4,10 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
+import io.anuke.mindustry.core.Platform;
+import io.anuke.mindustry.game.Saves.SaveSlot;
 import io.anuke.mindustry.graphics.Palette;
+import io.anuke.mindustry.io.SaveIO;
+import io.anuke.mindustry.maps.campaign.CampaignRegistry;
 import io.anuke.mindustry.net.Net;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Settings;
@@ -24,9 +29,16 @@ import io.anuke.ucore.scene.ui.Slider;
 import io.anuke.ucore.scene.ui.layout.Table;
 import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.util.Strings;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -93,6 +105,8 @@ public class SettingsMenuDialog extends SettingsDialog{
         }
         menu.row();
         menu.addButton("$text.settings.language", ui.language::show);
+        menu.row();
+        menu.addButton("$text.settings.data", this::showDataDialog);
 
         prefs.clearChildren();
         prefs.add(menu);
@@ -176,47 +190,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         game.pref(new Setting(){
             @Override
             public void add(SettingsTable table){
-                table.addButton("$text.settings.cleardata", () -> {
-                    FloatingDialog dialog = new FloatingDialog("$text.settings.cleardata");
-                    dialog.setFillParent(false);
-                    dialog.content().defaults().size(230f, 60f).pad(3);
-                    dialog.addCloseButton();
-                    dialog.content().addButton("$text.settings.clearsectors", () -> {
-                        ui.showConfirm("$text.confirm", "$text.settings.clear.confirm", () -> {
-                            world.sectors.clear();
-                            dialog.hide();
-                        });
-                    });
-                    dialog.content().row();
-                    dialog.content().addButton("$text.settings.clearunlocks", () -> {
-                        ui.showConfirm("$text.confirm", "$text.settings.clear.confirm", () -> {
-                            control.unlocks.reset();
-                            dialog.hide();
-                        });
-                    });
-                    dialog.content().row();
-                    dialog.content().addButton("$text.settings.clearall", () -> {
-                        ui.showConfirm("$text.confirm", "$text.settings.clearall.confirm", () -> {
-                            Map<String, Object> map = new HashMap<>();
-                            for(String value : Settings.prefs().get().keySet()){
-                                if(value.contains("usid") || value.contains("uuid")){
-                                    map.put(value, Settings.prefs().getString(value));
-                                }
-                            }
-                            Settings.prefs().clear();
-                            Settings.prefs().put(map);
-                            Settings.save();
-
-                            for(FileHandle file : dataDirectory.list()){
-                                file.deleteDirectory();
-                            }
-
-                            Gdx.app.exit();
-                        });
-                    });
-                    dialog.content().row();
-                    dialog.show();
-                }).size(220f, 60f).pad(6).left();
+                table.addButton("$text.settings.cleardata", SettingsMenuDialog.this::showDataDialog).size(220f, 60f).pad(6).left();
                 table.add();
                 table.row();
             }
@@ -261,6 +235,189 @@ public class SettingsMenuDialog extends SettingsDialog{
         prefs.clearChildren();
         Table table = Mathf.select(index, game, graphics, sound);
         prefs.add(table);
+    }
+
+    private void showDataDialog(){
+        FloatingDialog dialog = new FloatingDialog("$text.settings.data");
+        dialog.setFillParent(false);
+        dialog.content().defaults().size(300f, 60f).pad(3);
+        dialog.addCloseButton();
+
+        dialog.content().addButton("$text.settings.clearsaves", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.clearsaves.confirm", () -> {
+                control.saves.deleteAll();
+                dialog.hide();
+            });
+        });
+        dialog.content().row();
+
+        dialog.content().addButton("$text.settings.resetunlocks", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.clear.confirm", () -> {
+                control.unlocks.reset();
+                dialog.hide();
+            });
+        });
+        dialog.content().row();
+
+        dialog.content().addButton("$text.settings.resetcampaign", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.resetcampaign.confirm", () -> {
+                resetCampaign();
+                dialog.hide();
+            });
+        });
+        dialog.content().row();
+
+        dialog.content().addButton("$text.settings.exportdata", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.exportdata.confirm", () ->
+                Platform.instance.showFileChooser("$text.settings.exportdata", "$text.settings.exportdata.confirm", file -> {
+                    if(!file.extension().equals("zip")){
+                        file = file.parent().child(file.nameWithoutExtension() + ".zip");
+                    }
+                    try{
+                        exportData(file);
+                        ui.showInfo("$text.settings.exported");
+                    }catch(Exception e){
+                        ui.showError(Strings.parseException(e, true));
+                    }
+                }, false, "zip"));
+        });
+        dialog.content().row();
+
+        dialog.content().addButton("$text.settings.importdata", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.importdata.confirm", () ->
+                Platform.instance.showFileChooser("$text.settings.importdata", "$text.settings.importdata.confirm", file -> {
+                    try{
+                        importData(file);
+                        Gdx.app.exit();
+                    }catch(Exception e){
+                        ui.showError(Strings.parseException(e, true));
+                    }
+                }, true, "zip"));
+        });
+        dialog.content().row();
+
+        dialog.content().addButton("$text.settings.clearall", () -> {
+            ui.showConfirm("$text.confirm", "$text.settings.clearall.confirm", () -> {
+                Map<String, Object> map = new HashMap<>();
+                for(String value : Settings.prefs().get().keySet()){
+                    if(value.contains("usid") || value.contains("uuid")){
+                        map.put(value, Settings.prefs().getString(value));
+                    }
+                }
+                Settings.prefs().clear();
+                Settings.prefs().put(map);
+                Settings.save();
+
+                for(FileHandle file : dataDirectory.list()){
+                    file.deleteDirectory();
+                }
+
+                Gdx.app.exit();
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void resetCampaign(){
+        for(SaveSlot slot : new Array<SaveSlot>(control.saves.getSaveSlots())){
+            if(slot.isHidden()){
+                slot.delete();
+            }
+        }
+
+        String active = world.sectors.getActiveCampaign();
+        for(String campaign : CampaignRegistry.all()){
+            world.sectors.setActiveCampaign(campaign);
+            world.sectors.clear();
+        }
+        world.sectors.setActiveCampaign(active);
+    }
+    private void exportData(FileHandle file) throws IOException{
+        try(ZipOutputStream zos = new ZipOutputStream(file.write(false, 2048))){
+            addDirectory(zos, dataDirectory, dataDirectory.path());
+
+            //campaign save file is stored next to the app, include it for a complete backup
+            //i will fix that in a future
+            FileHandle campaigns = Platform.instance.getAppDirectory().child(SaveIO.CAMPAIGNS_SAVE_FILE);
+            if(campaigns.exists()){
+                addEntry(zos, campaigns, campaigns.parent().path());
+            }
+        }
+    }
+
+    private void importData(FileHandle file) throws IOException{
+        boolean valid = false;
+        try(ZipInputStream zis = new ZipInputStream(file.read())){
+            ZipEntry entry;
+            while((entry = zis.getNextEntry()) != null){
+                String name = entry.getName();
+                if(name.equals("io.anuke.mindustry") || name.equals("io.anuke.mindustry.server")){
+                    valid = true;
+                    break;
+                }
+            }
+        }
+        if(!valid){
+            throw new IOException(Bundles.get("text.settings.invalid"));
+        }
+
+        for(FileHandle f : dataDirectory.list()){
+            f.deleteDirectory();
+        }
+
+        try(ZipInputStream zis = new ZipInputStream(file.read())){
+            byte[] buffer = new byte[8192];
+            ZipEntry entry;
+            while((entry = zis.getNextEntry()) != null){
+                String name = entry.getName();
+                if(entry.isDirectory() || name.contains("..")){
+                    continue;
+                }
+                FileHandle target = name.equals(SaveIO.CAMPAIGNS_SAVE_FILE)
+                        ? Platform.instance.getAppDirectory().child(name)
+                        : dataDirectory.child(name);
+                target.parent().mkdirs();
+
+                try(OutputStream os = target.write(false)){
+                    int count;
+                    while((count = zis.read(buffer)) != -1){
+                        os.write(buffer, 0, count);
+                    }
+                }
+                zis.closeEntry();
+            }
+        }
+
+        Settings.load(appName, headless ? "io.anuke.mindustry.server" : "io.anuke.mindustry");
+        Settings.save();
+    }
+
+    private void addDirectory(ZipOutputStream zos, FileHandle dir, String base) throws IOException{
+        for(FileHandle child : dir.list()){
+            if(child.isDirectory()){
+                addDirectory(zos, child, base);
+            }else{
+                addEntry(zos, child, base);
+            }
+        }
+    }
+
+    private void addEntry(ZipOutputStream zos, FileHandle file, String base) throws IOException{
+        String path = file.path().substring(base.length());
+        if(path.startsWith("/") || path.startsWith("\\")){
+            path = path.substring(1);
+        }
+        zos.putNextEntry(new ZipEntry(path.replace('\\', '/')));
+
+        try(InputStream is = file.read()){
+            byte[] buffer = new byte[8192];
+            int count;
+            while((count = is.read(buffer)) != -1){
+                zos.write(buffer, 0, count);
+            }
+        }
+        zos.closeEntry();
     }
 
     @Override

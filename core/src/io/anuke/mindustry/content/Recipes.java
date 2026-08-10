@@ -108,6 +108,7 @@ public class Recipes implements ContentList{
         new Recipe(turret, TurretBlocks.fuse, new ItemStack(Items.copper, 450), new ItemStack(Items.densealloy, 450), new ItemStack(Items.thorium, 250));
         new Recipe(turret, TurretBlocks.spectre, new ItemStack(Items.copper, 700), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 500), new ItemStack(Items.plastanium, 350), new ItemStack(Items.thorium, 500));
         new Recipe(turret, TurretBlocks.meltdown, new ItemStack(Items.copper, 500), new ItemStack(Items.lead, 700), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 650), new ItemStack(Items.silicon, 650));
+        new Recipe(turret, TurretBlocks.foreshadow, new ItemStack(Items.copper, 1000), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 300), new ItemStack(Items.plastanium, 200), new ItemStack(Items.silicon, 600), new ItemStack(Items.chromium, 250));
 
         //DISTRIBUTION
         new Recipe(distribution, DistributionBlocks.conveyor, new ItemStack(Items.copper, 1)).setAlwaysUnlocked(true);

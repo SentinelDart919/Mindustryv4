@@ -35,6 +35,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     private float lifeScl;
     private Team team;
     private Object data;
+    public float damage;
     private boolean supressCollision, supressOnce, initialized;
 
     /**Light overrides for this bullet; null/negative values use the bullet type's values instead.*/
@@ -76,6 +77,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
         bullet.team = team;
         bullet.type = type;
+        bullet.damage = type.damage;
         bullet.lifeScl = lifetimeScl;
 
         bullet.set(x - bullet.velocity.x * Timers.delta(), y - bullet.velocity.y * Timers.delta());
@@ -141,14 +143,14 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     @Override
     public float getDamage(){
         if(owner instanceof Unit){
-            return super.getDamage() * ((Unit) owner).getDamageMultipler();
+            return damage * ((Unit) owner).getDamageMultipler();
         }
 
         if(owner instanceof Lightning && data instanceof Float){
             return (Float)data;
         }
 
-        return super.getDamage();
+        return damage > 0 ? damage : super.getDamage();
     }
 
     @Override
@@ -266,6 +268,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
         lifeScl = 1f;
         team = null;
         data = null;
+        damage = 0f;
         supressCollision = false;
         supressOnce = false;
         initialized = false;

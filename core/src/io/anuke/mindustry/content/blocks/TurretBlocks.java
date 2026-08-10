@@ -8,6 +8,7 @@ import io.anuke.mindustry.content.fx.ShootFx;
 import io.anuke.mindustry.type.AmmoType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.defense.turrets.*;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Angles;
@@ -15,7 +16,7 @@ import io.anuke.ucore.util.Mathf;
 
 public class TurretBlocks extends BlockList implements ContentList{
     public static Block duo, scatter,
-            scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown,
+            scorch, hail, wave, lancer, arc, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown, foreshadow,
             //The mass
             evilScatter, evilDuo, evilSalvo, evilRipple, evilFuse, evilCyclone;
             /*TODO
@@ -293,6 +294,41 @@ public class TurretBlocks extends BlockList implements ContentList{
 
             health = 165 * size * size;
         }};
+
+        foreshadow = new ItemTurret("foreshadow"){
+            float powerUsed = 30f;
+
+            {
+                ammoTypes = new AmmoType[]{AmmoTypes.surgeRail};
+                setShootSound("shootForeshadow");
+                range = 500f;
+                reload = 200f;
+                size = 4;
+                maxAmmo = 40;
+                ammoUseEffect = ShootFx.casing3Double;
+                rotatespeed = 2.5f;
+                shootCone = 2f;
+                recoil = 5f;
+                restitution = 0.009f;
+                cooldown = 0.009f;
+                shootShake = 4f;
+                coolantMultiplier = 0.2f;
+                health = 150 * size * size;
+                hasPower = true;
+                powerCapacity = 60f;
+            }
+
+            @Override
+            public boolean hasAmmo(Tile tile){
+                return super.hasAmmo(tile) && tile.entity.power.amount >= powerUsed;
+            }
+
+            @Override
+            public AmmoType useAmmo(Tile tile){
+                if(!tile.isEnemyCheat()) tile.entity.power.amount -= powerUsed;
+                return super.useAmmo(tile);
+            }
+        };
         // The mass
         evilDuo = new ItemTurret("evil-duo"){{
             ammoTypes = new AmmoType[]{AmmoTypes.bulletCopper, AmmoTypes.bulletDense, AmmoTypes.bulletPyratite, AmmoTypes.bulletSilicon};

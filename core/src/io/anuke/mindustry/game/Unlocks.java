@@ -62,6 +62,8 @@ public class Unlocks{
 
     /** Clears all unlocked content. Automatically saves.*/
     public void reset(){
+        unlocked.clear();
+        dirty = false;
         save();
     }
 

@@ -375,7 +375,11 @@ public class Renderer extends RendererModule{
     public void drawLights(){
         //fill the lightmap with the ambient light level. light sources get added on top
         float darkness = weather.isDayNight() ? weather.cycleDarkness() : state.darkness;
-        ambient.set(1f - darkness, 1f - darkness, 1f - darkness, 1f);
+        if(weather.isDayNight()){
+            darkness += Mathf.random(-1f, 1f) * 0.002f;
+        }
+        float light = Math.max(0f, Math.min(1f, 1f - darkness));
+        ambient.set(light, light, light, 1f);
 
         Graphics.surface(lightSurface, false, true);
         Graphics.clear(ambient);

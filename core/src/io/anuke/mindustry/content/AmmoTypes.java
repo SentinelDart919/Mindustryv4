@@ -21,7 +21,7 @@ public class AmmoTypes implements ContentList{
         basicFlame, lancerLaser, lightning, meltdownLaser, burstLaser,
             fuseShotgun, oil, water, lava, slag, cryofluid, arc,
     //Mass ammo
-    evilFuseShotgun, bloodflak, explosivebloodflak;
+    evilFuseShotgun, bloodflak, explosivebloodflak, surgeRail;
 
     @Override
     public void load(){
@@ -294,6 +294,12 @@ public class AmmoTypes implements ContentList{
         bloodflak = new AmmoType(Items.plastanium, FlakBullets.blood, 5){{
             shootEffect = ShootFx.shootBig;
             smokeEffect = ShootFx.shootBigSmoke;
+        }};
+
+        surgeRail = new AmmoType(Items.surgealloy, TurretBullets.rail, 4){{
+            shootEffect = ShootFx.instShoot;
+            smokeEffect = BulletFx.smokeCloud;
+            range = 500f;
         }};
     }
 
