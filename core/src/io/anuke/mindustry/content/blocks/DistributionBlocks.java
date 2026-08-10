@@ -6,8 +6,8 @@ import io.anuke.mindustry.world.blocks.distribution.*;
 
 public class DistributionBlocks extends BlockList implements ContentList{
 public static Block conveyor, titaniumconveyor, thoriumconveyor, distributor, junction,
-    itemBridge, phaseConveyor, sorter, router, stackConveyor, overflowGate, massDriver,
-    veins, trainRail, stackRouter;//da conveinyors
+    itemBridge, phaseConveyor, sorter, invertedSorter, router, stackConveyor, overflowGate,
+    underflowGate, massDriver, veins, trainRail, stackRouter;//da conveinyors
 
     @Override
     public void load(){
@@ -48,6 +48,10 @@ public static Block conveyor, titaniumconveyor, thoriumconveyor, distributor, ju
 
         sorter = new Sorter("sorter");
 
+        invertedSorter = new Sorter("inverted-sorter"){{
+            invert = true;
+        }};
+
         router = new Router("router");
 
         stackConveyor = new StackConveyor("stack-conveyor"){{
@@ -67,6 +71,10 @@ public static Block conveyor, titaniumconveyor, thoriumconveyor, distributor, ju
         }};
 
         overflowGate = new OverflowGate("overflow-gate");
+
+        underflowGate = new OverflowGate("underflow-gate"){{
+            invert = true;
+        }};
 
         massDriver = new MassDriver("mass-driver"){{
             size = 3;

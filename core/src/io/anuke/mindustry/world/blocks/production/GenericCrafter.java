@@ -10,6 +10,7 @@ import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeItem;
+import io.anuke.mindustry.world.consumers.ConsumeItemFilter;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
@@ -22,6 +23,8 @@ import io.anuke.ucore.util.Mathf;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import static io.anuke.mindustry.Vars.content;
 
 public class GenericCrafter extends Block{
     protected final int timerDump = timers++;
@@ -101,7 +104,11 @@ public class GenericCrafter extends Block{
 
         if(entity.progress >= 1f){
 
-            if(consumes.has(ConsumeItem.class)) tile.entity.items.remove(consumes.item(), consumes.itemAmount());
+            if(consumes.has(ConsumeItem.class)){
+                tile.entity.items.remove(consumes.item(), consumes.itemAmount());
+            }else if(getConsumedItem(entity) != null){
+                tile.entity.items.remove(getConsumedItem(entity), 1);
+            }
 
             useContent(tile, output);
 
@@ -125,6 +132,27 @@ public class GenericCrafter extends Block{
     @Override
     public int getMaximumAccepted(Tile tile, Item item){
         return itemCapacity;
+    }
+
+    /**Returns the item currently being consumed, or null if none is available.*/
+    Item getConsumedItem(TileEntity entity){
+        if(consumes.has(ConsumeItem.class)) return consumes.item();
+        if(consumes.has(ConsumeItemFilter.class)){
+            ConsumeItemFilter filter = consumes.get(ConsumeItemFilter.class);
+            for(Item item : content.items()){
+                if(entity.items.has(item) && filter.accepts(item)) return item;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean acceptItem(Item item, Tile tile, Tile source){
+        if(consumes.has(ConsumeItemFilter.class)){
+            return consumes.<ConsumeItemFilter>get(ConsumeItemFilter.class).accepts(item) &&
+                    tile.entity.items.get(item) < getMaximumAccepted(tile, item);
+        }
+        return super.acceptItem(item, tile, source);
     }
 
     public static class GenericCrafterEntity extends TileEntity{

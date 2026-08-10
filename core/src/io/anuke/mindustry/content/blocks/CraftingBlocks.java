@@ -9,6 +9,7 @@ import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
+import io.anuke.mindustry.world.consumers.ConsumeItemFilter;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
@@ -318,7 +319,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             updateEffect = BlockFx.pulverizeSmall;
             hasItems = hasPower = true;
             setAmbientSound("loopGrind", 0.025f);
-            consumes.item(Items.stone, 1);
+            consumes.add(new ConsumeItemFilter(item -> item == Items.stone || item == Items.scrap));
             consumes.power(0.05f);
         }};
 

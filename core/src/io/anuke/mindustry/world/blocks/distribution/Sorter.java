@@ -23,6 +23,7 @@ import static io.anuke.mindustry.Vars.threads;
 
 public class Sorter extends Block implements SelectionTrait{
     private static Item lastItem;
+    public boolean invert;
 
     public Sorter(String name){
         super(name);
@@ -88,7 +89,7 @@ public class Sorter extends Block implements SelectionTrait{
         if(dir == -1) return null;
         Tile to;
 
-        if(item == entity.sortItem){
+        if((item == entity.sortItem) != invert){
             to = dest.getNearby(dir);
         }else{
             Tile a = dest.getNearby(Mathf.mod(dir - 1, 4));

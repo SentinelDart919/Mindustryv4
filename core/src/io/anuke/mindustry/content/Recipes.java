@@ -125,7 +125,9 @@ public class Recipes implements ContentList{
         //advanced densealloy transporat
         new Recipe(distribution, DistributionBlocks.distributor, new ItemStack(Items.densealloy, 8), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.sorter, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 4));
+        new Recipe(distribution, DistributionBlocks.invertedSorter, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 4));
         new Recipe(distribution, DistributionBlocks.overflowGate, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 8));
+        new Recipe(distribution, DistributionBlocks.underflowGate, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.itemBridge, new ItemStack(Items.densealloy, 8), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.massDriver, new ItemStack(Items.densealloy, 250), new ItemStack(Items.silicon, 150), new ItemStack(Items.lead, 250), new ItemStack(Items.thorium, 100));
         new Recipe(distribution, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));

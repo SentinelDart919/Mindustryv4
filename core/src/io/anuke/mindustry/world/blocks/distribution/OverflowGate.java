@@ -7,6 +7,7 @@ import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.util.Mathf;
 
 public class OverflowGate extends Router{
+    public boolean invert;
 
     public OverflowGate(String name){
         super(name);
@@ -43,14 +44,17 @@ public class OverflowGate extends Router{
         if(to == null) return null;
         Tile edge = Edges.getFacingEdge(tile, to);
 
-        if(!to.block().acceptItem(item, to, edge) || (to.block() instanceof OverflowGate)){
+        boolean canForward = !(to.block() instanceof OverflowGate) && to.block().acceptItem(item, to, edge);
+        boolean inv = invert;
+
+        if(!canForward || inv){
             Tile a = tile.getNearby(Mathf.mod(from - 1, 4));
             Tile b = tile.getNearby(Mathf.mod(from + 1, 4));
             boolean ac = a != null && a.block().acceptItem(item, a, edge) && !(a.block() instanceof OverflowGate);
             boolean bc = b != null && b.block().acceptItem(item, b, edge) && !(b.block() instanceof OverflowGate);
 
             if(!ac && !bc){
-                return null;
+                return inv && canForward ? to : null;
             }
 
             if(ac && !bc){
