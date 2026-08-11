@@ -28,6 +28,7 @@ import static io.anuke.mindustry.Vars.*;
 public class PowerSmelter extends PowerBlock{
     protected final int timerDump = timers++;
     protected final int timerCraft = timers++;
+    protected final int timerSmoke = timers++;
 
     protected Item result;
     /** item output of this block*/
@@ -47,6 +48,14 @@ public class PowerSmelter extends PowerBlock{
     protected Effect craftEffect = BlockFx.smelt,
             burnEffect = BlockFx.fuelburn;
     protected Color flameColor = Color.valueOf("ffc999");
+
+    protected Effect smokeEffect = BlockFx.smokes;
+    protected Color smokeColor = Color.valueOf("6d6d6d");
+    protected float smokeLength = 20f;
+    protected float smokeDirection = 180f;
+    protected float smokeSize = 3f;
+    protected float smokeInterval = 24f;
+    protected float smokeRandomness = 1f;
 
     protected TextureRegion topRegion;
 
@@ -109,6 +118,11 @@ public class PowerSmelter extends PowerBlock{
             entity.ambientSoundEnabled = true;
             if(Mathf.chance(entity.delta() * burnEffectChance))
                 Effects.effect(burnEffect, entity.x + Mathf.range(size * 4f), entity.y + Mathf.range(size * 4));
+            if(entity.heat > minHeat && entity.timer.get(timerSmoke, smokeInterval)){
+                float smokeSpawn = 2f * (1f + (size - 1f) * 0.5f);
+                Effects.effect(smokeEffect, tile.drawx() + Mathf.range(smokeSpawn), tile.drawy() + Mathf.range(smokeSpawn), 0f,
+                        new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness));
+            }
         }else{
             entity.heat -= 1f / heatUpTime * Timers.delta();
             entity.ambientSoundEnabled = false;

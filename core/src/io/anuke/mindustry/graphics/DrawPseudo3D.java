@@ -1,5 +1,6 @@
 package io.anuke.mindustry.graphics;
 
+import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.ucore.core.Core.camera;
@@ -31,6 +32,24 @@ public class DrawPseudo3D{
 
     public static float hMul(float height){
         return height * scale();
+    }
+
+    /** Multiplier from world units to the abstract height scale used by the parallax functions. */
+    public static float worldScale = 0.001f;
+
+    /** Converts a world-unit height into the abstract height scale used by the parallax functions. */
+    public static float worldHeight(float worldHeight){
+        return worldHeight * worldScale;
+    }
+
+    /** Draws a soft ground shadow at (x, y) for something at 'height' out of 'maxHeight' (both in world units),
+     *  with half-size 'size'. The shadow fades out as the object rises. */
+    public static void shadow(float x, float y, float height, float maxHeight, float size){
+        float fade = 1f - Mathf.clamp(maxHeight > 0f ? height / maxHeight : 0f);
+        if(fade <= 0.01f) return;
+        float s = size * (0.5f + 0.5f * fade);
+        Draw.color(0f, 0f, 0f, fade * 0.12f);
+        Draw.rect("circle", x, y, s, s);
     }
 
     /** The current display scale, approximated from the camera zoom. */

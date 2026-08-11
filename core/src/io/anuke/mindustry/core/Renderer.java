@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.content.blocks.Blocks;
+import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.Fx;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -113,6 +114,10 @@ public class Renderer extends RendererModule{
                         entity.color = color;
                         entity.rotation = rotation;
                         entity.data = data;
+                        if(data instanceof BlockFx.SmokeData){
+                            BlockFx.SmokeData smoke = (BlockFx.SmokeData) data;
+                            entity.lifetime = smoke.pathLength() / smoke.speed + smoke.fade;
+                        }
                         entity.id++;
                         entity.set(x, y);
                         if(data instanceof Entity){

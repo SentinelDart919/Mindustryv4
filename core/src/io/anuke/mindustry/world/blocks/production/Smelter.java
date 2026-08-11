@@ -25,6 +25,7 @@ import static io.anuke.mindustry.Vars.*;
 
 public class Smelter extends Block{
     protected final int timerDump = timers++;
+    protected final int timerSmoke = timers++;
 
     protected Item result;
 
@@ -37,6 +38,14 @@ public class Smelter extends Block{
     protected float burnDuration = 50f;
     protected Effect craftEffect = BlockFx.smelt, burnEffect = BlockFx.fuelburn;
     protected Color flameColor = Color.valueOf("ffb879");
+
+    protected Effect smokeEffect = BlockFx.smokes;
+    protected Color smokeColor = Color.valueOf("6d6d6d");
+    protected float smokeLength = 20f;
+    protected float smokeDirection = 180f;
+    protected float smokeSize = 3f;
+    protected float smokeInterval = 8f;
+    protected float smokeRandomness = 1f;
 
     protected TextureRegion topRegion;
 
@@ -116,6 +125,10 @@ public class Smelter extends Block{
             entity.burnTime -= entity.delta();
             entity.heat = Mathf.lerpDelta(entity.heat, 1f, 0.02f);
             entity.ambientSoundEnabled = true;
+            if(entity.timer.get(timerSmoke, smokeInterval)){
+                Effects.effect(smokeEffect, tile.drawx() + Mathf.range(2f), tile.drawy() + Mathf.range(2f), 0f,
+                        new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness));
+            }
         }else{
             entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.02f);
             entity.ambientSoundEnabled = false;
