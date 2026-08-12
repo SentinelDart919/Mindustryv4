@@ -75,9 +75,9 @@ public class GroundHealUnit extends GroundUnit {
 
     @Override
     public void behavior() {
-        boolean isRedNonPvp = getTeam() == Team.red && !Vars.state.mode.isPvp && Vars.state.mode != GameMode.customAttackMode;
+        boolean isEnemyTeamNonPvP = getTeam() == Vars.state.enemyTeam && !Vars.state.mode.isPvp && Vars.state.mode != GameMode.customAttackMode;
         //this should make sure healer units of the red team follow units and not avoid units or turrets on survival attack if not I fucked it up
-        if (isRedNonPvp) {
+        if (isEnemyTeamNonPvP) {
             Unit ally = Units.getClosest(getTeam(), x, y, 400f, u -> u != this && !u.isFlying());
             if (ally != null) {
                 if (distanceTo(ally) > 40f) {
