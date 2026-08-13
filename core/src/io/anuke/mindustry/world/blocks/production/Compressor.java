@@ -7,13 +7,15 @@ import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterE
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
-public class Compressor extends PowerCrafter{
+public class Compressor extends GenericCrafter{
     protected TextureRegion liquidRegion, topRegion;
     protected TextureRegion[] frameRegions;
 
     public Compressor(String name){
         super(name);
         hasLiquids = true;
+        hasPower = true;
+        hasItems = true;
     }
 
     @Override

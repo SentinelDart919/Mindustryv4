@@ -10,6 +10,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.game.Teams.TeamData;
 import io.anuke.mindustry.game.Version;
+import io.anuke.mindustry.io.SaveFileVersion;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.world.Tile;
@@ -152,6 +153,9 @@ public class NetworkIO{
 
         try(DataInputStream stream = new DataInputStream(is)){
             Timers.clear();
+
+            //network worlds always use the newest entity serialization format
+            SaveFileVersion.currentVersion = Integer.MAX_VALUE;
 
             //general state
             byte mode = stream.readByte();

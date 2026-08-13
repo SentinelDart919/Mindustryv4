@@ -20,7 +20,11 @@ import static io.anuke.mindustry.Vars.*;
 public class Save18 extends Save17{
 
     public Save18(){
-        super(18);
+        this(18);
+    }
+
+    public Save18(int version){
+        super(version);
     }
 
     @Override

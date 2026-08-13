@@ -27,6 +27,11 @@ import static io.anuke.mindustry.Vars.*;
 public abstract class SaveFileVersion{
     public final int version;
 
+    /**The save version currently being loaded or written. Used by block entities to determine their serialization format.
+     * Defaults to a high value, meaning the newest format. Set by {@link io.anuke.mindustry.io.SaveIO} and reset to the newest format
+     * whenever a fresh world is set up (new game or network map transfer).*/
+    public static int currentVersion = Integer.MAX_VALUE;
+
     public SaveFileVersion(int version){
         this.version = version;
     }

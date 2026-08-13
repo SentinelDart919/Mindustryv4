@@ -9,6 +9,7 @@ import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.io.versions.Save16;
 import io.anuke.mindustry.io.versions.Save17;
 import io.anuke.mindustry.io.versions.Save18;
+import io.anuke.mindustry.io.versions.Save19;
 import io.anuke.mindustry.maps.campaign.Campaign;
 
 import java.io.*;
@@ -28,7 +29,8 @@ public class SaveIO{
     public static final Array<SaveFileVersion> versionArray = Array.with(
         new Save16(),
         new Save17(),
-        new Save18()
+        new Save18(),
+        new Save19()
     );
 
     static{
@@ -238,6 +240,7 @@ public class SaveIO{
 
         try{
             stream = new DataOutputStream(os);
+            SaveFileVersion.currentVersion = getVersion().version;
             getVersion().write(stream);
             stream.close();
         }catch(Exception e){
@@ -276,6 +279,7 @@ public class SaveIO{
             int version = stream.readInt();
             SaveFileVersion ver = versions.get(version);
 
+            SaveFileVersion.currentVersion = ver.version;
             ver.read(stream);
 
             stream.close();

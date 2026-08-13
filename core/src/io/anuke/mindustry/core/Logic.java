@@ -13,6 +13,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.io.SaveFileVersion;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.type.ItemStack;
@@ -104,6 +105,9 @@ public class Logic extends Module{
         if(world.getSector() != null){
             world.sectors.refreshSectorPreview(world.getSector());
         }
+
+        //any entities created from now on use the newest serialization format
+        SaveFileVersion.currentVersion = Integer.MAX_VALUE;
 
         state.wave = 1;
         state.wavetime = wavespace * state.difficulty.timeScaling;
