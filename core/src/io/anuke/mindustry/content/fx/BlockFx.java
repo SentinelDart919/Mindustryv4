@@ -240,7 +240,7 @@ public class BlockFx extends FxList implements ContentList{
                 float ps = size * (0.6f + p * 0.6f) * (1f + Mathf.randomSeedRange(seed + 13, sizeJitter)) * (1f + fadeIn * 0.6f);
                 float alpha = Mathf.clamp(0.85f + Mathf.randomSeedRange(seed + 17, alphaJitter));
                 float h = DrawPseudo3D.worldHeight(oy);
-                DrawPseudo3D.shadow(gx, gy, oy, length, ps);
+                DrawPseudo3D.shadow(gx, gy, oy, length, ps, data != null ? data.shadowAlpha : 0.12f);
                 float scl = DrawPseudo3D.hScale(h);
                 float x = DrawPseudo3D.xHeight(gx, h);
                 float y = DrawPseudo3D.yHeight(gy, h) + oy;
@@ -452,6 +452,7 @@ public class BlockFx extends FxList implements ContentList{
         public float fade = 35f;
         public float step = 6f;
         public float randomness = 1f;
+        public float shadowAlpha = 0.12f;
 
         public SmokeData(){
         }
@@ -466,6 +467,11 @@ public class BlockFx extends FxList implements ContentList{
         public SmokeData(Color color, float length, float direction, float size, float randomness){
             this(color, length, direction, size);
             this.randomness = randomness;
+        }
+
+        public SmokeData(Color color, float length, float direction, float size, float randomness, float shadowAlpha){
+            this(color, length, direction, size, randomness);
+            this.shadowAlpha = shadowAlpha;
         }
 
         public float pathLength(){

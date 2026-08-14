@@ -75,6 +75,7 @@ public class GenericCrafter extends Block{
     protected float smokeSize = 3f;
     protected float smokeInterval = 32f;
     protected float smokeRandomness = 1f;
+    protected float smokeShadowAlpha = 0.12f;
 
     //power-based heating settings
     protected float heatUpTime = 80f;
@@ -252,7 +253,7 @@ public class GenericCrafter extends Block{
                 Effects.effect(updateEffect, entity.x + Mathf.range(size * 4f), entity.y + Mathf.range(size * 4));
             if(smoke == Boolean.TRUE && entity.timer.get(timerSmoke, smokeInterval)){
                 Effects.effect(smokeEffect, tile.drawx() + Mathf.range(2f), tile.drawy() + Mathf.range(2f), 0f,
-                        new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness));
+                        new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness, smokeShadowAlpha));
             }
         }else{
             entity.warmup = Mathf.lerp(entity.warmup, 0f, 0.02f);
@@ -318,7 +319,7 @@ public class GenericCrafter extends Block{
                 entity.ambientSoundEnabled = true;
                 if(smoke != Boolean.FALSE && entity.timer.get(timerSmoke, smokeInterval)){
                     Effects.effect(smokeEffect, tile.drawx() + Mathf.range(2f), tile.drawy() + Mathf.range(2f), 0f,
-                            new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness));
+                            new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness, smokeShadowAlpha));
                 }
             }else{
                 entity.heat = Mathf.lerpDelta(entity.heat, 0f, 0.02f);
@@ -334,7 +335,7 @@ public class GenericCrafter extends Block{
                 if(smoke != Boolean.FALSE && entity.heat > minHeat && entity.timer.get(timerSmoke, smokeInterval)){
                     float smokeSpawn = 2f * (1f + (size - 1f) * 0.5f);
                     Effects.effect(smokeEffect, tile.drawx() + Mathf.range(smokeSpawn), tile.drawy() + Mathf.range(smokeSpawn), 0f,
-                            new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness));
+                            new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness, smokeShadowAlpha));
                 }
             }else{
                 entity.heat -= 1f / heatUpTime * Timers.delta();

@@ -153,6 +153,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.25f);
 
             smokeColor = Color.valueOf("666156");
+            smokeInterval = 72f;
             smokeRandomness = 1.5f;
         }};
 
@@ -234,7 +235,7 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(1.2f);
             consumes.items(new ItemStack[]{new ItemStack(Items.titanium, 5), new ItemStack(Items.lead, 11), new ItemStack(Items.silicon, 9), new ItemStack(Items.copper, 8), new ItemStack(Items.pyratite, 1)});
 
-            smokeInterval = 24f;
+            smokeInterval = 48f;
             smokeLength = 28f;
             smokeColor = Color.valueOf("9e9277");
         }};

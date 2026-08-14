@@ -45,10 +45,16 @@ public class DrawPseudo3D{
     /** Draws a soft ground shadow at (x, y) for something at 'height' out of 'maxHeight' (both in world units),
      *  with half-size 'size'. The shadow fades out as the object rises. */
     public static void shadow(float x, float y, float height, float maxHeight, float size){
+        shadow(x, y, height, maxHeight, size, 0.12f);
+    }
+
+    /** Draws a soft ground shadow at (x, y) for something at 'height' out of 'maxHeight' (both in world units),
+     *  with half-size 'size' and the given shadow alpha. The shadow fades out as the object rises. */
+    public static void shadow(float x, float y, float height, float maxHeight, float size, float alpha){
         float fade = 1f - Mathf.clamp(maxHeight > 0f ? height / maxHeight : 0f);
         if(fade <= 0.01f) return;
         float s = size * (0.5f + 0.5f * fade);
-        Draw.color(0f, 0f, 0f, fade * 0.12f);
+        Draw.color(0f, 0f, 0f, fade * alpha);
         Draw.rect("circle", x, y, s, s);
     }
 

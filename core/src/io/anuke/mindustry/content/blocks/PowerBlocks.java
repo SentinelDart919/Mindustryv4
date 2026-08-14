@@ -1,5 +1,6 @@
 package io.anuke.mindustry.content.blocks;
 
+import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.content.fx.BlockFx;
@@ -17,6 +18,7 @@ public class PowerBlocks extends BlockList implements ContentList{
             powerOutput = 0.15f;
             powerCapacity = 40f;
             itemDuration = 120f;
+            smoke = true;
             setAmbientSound("loopSmelter", 0.03f);
 
         }};
@@ -39,6 +41,12 @@ public class PowerBlocks extends BlockList implements ContentList{
             size = 2;
             setAmbientSound("loopSmelter", 0.06f);
 
+            smoke = true;
+            smokeColor = Color.valueOf("f1f1f1");
+            smokeLength = 60f;
+            smokeInterval = 64f;
+            smokeRandomness = 1.15f;
+            smokeShadowAlpha = 0.05f;
         }};
         differentialGenerator = new TurbineGenerator("differential-generator"){{
             powerOutput = 1.38f;
@@ -49,6 +57,11 @@ public class PowerBlocks extends BlockList implements ContentList{
             consumes.liquid(Liquids.cryofluid, 0.1f);
             size = 3;
             setAmbientSound("loopDifferential", 0.12f);
+
+            smoke = true;
+            smokeColor = Color.valueOf("af927b");
+            smokeInterval = 64f;
+            smokeRandomness = 1.15f;
         }};
 
         rtgGenerator = new DecayGenerator("rtg-generator"){{
