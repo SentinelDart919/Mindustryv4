@@ -10,7 +10,6 @@ import static io.anuke.mindustry.Vars.threads;
 
 public class PowerGraph{
     private final static Queue<Tile> queue = new Queue<>();
-    private final static Array<Tile> outArray1 = new Array<>();
     private final static Array<Tile> outArray2 = new Array<>();
     private final static IntSet closedSet = new IntSet();
 
@@ -143,20 +142,27 @@ public class PowerGraph{
     }
 
     public void remove(Tile tile){
+        ObjectSet<Tile> old = new ObjectSet<>();
+        old.addAll(all);
         clear();
         closedSet.clear();
 
-        for(Tile other : tile.block().getPowerConnections(tile, outArray1)){
-            if(other.entity.power == null || other.entity.power.graph != null) continue;
+        for(Tile other : old){
+            if(other == tile || other.entity == null || other.entity.power == null) continue;
+            if(other.entity.power.graph != null) continue;
+
             PowerGraph graph = new PowerGraph();
             queue.clear();
             queue.addLast(other);
             while(queue.size > 0){
                 Tile child = queue.removeFirst();
+                if(child.entity == null || child.entity.power == null) continue;
+                if(child.entity.power.graph != null) continue;
                 child.entity.power.graph = graph;
                 graph.add(child);
                 for(Tile next : child.block().getPowerConnections(child, outArray2)){
-                    if(next != tile && next.entity.power != null && next.entity.power.graph == null && !closedSet.contains(next.packedPosition())){
+                    if(next == tile || next.entity == null || next.entity.power == null) continue;
+                    if(next.entity.power.graph == null && !closedSet.contains(next.packedPosition())){
                         queue.addLast(next);
                         closedSet.add(next.packedPosition());
                     }

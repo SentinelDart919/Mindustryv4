@@ -74,7 +74,6 @@ public class BuildBlock extends Block{
         if(tile == null) return;
         tile.setRotation(rotation);
         world.setBlock(tile, block, team);
-        Vars.schematics.applyConfig(tile);
         Effects.effect(Fx.placeBlock, tile.drawx(), tile.drawy(), block.size);
         Sound sound = blockPlace;
         if(Vars.soundController != null && sound != null){
@@ -87,6 +86,10 @@ public class BuildBlock extends Block{
             //event first before they can recieve the placed() event modification results
             threads.runDelay(() -> tile.block().playerPlaced(tile));
         }
+
+        //apply the schematic config last, so preset configs applied by placed()/playerPlaced()
+        //(e.g. bridge/nodule/filter auto-linking) don't override the config saved in the schematic
+        threads.runDelay(() -> Vars.schematics.applyConfig(tile));
     }
 
     @Override

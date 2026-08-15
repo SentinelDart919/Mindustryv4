@@ -176,7 +176,7 @@ public class DesktopInput extends InputHandler{
         int cursorX = tileX(Gdx.input.getX());
         int cursorY = tileY(Gdx.input.getY());
 
-        if(ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
+        if(ui.hasKeyboard() || ui.chatfrag.chatOpen() || ui.mapfrag.isOpen()) return;
 
         if(Net.active() && Inputs.keyTap("player_list")){
             ui.listfrag.toggle();
@@ -213,7 +213,7 @@ public class DesktopInput extends InputHandler{
             player.isShooting = false;
         }
 
-        if(state.is(State.menu) || ui.hasDialog()) return;
+        if(state.is(State.menu) || ui.hasDialog() || ui.hasKeyboard()) return;
 
         boolean controller = KeyBinds.getSection(section).device.type == Inputs.DeviceType.controller;
 

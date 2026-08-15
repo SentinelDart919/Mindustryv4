@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.threads;
+import io.anuke.mindustry.Vars;
 
 public class Sorter extends Block implements SelectionTrait{
     private static Item lastItem;
@@ -46,6 +47,7 @@ public class Sorter extends Block implements SelectionTrait{
 
     @Override
     public void playerPlaced(Tile tile){
+        if(Vars.schematics.hasPendingConfig(tile)) return;
         if(lastItem != null){
             threads.runDelay(() -> Call.setSorterItem(null, tile, lastItem));
         }

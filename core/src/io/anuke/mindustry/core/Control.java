@@ -279,6 +279,7 @@ public class Control extends Module{
     public void dispose(){
         Platform.instance.onGameExit();
         content.dispose();
+        schematics.dispose();
         Net.dispose();
         ui.editor.dispose();
         inputs = new InputHandler[]{};
@@ -363,11 +364,11 @@ public class Control extends Module{
                 }
             }
 
-            if(Inputs.keyTap("pause") && !ui.chatfrag.chatOpen() && !ui.mapfrag.isOpen() && !ui.restart.isShown() && (state.is(State.paused) || state.is(State.playing))){
+            if(Inputs.keyTap("pause") && !ui.hasKeyboard() && !ui.chatfrag.chatOpen() && !ui.mapfrag.isOpen() && !ui.restart.isShown() && (state.is(State.paused) || state.is(State.playing))){
                 state.set(state.is(State.playing) ? State.paused : State.playing);
             }
 
-            if(Inputs.keyTap("menu") && !ui.restart.isShown()){
+            if(Inputs.keyTap("menu") && !ui.hasKeyboard() && !ui.restart.isShown()){
                 if(ui.chatfrag.chatOpen()){
                     ui.chatfrag.hide();
                 }else if(ui.mapfrag.isOpen()){
@@ -378,7 +379,7 @@ public class Control extends Module{
                 }
             }
 
-            if(Inputs.keyTap("screenshot") && !ui.chatfrag.chatOpen()){
+            if(Inputs.keyTap("screenshot") && !ui.hasKeyboard() && !ui.chatfrag.chatOpen()){
                 renderer.takeMapScreenshot();
             }
 

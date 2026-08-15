@@ -27,6 +27,7 @@ import io.anuke.ucore.util.Translator;
 import io.anuke.ucore.function.Consumer;
 
 import static io.anuke.mindustry.Vars.*;
+import io.anuke.mindustry.Vars;
 
 public class PowerNode extends PowerBlock{
     public static final float thicknessScl = 0.7f;
@@ -106,6 +107,8 @@ public class PowerNode extends PowerBlock{
 
     @Override
     public void playerPlaced(Tile tile){
+        if(Vars.schematics.hasPendingConfig(tile)) return;
+
         TileEntity entity = tile.entity();
 
         if(entity != null && entity.power != null && entity.power.links.size == 0){
