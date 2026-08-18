@@ -218,7 +218,7 @@ public class Recipes implements ContentList{
         new Recipe(upgrade, UpgradeBlocks.deltaPad, new ItemStack(Items.lead, 350), new ItemStack(Items.densealloy, 350), new ItemStack(Items.copper, 400), new ItemStack(Items.silicon, 450), new ItemStack(Items.thorium, 300));
         new Recipe(upgrade, UpgradeBlocks.omegaPad, new ItemStack(Items.lead, 450), new ItemStack(Items.densealloy, 550), new ItemStack(Items.silicon, 650), new ItemStack(Items.thorium, 600), new ItemStack(Items.surgealloy, 240), new ItemStack(Items.chromium, 100));
 
-        new Recipe(units, UnitBlocks.reconstructor, new ItemStack(Items.copper, 100), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150), new ItemStack(Items.chromium, 75), new ItemStack(Items.plastanium, 25));
+        new Recipe(upgrade, UnitBlocks.reconstructor, new ItemStack(Items.copper, 100), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150), new ItemStack(Items.chromium, 75), new ItemStack(Items.plastanium, 25));
 
 
         //actual unit related stuff
