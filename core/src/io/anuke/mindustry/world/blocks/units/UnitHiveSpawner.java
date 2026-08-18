@@ -92,6 +92,7 @@ public class UnitHiveSpawner extends Block {
         if (entity == null) return false;
         typeIdx = clampType(typeIdx);
 
+        if (entity.spawned == null) entity.spawned = new int[types.length];
         if (maxSpawn != null && typeIdx < maxSpawn.length && entity.spawned[typeIdx] >= maxSpawn[typeIdx]) return false;
 
         //check evolution lock
