@@ -37,7 +37,6 @@ public class Recipes implements ContentList{
         new Recipe(power, DebugBlocks.powerVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(power, DebugBlocks.powerInfinite).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         //new Recipe(effect, PowerBlocks.lightBlock).setMode(GameMode.sandbox).setAlwaysUnlocked(true);
 
@@ -218,6 +217,9 @@ public class Recipes implements ContentList{
         new Recipe(upgrade, UpgradeBlocks.tauPad, new ItemStack(Items.lead, 250), new ItemStack(Items.densealloy, 250), new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 250));
         new Recipe(upgrade, UpgradeBlocks.deltaPad, new ItemStack(Items.lead, 350), new ItemStack(Items.densealloy, 350), new ItemStack(Items.copper, 400), new ItemStack(Items.silicon, 450), new ItemStack(Items.thorium, 300));
         new Recipe(upgrade, UpgradeBlocks.omegaPad, new ItemStack(Items.lead, 450), new ItemStack(Items.densealloy, 550), new ItemStack(Items.silicon, 650), new ItemStack(Items.thorium, 600), new ItemStack(Items.surgealloy, 240), new ItemStack(Items.chromium, 100));
+
+        new Recipe(units, UnitBlocks.reconstructor, new ItemStack(Items.copper, 100), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150), new ItemStack(Items.chromium, 75), new ItemStack(Items.plastanium, 25));
+
 
         //actual unit related stuff
        /* new Recipe(units, UnitBlocks.scavengerFactory, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 90), new ItemStack(Items.scrap, 70));
