@@ -13,6 +13,7 @@ import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.scene.ui.Image;
 import io.anuke.ucore.scene.ui.Label;
 import io.anuke.ucore.scene.ui.ScrollPane;
@@ -74,7 +75,8 @@ public class MapGenerateDialog extends FloatingDialog{
 
             previewImage = new Image(texture);
             previewImage.clicked(this::updatePreview);
-            left.add(previewImage).size(800f).padRight(10).top();
+            float size = Math.min(Graphics.width() / 1.2f, Graphics.height() / 1.5f);
+            left.add(previewImage).size(Math.min(size, 800f)).padRight(10).top();
             left.row();
             statusLabel = new Label("$text.filter.needupdate");
             statusLabel.setColor(new com.badlogic.gdx.graphics.Color(1f, 0.6f, 0.3f, 1f));

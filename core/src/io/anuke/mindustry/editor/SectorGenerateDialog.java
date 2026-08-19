@@ -16,6 +16,7 @@ import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.scene.ui.Image;
 import io.anuke.ucore.scene.ui.Label;
 import io.anuke.ucore.scene.ui.ScrollPane;
@@ -36,6 +37,8 @@ public class SectorGenerateDialog extends FloatingDialog{
     float elevationDensity = 6.1f;
     float lakeFactor = 0.15f;
     float treeDensity = 0.0145f;
+    float deadTreeDensity = 0.0075f;
+    float frozenTreeDensity = 0.0045f;
     float oreDensity = 0.5f;
     float ridgeScale = 400f;
     boolean generateTrees = true;
@@ -76,7 +79,8 @@ public class SectorGenerateDialog extends FloatingDialog{
 
         content().table(left -> {
             left.top();
-            left.add(new Image(texture)).size(700f).padRight(10).top();
+            float size = Math.min(Graphics.width() / 1.2f, Graphics.height() / 1.5f);
+            left.add(new Image(texture)).size(Math.min(size, 700f)).padRight(10).top();
         }).top().left();
 
         content().add(new Image("white")).width(2f).fillY().padLeft(4).padRight(4);
@@ -103,6 +107,10 @@ public class SectorGenerateDialog extends FloatingDialog{
             addSlider(controlsContent, "$text.filter.option.ridge-scale", 50f, 1000f, v -> ridgeScale = v, () -> ridgeScale);
             controlsContent.row();
             addSlider(controlsContent, "$text.filter.option.tree-density", 0f, 0.05f, v -> treeDensity = v, () -> treeDensity);
+            controlsContent.row();
+            addSlider(controlsContent, "$text.filter.option.dead-tree-density", 0f, 0.05f, v -> deadTreeDensity = v, () -> deadTreeDensity);
+            controlsContent.row();
+            addSlider(controlsContent, "$text.filter.option.frozen-tree-density", 0f, 0.05f, v -> frozenTreeDensity = v, () -> frozenTreeDensity);
             controlsContent.row();
             addSlider(controlsContent, "$text.filter.option.ore-density", 0.1f, 1f, v -> oreDensity = v, () -> oreDensity);
             controlsContent.row();
@@ -164,6 +172,8 @@ public class SectorGenerateDialog extends FloatingDialog{
         gen.lakeFactor = lakeFactor;
         gen.ridgeScale = ridgeScale;
         gen.treeDensity = treeDensity;
+        gen.deadTreeDensity = deadTreeDensity;
+        gen.frozenTreeDensity = frozenTreeDensity;
         gen.genOres = generateOres;
     }
 

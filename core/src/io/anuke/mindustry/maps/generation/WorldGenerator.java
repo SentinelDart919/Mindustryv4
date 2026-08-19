@@ -46,6 +46,8 @@ public class WorldGenerator{
     public float lakeFactor = 0.15f;
     public float ridgeScale = 400f;
     public float treeDensity = 0.0145f;
+    public float deadTreeDensity = 0.0075f;
+    public float frozenTreeDensity = 0.0045f;
     public float oreThreshold = 0.23f;
     public float oreThreshold2 = 0.32f;
     public boolean genOres = true;
@@ -336,7 +338,7 @@ public class WorldGenerator{
                         tile.setBlock(Blocks.tree);
                     }
                 }else if(floor == Blocks.sand){
-                    if(random.chance(0.0075) && hasWaterNear(tiles, x, y, 7f)){
+                    if(random.chance(deadTreeDensity) && hasWaterNear(tiles, x, y, 7f)){
                         tile.setBlock(Blocks.deadTree);
                     }
                 }
@@ -450,7 +452,7 @@ public class WorldGenerator{
             wall = decoration.get(floor);
         }
 
-        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.0045)){
+        if(detailed && wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(frozenTreeDensity)){
             wall = Blocks.frozenTree;
         }
 
