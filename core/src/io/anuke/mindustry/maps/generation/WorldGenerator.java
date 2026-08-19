@@ -41,6 +41,15 @@ public class WorldGenerator{
     public RidgedPerlin rid = new RidgedPerlin(baseSeed + 4, 1);
     public SeedRandom random = new SeedRandom(baseSeed + 3);
 
+    public float elevationDensity = 6.1f;
+    public float temperatureScale = 1100f;
+    public float lakeFactor = 0.15f;
+    public float ridgeScale = 400f;
+    public float treeDensity = 0.0145f;
+    public float oreThreshold = 0.23f;
+    public float oreThreshold2 = 0.32f;
+    public boolean genOres = true;
+
     private GenResult result = new GenResult();
     private ObjectMap<Block, Block> decoration;
 
@@ -323,7 +332,7 @@ public class WorldGenerator{
                 }
 
                 if(floor == Blocks.grass){
-                    if(random.chance(0.0145) && hasWaterNear(tiles, x, y, 3.5f)){
+                    if(random.chance(treeDensity) && hasWaterNear(tiles, x, y, 3.5f)){
                         tile.setBlock(Blocks.tree);
                     }
                 }else if(floor == Blocks.sand){
@@ -377,14 +386,14 @@ public class WorldGenerator{
         Block floor;
         Block wall = Blocks.air;
 
-        double ridge = rid.getValue(x, y, 1f / 400f);
+        double ridge = rid.getValue(x, y, 1f / ridgeScale);
         double iceridge = rid.getValue(x+99999, y, 1f / 300f) + sim3.octaveNoise2D(2, 1f, 1f/14f, x, y)/11f;
         double elevation = elevationOf(x, y, detailed);
         double temp =
-            + sim3.octaveNoise2D(detailed ? 12 : 9, 0.6, 1f / 1100f, x - 120, y);
+            + sim3.octaveNoise2D(detailed ? 12 : 9, 0.6, 1f / temperatureScale, x - 120, y);
         double lake = sim2.octaveNoise2D(1, 1, 1f / 110f, x, y);
 
-        elevation -= Math.pow(lake + 0.15, 5);
+        elevation -= Math.pow(lake + lakeFactor, 5);
 
         int lerpDst = 20;
         lerpDst *= lerpDst;
@@ -445,12 +454,12 @@ public class WorldGenerator{
             wall = Blocks.frozenTree;
         }
 
-        if(ores != null && ((Floor) floor).hasOres){
+        if(ores != null && genOres && ((Floor) floor).hasOres){
             int offsetX = x - 4, offsetY = y + 23;
             for(int i = ores.size - 1; i >= 0; i--){
                 Item entry = ores.get(i);
-                if(Math.abs(0.5f - sim.octaveNoise2D(2, 0.7, 1f / (50 + i * 2), offsetX, offsetY)) > 0.23f &&
-                Math.abs(0.5f - sim2.octaveNoise2D(1, 1, 1f / (40 + i * 4), offsetX, offsetY)) > 0.32f){
+                if(Math.abs(0.5f - sim.octaveNoise2D(2, 0.7, 1f / (50 + i * 2), offsetX, offsetY)) > oreThreshold &&
+                Math.abs(0.5f - sim2.octaveNoise2D(1, 1, 1f / (40 + i * 4), offsetX, offsetY)) > oreThreshold2){
                     floor = OreBlocks.get(floor, entry);
                     break;
                 }
@@ -464,8 +473,8 @@ public class WorldGenerator{
     }
 
     double elevationOf(int x, int y, boolean detailed){
-        double ridge = rid.getValue(x, y, 1f / 400f);
-        return sim.octaveNoise2D(detailed ? 7 : 5, 0.62, 1f / 800, x, y) * 6.1 - 1 - ridge;
+        double ridge = rid.getValue(x, y, 1f / ridgeScale);
+        return sim.octaveNoise2D(detailed ? 7 : 5, 0.62, 1f / 800, x, y) * elevationDensity - 1 - ridge;
     }
 
     public static class GenResult{
