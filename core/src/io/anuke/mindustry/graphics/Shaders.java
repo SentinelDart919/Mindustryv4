@@ -2,6 +2,8 @@ package io.anuke.mindustry.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Timers;
@@ -26,6 +28,7 @@ public class Shaders{
     public static Shader fullMix;
     public static FogShader fog;
     public static MenuShader menu;
+    public static LightShader light;
 
     public static void init(){
         outline = new Outline();
@@ -41,6 +44,36 @@ public class Shaders{
         fog = new FogShader();
         fullMix = new Shader("fullmix", "default");
         menu = new MenuShader();
+        light = new LightShader();
+    }
+
+    public static class LightShader extends Shader{
+        public Color ambient = new Color();
+        public Texture lightmap;
+        public int type = 0;
+
+        public LightShader(){
+            super("light", "default");
+        }
+
+        @Override
+        public void apply(){
+            shader.setUniformi("u_type", type);
+
+            if(type == 0){
+                if(region != null){
+                    shader.setUniformf("u_uv", region.getU(), region.getV());
+                    shader.setUniformf("u_uv2", region.getU2(), region.getV2());
+                    shader.setUniformf("u_texsize", region.getTexture().getWidth(), region.getTexture().getHeight());
+                }
+            }else{
+                shader.setUniformi("u_lightmap", 1);
+                lightmap.bind(1);
+                Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
+
+                shader.setUniformf("u_ambient", ambient.r, ambient.g, ambient.b, ambient.a);
+            }
+        }
     }
 
     public static class MenuShader extends Shader{

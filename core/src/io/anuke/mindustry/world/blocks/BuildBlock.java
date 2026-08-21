@@ -2,6 +2,7 @@ package io.anuke.mindustry.world.blocks;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.IntArray;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -47,12 +48,23 @@ public class BuildBlock extends Block{
         size = Integer.parseInt(name.charAt(name.length() - 1) + "");
         health = 10;
         layer = Layer.placement;
+        layer2 = Layer.tree;
         consumesTap = true;
         solidifes = true;
     }
 
     @Remote(called = Loc.server)
     public static void onDeconstructFinish(Tile tile, Block block){
+        if(block instanceof Prop && ((Prop) block).damageWhenDeconstruct){
+            //the deconstruction only plays out as a visual effect; in reality it damages the block until destroyed
+            BuildEntity build = tile.entity instanceof BuildEntity ? (BuildEntity) tile.entity : null;
+            boolean wasStump = build != null && build.previousStump;
+            float prevHealth = build != null && build.previousHealth > 0 ? build.previousHealth : block.health;
+            int builders = build != null ? Math.max(1, build.builders.size) : 1;
+            tile.setBlock(block);
+            ((Prop) block).onDeconstructDamaged(tile, wasStump, prevHealth, builders);
+            return;
+        }
         Effects.effect(Fx.breakBlock, tile.drawx(), tile.drawy(), block.size);
         world.removeBlock(tile);
     }
@@ -62,7 +74,6 @@ public class BuildBlock extends Block{
         if(tile == null) return;
         tile.setRotation(rotation);
         world.setBlock(tile, block, team);
-        Vars.schematics.applyConfig(tile);
         Effects.effect(Fx.placeBlock, tile.drawx(), tile.drawy(), block.size);
         Sound sound = blockPlace;
         if(Vars.soundController != null && sound != null){
@@ -75,6 +86,10 @@ public class BuildBlock extends Block{
             //event first before they can recieve the placed() event modification results
             threads.runDelay(() -> tile.block().playerPlaced(tile));
         }
+
+        //apply the schematic config last, so preset configs applied by placed()/playerPlaced()
+        //(e.g. bridge/nodule/filter auto-linking) don't override the config saved in the schematic
+        threads.runDelay(() -> Vars.schematics.applyConfig(tile));
     }
 
     @Override
@@ -128,10 +143,19 @@ public class BuildBlock extends Block{
         }
     }
 
+    /** Whether this build entity is a fake deconstruction of a damageWhenDeconstruct prop.
+     *  These must not show the construction/deconstruction ghost; the prop itself is drawn instead. */
+    public static boolean isFakeDeconstruct(Tile tile){
+        return tile != null && tile.entity instanceof BuildEntity &&
+                ((BuildEntity) tile.entity).previous instanceof Prop &&
+                ((Prop) ((BuildEntity) tile.entity).previous).damageWhenDeconstruct;
+    }
+
     @Override
     public void draw(Tile tile){
         BuildEntity entity = tile.entity();
 
+        if(isFakeDeconstruct(tile)) return;
         //When breaking, don't draw the previous block... since it's the thing you were breaking
         if(entity.recipe != null && entity.previous == entity.recipe.result){
             return;
@@ -149,6 +173,8 @@ public class BuildBlock extends Block{
 
         BuildEntity entity = tile.entity();
 
+        if(isFakeDeconstruct(tile)) return;
+
         Shaders.blockbuild.color = Palette.accent;
 
         Block target = entity.recipe == null ? entity.previous : entity.recipe.result;
@@ -163,6 +189,15 @@ public class BuildBlock extends Block{
             Draw.rect(region, tile.drawx(), tile.drawy(), target.rotate ? tile.getRotation() * 90 : 0);
 
             Graphics.flush();
+        }
+    }
+
+    @Override
+    public void drawLayer2(Tile tile){
+        BuildEntity entity = tile.entity();
+
+        if(isFakeDeconstruct(tile) && entity.previous != null){
+            entity.previous.drawLayer(tile);
         }
     }
 
@@ -200,6 +235,12 @@ public class BuildBlock extends Block{
          */
         public Block previous;
         public int builderID = -1;
+        /** Whether the prop being deconstructed was already felled (stump), used by damageWhenDeconstruct props. */
+        public boolean previousStump;
+        /** Health of the prop when the deconstruction began, so partial damage persists across deconstructs. */
+        public float previousHealth;
+        /** IDs of all units (player + drones) that helped deconstruct this cycle; damage is multiplied by this count. */
+        public IntArray builders = new IntArray();
 
         private float[] accumulator;
         private float[] totalAccumulator;
@@ -231,6 +272,11 @@ public class BuildBlock extends Block{
         }
 
         public void deconstruct(Unit builder, TileEntity core, float amount){
+            //count every unique unit (player + drones) helping to deconstruct, to scale the damage dealt
+            if(builder != null && !builders.contains(builder.getID())){
+                builders.add(builder.getID());
+            }
+
             Recipe recipe = Recipe.getByResult(previous);
 
             if(recipe != null){

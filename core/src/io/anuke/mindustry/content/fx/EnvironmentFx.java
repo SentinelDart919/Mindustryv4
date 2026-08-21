@@ -5,6 +5,7 @@ import io.anuke.mindustry.content.Liquids;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.type.Item;
+import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
@@ -36,6 +37,10 @@ public class EnvironmentFx extends FxList implements ContentList{
 
             Draw.color();
         });
+        fire.emitLight = true;
+        fire.lightRadius = 30f;
+        fire.lightOpacity = 0.35f;
+        fire.lightColor = Palette.lightFlame;
 
         smoke = new Effect(35f, e -> {
             Draw.color(Color.GRAY);

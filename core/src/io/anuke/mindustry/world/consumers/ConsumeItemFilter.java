@@ -18,6 +18,10 @@ public class ConsumeItemFilter extends Consume{
         this.filter = item;
     }
 
+    public boolean accepts(Item item){
+        return filter.test(item);
+    }
+
     @Override
     public void buildTooltip(Table table){
         Array<Item> list = new Array<>();

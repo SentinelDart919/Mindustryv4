@@ -32,6 +32,7 @@ import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
 import io.anuke.ucore.graphics.Lines;
+import io.anuke.ucore.scene.ui.layout.Unit;
 import io.anuke.ucore.util.Mathf;
 
 import io.anuke.mindustry.ui.dialogs.SectorsDialog;
@@ -135,6 +136,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         }
         if(terrainMesh == null || sectorGridMesh == null || basePlanet == null || !terrainShader.isCompiled()) return hover;
 
+        float dpu = Unit.dp.scl(1f);
         float radius = 1.2f;
         float camDistance = Mathf.clamp(4.2f * zoom, 1.8f, 9f);
         float cy = MathUtils.cos(rotLat), sy = MathUtils.sin(rotLat);
@@ -154,7 +156,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
         float best = Float.MAX_VALUE;
-        float pickRadius = 26f + (1f - Mathf.clamp((zoom - 0.45f) / 1.85f, 0f, 1f)) * 14f;
+        float pickRadius = (26f + (1f - Mathf.clamp((zoom - 0.45f) / 1.85f, 0f, 1f)) * 14f) * dpu;
         for(LongMap.Entry<Vector3> entry : cellBySector.entries()){
             int sxKey = (int)(entry.key >> 32);
             int syKey = (int)(entry.key);
@@ -199,7 +201,7 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
             if(tmpVec.dot(camFromCenter) <= 0f) continue;
 
             Vector3 projected = cam.project(new Vector3(tmpVec).scl(radius * 1.02f));
-            float size = 32f / zoom;
+            float size = 32f * dpu / zoom;
             projectedBySector.put(entry.key, new Vector2(projected.x, projected.y));
 
             if(unlocked){
@@ -267,15 +269,15 @@ public class PlanetMeshRenderer{ // All this class is a bullshit I hate java jus
             if(sel != null){
                 Draw.color(Color.WHITE);
                 Draw.alpha(0.95f);
-                Draw.rect("sector-select", sel.x, sel.y, 44f, 44f);
+                Draw.rect("sector-select", sel.x, sel.y, 44f * dpu, 44f * dpu);
                 Draw.color(Palette.accent);
                 Draw.alpha(0.85f);
-                Draw.rect("sector-select", sel.x, sel.y, 50f, 50f);
+                Draw.rect("sector-select", sel.x, sel.y, 50f * dpu, 50f * dpu);
                 Draw.alpha(1f);
             }
         }else if(hover.sector != null){
             Draw.color(hover.selected ? Palette.accent : Color.WHITE);
-            Draw.rect("sector-select", hover.x, hover.y, 34f, 34f);
+            Draw.rect("sector-select", hover.x, hover.y, 34f * dpu, 34f * dpu);
         }
         Draw.reset();
         return hover;

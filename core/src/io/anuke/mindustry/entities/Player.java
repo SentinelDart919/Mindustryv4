@@ -389,6 +389,24 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     }
 
     @Override
+    public void drawLight(){
+        float x = snappedX(), y = snappedY();
+        float radius = 140f;
+        float opacity = 0.7f;
+
+        if(isLocal){
+            radius *= 0.8f + Mathf.absin(Timers.time(), 5f, 0.05f);
+        }
+
+        Draw.color(Color.WHITE);
+        io.anuke.mindustry.graphics.Shaders.light.region = Draw.region("circle");
+        Draw.alpha(opacity);
+        Draw.rect("circle", x, y, radius * 2, radius * 2);
+        Draw.alpha(opacity * 0.5f);
+        Draw.rect("circle", x, y, radius * 2, radius * 2);
+    }
+
+    @Override
     public void drawOver(){
         if(dead) return;
 
@@ -896,7 +914,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         dead = (bools & 2) != 0;
         boolean boosting = (bools & 4) != 0;
         color.set(buffer.readInt());
-        mech = content.getByID(ContentType.mech, buffer.readByte());
+        mech = content.getByID(ContentType.mech, buffer.readByte() & 0xFF);
         int mine = buffer.readInt();
         int spawner = buffer.readInt();
         float baseRotation = buffer.readShort() / 2f;

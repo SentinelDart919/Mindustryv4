@@ -3,6 +3,7 @@ package io.anuke.mindustry.desktop;
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
 import club.minnced.discord.rpc.DiscordRichPresence;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Base64Coder;
@@ -19,6 +20,7 @@ import io.anuke.ucore.function.Consumer;
 import io.anuke.ucore.util.OS;
 import io.anuke.ucore.util.Strings;
 
+import java.io.File;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
@@ -28,6 +30,23 @@ public class DesktopPlatform extends Platform{
     final static boolean useDiscord = OS.is64Bit;
     final static String applicationId = "398246104468291591";
     String[] args;
+    private static File mainDirectory;
+
+    /**Returns the folder the game's main files are located in, based on the jar location rather than the working directory.*/
+    public static File getMainDirectory(){
+        if(mainDirectory == null){
+            try{
+                File file = new File(DesktopPlatform.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                if(file.isFile()){
+                    file = file.getParentFile();
+                }
+                mainDirectory = file;
+            }catch(Exception e){
+                mainDirectory = new File(".");
+            }
+        }
+        return mainDirectory;
+    }
 
     public DesktopPlatform(String[] args){
         this.args = args;
@@ -130,6 +149,11 @@ public class DesktopPlatform extends Platform{
         }catch(Exception e){
             return super.getUUID();
         }
+    }
+
+    @Override
+    public FileHandle getAppDirectory(){
+        return Gdx.files.absolute(getMainDirectory().getAbsolutePath());
     }
 
     private boolean validAddress(byte[] bytes){

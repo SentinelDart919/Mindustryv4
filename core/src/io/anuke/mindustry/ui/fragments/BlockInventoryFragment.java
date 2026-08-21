@@ -59,7 +59,7 @@ public class BlockInventoryFragment extends Fragment{
     @Override
     public void build(Group parent){
         table = new Table();
-        table.visible(() -> !state.is(State.menu) && tile != null && tile.entity != null && tile.entity.items.total() > 0);
+        table.visible(() -> !state.is(State.menu) && tile != null && tile.entity != null && tile.entity.items != null && tile.entity.items.total() > 0);
         table.background("inventory");
 
         itemTable = new Table();
@@ -74,7 +74,7 @@ public class BlockInventoryFragment extends Fragment{
 
     public void showFor(Tile t){
         this.tile = t.target();
-        if(tile == null || tile.entity == null || !tile.block().isAccessible() || tile.entity.items.total() == 0)
+        if(tile == null || tile.entity == null || tile.entity.items == null || !tile.block().isAccessible() || tile.entity.items.total() == 0)
             return;
         rebuild(true);
     }
@@ -96,7 +96,7 @@ public class BlockInventoryFragment extends Fragment{
         itemTable.clear();
         table.setTouchable(Touchable.enabled);
         table.update(() -> {
-            if(state.is(State.menu) || tile == null || tile.entity == null || !tile.block().isAccessible() || tile.entity.items.total() == 0){
+            if(state.is(State.menu) || tile == null || tile.entity == null || tile.entity.items == null || !tile.block().isAccessible() || tile.entity.items.total() == 0){
                 hide();
             }else{
                 if(holding && lastItem != null){

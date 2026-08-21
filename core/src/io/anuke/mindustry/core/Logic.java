@@ -13,6 +13,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.io.SaveFileVersion;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.maps.missions.WaveExtraMission;
 import io.anuke.mindustry.type.ItemStack;
@@ -105,6 +106,9 @@ public class Logic extends Module{
             world.sectors.refreshSectorPreview(world.getSector());
         }
 
+        //any entities created from now on use the newest serialization format
+        SaveFileVersion.currentVersion = Integer.MAX_VALUE;
+
         state.wave = 1;
         state.wavetime = wavespace * state.difficulty.timeScaling;
         state.gameOver = false;
@@ -114,6 +118,10 @@ public class Logic extends Module{
         Entities.clear();
         infection.reset();
         TileEntity.sleepingEntities = 0;
+
+        if(!headless && renderer != null){
+            renderer.weather.setRain(false);
+        }
 
         Events.fire(new ResetEvent());
     }
@@ -220,6 +228,10 @@ public class Logic extends Module{
 
             if(!state.isPaused()){
                 Timers.update();
+
+                if(!headless && renderer != null){
+                    renderer.weather.update();
+                }
 
                 boolean SiegeModeTimer = state.mode == GameMode.SiegeMode;
                 boolean canTickWaveTimer = !state.mode.disableWaves && !state.gameOver &&

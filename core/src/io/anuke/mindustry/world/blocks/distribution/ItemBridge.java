@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.tilesize;
 import static io.anuke.mindustry.Vars.world;
+import io.anuke.mindustry.Vars;
 
 public class ItemBridge extends Block{
     protected static int lastPlaced;
@@ -89,6 +90,8 @@ public class ItemBridge extends Block{
 
     @Override
     public void playerPlaced(Tile tile){
+        if(Vars.schematics.hasPendingConfig(tile)) return;
+
         Tile last = world.tile(lastPlaced);
         if(linkValid(tile, last)){
             ItemBridgeEntity entity = last.entity();

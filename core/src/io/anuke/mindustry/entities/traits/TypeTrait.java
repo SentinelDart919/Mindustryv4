@@ -30,6 +30,13 @@ public interface TypeTrait{
         if(id == -1){
             throw new IllegalArgumentException("Attempt to retrieve invalid entity type ID! Did you forget to set it in ContentLoader.registerTypes()?");
         }
+        //offset negative values by 256, as they are probably a product of byte overflow
+        //I need to make some stuff to be stored in ints
+        if(id < 0) id += 256;
+
+        if(id >= registeredTypes.size){
+            throw new IllegalArgumentException("No entity type with ID '" + id + "' found! Only " + registeredTypes.size + " entity types are registered in this build.");
+        }
         return registeredTypes.get(id);
     }
 

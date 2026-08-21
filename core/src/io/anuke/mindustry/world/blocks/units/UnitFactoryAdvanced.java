@@ -27,7 +27,7 @@ import io.anuke.mindustry.world.consumers.ConsumeItems;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.mindustry.world.meta.BlockStat;
-import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.UnitValue;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
@@ -138,8 +138,8 @@ public class UnitFactoryAdvanced extends Block{
     public void setStats(){
         super.setStats();
 
-        if(producerTimes != null && producerTimes.length > 0){
-            stats.add(BlockStat.craftSpeed, producerTimes[0] / 60f, StatUnit.seconds);
+        if(types != null && consumerStacks != null && producerTimes != null && types.length > 0){
+            stats.add(BlockStat.outputUnit, new UnitValue(types, consumerStacks, producerTimes, maxSpawn));
         }
     }
 

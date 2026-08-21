@@ -37,8 +37,8 @@ public class Recipes implements ContentList{
         new Recipe(power, DebugBlocks.powerVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(power, DebugBlocks.powerInfinite).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.reconstructor).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
         new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        //new Recipe(effect, PowerBlocks.lightBlock).setMode(GameMode.sandbox).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
 
@@ -107,6 +107,7 @@ public class Recipes implements ContentList{
         new Recipe(turret, TurretBlocks.fuse, new ItemStack(Items.copper, 450), new ItemStack(Items.densealloy, 450), new ItemStack(Items.thorium, 250));
         new Recipe(turret, TurretBlocks.spectre, new ItemStack(Items.copper, 700), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 500), new ItemStack(Items.plastanium, 350), new ItemStack(Items.thorium, 500));
         new Recipe(turret, TurretBlocks.meltdown, new ItemStack(Items.copper, 500), new ItemStack(Items.lead, 700), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 650), new ItemStack(Items.silicon, 650));
+        new Recipe(turret, TurretBlocks.foreshadow, new ItemStack(Items.copper, 1000), new ItemStack(Items.densealloy, 600), new ItemStack(Items.surgealloy, 300), new ItemStack(Items.plastanium, 200), new ItemStack(Items.silicon, 600), new ItemStack(Items.chromium, 250));
 
         //DISTRIBUTION
         new Recipe(distribution, DistributionBlocks.conveyor, new ItemStack(Items.copper, 1)).setAlwaysUnlocked(true);
@@ -123,7 +124,9 @@ public class Recipes implements ContentList{
         //advanced densealloy transporat
         new Recipe(distribution, DistributionBlocks.distributor, new ItemStack(Items.densealloy, 8), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.sorter, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 4));
+        new Recipe(distribution, DistributionBlocks.invertedSorter, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 4));
         new Recipe(distribution, DistributionBlocks.overflowGate, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 8));
+        new Recipe(distribution, DistributionBlocks.underflowGate, new ItemStack(Items.densealloy, 4), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.itemBridge, new ItemStack(Items.densealloy, 8), new ItemStack(Items.copper, 8));
         new Recipe(distribution, DistributionBlocks.massDriver, new ItemStack(Items.densealloy, 250), new ItemStack(Items.silicon, 150), new ItemStack(Items.lead, 250), new ItemStack(Items.thorium, 100));
         new Recipe(distribution, StorageBlocks.unloader, new ItemStack(Items.densealloy, 50), new ItemStack(Items.silicon, 60));
@@ -214,6 +217,9 @@ public class Recipes implements ContentList{
         new Recipe(upgrade, UpgradeBlocks.tauPad, new ItemStack(Items.lead, 250), new ItemStack(Items.densealloy, 250), new ItemStack(Items.copper, 250), new ItemStack(Items.silicon, 250));
         new Recipe(upgrade, UpgradeBlocks.deltaPad, new ItemStack(Items.lead, 350), new ItemStack(Items.densealloy, 350), new ItemStack(Items.copper, 400), new ItemStack(Items.silicon, 450), new ItemStack(Items.thorium, 300));
         new Recipe(upgrade, UpgradeBlocks.omegaPad, new ItemStack(Items.lead, 450), new ItemStack(Items.densealloy, 550), new ItemStack(Items.silicon, 650), new ItemStack(Items.thorium, 600), new ItemStack(Items.surgealloy, 240), new ItemStack(Items.chromium, 100));
+
+        new Recipe(upgrade, UnitBlocks.reconstructor, new ItemStack(Items.copper, 100), new ItemStack(Items.lead, 50), new ItemStack(Items.silicon, 150), new ItemStack(Items.chromium, 75), new ItemStack(Items.plastanium, 25));
+
 
         //actual unit related stuff
        /* new Recipe(units, UnitBlocks.scavengerFactory, new ItemStack(Items.copper, 60), new ItemStack(Items.lead, 90), new ItemStack(Items.scrap, 70));

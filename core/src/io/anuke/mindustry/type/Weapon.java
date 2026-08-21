@@ -173,6 +173,10 @@ public class Weapon extends Content{
         return reload;
     }
 
+    public int getShots(){
+        return shots;
+    }
+
     public void shoot(ShooterTrait p, float x, float y, float angle, boolean left){
         if(Net.client()){
             //call it directly, don't invoke on server

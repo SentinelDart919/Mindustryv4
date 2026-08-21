@@ -61,6 +61,17 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
     public ItemModule items;
     public LiquidModule liquids;
     public ConsumeModule cons;
+
+    /**Light overrides for this block instance; null/negative values use the block type's values instead.*/
+    public Boolean emitLight = null;
+    public float lightRadius = -1f;
+    public float lightOpacity = -1f;
+    public Color lightColor = null;
+    /**Layer light overrides for this block instance; null/negative values use the block type's values instead.*/
+    public Boolean layerLight = null;
+    public float layerLightRadius = -1f;
+    public float layerLightOpacity = -1f;
+    public Color layerLightColor = null;
     /*public Sound ambientSound;
     public String ambientSoundName;
     public float ambientSoundVolume = 1f;*/

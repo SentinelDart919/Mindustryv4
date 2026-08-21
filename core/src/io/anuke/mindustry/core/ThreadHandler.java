@@ -38,7 +38,7 @@ public class ThreadHandler{
     public void handleEndRender(){
         int fpsCap = Settings.getInt("fpscap", 125);
 
-        if(fpsCap <= 120){
+        if(fpsCap <= 240){
             long target = 1000/fpsCap;
             long elapsed = TimeUtils.timeSinceMillis(lastFrameTime);
             if(elapsed < target){

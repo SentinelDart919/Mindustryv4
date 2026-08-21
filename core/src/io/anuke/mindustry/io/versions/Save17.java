@@ -2,11 +2,13 @@ package io.anuke.mindustry.io.versions;
 
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.ai.MassAI;
+import io.anuke.mindustry.core.GameState;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.io.SaveFileVersion;
+import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.Map;
 
 import java.io.DataInputStream;
@@ -18,7 +20,11 @@ import static io.anuke.mindustry.Vars.*;
 public class Save17 extends SaveFileVersion{
 
     public Save17(){
-        super(17);
+        this(17);
+    }
+
+    public Save17(int version){
+        super(version);
     }
 
     @Override
@@ -47,6 +53,8 @@ public class Save17 extends SaveFileVersion{
         state.allowMassInfection = stream.readBoolean();
         state.startWithBiomass = stream.readBoolean();
         state.enemyTeam = Team.all[stream.readByte()];
+        state.darkness = stream.readFloat();
+        state.rain = stream.readBoolean();
 
         content.setTemporaryMapper(readContentHeader(stream));
 
@@ -57,6 +65,13 @@ public class Save17 extends SaveFileVersion{
         readMap(stream);
 
         MassAI.read(stream);
+
+        //mode flags and RTS bits are not saved, so restore canonical values instead of inheriting stale custom game settings
+        state.mode.reset();
+        state.rtsAIBits = GameState.defaultRtsAIBits;
+        if(!headless && renderer != null){
+            renderer.weather.setRain(state.rain);
+        }
     }
 
     @Override
@@ -78,6 +93,8 @@ public class Save17 extends SaveFileVersion{
         stream.writeBoolean(state.allowMassInfection);
         stream.writeBoolean(state.startWithBiomass);
         stream.writeByte(state.enemyTeam.ordinal());
+        stream.writeFloat(state.darkness);
+        stream.writeBoolean(state.rain);
 
         writeContentHeader(stream);
 

@@ -37,6 +37,11 @@ import static io.anuke.ucore.scene.actions.Actions.*;
 public class UI extends SceneModule{
     private FreeTypeFontGenerator generator;
 
+    /** Whether a text field currently has keyboard focus, meaning the player is typing text. */
+    public boolean hasKeyboard(){
+        return scene.getKeyboardFocus() instanceof TextField;
+    }
+
     public final MenuFragment menufrag = new MenuFragment();
     public final HudFragment hudfrag = new HudFragment();
     public final ChatFragment chatfrag = new ChatFragment();

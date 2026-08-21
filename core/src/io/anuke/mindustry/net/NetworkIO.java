@@ -10,6 +10,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Teams;
 import io.anuke.mindustry.game.Teams.TeamData;
 import io.anuke.mindustry.game.Version;
+import io.anuke.mindustry.io.SaveFileVersion;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.world.Tile;
@@ -59,8 +60,8 @@ public class NetworkIO{
             for(int i = 0; i < world.width() * world.height(); i++){
                 Tile tile = world.tile(i);
 
-                stream.writeByte(tile.getFloorID());
-                stream.writeByte(tile.getBlockID());
+                stream.writeShort(tile.getFloorID());
+                stream.writeShort(tile.getBlockID());
                 stream.writeByte(tile.getElevation());
 
                 if(tile.block() instanceof BlockPart){
@@ -153,6 +154,9 @@ public class NetworkIO{
         try(DataInputStream stream = new DataInputStream(is)){
             Timers.clear();
 
+            //network worlds always use the newest entity serialization format
+            SaveFileVersion.currentVersion = Integer.MAX_VALUE;
+
             //general state
             byte mode = stream.readByte();
             String map = stream.readUTF();
@@ -183,6 +187,8 @@ public class NetworkIO{
             state.wave = wave;
             state.wavetime = wavetime;
             state.mode = GameMode.values()[mode];
+            //mode flags are not networked, restore canonical values instead of inheriting stale local custom game settings
+            state.mode.reset();
 
             Entities.clear();
             int id = stream.readInt();
@@ -201,13 +207,17 @@ public class NetworkIO{
             currentMap.meta.tags.clear();
             currentMap.meta.tags.putAll(tags);
             world.setMap(currentMap);
+            state.darkness = Float.parseFloat(currentMap.meta.tags.get("darkness", "0"));
+            if(!headless && renderer != null){
+                renderer.weather.setRain(currentMap.meta.tags.get("rain", "0").equals("1"));
+            }
 
             Tile[][] tiles = world.createTiles(width, height);
 
             for(int i = 0; i < width * height; i++){
                 int x = i % width, y = i / width;
-                byte floorid = stream.readByte();
-                byte wallid = stream.readByte();
+                short floorid = stream.readShort();
+                short wallid = stream.readShort();
                 byte elevation = stream.readByte();
 
                 Tile tile = new Tile(x, y, floorid, wallid);

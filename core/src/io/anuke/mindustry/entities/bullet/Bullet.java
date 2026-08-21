@@ -1,5 +1,6 @@
 package io.anuke.mindustry.entities.bullet;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -10,6 +11,8 @@ import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.entities.traits.TeamTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.core.Graphics;
+import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.impl.BulletEntity;
@@ -32,7 +35,14 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     private float lifeScl;
     private Team team;
     private Object data;
+    public float damage;
     private boolean supressCollision, supressOnce, initialized;
+
+    /**Light overrides for this bullet; null/negative values use the bullet type's values instead.*/
+    public Boolean emitLight = null;
+    public float lightRadius = -1f;
+    public float lightOpacity = -1f;
+    public Color lightColor = null;
 
     /**Internal use only!*/
     public Bullet(){
@@ -67,6 +77,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
         bullet.team = team;
         bullet.type = type;
+        bullet.damage = type.damage;
         bullet.lifeScl = lifetimeScl;
 
         bullet.set(x - bullet.velocity.x * Timers.delta(), y - bullet.velocity.y * Timers.delta());
@@ -132,14 +143,14 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
     @Override
     public float getDamage(){
         if(owner instanceof Unit){
-            return super.getDamage() * ((Unit) owner).getDamageMultipler();
+            return damage * ((Unit) owner).getDamageMultipler();
         }
 
         if(owner instanceof Lightning && data instanceof Float){
             return (Float)data;
         }
 
-        return super.getDamage();
+        return damage > 0 ? damage : super.getDamage();
     }
 
     @Override
@@ -164,7 +175,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
         velocity.x = data.readFloat();
         velocity.y = data.readFloat();
         team = Team.all[data.readByte()];
-        type = content.bullet(data.readByte());
+        type = content.bullet(data.readByte() & 0xFF);
     }
 
     @Override
@@ -174,6 +185,11 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
     @Override
     public void draw(){
+        if(type.bloom && Settings.getBool("bloom")){
+            Graphics.setAdditiveBlending();
+            //type.drawBloom(this);
+            Graphics.setNormalBlending();
+        }
         type.draw(this);
     }
 
@@ -252,6 +268,7 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
         lifeScl = 1f;
         team = null;
         data = null;
+        damage = 0f;
         supressCollision = false;
         supressOnce = false;
         initialized = false;

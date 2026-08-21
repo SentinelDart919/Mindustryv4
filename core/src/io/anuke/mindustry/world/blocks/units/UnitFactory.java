@@ -25,6 +25,7 @@ import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.UnitValue;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
@@ -108,7 +109,9 @@ public class UnitFactory extends Block{
     public void setStats(){
         super.setStats();
 
-        stats.add(BlockStat.craftSpeed, produceTime / 60f, StatUnit.seconds);
+        if(type != null){
+            stats.add(BlockStat.outputUnit, new UnitValue(type, consumes.items(), produceTime));
+        }
         stats.add(BlockStat.maxUnits, maxSpawn, StatUnit.none);
     }
 

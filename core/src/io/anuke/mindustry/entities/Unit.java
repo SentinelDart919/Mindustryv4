@@ -30,8 +30,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import static io.anuke.mindustry.Vars.state;
-import static io.anuke.mindustry.Vars.world;
+import static io.anuke.mindustry.Vars.*;
 
 public abstract class Unit extends DestructibleEntity implements SaveTrait, TargetTrait, SyncTrait, DrawTrait, TeamTrait, CarriableTrait, InventoryTrait{
     /**Total duration of hit flash effect*/
@@ -45,10 +44,16 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
     private static final Vector2 moveVector = new Vector2();
 
     public final UnitInventory inventory = new UnitInventory(this);
+    public Boolean emitLight = null;
+    public float lightRadius = -1f;
+    public Color lightColor = null;
+    public float lightOpacity = -1f;
     public float rotation;
     public float hitTime;
     public boolean isPlayerControllable = true;
     public boolean isRTSAIControllable = true;
+    /**If true, the unit is drawn above trees (like air units). */
+    public boolean highAltitude;
 
     protected final Interpolator interpolator = new Interpolator();
     protected final StatusController status = new StatusController();
@@ -326,6 +331,9 @@ public abstract class Unit extends DestructibleEntity implements SaveTrait, Targ
         Draw.alpha(hitTime);
         Draw.rect(getPowerCellRegion(), x, y, rotation - 90);
         Draw.color();
+    }
+
+    public void drawLight(){
     }
 
     public TextureRegion getPowerCellRegion(){

@@ -27,6 +27,11 @@ import static io.anuke.mindustry.Vars.*;
 public abstract class SaveFileVersion{
     public final int version;
 
+    /**The save version currently being loaded or written. Used by block entities to determine their serialization format.
+     * Defaults to a high value, meaning the newest format. Set by {@link io.anuke.mindustry.io.SaveIO} and reset to the newest format
+     * whenever a fresh world is set up (new game or network map transfer).*/
+    public static int currentVersion = Integer.MAX_VALUE;
+
     public SaveFileVersion(int version){
         this.version = version;
     }
@@ -126,11 +131,12 @@ public abstract class SaveFileVersion{
 
         for(int i = 0; i < width * height; i++){
             int x = i % width, y = i / width;
-            byte floorid = stream.readByte();
-            byte wallid = stream.readByte();
+            //legacy save formats stored block/floor IDs as single bytes, so read them unsigned to avoid sign-extension corrupting IDs >= 128
+            int floorid = stream.readUnsignedByte();
+            int wallid = stream.readUnsignedByte();
             byte elevation = stream.readByte();
 
-            Tile tile = new Tile(x, y, floorid, wallid);
+            Tile tile = new Tile(x, y, (short) floorid, (short) wallid);
             tile.setElevation(elevation);
 
             if(wallid == Blocks.blockpart.id){
@@ -164,7 +170,7 @@ public abstract class SaveFileVersion{
 
                 for(int j = i + 1; j < i + 1 + consecutives; j++){
                     int newx = j % width, newy = j / width;
-                    Tile newTile = new Tile(newx, newy, floorid, wallid);
+                    Tile newTile = new Tile(newx, newy, (short) floorid, (short) wallid);
                     newTile.setElevation(elevation);
                     tiles[newx][newy] = newTile;
                 }

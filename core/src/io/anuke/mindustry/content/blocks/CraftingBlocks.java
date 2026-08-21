@@ -9,6 +9,8 @@ import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
+import io.anuke.mindustry.world.consumers.ConsumeItemFilter;
+import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
@@ -22,21 +24,32 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
     @Override
     public void load(){
-        smelter = new Smelter("smelter"){{
+        smelter = new GenericCrafter("smelter"){{
             health = 70;
-            result = Items.densealloy;
+            smelter = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            output = Items.densealloy;
             craftTime = 45f;
             burnDuration = 46f;
             useFlux = true;
             setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.copper, 1), new ItemStack(Items.lead, 2)});
             consumes.item(Items.coal).optional(true);
+            smokeInterval = 8f;
         }};
 
-        arcsmelter = new PowerSmelter("arc-smelter"){{
+        arcsmelter = new GenericCrafter("arc-smelter"){{
             health = 90;
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.densealloy;
+            output = Items.densealloy;
             craftTime = 30f;
             size = 2;
 
@@ -45,11 +58,20 @@ public class CraftingBlocks extends BlockList implements ContentList{
             setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.copper, 1), new ItemStack(Items.lead, 2)});
             consumes.power(0.1f);
+
+            smokeColor = Color.valueOf("f0f0f0");
+            smokeLength = 10f;
+            smokeRandomness = 3f;
         }};
-        denseAlloyKiln = new PowerSmelter("dense-alloy-kiln"){{
+        denseAlloyKiln = new GenericCrafter("dense-alloy-kiln"){{
             health = 240;
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.densealloy;
+            output = Items.densealloy;
             itemOutputAmount = 3;
             itemCapacity = 80;
             craftTime = 65f;
@@ -60,12 +82,23 @@ public class CraftingBlocks extends BlockList implements ContentList{
             setAmbientSound("loopSmelter", 0.09f);
             consumes.items(new ItemStack[]{new ItemStack(Items.copper, 4), new ItemStack(Items.lead, 6), new ItemStack(Items.pyratite, 1)});
             consumes.power(0.6f);
+
+            smokeColor = Color.valueOf("979285");
+            smokeLength = 18f;
+            smokeInterval = 48f;
+            smokeRandomness = 1.5f;
         }};
 
-        arcscrapsmelter = new PowerSmelter("arc-scrap-smelter"){{
+        arcscrapsmelter = new GenericCrafter("arc-scrap-smelter"){{
             health = 90;
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.densealloy;
+            output = Items.densealloy;
             craftTime = 35f;
             size = 2;
 
@@ -74,12 +107,20 @@ public class CraftingBlocks extends BlockList implements ContentList{
             setAmbientSound("loopSmelter", 0.07f);
             consumes.items(new ItemStack[]{new ItemStack(Items.scrap, 2), new ItemStack(Items.coal, 1)});
             consumes.power(0.08f);
+
+            smokeInterval = 48f;
         }};
 
-        siliconsmelter = new PowerSmelter("silicon-smelter"){{
+        siliconsmelter = new GenericCrafter("silicon-smelter"){{
             health = 90;
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.silicon;
+            output = Items.silicon;
             craftTime = 40f;
             powerCapacity = 20f;
             size = 2;
@@ -90,10 +131,15 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.05f);
         }};
 
-        siliconcrucible = new PowerSmelter("silicon-crucible"){{
+        siliconcrucible = new GenericCrafter("silicon-crucible"){{
             health = 90;
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.silicon;
+            output = Items.silicon;
             itemOutputAmount = 6;
             itemCapacity = 80;
             craftTime = 90f;
@@ -105,6 +151,10 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 4), new ItemStack(Items.sand, 6), new ItemStack(Items.pyratite, 1)});
             consumes.power(0.25f);
+
+            smokeColor = Color.valueOf("666156");
+            smokeInterval = 72f;
+            smokeRandomness = 1.5f;
         }};
 
         plastaniumCompressor = new PlastaniumCompressor("plastanium-compressor"){{
@@ -126,8 +176,14 @@ public class CraftingBlocks extends BlockList implements ContentList{
         }};
 
         phaseWeaver = new PhaseWeaver("phase-weaver"){{
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.phasefabric;
+            output = Items.phasefabric;
             craftTime = 120f;
             powerCapacity = 50f;
             size = 2;
@@ -136,9 +192,15 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.5f);
         }};
 
-        alloySmelter = new PowerSmelter("alloy-smelter"){{
+        alloySmelter = new GenericCrafter("alloy-smelter"){{
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.surgealloy;
+            output = Items.surgealloy;
             craftTime = 75f;
             powerCapacity = 60f;
             size = 2;
@@ -148,10 +210,19 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             consumes.power(0.4f);
             consumes.items(new ItemStack[]{new ItemStack(Items.titanium, 2), new ItemStack(Items.lead, 4), new ItemStack(Items.silicon, 3), new ItemStack(Items.copper, 3)});
+
+            smokeInterval = 48f;
+            smokeLength = 14f;
+            smokeColor = Color.valueOf("dccdaa");
         }};
-        surgeAlloyCrucible = new PowerSmelter("surge-alloy-crucible"){{
+        surgeAlloyCrucible = new GenericCrafter("surge-alloy-crucible"){{
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.surgealloy;
+            output = Items.surgealloy;
             itemOutputAmount = 3;
             itemCapacity = 80;
             craftTime = 115;
@@ -163,6 +234,10 @@ public class CraftingBlocks extends BlockList implements ContentList{
 
             consumes.power(1.2f);
             consumes.items(new ItemStack[]{new ItemStack(Items.titanium, 5), new ItemStack(Items.lead, 11), new ItemStack(Items.silicon, 9), new ItemStack(Items.copper, 8), new ItemStack(Items.pyratite, 1)});
+
+            smokeInterval = 48f;
+            smokeLength = 28f;
+            smokeColor = Color.valueOf("9e9277");
         }};
 
         cryofluidmixer = new LiquidMixer("cryofluidmixer"){{
@@ -190,12 +265,15 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.power(0.04f);
         }};
 
-        pyratiteMixer = new PowerSmelter("pyratite-mixer"){{
-            flameColor = Color.CLEAR;
-            itemCapacity = 20;
-            hasItems = true;
+        pyratiteMixer = new GenericCrafter("pyratite-mixer"){{
+            smelter = true;
             hasPower = true;
-            result = Items.pyratite;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
+            flameColor = Color.CLEAR;
+            output = Items.pyratite;
 
             size = 2;
             setAmbientSound("loopMachineSpin", 0.1f);
@@ -203,28 +281,39 @@ public class CraftingBlocks extends BlockList implements ContentList{
             consumes.items(new ItemStack[]{new ItemStack(Items.coal, 1), new ItemStack(Items.lead, 2), new ItemStack(Items.sand, 2)});
         }};
 
-        melter = new PowerCrafter("melter"){{
+        melter = new GenericCrafter("melter"){{
             health = 200;
             outputLiquid = Liquids.lava;
             outputLiquidAmount = 1f;
             itemCapacity = 20;
             craftTime = 10f;
-            hasLiquids = hasPower = true;
+            hasLiquids = hasPower = hasItems = true;
             setAmbientSound("loopMachine", 0.03f);
             consumes.power(0.1f);
             consumes.item(Items.stone, 1);
+
+            smoke = true;
+            smokeLength = 7f;
+            smokeRandomness = 1.5f;
+            smokeDirection = 160f;
         }};
 
-        scrapmelter = new PowerCrafter("scrap-melter"){{
+        scrapmelter = new GenericCrafter("scrap-melter"){{
             health = 100;
             outputLiquid = Liquids.slag;
             outputLiquidAmount = 2f;
             itemCapacity = 20;
             craftTime = 6f;
-            hasLiquids = hasPower = true;
+            hasLiquids = hasPower = hasItems = true;
             setAmbientSound("loopMachine", 0.03f);
             consumes.power(0.1f);
             consumes.item(Items.scrap, 2);
+
+            smoke = true;
+            smokeLength = 7f;
+            smokeRandomness = 1.5f;
+            smokeDirection = 160f;
+            smokeColor = Color.valueOf("fff4d9");
         }};
 
         separator = new Separator("separator"){{
@@ -318,8 +407,15 @@ public class CraftingBlocks extends BlockList implements ContentList{
             updateEffect = BlockFx.pulverizeSmall;
             hasItems = hasPower = true;
             setAmbientSound("loopGrind", 0.025f);
-            consumes.item(Items.stone, 1);
+            consumes.add(new ConsumeItemFilter(item -> item == Items.stone || item == Items.scrap));
             consumes.power(0.05f);
+
+            smoke = true;
+            smokeColor = Color.valueOf("fff2d3");
+            smokeInterval = 68f;
+            smokeLength = 7f;
+            smokeRandomness = 1.5f;
+            smokeDirection = 150f;
         }};
 
         solidifier = new GenericCrafter("solidifer"){{
@@ -353,8 +449,14 @@ public class CraftingBlocks extends BlockList implements ContentList{
         }};
 
         blueMicrochipCrafter = new PhaseWeaver("blue-microchip-crafter"){{
+            smelter = true;
+            hasPower = true;
+            hasItems = true;
+            itemCapacity = 20;
+            layerLight = true;
+            group = BlockGroup.power;
             craftEffect = BlockFx.smeltsmoke;
-            result = Items.bluemicrochip;
+            output = Items.bluemicrochip;
             craftTime = 145f;
             powerCapacity = 50f;
             size = 4;

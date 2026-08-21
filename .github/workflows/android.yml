@@ -1,0 +1,50 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "mainv4" ]
+  pull_request:
+    branches: [ "mainv4" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Create local.properties for Android SDK
+      run: |
+        if [ -n "${ANDROID_SDK_ROOT:-}" ]; then
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+        elif [ -n "${ANDROID_HOME:-}" ]; then
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        else
+          echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
+        fi
+        cat local.properties
+    - name: Ensure version properties for Android build
+      run: |
+        mkdir -p core/assets
+        echo "androidBuildCode=0" > core/assets/version.properties
+        echo "build=CI" >> core/assets/version.properties
+        echo "Created core/assets/version.properties:" 
+        cat core/assets/version.properties
+    - name: Clone uCore
+      run: ./gradlew setupUCore
+    - name: Build with Gradle
+      run: ./gradlew :android:assembleGoogleDebug
+    - name: Upload built apk file
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }}
+        path: android/build/outputs/apk/google/debug/*.apk

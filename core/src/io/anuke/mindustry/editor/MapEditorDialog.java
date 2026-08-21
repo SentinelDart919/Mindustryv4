@@ -10,10 +10,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.Vars;
-import io.anuke.mindustry.type.Item;
+import io.anuke.mindustry.game.EventType.ResizeEvent;
+import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.game.Team;
@@ -21,17 +21,16 @@ import io.anuke.mindustry.io.MapIO;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.maps.MapMeta;
 import io.anuke.mindustry.maps.MapTileData;
-import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.ui.dialogs.FloatingDialog;
 import io.anuke.mindustry.world.Block;
+import io.anuke.mindustry.world.blocks.Prop;
 import io.anuke.ucore.core.Core;
+import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Structs;
 import io.anuke.mindustry.maps.MapTileData.DataPosition;
-import io.anuke.mindustry.maps.generation.WorldGenerator;
-import io.anuke.mindustry.maps.generation.WorldGenerator.GenResult;
 import io.anuke.ucore.core.Inputs;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.function.Consumer;
@@ -60,12 +59,16 @@ public class MapEditorDialog extends Dialog implements Disposable{
     private MapInfoDialog infoDialog;
     private MapLoadDialog loadDialog;
     private MapResizeDialog resizeDialog;
+    private MapGenerateDialog mapGenDialog;
+    private SectorGenerateDialog sectorGenDialog;
     private ScrollPane pane;
+    private ScrollPane toolPane;
     private FloatingDialog menu;
     private boolean saved = false;
     private boolean shownWithMap = false;
 
     private ButtonGroup<ImageButton> blockgroup;
+    private ObjectMap<ImageButton, Block> blockButtons = new ObjectMap<>();
 
     public MapEditorDialog(){
         super("", "dialog");
@@ -76,6 +79,8 @@ public class MapEditorDialog extends Dialog implements Disposable{
         view = new MapView(editor);
 
         infoDialog = new MapInfoDialog(editor);
+        mapGenDialog = new MapGenerateDialog(editor);
+        sectorGenDialog = new SectorGenerateDialog(editor);
 
         menu = new FloatingDialog("$text.menu");
         menu.addCloseButton();
@@ -162,78 +167,15 @@ public class MapEditorDialog extends Dialog implements Disposable{
             t.row();
 
             t.addImageTextButton("$text.editor.generate", "icon-redo", isize, () -> {
-                FloatingDialog dialog = new FloatingDialog("$text.editor.generate");
-                dialog.addCloseButton();
-                TextField seedField = new TextField("");
-                seedField.setMessageText("$text.editor.seed");
+                mapGenDialog.show();
+                menu.hide();
+            }).size(swidth * 2f + 10, 60f).colspan(2);
 
-                dialog.content().add("$text.editor.seed").padRight(10);
-                dialog.content().add(seedField).width(200);
-                dialog.buttons().addImageTextButton("$text.editor.generate", "icon-redo", isize, () -> {
-                    long seed;
-                    if(seedField.getText().isEmpty()){
-                        seed = (long)Mathf.random(Long.MAX_VALUE);
-                    }else{
-                        try{
-                            seed = Long.parseLong(seedField.getText());
-                        }catch(NumberFormatException e){
-                            seed = (long)seedField.getText().hashCode();
-                        }
-                    }
+            t.row();
 
-                    long finalSeed = seed;
-                    ui.loadGraphics(() -> {
-                        MapTileData data = editor.getMap();
-                        int width = data.width();
-                        int height = data.height();
-                        int sx = (int) (finalSeed % Short.MAX_VALUE);
-                        int sy = (int) (finalSeed / Short.MAX_VALUE % Short.MAX_VALUE);
-
-                        WorldGenerator generator = world.generator;
-                        GenResult result = new GenResult();
-                        Array<GridPoint2> spawns = new Array<>();
-                        spawns.add(new GridPoint2(width / 2, height / 2));
-                        Array<Item> ores = Item.getAllOres();
-
-                        Tile[][] tiles = new Tile[width][height];
-
-                        for(int x = 0; x < width; x++){
-                            for(int y = 0; y < height; y++){
-                                generator.generateTile(result, sx, sy, x, y, true, spawns, ores);
-                                tiles[x][y] = new Tile(x, y, result.floor.id, result.wall.id, (byte)0, (byte)0, result.elevation);
-                            }
-                        }
-
-                        generator.prepareTiles(tiles);
-
-                        for(int x = 0; x < width; x++){
-                            for(int y = 0; y < height; y++){
-                                Tile tile = tiles[x][y];
-                                byte elevation = tile.getElevation();
-
-                                for(GridPoint2 point : Geometry.d4){
-                                    if(!Structs.inBounds(x + point.x, y + point.y, width, height)) continue;
-                                    if(tiles[x + point.x][y + point.y].getElevation() < elevation){
-                                        if(world.generator.sim2.octaveNoise2D(1, 1, 1.0 / 8, x, y) > 0.8){
-                                            tile.setElevation(-1);
-                                        }
-                                        break;
-                                    }
-                                }
-
-                                data.write(x, y, MapTileData.DataPosition.floor, tile.floor().id);
-                                data.write(x, y, MapTileData.DataPosition.wall, tile.block().id);
-                                data.write(x, y, MapTileData.DataPosition.elevation, tile.getElevation());
-                            }
-                        }
-                        editor.renderer().updateAll();
-                        view.clearStack();
-                        dialog.hide();
-                        menu.hide();
-                    });
-                }).size(200, 60);
-
-                dialog.show();
+            t.addImageTextButton("$text.editor.sectorgenerate", "icon-redo", isize, () -> {
+                sectorGenDialog.show();
+                menu.hide();
             }).size(swidth * 2f + 10, 60f).colspan(2);
 
             t.row();
@@ -278,6 +220,12 @@ public class MapEditorDialog extends Dialog implements Disposable{
         clearChildren();
         margin(0);
         shown(this::build);
+
+        Events.on(ResizeEvent.class, event -> {
+            if(isShown()){
+                build();
+            }
+        });
 
         update(() -> {
             if(Core.scene.getKeyboardFocus() instanceof Dialog && Core.scene.getKeyboardFocus() != this){
@@ -424,16 +372,23 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
     public void updateSelectedBlock(){
         Block block = editor.getDrawBlock();
-        for(int j = 0; j < content.blocks().size; j++){
-            if(block.id == j && j < blockgroup.getButtons().size){
-                blockgroup.getButtons().get(j).setChecked(true);
+        for(ImageButton button : blockgroup.getButtons()){
+            if(blockButtons.get(button) == block){
+                button.setChecked(true);
                 break;
             }
         }
     }
 
     public boolean hasPane(){
-        return Core.scene.getScrollFocus() == pane || Core.scene.getKeyboardFocus() != this;
+        return Core.scene.getScrollFocus() == pane || Core.scene.getKeyboardFocus() != this
+                || isMouseOver(pane) || isMouseOver(toolPane);
+    }
+
+    private boolean isMouseOver(ScrollPane target){
+        if(target == null) return false;
+        Vector2 v = target.stageToLocalCoordinates(Graphics.mouse());
+        return v.x >= 0 && v.y >= 0 && v.x <= target.getWidth() && v.y <= target.getHeight();
     }
 
     public void build(){
@@ -446,9 +401,10 @@ public class MapEditorDialog extends Dialog implements Disposable{
         table(cont -> {
             cont.left();
 
-            cont.table(mid -> {
-                mid.top();
+            Table mid = new Table();
+            mid.top();
 
+            {
                 Table tools = new Table().top();
 
                 ButtonGroup<ImageButton> group = new ButtonGroup<>();
@@ -561,8 +517,34 @@ public class MapEditorDialog extends Dialog implements Disposable{
                     .disabled(b -> editor.getDrawElevation() >= 63).size(size);
                 }).colspan(3).height(size).width(size * 3f);
 
-            }).margin(0).left().growY();
+                mid.row();
 
+                mid.table("underline", t -> {
+                    t.top();
+                    t.addCheck("$text.editor.showfloor", editor.showFloor(), b -> {
+                        editor.setShowFloor(b);
+                        editor.renderer().updateAll();
+                    }).growX().left();
+                    t.row();
+                    t.addCheck("$text.editor.showbuildings", editor.showBuildings(), b -> {
+                        editor.setShowBuildings(b);
+                        editor.renderer().updateAll();
+                    }).growX().left();
+                }).colspan(3).width(size * 3f).padTop(5);
+
+                if(!mobile){
+                    mid.row();
+                    mid.addButton("$text.editor.center", view::center).colspan(3).width(size * 3f).height(40).padTop(5);
+                }
+
+            }
+
+            ScrollPane toolPane = new ScrollPane(mid);
+            toolPane.setFadeScrollBars(false);
+            toolPane.setScrollingDisabled(true, false);
+            this.toolPane = toolPane;
+
+            cont.add(toolPane).width(size * 3f + 10f).growY().top();
 
             cont.table(t -> t.add(view).grow()).grow();
 
@@ -624,11 +606,35 @@ public class MapEditorDialog extends Dialog implements Disposable{
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         blockgroup = group;
 
+        TextField search = new TextField("");
+        search.setMessageText("$text.editor.search");
+
+        table.table("underline", t -> {
+            t.addImage("icon-zoom").size(24f).padLeft(4).padRight(4);
+            t.add(search).growX().padTop(3).padBottom(3).padRight(4);
+        }).growX();
+
+        table.row();
+
+        table.table("underline", extra -> extra.labelWrap(() -> editor.getDrawBlock().formalName).width(200f).center()).growX();
+        table.row();
+        table.add(pane).growY().fillX();
+
+        rebuildBlockSelection(content, group, search);
+
+        search.changed(() -> rebuildBlockSelection(content, group, search));
+    }
+
+    private void rebuildBlockSelection(Table content, ButtonGroup<ImageButton> group, TextField search){
+        content.clearChildren();
+        group.clear();
+        blockButtons.clear();
+        String query = search.getText().toLowerCase();
         int i = 0;
 
         for(Block block : Vars.content.blocks()){
             TextureRegion[] regions = block.getCompactIcon();
-            if((block.synthetic() && (Recipe.getByResult(block) == null || !control.unlocks.isUnlocked(Recipe.getByResult(block))))
+            if((block.synthetic() && !(block instanceof Prop) && (Recipe.getByResult(block) == null || !control.unlocks.isUnlocked(Recipe.getByResult(block))))
                     && block != StorageBlocks.core){
                 continue;
             }
@@ -638,6 +644,8 @@ public class MapEditorDialog extends Dialog implements Disposable{
             }
 
             if(regions.length == 0 || regions[0] == Draw.region("jjfgj")) continue;
+
+            if(!query.isEmpty() && !block.formalName.toLowerCase().contains(query)) continue;
 
             Stack stack = new Stack();
 
@@ -653,6 +661,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
             button.getImage().remove();
             button.update(() -> button.setChecked(editor.getDrawBlock() == block));
             group.add(button);
+            blockButtons.put(button, block);
             content.add(button).size(60f);
 
             if(i++ % 3 == 2){
@@ -660,10 +669,6 @@ public class MapEditorDialog extends Dialog implements Disposable{
             }
         }
 
-        group.getButtons().get(2).setChecked(true);
-
-        table.table("underline", extra -> extra.labelWrap(() -> editor.getDrawBlock().formalName).width(220f).center()).growX();
-        table.row();
-        table.add(pane).growY().fillX();
+        updateSelectedBlock();
     }
 }

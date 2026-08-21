@@ -153,12 +153,12 @@ public class TypeIO{
 
     @WriteClass(Block.class)
     public static void writeBlock(ByteBuffer buffer, Block block){
-        buffer.put(block.id);
+        buffer.putShort(block.id);
     }
 
     @ReadClass(Block.class)
     public static Block readBlock(ByteBuffer buffer){
-        return content.block(buffer.get());
+        return content.block(buffer.getShort());
     }
 
     @WriteClass(BuildRequest[].class)
@@ -168,7 +168,7 @@ public class TypeIO{
             buffer.put(request.breaking ? (byte) 1 : 0);
             buffer.putInt(world.toPacked(request.x, request.y));
             if(!request.breaking){
-                buffer.put(request.recipe.id);
+                buffer.put((byte) request.recipe.id);
                 buffer.put((byte) request.rotation);
             }
         }
@@ -188,7 +188,7 @@ public class TypeIO{
             }else{ //place
                 byte recipe = buffer.get();
                 byte rotation = buffer.get();
-                currentRequest = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe));
+                currentRequest = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe & 0xFF));
             }
 
             reqs[i] = (currentRequest);
@@ -259,73 +259,73 @@ public class TypeIO{
 
     @WriteClass(Weapon.class)
     public static void writeWeapon(ByteBuffer buffer, Weapon weapon){
-        buffer.put(weapon.id);
+        buffer.put((byte) weapon.id);
     }
 
     @ReadClass(Weapon.class)
     public static Weapon readWeapon(ByteBuffer buffer){
-        return content.getByID(ContentType.weapon, buffer.get());
+        return content.getByID(ContentType.weapon, buffer.get() & 0xFF);
     }
 
     @WriteClass(Mech.class)
     public static void writeMech(ByteBuffer buffer, Mech mech){
-        buffer.put(mech.id);
+        buffer.put((byte) mech.id);
     }
 
     @ReadClass(Mech.class)
     public static Mech readMech(ByteBuffer buffer){
-        return content.getByID(ContentType.mech, buffer.get());
+        return content.getByID(ContentType.mech, buffer.get() & 0xFF);
     }
 
     @WriteClass(Liquid.class)
     public static void writeLiquid(ByteBuffer buffer, Liquid liquid){
-        buffer.put(liquid.id);
+        buffer.put((byte) liquid.id);
     }
 
     @ReadClass(Liquid.class)
     public static Liquid readLiquid(ByteBuffer buffer){
-        return content.liquid(buffer.get());
+        return content.liquid(buffer.get() & 0xFF);
     }
 
     @WriteClass(AmmoType.class)
     public static void writeAmmo(ByteBuffer buffer, AmmoType type){
-        buffer.put(type.id);
+        buffer.put((byte) type.id);
     }
 
     @ReadClass(AmmoType.class)
     public static AmmoType readAmmo(ByteBuffer buffer){
-        return content.getByID(ContentType.weapon, buffer.get());
+        return content.getByID(ContentType.ammo, buffer.get() & 0xFF);
     }
 
     @WriteClass(BulletType.class)
     public static void writeBulletType(ByteBuffer buffer, BulletType type){
-        buffer.put(type.id);
+        buffer.put((byte) type.id);
     }
 
     @ReadClass(BulletType.class)
     public static BulletType readBulletType(ByteBuffer buffer){
-        return content.getByID(ContentType.bullet, buffer.get());
+        return content.getByID(ContentType.bullet, buffer.get() & 0xFF);
     }
 
     @WriteClass(Item.class)
     public static void writeItem(ByteBuffer buffer, Item item){
-        buffer.put(item == null ? -1 : item.id);
+        buffer.put(item == null ? (byte)-1 : (byte)item.id);
     }
 
     @ReadClass(Item.class)
     public static Item readItem(ByteBuffer buffer){
         byte id = buffer.get();
-        return id == -1 ? null : content.item(id);
+        return id == -1 ? null : content.item(id & 0xFF);
     }
 
     @WriteClass(Recipe.class)
     public static void writeRecipe(ByteBuffer buffer, Recipe recipe){
-        buffer.put(recipe.id);
+        buffer.put((byte) recipe.id);
     }
 
     @ReadClass(Recipe.class)
     public static Recipe readRecipe(ByteBuffer buffer){
-        return content.recipe(buffer.get());
+        return content.recipe(buffer.get() & 0xFF);
     }
 
     @WriteClass(String.class)

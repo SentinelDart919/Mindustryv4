@@ -2,6 +2,7 @@ package io.anuke.mindustry.content.fx;
 
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
+import io.anuke.mindustry.graphics.DrawPseudo3D;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.ucore.core.Effects.Effect;
@@ -17,7 +18,7 @@ import static io.anuke.mindustry.Vars.tilesize;
 
 public class BlockFx extends FxList implements ContentList{
     public static Effect reactorsmoke, nuclearsmoke, nuclearcloud, redgeneratespark, generatespark, fuelburn, plasticburn,
-    pulverize, pulverizeRed, pulverizeRedder, pulverizeSmall, pulverizeMedium, producesmoke, smeltsmoke, formsmoke, blastsmoke,
+    pulverize, pulverizeRed, pulverizeRedder, pulverizeSmall, pulverizeMedium, producesmoke, smeltsmoke, formsmoke, blastsmoke, smokes,
     lava, dooropen, doorclose, dooropenlarge, doorcloselarge, purify, purifyoil, purifystone, generate, mine, mineBig, mineHuge,
     smelt, teleportActivate, teleport, teleportOut, ripple, bubble, commandSend, healBlock, healBlockFull, healWaveMend, overdriveWave,
     overdriveBlockFull, shieldBreak,
@@ -50,7 +51,12 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
+
         });
+        nuclearcloud.emitLight = true;
+        nuclearcloud.lightRadius = 100f;
+        nuclearcloud.lightOpacity = 0.8f;
+        nuclearcloud.lightColor = Color.valueOf("bf92f9");
 
         fissionCloud = new Effect(180, 400f, e -> {
             Angles.randLenVectors(e.id, 35, e.finpow() * 180f, (x, y) -> {
@@ -60,6 +66,11 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.reset();
             });
         });
+        fissionCloud.emitLight = true;
+        fissionCloud.lightRadius = 150f;
+        fissionCloud.lightOpacity = 0.6f;
+        fissionCloud.lightColor = Color.valueOf("ffd969");
+
         redgeneratespark = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 5, e.fin() * 8f, (x, y) -> {
                 float len = e.fout() * 4f;
@@ -162,6 +173,81 @@ public class BlockFx extends FxList implements ContentList{
                 Draw.rect("circle", e.x + x, e.y + y, size, size);
                 Draw.reset();
             });
+        });
+        smokes = new Effect(240, 96f, e -> {
+            SmokeData data = e.data instanceof SmokeData ? (SmokeData) e.data : null;
+            Color color = data != null ? data.color : e.color;
+            float length = data != null ? data.length : 40f;
+            float direction = data != null ? data.direction : 180f;
+            float size = data != null ? data.size : 3f;
+            float sway = data != null ? data.sway : 1.5f;
+            float arc = data != null ? data.arc : 1f;
+            float speed = data != null ? data.speed : 0.7f;
+            float fade = data != null ? data.fade : 35f;
+            float step = data != null ? data.step : 6f;
+            float path = length * 1.5707963f;
+            float randomness = data != null ? data.randomness : 1f;
+            float speedJitter = Math.min(0.5f, 0.12f * randomness);
+            float arcJitter = 5f * randomness;
+            float riseJitter = 0.07f * length * randomness;
+            float sizeJitter = 0.35f * randomness;
+            float alphaJitter = 0.3f * randomness;
+            float windJitter = 6f * randomness;
+            float windAmpJitter = 0.7f * randomness;
+            float slowestLife = path / (speed * (1f - speedJitter)) + fade;
+            float sweep = 90f * arc;
+            boolean curve = arc > 0.02f;
+            float radius = curve ? length / arc : 0f;
+            float t0 = direction + 90f;
+            int minI = Math.max((int)((e.time - slowestLife) * speed / step) - 1, 0);
+            int maxI = (int)(e.time * speed / step);
+            for(int i = minI; i <= maxI; i++){
+                float tb = i * step / speed;
+                float age = e.time - tb;
+                if(age < 0f) continue;
+                long seed = e.id * 1000003L + i;
+                float pspeed = speed * (1f + Mathf.randomSeedRange(seed, speedJitter));
+                float life = path / pspeed + fade;
+                if(age > life) continue;
+                float fout = 1f - age / life;
+                float dist = Math.min(pspeed * age, path);
+                float extra = Math.max(pspeed * age - path, 0f);
+                float p = dist / path;
+                float fadeIn = fade > 0f ? Mathf.clamp(extra / (fade * pspeed)) : 0f;
+                float t0p = t0 + Mathf.randomSeedRange(seed + 7, arcJitter);
+                float tp = t0p + sweep * p;
+                float rise = Mathf.randomSeedRange(seed + 11, riseJitter);
+                float ox, oy, side;
+                if(curve){
+                    ox = radius * (Angles.trnsy(t0p, 1f) - Angles.trnsy(tp, 1f));
+                    oy = radius * (Angles.trnsx(tp, 1f) - Angles.trnsx(t0p, 1f)) + rise;
+                    side = tp + 90f;
+                }else{
+                    ox = Angles.trnsx(direction, dist);
+                    oy = Angles.trnsy(direction, dist) + rise;
+                    side = direction + 90f;
+                }
+                if(extra > 0f){
+                    ox += Angles.trnsx(direction, extra);
+                    oy += Angles.trnsy(direction, extra);
+                }
+                float windPhase = Mathf.randomSeedRange(seed + 19, windJitter);
+                float windAmp = sway * (1f + Mathf.randomSeedRange(seed + 23, windAmpJitter));
+                float wind = Mathf.sin(p * 360f + e.id * 1.7f + windPhase, 1f, 1f) * windAmp * p * (1f - p)
+                        + Mathf.sin(fadeIn * 540f + e.id * 1.7f + windPhase, 1f, 1f) * windAmp * fadeIn * (1f - fadeIn) * 0.5f;
+                float gx = e.x + ox + Angles.trnsx(side, wind);
+                float gy = e.y + Angles.trnsy(side, wind);
+                float ps = size * (0.6f + p * 0.6f) * (1f + Mathf.randomSeedRange(seed + 13, sizeJitter)) * (1f + fadeIn * 0.6f);
+                float alpha = Mathf.clamp(0.85f + Mathf.randomSeedRange(seed + 17, alphaJitter));
+                float h = DrawPseudo3D.worldHeight(oy);
+                DrawPseudo3D.shadow(gx, gy, oy, length, ps, data != null ? data.shadowAlpha : 0.12f);
+                float scl = DrawPseudo3D.hScale(h);
+                float x = DrawPseudo3D.xHeight(gx, h);
+                float y = DrawPseudo3D.yHeight(gy, h) + oy;
+                Draw.color(color.r, color.g, color.b, fout * 0.6f * alpha);
+                Draw.rect("circle", x, y, ps * scl, ps * scl);
+            }
+            Draw.reset();
         });
         lava = new Effect(18, e -> {
             Angles.randLenVectors(e.id, 3, 1f + e.fin() * 10f, (x, y) -> {
@@ -353,5 +439,43 @@ public class BlockFx extends FxList implements ContentList{
             Lines.poly(e.x, e.y, 6, e.rotation + e.fin(), 90);
             Draw.reset();
         });
+    }
+        //bleh
+    public static class SmokeData{
+        public Color color = Color.WHITE;
+        public float length = 40f;
+        public float direction = 180f;
+        public float size = 3f;
+        public float sway = 1.5f;
+        public float arc = 1f;
+        public float speed = 0.7f;
+        public float fade = 35f;
+        public float step = 6f;
+        public float randomness = 1f;
+        public float shadowAlpha = 0.12f;
+
+        public SmokeData(){
+        }
+
+        public SmokeData(Color color, float length, float direction, float size){
+            this.color = color;
+            this.length = length;
+            this.direction = direction;
+            this.size = size;
+        }
+
+        public SmokeData(Color color, float length, float direction, float size, float randomness){
+            this(color, length, direction, size);
+            this.randomness = randomness;
+        }
+
+        public SmokeData(Color color, float length, float direction, float size, float randomness, float shadowAlpha){
+            this(color, length, direction, size, randomness);
+            this.shadowAlpha = shadowAlpha;
+        }
+
+        public float pathLength(){
+            return length * 1.5707963f;
+        }
     }
 }

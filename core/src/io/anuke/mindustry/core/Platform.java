@@ -96,6 +96,11 @@ public abstract class Platform {
     /**Only used for iOS or android: open the share menu for a map or save.*/
     public void shareFile(FileHandle file){}
 
+    /**Returns the folder the game should store its files in. Defaults to the working directory.*/
+    public FileHandle getAppDirectory(){
+        return Gdx.files.local("");
+    }
+
     /**Show a file chooser. Desktop only.
      *
      * @param text File chooser title text

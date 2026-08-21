@@ -2,10 +2,13 @@ package io.anuke.mindustry.game;
 
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
+import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.EventType.UnlockEvent;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Settings;
+
+import static io.anuke.mindustry.Vars.state;
 
 /**Stores player unlocks. Clientside only.*/
 public class Unlocks{
@@ -16,8 +19,11 @@ public class Unlocks{
         Settings.setSerializer(ContentType.class, (stream, t) -> stream.writeInt(t.ordinal()), stream -> ContentType.values()[stream.readInt()]);
     }
 
-    /** Returns whether or not this piece of content is unlocked yet.*/
+    /** Returns whether or not this piece of content is unlocked yet.
+     * In infinite resource modes (e.g. sandbox) everything is available during a game, even if it wasn't actually unlocked.*/
     public boolean isUnlocked(UnlockableContent content){
+        if(state.mode.infiniteResources && !state.is(State.menu)) return true;
+
         if(content.alwaysUnlocked()) return true;
 
         if(!unlocked.containsKey(content.getContentType())){
@@ -37,6 +43,8 @@ public class Unlocks{
      * @return whether or not this content was newly unlocked.
      */
     public boolean unlockContent(UnlockableContent content){
+        if(state.mode.infiniteResources) return false;
+
         if(!content.canBeUnlocked() || content.alwaysUnlocked()) return false;
 
         if(!unlocked.containsKey(content.getContentType())){
@@ -62,6 +70,8 @@ public class Unlocks{
 
     /** Clears all unlocked content. Automatically saves.*/
     public void reset(){
+        unlocked.clear();
+        dirty = false;
         save();
     }
 

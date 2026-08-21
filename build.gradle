@@ -262,6 +262,7 @@ project(":tests"){
         testImplementation project(":core")
         testImplementation('org.junit.jupiter:junit-jupiter-api:5.1.0')
         testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.1.0')
+        testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.7.1')
         testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
         testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }

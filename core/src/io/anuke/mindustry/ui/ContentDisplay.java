@@ -8,6 +8,7 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.type.Mech;
 import io.anuke.mindustry.type.Recipe;
+import io.anuke.mindustry.type.Weapon;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.BlockStats;
@@ -202,6 +203,40 @@ public class ContentDisplay{
         table.row();
         table.add(Bundles.format("text.unit.speed", Strings.toFixed(unit.speed, 1)));
         table.row();
+        table.add(Bundles.format("text.unit.armor", unit.armor));
+        table.row();
+        table.add(Bundles.format("text.unit.itemcapacity", unit.itemCapacity));
+        table.row();
+
+        if(unit.toMine.size > 0){
+            table.table(mines -> {
+                mines.left();
+                mines.add("[LIGHT_GRAY]" + Bundles.get("text.unit.mineitems") + ":[] ");
+                for(Item item : unit.toMine){
+                    mines.add(new ItemDisplay(item)).padRight(5);
+                }
+            }).fillX().padLeft(10);
+            table.row();
+            table.add(Bundles.format("text.unit.minepower", unit.minePower));
+            table.row();
+        }
+
+        if(unit.weapon != null && unit.weapon.getAmmo() != null && unit.weapon.getAmmo().bullet != null){
+            Weapon weapon = unit.weapon;
+            float damage = weapon.getAmmo().bullet.damage + weapon.getAmmo().bullet.splashDamage;
+            String damageText = damage % 1 == 0 ? String.valueOf((int) damage) : Strings.toFixed(damage, 1);
+
+            table.add(Bundles.format("text.unit.weapon.damage", damageText));
+            table.row();
+            if(weapon.getShots() > 1){
+                table.add(Bundles.format("text.unit.weapon.shots", weapon.getShots()));
+                table.row();
+            }
+            table.add(Bundles.format("text.unit.weapon.reload", Strings.toFixed(weapon.getReload() / 60f, 2)));
+            table.row();
+            table.add(Bundles.format("text.unit.weapon.range", Strings.toFixed(weapon.getAmmo().getRange(), 1)));
+            table.row();
+        }
         table.row();
     }
 }

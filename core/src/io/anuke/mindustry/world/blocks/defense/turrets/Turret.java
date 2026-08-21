@@ -386,7 +386,7 @@ public abstract class Turret extends Block{
         public void read(DataInput stream) throws IOException{
             byte amount = stream.readByte();
             for(int i = 0; i < amount; i++){
-                AmmoType type = content.getByID(ContentType.ammo, stream.readByte());
+                AmmoType type = content.getByID(ContentType.ammo, stream.readByte() & 0xFF);
                 short ta = stream.readShort();
                 ammo.add(new AmmoEntry(type, ta));
                 totalAmmo += ta;

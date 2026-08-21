@@ -19,6 +19,7 @@ import io.anuke.ucore.scene.Group;
 import io.anuke.ucore.scene.event.InputEvent;
 import io.anuke.ucore.scene.event.InputListener;
 import io.anuke.ucore.scene.event.Touchable;
+import io.anuke.ucore.scene.ui.ScrollPane;
 import io.anuke.ucore.scene.ui.layout.Cell;
 import io.anuke.ucore.scene.ui.layout.Table;
 import io.anuke.ucore.scene.ui.layout.Unit;
@@ -26,7 +27,6 @@ import io.anuke.ucore.scene.utils.Cursors;
 import io.anuke.ucore.util.Bundles;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.core.Core;
-import io.anuke.ucore.core.Inputs;
 import io.anuke.ucore.core.Settings;
 
 import static io.anuke.mindustry.Vars.world;
@@ -37,6 +37,7 @@ public class SectorsDialog extends FloatingDialog{
     private Table sectorTable;
     private Table campaignTable;
     private Table exportedTable;
+    private ScrollPane campaignPane;
     private SectorView view;
     private final CampaignManager campaignManager = new CampaignManager();
     private PlanetDefinition selectedPlanet;
@@ -54,13 +55,19 @@ public class SectorsDialog extends FloatingDialog{
         sectorTable.visible(() -> selected != null);
         sectorTable.update(() -> {
             if(selected != null){
-                sectorTable.setPosition(selectedDrawX, selectedDrawY - sectorSize / 2f + 1, Align.top);
+                float x = Mathf.clamp(selectedDrawX, sectorTable.getWidth() / 2f, width - sectorTable.getWidth() / 2f);
+                float y = Mathf.clamp(selectedDrawY - sectorSize / 2f + 1, 10f, height - 90f + sectorTable.getHeight());
+                sectorTable.setPosition(x, y, Align.top);
             }
         });
 
         campaignTable = new Table("button");
         campaignTable.top().left().margin(6f);
-        campaignTable.update(() -> campaignTable.setPosition(10f, height - 10f, Align.topLeft));
+
+        campaignPane = new ScrollPane(campaignTable);
+        campaignPane.setFadeScrollBars(false);
+        campaignPane.setScrollingDisabled(true, false);
+        campaignPane.update(() -> campaignPane.setPosition(10f, height - 10f, Align.topLeft));
 
         exportedTable = new Table("button");
         exportedTable.top().right().margin(6f);
@@ -70,7 +77,7 @@ public class SectorsDialog extends FloatingDialog{
         container.setTouchable(Touchable.childrenOnly);
         container.setFillParent(true);
         container.addChild(sectorTable);
-        container.addChild(campaignTable);
+        container.addChild(campaignPane);
         container.addChild(exportedTable);
 
         margin(0);
@@ -134,6 +141,7 @@ public class SectorsDialog extends FloatingDialog{
         }
 
         campaignTable.pack();
+        campaignPane.setSize(campaignTable.getPrefWidth() + 10f, Math.min(campaignTable.getPrefHeight(), Gdx.graphics.getHeight() - 130f));
     }
 
     void setupExported(){
@@ -313,7 +321,7 @@ public class SectorsDialog extends FloatingDialog{
 
                 @Override
                 public boolean scrolled(InputEvent event, float x, float y, int amount){
-                    pendingScroll += amount * 0.08f;
+                    pendingScroll += amount * 0.10f;
                     return true;
                 }
 
@@ -333,11 +341,6 @@ public class SectorsDialog extends FloatingDialog{
 
         @Override
         public void draw(){
-            float wheel = Inputs.scroll();
-            if(wheel != 0f){
-                pendingScroll += wheel * 0.10f;
-            }
-
             if(pendingScroll != 0f){
                 if(Settings.getBool("planet3d")){
                     zoom = Mathf.clamp(zoom + pendingScroll, 0.45f, 2.3f);

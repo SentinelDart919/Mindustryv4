@@ -38,6 +38,7 @@ public class Liquids implements ContentList{
                 viscosity = 0.8f;
                 tier = 2;
                 effect = StatusEffects.melting;
+                emitLight = true;
             }
         };
 
@@ -47,6 +48,7 @@ public class Liquids implements ContentList{
                 viscosity = 0.8f;
                 tier = 2;
                 effect = StatusEffects.melting;
+                emitLight = true;
             }
         };
 
@@ -67,6 +69,7 @@ public class Liquids implements ContentList{
                 temperature = 0.25f;
                 tier = 1;
                 effect = StatusEffects.freezing;
+                emitLight = true;
             }
         };
 

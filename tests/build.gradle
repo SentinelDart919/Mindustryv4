@@ -2,3 +2,15 @@ apply plugin: "java"
 java {
     sourceCompatibility = 17
 }
+
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+}
+
+dependencies {
+    if(new File(projectDir.parent, 'uCore').exists()){
+        testImplementation project(":uCore")
+    }else{
+        testImplementation "com.github.anuken:ucore:$uCoreVersion"
+    }
+}

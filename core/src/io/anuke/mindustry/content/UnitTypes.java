@@ -2,14 +2,10 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ObjectSet;
-import io.anuke.mindustry.entities.units.BiomassAirUnit;
-import io.anuke.mindustry.entities.units.BiomassGroundUnit;
-import io.anuke.mindustry.entities.units.TankUnit;
-import io.anuke.mindustry.entities.units.UnitType;
+import io.anuke.mindustry.entities.units.*;
 import io.anuke.mindustry.entities.units.types.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.type.ContentType;
-import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.ucore.util.Mathf;
 
@@ -19,8 +15,9 @@ public class UnitTypes implements ContentList{
         alphaDrone, defenseDrone,
         scrapper , wraith, ghoul, revenant, lich, reaper,
         crawler, bombDrone,
-        scrappeon, dagger, titan, fortress, chaosarray,
+        scrappeon, dagger, titan, fortress, chaosarray, eradicator,
         debugtank, nova,
+        atrax,
         trainEngine,
         minerDroneT1, minerDroneT2, logisticsDrone,
         evilDraug, evilDagger, evilWraith, explosiveBiomass, FlyingExplosiveBiomass, evilTanky, exterminatorBiomass, evilSwarmDrone, artilleryBiomass, acidMosquito; // the mass units btw
@@ -110,6 +107,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 1.6f;
             range = 50f;
             health = 100;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             rtsAIControllable = false;
         }};
@@ -233,6 +231,25 @@ public class UnitTypes implements ContentList{
             unitCost = 100;
         }};
 
+        atrax = new UnitType("atrax", Atrax.class, Atrax::new){{
+            speed = 0.6f;
+            drag = 0.4f;
+            maxVelocity = 1.3f;
+            hitsize = 13f;
+            mass = 2.5f;
+            targetAir = false;
+            health = 600;
+            armor = 3f;
+            weapon = Weapons.attraxSpitter;
+            unitCost = 60;
+            legCount = 4;
+            legLength = 15;
+            legForwardScl = 1.2f;
+            legMoveSpace = 1.5f;
+            immunities.add(StatusEffects.burning);
+            immunities.add(StatusEffects.melting);
+        }};
+
         scrapper = new UnitType("scrapper", Scrapper.class, Scrapper::new){{
             speed = 0.2f;
             maxVelocity = 1.2f;
@@ -305,6 +322,7 @@ public class UnitTypes implements ContentList{
             engineOffsetY = -21f;
             engineSize = 8f;
             trailColor = Palette.lighterOrange;
+            isBoss = true;
         }};
 
         reaper = new UnitType("reaper", Lich.class, Lich::new ){{
@@ -325,6 +343,7 @@ public class UnitTypes implements ContentList{
             trailColor = Palette.lighterOrange;
             weapon = Weapons.reaperGun;
             unitCost = 4000;
+            isBoss = true;
         }};
 
         chaosarray = new UnitType("chaos-array", ChaosArray.class, ChaosArray::new){{
@@ -337,6 +356,20 @@ public class UnitTypes implements ContentList{
             rotatespeed = 0.06f;
             weapon = Weapons.chaos;
             unitCost = 1500;
+            isBoss = true;
+        }};
+
+        eradicator = new UnitType("eradicator", Eradicator.class, Eradicator::new){{
+            health = 9000;
+            maxVelocity = 0.68f;
+            speed = 0.12f;
+            drag = 0.4f;
+            mass = 5f;
+            hitsize = 20f;
+            rotatespeed = 0.06f;
+            unitCost = 3500;
+            weapon = Weapons.eradicator;
+            isBoss = true;
         }};
 
         debugtank = new UnitType("debugtank", TankUnit.class, TankUnit::new){{
@@ -382,6 +415,7 @@ public class UnitTypes implements ContentList{
             maxVelocity = 0.90f;
             range = 55f;
             health = 40;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             playerControllable = false;
             rtsAIControllable = false;
@@ -398,6 +432,7 @@ public class UnitTypes implements ContentList{
             itemCapacity = 70;
             health = 220;
             minePower = 1.2f;
+            toMine = ObjectSet.with(Items.lead, Items.copper);
             spawnsInSiegeMode = false;
             playerControllable = false;
             rtsAIControllable = false;

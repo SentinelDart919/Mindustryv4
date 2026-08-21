@@ -1,11 +1,17 @@
 package io.anuke.mindustry.world.blocks.power;
 
+import com.badlogic.gdx.graphics.Color;
+import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.consumers.ConsumeLiquidFilter;
+import io.anuke.mindustry.world.meta.BlockStat;
+import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.LiquidFilterValue;
 import io.anuke.ucore.core.Effects;
+import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
@@ -13,10 +19,23 @@ import static io.anuke.mindustry.Vars.content;
 import static io.anuke.mindustry.Vars.tilesize;
 
 public abstract class ItemLiquidGenerator extends ItemGenerator{
+    protected final int timerSmoke = timers++;
     protected float minLiquidEfficiency = 0.2f;
     protected float powerPerLiquid = 0.13f;
     /**Maximum liquid used per frame.*/
     protected float maxLiquidGenerate = 0.4f;
+
+    //smoke settings
+    /**whether this generator emits smoke while running.*/
+    protected boolean smoke = true;
+    protected Effect smokeEffect = BlockFx.smokes;
+    protected Color smokeColor = Color.valueOf("6d6d6d");
+    protected float smokeLength = 20f;
+    protected float smokeDirection = 180f;
+    protected float smokeSize = 3f;
+    protected float smokeInterval = 32f;
+    protected float smokeRandomness = 1f;
+    protected float smokeShadowAlpha = 0.12f;
 
     public ItemLiquidGenerator(String name){
         super(name);
@@ -29,6 +48,16 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
     @Override
     public void init(){
         super.init();
+    }
+
+    @Override
+    public void setStats(){
+        super.setStats();
+
+        //show liquid as required fuel instead of an optional boost
+        stats.remove(BlockStat.boostLiquid);
+        stats.add(BlockStat.inputLiquidFuel, new LiquidFilterValue(liquid -> getLiquidEfficiency(liquid) >= minLiquidEfficiency));
+        stats.add(BlockStat.liquidFuelUse, maxLiquidGenerate * 60f, StatUnit.liquidSecond);
     }
 
     @Override
@@ -54,8 +83,11 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
             entity.liquids.remove(liquid, used);
             entity.power.amount += used * powerPerLiquid;
 
-            if(used > 0.001f && Mathf.chance(0.05 * entity.delta())){
-                Effects.effect(generateEffect, tile.drawx() + Mathf.range(3f), tile.drawy() + Mathf.range(3f));
+            if(used > 0.001f){
+                emitSmoke(tile);
+                if(Mathf.chance(0.05 * entity.delta())){
+                    Effects.effect(generateEffect, tile.drawx() + Mathf.range(3f), tile.drawy() + Mathf.range(3f));
+                }
             }
         }else if(entity.cons.valid()){
 
@@ -74,6 +106,8 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
                 entity.power.amount += maxPower;
                 entity.generateTime = Mathf.clamp(entity.generateTime);
 
+                emitSmoke(tile);
+
                 if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
                     entity.damage(Mathf.random(8f));
                     Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
@@ -81,6 +115,14 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
             }
         }
         entity.ambientSoundEnabled = entity.generateTime > 0;
+    }
+
+    protected void emitSmoke(Tile tile){
+        if(!smoke) return;
+        if(tile.entity().timer.get(timerSmoke, smokeInterval)){
+            Effects.effect(smokeEffect, tile.drawx() + Mathf.range(2f), tile.drawy() + Mathf.range(2f), 0f,
+                    new BlockFx.SmokeData(smokeColor, smokeLength * size, smokeDirection, smokeSize * size, smokeRandomness, smokeShadowAlpha));
+        }
     }
 
     @Override

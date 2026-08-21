@@ -29,6 +29,9 @@ public class ExplosionFx extends FxList implements ContentList{
             Lines.circle(e.x, e.y, e.fin() * 50f);
             Draw.reset();
         });
+        //bigShockwave.emitLight = true; ignore I was testing
+        //bigShockwave.lightRadius = 70f;
+        //bigShockwave.lightOpacity = 0.6f;
 
         nuclearShockwave = new Effect(10f, 200f, e -> {
             Draw.color(Color.WHITE, Color.LIGHT_GRAY, e.fin());
@@ -36,6 +39,10 @@ public class ExplosionFx extends FxList implements ContentList{
             Lines.poly(e.x, e.y, 40, e.fin() * 140f);
             Draw.reset();
         });
+        nuclearShockwave.emitLight = true;
+        nuclearShockwave.lightRadius = 160f;
+        nuclearShockwave.lightOpacity = 0.8f;
+        nuclearShockwave.lightColor = Palette.lighterOrange;
 
         fusionShockwave = new Effect(20f, 400f, e -> {
             Draw.color(Color.LIGHT_GRAY, Color.DARK_GRAY, e.fin());
@@ -43,6 +50,10 @@ public class ExplosionFx extends FxList implements ContentList{
             Lines.poly(e.x, e.y, 80, e.fin() * 280f);
             Draw.reset();
         });
+        fusionShockwave.emitLight = true;
+        fusionShockwave.lightRadius = 320f;
+        fusionShockwave.lightOpacity = 1.6f;
+        fusionShockwave.lightColor = Color.ORANGE;
 
         explosion = new Effect(30, e -> {
             e.scaled(7, i -> {
@@ -66,6 +77,10 @@ public class ExplosionFx extends FxList implements ContentList{
 
             Draw.reset();
         });
+        explosion.emitLight = true;
+        explosion.lightRadius = 45f;
+        explosion.lightOpacity = 0.6f;
+        explosion.lightColor = Palette.lightOrange;
 
         blockExplosion = new Effect(30, e -> {
             e.scaled(7, i -> {
@@ -89,6 +104,10 @@ public class ExplosionFx extends FxList implements ContentList{
 
             Draw.reset();
         });
+        blockExplosion.emitLight = true;
+        blockExplosion.lightRadius = 45f;
+        blockExplosion.lightOpacity = 0.6f;
+        blockExplosion.lightColor = Palette.lightOrange;
 
         blockExplosionSmoke = new Effect(30, e -> {
             Draw.color(Color.GRAY);

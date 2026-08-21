@@ -10,12 +10,13 @@ import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
-public class PhaseWeaver extends PowerSmelter{
+public class PhaseWeaver extends GenericCrafter{
     protected TextureRegion bottomRegion;
     protected TextureRegion weaveRegion;
 
     public PhaseWeaver(String name){
         super(name);
+        smoke = false;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class PhaseWeaver extends PowerSmelter{
 
     @Override
     public void draw(Tile tile){
-        PowerSmelterEntity entity = tile.entity();
+        GenericCrafterEntity entity = tile.entity();
 
         Draw.rect(bottomRegion, tile.drawx(), tile.drawy());
 

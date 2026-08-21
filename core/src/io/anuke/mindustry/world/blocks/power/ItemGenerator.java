@@ -11,6 +11,7 @@ import io.anuke.mindustry.world.consumers.ConsumeItemFilter;
 import io.anuke.mindustry.world.meta.BlockBar;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.ItemFilterValue;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.core.Timers;
@@ -50,6 +51,10 @@ public abstract class ItemGenerator extends PowerGenerator{
     public void setStats(){
         super.setStats();
 
+        //shows the item as a required combustible input instead of an optional boost
+        stats.remove(BlockStat.boostItem);
+        stats.add(BlockStat.inputFuel, new ItemFilterValue(item -> getItemEfficiency(item) >= minItemEfficiency));
+        stats.add(BlockStat.fuelBurnTime, itemDuration / 60f, StatUnit.seconds);
         stats.add(BlockStat.basePowerGeneration, powerOutput * 60f * 0.5f, StatUnit.powerSecond);
     }
 

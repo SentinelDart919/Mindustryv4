@@ -14,6 +14,10 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
+import io.anuke.mindustry.world.meta.BlockStat;
+import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.mindustry.world.meta.values.ItemListValue;
+import io.anuke.mindustry.world.meta.values.UnitListValue;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.scene.style.TextureRegionDrawable;
 import io.anuke.ucore.scene.ui.ButtonGroup;
@@ -51,11 +55,27 @@ public class MiningPost extends Block {
             unit.add();
             entity.droneIDs.add(unit.id);
             entity.spawnTimer = 0;
+            useContent(tile, postDrone);
         }
 
         if (entity.items.total() > 0) {
             tryDump(tile);
         }
+    }
+
+    @Override
+    public void setStats() {
+        super.setStats();
+
+        if (ItemOptions != null && ItemOptions.length > 0) {
+            stats.add(BlockStat.mineItems, new ItemListValue(ItemOptions));
+        }
+
+        if (postDrone != null) {
+            stats.add(BlockStat.spawnUnit, new UnitListValue(postDrone));
+        }
+
+        stats.add(BlockStat.maxUnits, maxDrones, StatUnit.none);
     }
 
     @Override

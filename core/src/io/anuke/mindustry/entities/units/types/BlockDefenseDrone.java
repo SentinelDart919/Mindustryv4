@@ -74,7 +74,7 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
             if(target == null){
                 despawnTimer += Timers.delta();
                 if(despawnTimer > 60f * despawnTime){
-                    Call.onDefenseDroneFade(BlockDefenseDrone.this);
+                    setState(returning);
                 }
             }
 
@@ -83,6 +83,29 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
             }
             if(distanceTo(leader) > 500f){
                 damage(99999f);
+            }
+        }
+    };
+
+    public final UnitState returning = new UnitState() {
+        @Override
+        public void update() {
+            if(leader == null || leader.isDead()){
+                damage(99999f);
+                return;
+            }
+
+            target = leader;
+            moveTo(0f);
+            target = null;
+
+            if(leader.lastDamager != null && leader.lastDamager instanceof TargetTrait && !((TargetTrait)leader.lastDamager).isDead() && distanceTo((TargetTrait)leader.lastDamager) < getWeapon().getAmmo().getRange() * 1.5f){
+                setState(attack);
+                return;
+            }
+
+            if(distanceTo(leader) < 8f){
+                Call.onDefenseDroneFade(BlockDefenseDrone.this);
             }
         }
     };

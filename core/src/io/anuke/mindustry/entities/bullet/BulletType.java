@@ -1,14 +1,20 @@
 package io.anuke.mindustry.entities.bullet;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.game.Content;
+import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.StatusEffect;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.entities.impl.BaseBulletType;
+import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Translator;
 
 public abstract class BulletType extends Content implements BaseBulletType<Bullet>{
@@ -44,6 +50,20 @@ public abstract class BulletType extends Content implements BaseBulletType<Bulle
     public boolean collides = true;
     /**Whether velocity is inherited from the shooter.*/
     public boolean keepVelocity = true;
+
+    public boolean emitLight = false;
+    public Color lightColor = Color.WHITE;
+    public float lightRadius = 40f;
+    public float lightOpacity = 0.5f;
+
+    /**Whether this bullet type renders a bloom glow behind the sprite.*/
+    public boolean bloom = true;
+    /**Color of the bloom glow.*/
+    public Color bloomColor = Color.WHITE;
+    /**Radius of the bloom glow in world units.*/
+    public float bloomRadius = 24f;
+    /**Strength of the bloom glow, 0-1. Should stay bright enough to pass the bloom threshold.*/
+    public float bloomOpacity = 1f;
 
     protected Translator vector = new Translator();
 
@@ -112,6 +132,39 @@ public abstract class BulletType extends Content implements BaseBulletType<Bulle
     public void hit(Bullet b, float hitx, float hity){
         Effects.effect(hiteffect, hitx, hity, b.angle());
     }
+
+    public void drawLight(Bullet b){
+        boolean emit = b.emitLight != null ? b.emitLight : emitLight;
+        float radius = b.lightRadius < 0 ? lightRadius : b.lightRadius;
+        float opacity = b.lightOpacity < 0 ? lightOpacity : b.lightOpacity;
+        Color color = b.lightColor != null ? b.lightColor : lightColor;
+
+        if(emit && radius > 0.001f){
+            Draw.color(color);
+            Shaders.light.region = Draw.region("circle");
+            Draw.alpha(opacity);
+            Draw.rect("circle", b.x, b.y, radius * 2, radius * 2);
+            Draw.alpha(opacity * 0.5f);
+            Draw.rect("circle", b.x, b.y, radius * 2, radius * 2);
+        }
+    }
+
+    private static TextureRegion glowRegion;
+
+    /**Draws an additive bloom glow behind the bullet. Called by the bullet entity before.*/
+    /*public void drawBloom(Bullet b){
+        if(bloom && bloomRadius > 0.001f){
+            if(glowRegion == null){
+                glowRegion = ;
+            }
+            Draw.color(bloomColor);
+            Draw.alpha(bloomOpacity);
+            Draw.rect(glowRegion, b.x, b.y, bloomRadius * 2, bloomRadius * 2);
+            Draw.alpha(bloomOpacity * 0.5f);
+            Draw.rect(glowRegion, b.x, b.y, bloomRadius * 2, bloomRadius * 2);
+            Draw.color();
+        }
+    }*/
 
     @Override
     public void despawned(Bullet b){

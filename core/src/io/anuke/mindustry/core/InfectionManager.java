@@ -35,8 +35,7 @@ public class InfectionManager extends Module {
                     tile.isInfected = true;
                 }
 
-                if (tile.block() instanceof Rock) {
-                    Rock rock = (Rock) tile.block();
+                if (tile.block() instanceof Rock rock) {
                     if (rock.infectedVariant != null) {
                         tile.setBlock(rock.infectedVariant);
                         tile.isInfected = true;
@@ -53,8 +52,7 @@ public class InfectionManager extends Module {
             tile.setFloor(tile.floor().infectedVariant);
         }
         
-        if (tile.block() instanceof io.anuke.mindustry.world.blocks.Rock) {
-            io.anuke.mindustry.world.blocks.Rock rock = (io.anuke.mindustry.world.blocks.Rock) tile.block();
+        if (tile.block() instanceof Rock rock) {
             if (rock.infectedVariant != null) {
                 tile.setBlock(rock.infectedVariant);
             }
@@ -105,7 +103,7 @@ public class InfectionManager extends Module {
                         float chance = BASE_CHANCE + (infectedNeighbors * NEIGHBOR_MULTIPLIER);
                         if (Mathf.chance(chance)) {
 
-                            if (other != null && !other.isInfected) {
+                            if (!other.isInfected) {
                                 infectInternal(other);
                                 nextQueue.add(other.packedPosition());
                                 
@@ -128,8 +126,7 @@ public class InfectionManager extends Module {
     private boolean canInfect(Tile tile) {
         if (tile == null || tile.isInfected) return false;
         if (tile.floor().infectedVariant != null) return true;
-        if (tile.block() instanceof io.anuke.mindustry.world.blocks.Rock) {
-            io.anuke.mindustry.world.blocks.Rock rock = (io.anuke.mindustry.world.blocks.Rock) tile.block();
+        if (tile.block() instanceof Rock rock) {
             return rock.infectedVariant != null;
         }
         return false;

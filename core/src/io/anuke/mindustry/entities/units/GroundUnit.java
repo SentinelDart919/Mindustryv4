@@ -35,6 +35,8 @@ public abstract class GroundUnit extends BaseUnit{
     protected static Translator vec = new Translator();
     private static final int maxOrderPathNodes = 700;
     private static final int orderPathRepathDelay = 30;
+    protected static final int movePathMaxNodes = 400;
+    protected static final int movePathRepathDelay = 15;
 
     protected float walkTime;
     protected float stuckTime;
@@ -44,6 +46,10 @@ public abstract class GroundUnit extends BaseUnit{
     protected IntArray orderPath = new IntArray();
     protected int orderPathCursor = 0;
     protected int orderPathRepath = 0;
+    protected IntArray movePath = new IntArray();
+    protected int movePathCursor = 0;
+    protected int movePathRepath = 0;
+    protected float movePathTargetX, movePathTargetY;
 
     public final UnitState
 
@@ -97,6 +103,7 @@ public abstract class GroundUnit extends BaseUnit{
             Unit healer = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != GroundUnit.this);
             Tile repair = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
             if(health >= maxHealth()){
+                clearMovePath();
                 if(isCommanded()){
                     onCommand(getCommand());
                 }else{
@@ -106,6 +113,7 @@ public abstract class GroundUnit extends BaseUnit{
             }
 
             if(retarget() || target == null || (target instanceof TileEntity && (((TileEntity)target).getTile() == null || ((TileEntity)target).getTile().target().block().flags == null || !((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair))) || (target instanceof Unit && !((Unit)target).isHealer())){
+                clearMovePath();
                 if(repair != null) target = repair.entity();
                 else if(healer != null) target = healer;
                 else target = getClosestCore();
@@ -115,12 +123,12 @@ public abstract class GroundUnit extends BaseUnit{
                 float dst = distanceTo(target);
                 if(dst > 7f){
                     if(target instanceof TileEntity && ((TileEntity)target).getTile() != null && ((TileEntity)target).getTile().target().block().flags != null && ((TileEntity)target).getTile().target().block().flags.contains(BlockFlag.repair)){
-                        moveTo(target.getX(), target.getY());
+                        moveWithPathfinding(target.getX(), target.getY());
                     }else if(target instanceof Unit && ((Unit)target).isHealer()){
                         if(dst > type.healRange){
                             moveToHome();
                         }else{
-                            moveTo(target.getX(), target.getY());
+                            moveWithPathfinding(target.getX(), target.getY());
                         }
                     }else{
                         moveToHome();
@@ -184,6 +192,10 @@ public abstract class GroundUnit extends BaseUnit{
         super.update();
 
         stuckTime = !vec.set(x, y).sub(lastPosition()).isZero(0.0001f) ? 0f : stuckTime + Timers.delta();
+
+        if(stuckTime > 20f){
+            clearMovePath();
+        }
 
         if(!velocity.isZero()){
             baseRotation = Mathf.slerpDelta(baseRotation, velocity.angle(), 0.05f);
@@ -289,6 +301,174 @@ public abstract class GroundUnit extends BaseUnit{
         orderPath.clear();
         orderPathCursor = 0;
         orderPathRepath = 0;
+    }
+
+    protected void clearMovePath(){
+        movePath.clear();
+        movePathCursor = 0;
+        movePathRepath = 0;
+    }
+
+    protected void moveWithPathfinding(float targetX, float targetY){
+        Tile start = world.tileWorld(x, y);
+        Tile goal = world.tileWorld(targetX, targetY);
+
+        if(start == null || goal == null){
+            moveTo(targetX, targetY);
+            return;
+        }
+
+        goal = findPassableGoal(goal);
+        if(start == goal) return;
+
+        boolean needsRepath = movePathRepath <= 0 || movePath.size == 0 || movePathCursor >= movePath.size ||
+                Mathf.dst(movePathTargetX - targetX, movePathTargetY - targetY) > tilesize * 3;
+
+        if(needsRepath){
+            buildMovePath(start, goal);
+            movePathTargetX = targetX;
+            movePathTargetY = targetY;
+            movePathRepath = movePathRepathDelay;
+        }else{
+            movePathRepath--;
+        }
+
+        if(movePath.size == 0 || movePathCursor >= movePath.size){
+            moveTo(targetX, targetY);
+            return;
+        }
+
+        Tile waypoint = world.tile(movePath.get(movePathCursor));
+        if(waypoint == null){
+            moveTo(targetX, targetY);
+            return;
+        }
+
+        if(Mathf.dst(x - waypoint.worldx(), y - waypoint.worldy()) <= tilesize * 0.55f){
+            movePathCursor++;
+            if(movePathCursor >= movePath.size){
+                moveTo(targetX, targetY);
+                return;
+            }
+            waypoint = world.tile(movePath.get(movePathCursor));
+            if(waypoint == null){
+                moveTo(targetX, targetY);
+                return;
+            }
+        }
+
+        if(stuckTime > 8f){
+            clearMovePath();
+            float jitterAngle = Mathf.atan2(targetX - x, targetY - y) + Mathf.range(120f);
+            velocity.add(vec.trns(jitterAngle, type.speed * 0.7f * Timers.delta()));
+            rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
+            return;
+        }
+
+        moveTo(waypoint.worldx(), waypoint.worldy());
+    }
+
+    protected void buildMovePath(Tile start, Tile goal){
+        movePath.clear();
+        movePathCursor = 0;
+
+        if(start == goal) return;
+
+        IntArray open = new IntArray();
+        IntIntMap cameFrom = new IntIntMap();
+        IntIntMap gScore = new IntIntMap();
+        IntIntMap fScore = new IntIntMap();
+        IntIntMap closed = new IntIntMap();
+
+        int startPos = start.packedPosition();
+        int goalPos = goal.packedPosition();
+
+        open.add(startPos);
+        gScore.put(startPos, 0);
+        fScore.put(startPos, (Math.abs(start.x - goal.x) + Math.abs(start.y - goal.y)) * 10);
+
+        int expanded = 0;
+
+        while(open.size > 0 && expanded < movePathMaxNodes){
+            int bestIndex = 0;
+            int current = open.get(0);
+            int bestScore = fScore.get(current, Integer.MAX_VALUE);
+
+            for(int i = 1; i < open.size; i++){
+                int node = open.get(i);
+                int score = fScore.get(node, Integer.MAX_VALUE);
+                if(score < bestScore){
+                    bestScore = score;
+                    current = node;
+                    bestIndex = i;
+                }
+            }
+
+            open.removeIndex(bestIndex);
+
+            if(current == goalPos){
+                reconstructMovePath(cameFrom, current, startPos);
+                return;
+            }
+
+            closed.put(current, 1);
+            expanded++;
+
+            Tile currentTile = world.tile(current);
+            if(currentTile == null) continue;
+
+            for(int sx = -1; sx <= 1; sx++){
+                for(int sy = -1; sy <= 1; sy++){
+                    if(sx == 0 && sy == 0) continue;
+                    int nx = currentTile.x + sx, ny = currentTile.y + sy;
+                    Tile next = world.tile(nx, ny);
+                    if(next == null || !orderPassable(next)) continue;
+                    if(sx != 0 && sy != 0 && (world.solid(currentTile.x + sx, currentTile.y) || world.solid(currentTile.x, currentTile.y + sy))){
+                        continue;
+                    }
+
+                    int nextPos = next.packedPosition();
+                    if(closed.get(nextPos, 0) == 1) continue;
+
+                    int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
+                    int stepCost = (sx == 0 || sy == 0 ? 10 : 14) + (int)(next.cost * 2f);
+                    int tentativeG = currentScore + stepCost;
+                    int known = gScore.get(nextPos, Integer.MAX_VALUE / 8);
+
+                    if(tentativeG < known){
+                        cameFrom.put(nextPos, current);
+                        gScore.put(nextPos, tentativeG);
+                        int heuristic = (Math.abs(next.x - goal.x) + Math.abs(next.y - goal.y)) * 10;
+                        fScore.put(nextPos, tentativeG + heuristic);
+
+                        boolean exists = false;
+                        for(int i = 0; i < open.size; i++){
+                            if(open.get(i) == nextPos){
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if(!exists) open.add(nextPos);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void reconstructMovePath(IntIntMap cameFrom, int current, int startPos){
+        IntArray rev = new IntArray();
+        rev.add(current);
+
+        while(cameFrom.containsKey(current)){
+            current = cameFrom.get(current, startPos);
+            rev.add(current);
+            if(current == startPos) break;
+        }
+
+        for(int i = rev.size - 2; i >= 0; i--){
+            movePath.add(rev.get(i));
+        }
+        movePathCursor = 0;
     }
 
     protected void followOrderPath(){
@@ -610,7 +790,7 @@ public abstract class GroundUnit extends BaseUnit{
     @Override
     public void read(DataInput data, long time) throws IOException{
         super.read(data, time);
-        weapon = content.getByID(ContentType.weapon, data.readByte());
+        weapon = content.getByID(ContentType.weapon, data.readByte() & 0xFF);
     }
 
     @Override
@@ -621,7 +801,7 @@ public abstract class GroundUnit extends BaseUnit{
 
     @Override
     public void readSave(DataInput stream) throws IOException{
-        weapon = content.getByID(ContentType.weapon, stream.readByte());
+        weapon = content.getByID(ContentType.weapon, stream.readByte() & 0xFF);
         super.readSave(stream);
     }
 
@@ -655,6 +835,19 @@ public abstract class GroundUnit extends BaseUnit{
         float angle = angleTo(x, y);
         velocity.add(vec.trns(angle, type.speed * Timers.delta()));
         rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
+    }
+
+    protected void getBehindTarget(Unit target, float behindDist, Translator out){
+        float targetAngle;
+        float tvx = target.getTargetVelocityX();
+        float tvy = target.getTargetVelocityY();
+        if(Mathf.dst(tvx, tvy) > 0.15f){
+            targetAngle = Mathf.atan2(tvx, tvy);
+        }else{
+            targetAngle = target.rotation;
+        }
+        float behindAngle = targetAngle + 180f;
+        out.set(Angles.trnsx(behindAngle, behindDist), Angles.trnsy(behindAngle, behindDist));
     }
 
     protected void moveToEnemyCore(){

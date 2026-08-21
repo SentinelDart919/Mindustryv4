@@ -149,9 +149,18 @@ public class StatusController implements Saveable{
         for(int i = 0; i < amount; i++){
             byte id = stream.readByte();
             float time = stream.readShort() / 2f;
-            StatusEntry entry = Pooling.obtain(StatusEntry.class, StatusEntry::new);
-            entry.set(content.getByID(ContentType.status, id), time);
-            statuses.add(entry);
+            StatusEffect effect = null;
+
+            try{
+                effect = content.getByID(ContentType.status, id & 0xFF);
+            }catch(RuntimeException e){ //status no exist skip it
+            }
+
+            if(effect != null){
+                StatusEntry entry = Pooling.obtain(StatusEntry.class, StatusEntry::new);
+                entry.set(effect, time);
+                statuses.add(entry);
+            }
         }
     }
 

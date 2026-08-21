@@ -98,7 +98,7 @@ public class Revenant extends FlyingUnit{
     @Override
     public void read(DataInput data, long time) throws IOException{
         super.read(data, time);
-        weapon = content.getByID(ContentType.weapon, data.readByte());
+        weapon = content.getByID(ContentType.weapon, data.readByte() & 0xFF);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class Revenant extends FlyingUnit{
 
     @Override
     public void readSave(DataInput stream) throws IOException{
-        weapon = content.getByID(ContentType.weapon, stream.readByte());
+        weapon = content.getByID(ContentType.weapon, stream.readByte() & 0xFF);
         super.readSave(stream);
     }
 }

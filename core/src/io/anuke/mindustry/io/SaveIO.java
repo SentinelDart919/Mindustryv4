@@ -1,13 +1,15 @@
 package io.anuke.mindustry.io;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.core.Platform;
 import io.anuke.mindustry.io.versions.Save16;
 import io.anuke.mindustry.io.versions.Save17;
+import io.anuke.mindustry.io.versions.Save18;
+import io.anuke.mindustry.io.versions.Save19;
 import io.anuke.mindustry.maps.campaign.Campaign;
 
 import java.io.*;
@@ -18,13 +20,17 @@ import static io.anuke.mindustry.Vars.*;
 
 public class SaveIO{
     public static final IntArray breakingVersions = IntArray.with(47, 48, 49, 50, 51, 52, 53, 54, 55, 56);
+    /**How many rotated backups are kept for each save slot, on top of the save file itself.*/
+    public static final int backupCount = 3;
     public static final IntMap<SaveFileVersion> versions = new IntMap<>();
-    public final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
+    public static final String CAMPAIGNS_SAVE_FILE = "campaigns.dat";
     private static final int campaignsSaveVersion = 2;
 
     public static final Array<SaveFileVersion> versionArray = Array.with(
         new Save16(),
-        new Save17()
+        new Save17(),
+        new Save18(),
+        new Save19()
     );
 
     static{
@@ -33,7 +39,7 @@ public class SaveIO{
         }
     }
     public void saveCampaigns(Array<Campaign> campaigns){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+        FileHandle fileHandle = Platform.instance.getAppDirectory().child(CAMPAIGNS_SAVE_FILE);
 
         try(DataOutputStream stream = new DataOutputStream(fileHandle.write(false))){
             stream.writeInt(campaignsSaveVersion);
@@ -49,7 +55,7 @@ public class SaveIO{
     }
 
     public Array<Campaign> loadCampaigns(){
-        FileHandle fileHandle = Gdx.files.local(CAMPAIGNS_SAVE_FILE);
+        FileHandle fileHandle = Platform.instance.getAppDirectory().child(CAMPAIGNS_SAVE_FILE);
         if(!fileHandle.exists()){
             return new Array<>();
         }
@@ -88,13 +94,44 @@ public class SaveIO{
 
     public static void saveToSlot(int slot){
         FileHandle file = fileFor(slot);
-        boolean exists = file.exists();
-        if(exists) file.moveTo(file.sibling(file.name() + "-backup." + file.extension()));
+
+        for(int i = backupCount - 1; i > 0; i--){
+            FileHandle from = backupFile(file, i - 1);
+            if(from.exists()){
+                FileHandle to = backupFile(file, i);
+                if(to.exists()) to.delete();
+                from.moveTo(to);
+            }
+        }
+
+        FileHandle backup = backupFile(file, 0);
+        if(file.exists()){
+            if(backup.exists()) backup.delete();
+            file.moveTo(backup);
+        }
+
         try{
-            write(fileFor(slot));
+            write(file);
         }catch(Exception e){
-            if(exists) file.sibling(file.name() + "-backup." + file.extension()).moveTo(file);
+            restoreBestBackup(file);
             throw new RuntimeException(e);
+        }
+    }
+
+    public static FileHandle backupFile(FileHandle file, int index){
+        if(index == 0) return file.sibling(file.name() + "-backup." + file.extension());
+        return file.sibling(file.name() + "-backup" + (index + 1) + "." + file.extension());
+    }
+
+    /**Restores the newest existing backup to the main save file, clearing any corrupt copies.*/
+    public static void restoreBestBackup(FileHandle file){
+        if(file.exists()) file.delete();
+        for(int i = 0; i < backupCount; i++){
+            FileHandle backup = backupFile(file, i);
+            if(backup.exists()){
+                backup.moveTo(file);
+                return;
+            }
         }
     }
 
@@ -107,11 +144,18 @@ public class SaveIO{
     }
 
     public static boolean isSaveValid(int slot){
-        try{
-            return isSaveValid(getSlotStream(slot));
-        }catch(Exception e){
-            return false;
+        FileHandle file = fileFor(slot);
+
+        for(int i = 0; i <= backupCount; i++){
+            FileHandle candidate = i == 0 ? file : backupFile(file, i - 1);
+            if(candidate.exists()){
+                try{
+                    if(isSaveValid(candidate)) return true;
+                }catch(Exception e){
+                }
+            }
         }
+        return false;
     }
 
     public static boolean isSaveValid(FileHandle file){
@@ -123,16 +167,37 @@ public class SaveIO{
         try{
             int version = stream.readInt();
             SaveFileVersion ver = versions.get(version);
+            if(ver == null) return false;
             ver.getData(stream);
+            while(true){
+                try{
+                    stream.readByte();
+                }catch(EOFException e){
+                    break;
+                }
+            }
             return true;
         }catch(Exception e){
-            e.printStackTrace();
             return false;
         }
     }
 
     public static SaveMeta getData(int slot){
-        return getData(getSlotStream(slot));
+        FileHandle file = fileFor(slot);
+        RuntimeException last = null;
+
+        for(int i = 0; i <= backupCount; i++){
+            FileHandle candidate = i == 0 ? file : backupFile(file, i - 1);
+            if(!candidate.exists()) continue;
+
+            try{
+                return getData(new DataInputStream(new InflaterInputStream(candidate.read())));
+            }catch(Exception e){
+                last = new RuntimeException(e);
+            }
+        }
+
+        throw last != null ? last : new RuntimeException("No save data found for slot " + slot);
     }
 
     public static SaveMeta getData(DataInputStream stream){
@@ -152,7 +217,8 @@ public class SaveIO{
     }
 
     public static void write(FileHandle file){
-        write(new DeflaterOutputStream(file.write(false)){
+        FileHandle tmpFile = file.sibling(file.name() + ".tmp");
+        write(new DeflaterOutputStream(tmpFile.write(false)){
             byte[] tmp = {0};
 
             public void write(int var1) throws IOException {
@@ -160,6 +226,13 @@ public class SaveIO{
                 this.write(tmp, 0, 1);
             }
         });
+        if(isSaveValid(tmpFile)){
+            if(file.exists()) file.delete();
+            tmpFile.moveTo(file);
+        }else{
+            tmpFile.delete();
+            throw new RuntimeException("Failed to write a valid save file: " + file.name());
+        }
     }
 
     public static void write(OutputStream os){
@@ -167,6 +240,7 @@ public class SaveIO{
 
         try{
             stream = new DataOutputStream(os);
+            SaveFileVersion.currentVersion = getVersion().version;
             getVersion().write(stream);
             stream.close();
         }catch(Exception e){
@@ -175,17 +249,24 @@ public class SaveIO{
     }
 
     public static void load(FileHandle file){
-        try{
-            load(new InflaterInputStream(file.read()));
-        }catch(RuntimeException e){
-            e.printStackTrace();
-            FileHandle backup = file.sibling(file.name() + "-backup." + file.extension());
-            if(backup.exists()){
-                load(new InflaterInputStream(backup.read()));
-            }else{
-                throw new RuntimeException(e);
+        RuntimeException last = null;
+
+        for(int i = 0; i <= backupCount; i++){
+            FileHandle candidate = i == 0 ? file : backupFile(file, i - 1);
+            if(!candidate.exists()) continue;
+            try{
+                load(new InflaterInputStream(candidate.read()));
+                if(candidate != file && file.exists()){
+                    candidate.copyTo(file);
+                }
+                return;
+            }catch(RuntimeException e){
+                last = e;
+                e.printStackTrace();
             }
         }
+
+        throw new RuntimeException("Failed to load save, no valid file found.", last);
     }
 
     public static void load(InputStream is){
@@ -198,6 +279,7 @@ public class SaveIO{
             int version = stream.readInt();
             SaveFileVersion ver = versions.get(version);
 
+            SaveFileVersion.currentVersion = ver.version;
             ver.read(stream);
 
             stream.close();

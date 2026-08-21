@@ -135,6 +135,14 @@ public class Saves{
         return saveMap.get(id);
     }
 
+    public void deleteAll(){
+        for(SaveSlot slot : new Array<SaveSlot>(saves)){
+            if(!slot.isHidden()){
+                slot.delete();
+            }
+        }
+    }
+
     public Array<SaveSlot> getSaveSlots(){
         return saves;
     }

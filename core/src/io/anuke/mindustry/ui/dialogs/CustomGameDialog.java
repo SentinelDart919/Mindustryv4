@@ -1,6 +1,8 @@
 package io.anuke.mindustry.ui.dialogs;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
@@ -22,11 +24,18 @@ import io.anuke.ucore.util.Mathf;
 import static io.anuke.mindustry.Vars.*;
 
 public class CustomGameDialog extends FloatingDialog{
+    private WeatherRulesDialog weather = new WeatherRulesDialog();
 
     public CustomGameDialog(){
         super("$text.customgame");
         addCloseButton();
-        shown(this::setup);
+        shown(() -> {
+            state.darkness = 0f;
+            state.rain = false;
+            control.customDarkness = false;
+            renderer.weather.reset();
+            setup();
+        });
 
         onResize(this::setup);
     }
@@ -39,7 +48,7 @@ public class CustomGameDialog extends FloatingDialog{
         ScrollPane pane = new ScrollPane(maps);
         pane.setFadeScrollBars(false);
 
-        int maxwidth = (Gdx.graphics.getHeight() > Gdx.graphics.getHeight() ? 2 : 4);
+        int maxwidth = (Gdx.graphics.getWidth() > Gdx.graphics.getHeight() ? 4 : 2);
 
         Table selmode = new Table();
         ButtonGroup<TextButton> group = new ButtonGroup<>();
@@ -115,6 +124,7 @@ public class CustomGameDialog extends FloatingDialog{
 
             image.clicked(() -> {
                 hide();
+                renderer.weather.autoSelect(map);
                 control.playMap(map);
             });
 
@@ -151,8 +161,11 @@ public class CustomGameDialog extends FloatingDialog{
             table.row();
         }
 
-        d.content().add(pane);
+        d.content().add(pane).width(Math.min(480f, Gdx.graphics.getWidth() - 30f))
+                .height(Math.min(520f, Gdx.graphics.getHeight() - 90f));
         d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);
+        d.keyDown(Keys.ESCAPE, d::hide);
+        d.keyDown(Keys.BACK, d::hide);
         d.show();
     }
 
@@ -201,6 +214,18 @@ public class CustomGameDialog extends FloatingDialog{
         table.row();
         table.addCheck("$text.customgame.startWithBiomass", state.startWithBiomass, b -> state.startWithBiomass = b).left();
         table.row();
+
+        table.add("Map Darkness: " + (int)(state.darkness * 100) + "%").update(l -> l.setText("Map Darkness: " + (int)(state.darkness * 100) + "%")).padTop(8f).left();
+        table.row();
+        table.addSlider(0f, 1f, 0.01f, state.darkness, f -> {
+            state.darkness = f;
+            control.customDarkness = true;
+        }).width(200f).left();
+        table.row();
+        table.addButton("$text.weather.title", weather::show).size(200f, 40f).left();
+        table.row();
+        table.add("$text.weather.rules.info", Color.GRAY).wrap().width(300f).left().padBottom(6f);
+        table.row();
         table.add("RTS AI Teams").padTop(8f).left();
         table.row();
 
@@ -221,8 +246,11 @@ public class CustomGameDialog extends FloatingDialog{
         ScrollPane pane = new ScrollPane(table);
         pane.setFadeScrollBars(false);
 
-        d.content().add(pane);
+        d.content().add(pane).width(Math.min(480f, Gdx.graphics.getWidth() - 30f))
+                .height(Math.min(640f, Gdx.graphics.getHeight() - 90f));
         d.buttons().addButton("$text.ok", d::hide).size(110, 50).pad(10f);
+        d.keyDown(Keys.ESCAPE, d::hide);
+        d.keyDown(Keys.BACK, d::hide);
         d.show();
     }
 

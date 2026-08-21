@@ -3,17 +3,17 @@
 This is a Fan made project not aproved by the main dev, non-profit, the only objective is to edit the code of this version and have fun!
 
 ### The Never Ending TO-DO list
-* Make a Launch Pad System
-* Balance the Biomass
-* Fix Biomass Units bugs
-* Add more QoL
-* Finish Tank Units
-* Add more units
-* Add Units with Shields
+* Full Refactor to the Biomass - finish it
+* Enhacement to game visuals
+* Update Campaign system
+* Add Tank Units and LegUnits
+* More QoL
+* Balance Logistic Drones
+* More units, more content and bugfix
 
 ### Building
 
-First, make sure you have JRE 11 to run and JDK 11 installed for make your builds
+First, make sure you have JRE 17 to run and JDK 17 installed for make your builds
 Open a terminal in the root directory, and run the following commands:
 
 #### Windows

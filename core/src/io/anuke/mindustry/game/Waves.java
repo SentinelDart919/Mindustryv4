@@ -198,14 +198,29 @@ public class Waves{
                 }},
 
                 new SpawnGroup(UnitTypes.reaper){{
-                    begin = 84;
+                    begin = 126;
                     spacing = 84;
                     unitScaling = 2;
                     unitAmount = 1;
                 }},
 
                 new SpawnGroup(UnitTypes.reaper){{
-                    begin = 168;
+                    begin = 210;
+                    spacing = 84;
+                    unitScaling = 1;
+                    unitAmount = 2;
+                    effect = StatusEffects.overdrive;
+                }},
+
+                new SpawnGroup(UnitTypes.eradicator){{
+                    begin = 126;
+                    spacing = 84;
+                    unitScaling = 2;
+                    unitAmount = 1;
+                }},
+
+                new SpawnGroup(UnitTypes.eradicator){{
+                    begin = 210;
                     spacing = 84;
                     unitScaling = 1;
                     unitAmount = 2;

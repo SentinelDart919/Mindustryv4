@@ -460,7 +460,23 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     @Override
     public void draw(){
+    }
 
+    @Override
+    public void drawLight(){
+        boolean emit = emitLight != null ? emitLight : type.emitLight;
+        float radius = (lightRadius < 0 ? type.lightRadius : lightRadius);
+        float opacity = (lightOpacity < 0 ? type.lightOpacity : lightOpacity);
+        Color color = lightColor == null ? type.lightColor : lightColor;
+
+        if(emit && radius > 0.001f){
+            Draw.color(color);
+            io.anuke.mindustry.graphics.Shaders.light.region = Draw.region("circle");
+            Draw.alpha(opacity);
+            Draw.rect("circle", x, y, radius * 2, radius * 2);
+            Draw.alpha(opacity * 0.5f);
+            Draw.rect("circle", x, y, radius * 2, radius * 2);
+        }
     }
 
     @Override
@@ -529,7 +545,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         this.isWave = stream.readBoolean();
         this.spawner = stream.readInt();
 
-        this.type = content.getByID(ContentType.unit, type);
+        this.type = content.getByID(ContentType.unit, type & 0xFF);
         add();
     }
 
@@ -543,7 +559,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     public void read(DataInput data, long time) throws IOException{
         float lastx = x, lasty = y, lastrot = rotation;
         super.readSave(data);
-        this.type = content.getByID(ContentType.unit, data.readByte());
+        this.type = content.getByID(ContentType.unit, data.readByte() & 0xFF);
 
         interpolator.read(lastx, lasty, x, y, time, rotation);
         rotation = lastrot;

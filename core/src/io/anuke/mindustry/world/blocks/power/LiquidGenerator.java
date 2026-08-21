@@ -26,7 +26,7 @@ public abstract class LiquidGenerator extends PowerGenerator{
 
     @Override
     public void setStats(){
-        consumes.add(new ConsumeLiquidFilter(liquid -> getEfficiency(liquid) >= minEfficiency, maxLiquidGenerate)).update(false);
+        consumes.add(new ConsumeLiquidFilter(liquid -> getEfficiency(liquid) >= minEfficiency, maxLiquidGenerate, true)).update(false);
         super.setStats();
     }
 

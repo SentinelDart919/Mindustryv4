@@ -10,6 +10,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.blocks.BuildBlock.BuildEntity;
+import io.anuke.mindustry.world.blocks.Prop;
 import io.anuke.mindustry.world.blocks.distribution.TrainRail;
 import io.anuke.mindustry.world.blocks.units.TrainCrafter;
 import io.anuke.ucore.core.Events;
@@ -35,10 +36,17 @@ public class Build{
 
         Block previous = tile.block();
 
+        //remember if the prop being deconstructed was already felled, and its remaining health,
+        //so damageWhenDeconstruct can preserve both across the fake deconstruction
+        boolean deconstructStump = previous instanceof Prop && ((Prop) previous).damageWhenDeconstruct && ((Prop) previous).isStumped(tile);
+        float deconstructHealth = previous instanceof Prop && ((Prop) previous).damageWhenDeconstruct && tile.entity != null ? tile.entity.health : -1f;
+
         Block sub = content.getByName(ContentType.block, "build" + previous.size);
 
         tile.setBlock(sub);
         tile.<BuildEntity>entity().setDeconstruct(previous);
+        tile.<BuildEntity>entity().previousStump = deconstructStump;
+        tile.<BuildEntity>entity().previousHealth = deconstructHealth;
         tile.setTeam(team);
 
         if(previous.isMultiblock()){
@@ -203,6 +211,11 @@ public class Build{
         Tile tile = world.tile(x, y);
         if(tile != null) tile = tile.target();
 
-        return tile != null && tile.block().canBreak(tile) && tile.breakable() && (!tile.block().synthetic() || tile.getTeam() == team);
+        if(tile == null) return false;
+
+        //environment props flagged with damageWhenDeconstruct are always breakable
+        boolean envProp = tile.block() instanceof Prop && ((Prop) tile.block()).damageWhenDeconstruct;
+
+        return tile.block().canBreak(tile) && tile.breakable() && (envProp || !tile.block().synthetic() || tile.getTeam() == team);
     }
 }
