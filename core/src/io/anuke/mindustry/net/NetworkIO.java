@@ -131,7 +131,7 @@ public class NetworkIO{
 
                 stream.writeByte(data.cores.size);
                 for(Tile tile : data.cores){
-                    stream.writeInt(tile.packedPosition());
+                    stream.writeLong(tile.packedPosition());
                 }
             }
 
@@ -288,7 +288,7 @@ public class NetworkIO{
                 byte cores = stream.readByte();
 
                 for(int j = 0; j < cores; j++){
-                    state.teams.get(team).cores.add(world.tile(stream.readInt()));
+                    state.teams.get(team).cores.add(world.tile(stream.readLong()));
                 }
 
                 if(team == players[0].getTeam() && cores > 0){

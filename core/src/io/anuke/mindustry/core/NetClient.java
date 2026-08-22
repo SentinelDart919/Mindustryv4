@@ -290,7 +290,7 @@ public class NetClient extends Module{
 
         byte cores = input.readByte();
         for(int i = 0; i < cores; i++){
-            int pos = input.readInt();
+            long pos = input.readLong();
             Tile tile = world.tile(pos);
             if(tile != null && tile.entity != null){
                 tile.entity.items.read(input);

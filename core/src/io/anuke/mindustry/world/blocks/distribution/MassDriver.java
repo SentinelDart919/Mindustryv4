@@ -60,7 +60,7 @@ public class MassDriver extends Block{
     }
 
     @Remote(targets = Loc.both, called = Loc.server, forward = true)
-    public static void linkMassDriver(Player player, Tile tile, int position){
+    public static void linkMassDriver(Player player, Tile tile, long position){
         MassDriverEntity entity = tile.entity();
 
         //called in main thread to prevent issues
@@ -274,7 +274,7 @@ public class MassDriver extends Block{
     }
 
     public class MassDriverEntity extends TileEntity{
-        public int link = -1;
+        public long link = -1;
         public float rotation = 90;
         //set of tiles that currently want to distribute to this tile
         public ObjectSet<Tile> waiting = new ObjectSet<>();
@@ -323,13 +323,13 @@ public class MassDriver extends Block{
 
         @Override
         public void write(DataOutput stream) throws IOException{
-            stream.writeInt(link);
+            stream.writeLong(link);
             stream.writeFloat(rotation);
         }
 
         @Override
         public void read(DataInput stream) throws IOException{
-            link = stream.readInt();
+            link = stream.readLong();
             rotation = stream.readFloat();
         }
 

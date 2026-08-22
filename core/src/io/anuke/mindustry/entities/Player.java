@@ -63,7 +63,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     public boolean achievedFlight;
     public Color color = new Color();
     public Mech mech;
-    public int spawner = -1;
+    public long spawner = -1;
 
     public NetConnection con;
     public int playerIndex = 0;
@@ -589,8 +589,10 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
 
         updateBuilding(this);
 
-        x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);
-        y = Mathf.clamp(y, tilesize, world.height() * tilesize - tilesize);
+        if(!world.isOpenWorld()){
+            x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);
+            y = Mathf.clamp(y, tilesize, world.height() * tilesize - tilesize);
+        }
     }
 
     protected void updateMech(){
@@ -830,7 +832,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         }else{
             CoreEntity entity = (CoreEntity) getClosestCore();
             if(entity != null && !netServer.isWaitingForPlayers()){
-                this.spawner = entity.tile.id();
+                this.spawner = entity.tile.packedPosition();
             }
         }
     }
@@ -897,8 +899,8 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         buffer.writeByte(Bits.toByte(isAdmin) | (Bits.toByte(dead) << 1) | (Bits.toByte(isBoosting) << 2));
         buffer.writeInt(Color.rgba8888(color));
         buffer.writeByte(mech.id);
-        buffer.writeInt(mining == null ? -1 : mining.packedPosition());
-        buffer.writeInt(spawner);
+        buffer.writeLong(mining == null ? -1 : mining.packedPosition());
+        buffer.writeLong(spawner);
         buffer.writeShort((short) (baseRotation * 2));
 
         writeBuilding(buffer);
@@ -915,8 +917,8 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
         boolean boosting = (bools & 4) != 0;
         color.set(buffer.readInt());
         mech = content.getByID(ContentType.mech, buffer.readByte() & 0xFF);
-        int mine = buffer.readInt();
-        int spawner = buffer.readInt();
+        long mine = buffer.readLong();
+        long spawner = buffer.readLong();
         float baseRotation = buffer.readShort() / 2f;
 
         readBuilding(buffer, !isLocal);

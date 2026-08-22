@@ -169,6 +169,13 @@ public class MenuFragment extends Fragment{
             dialog.hide();
         })).width(bw).colspan(2);
 
+        dialog.content().row();
+
+        dialog.content().add(new MenuButton("icon-play-2", "$text.customgamemodes", () -> {
+            dialog.hide();
+            ui.customGamemodes.show();
+        })).width(bw).colspan(2);
+
         dialog.show();
     }
 }

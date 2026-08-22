@@ -142,13 +142,13 @@ public class TypeIO{
 
     @WriteClass(Tile.class)
     public static void writeTile(ByteBuffer buffer, Tile tile){
-        buffer.putInt(tile == null ? -1 : tile.packedPosition());
+        buffer.putLong(tile == null ? -1L : tile.packedPosition());
     }
 
     @ReadClass(Tile.class)
     public static Tile readTile(ByteBuffer buffer){
-        int position = buffer.getInt();
-        return position == -1 ? null : world.tile(position);
+        long position = buffer.getLong();
+        return position == -1L ? null : world.tile(position);
     }
 
     @WriteClass(Block.class)
@@ -166,7 +166,7 @@ public class TypeIO{
         buffer.putShort((short)requests.length);
         for(BuildRequest request : requests){
             buffer.put(request.breaking ? (byte) 1 : 0);
-            buffer.putInt(world.toPacked(request.x, request.y));
+            buffer.putLong(world.toPacked(request.x, request.y));
             if(!request.breaking){
                 buffer.put((byte) request.recipe.id);
                 buffer.put((byte) request.rotation);
@@ -180,15 +180,19 @@ public class TypeIO{
         BuildRequest[] reqs = new BuildRequest[reqamount];
         for(int i = 0; i < reqamount; i++){
             byte type = buffer.get();
-            int position = buffer.getInt();
+            long position = buffer.getLong();
             BuildRequest currentRequest;
 
             if(type == 1){ //remove
-                currentRequest = new BuildRequest(position % world.width(), position / world.width());
+                int px = (int)(position >> 32);
+                int py = (int)(position & 0xFFFFFFFFL);
+                currentRequest = new BuildRequest(px, py);
             }else{ //place
                 byte recipe = buffer.get();
                 byte rotation = buffer.get();
-                currentRequest = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe & 0xFF));
+                int px = (int)(position >> 32);
+                int py = (int)(position & 0xFFFFFFFFL);
+                currentRequest = new BuildRequest(px, py, rotation, content.recipe(recipe & 0xFF));
             }
 
             reqs[i] = (currentRequest);

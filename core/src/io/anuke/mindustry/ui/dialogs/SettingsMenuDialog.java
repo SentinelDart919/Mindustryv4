@@ -147,6 +147,7 @@ public class SettingsMenuDialog extends SettingsDialog{
 
         game.screenshakePref();
         game.checkPref("effects", true);
+        game.checkPref("fogofwar", true);
         if(mobile){
             game.checkPref("autotarget", true);
         }

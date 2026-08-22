@@ -234,10 +234,17 @@ public class SoundController extends Module{
         int centerX = Mathf.scl(Core.camera.position.x, tilesize);
         int centerY = Mathf.scl(Core.camera.position.y, tilesize);
 
-        int minx = Math.max(0, centerX - tileRange);
-        int miny = Math.max(0, centerY - tileRange);
-        int maxx = Math.min(world.width() - 1, centerX + tileRange);
-        int maxy = Math.min(world.height() - 1, centerY + tileRange);
+        int minx = centerX - tileRange;
+        int miny = centerY - tileRange;
+        int maxx = centerX + tileRange;
+        int maxy = centerY + tileRange;
+
+        if(!world.isOpenWorld()){
+            minx = Math.max(0, minx);
+            miny = Math.max(0, miny);
+            maxx = Math.min(world.width() - 1, maxx);
+            maxy = Math.min(world.height() - 1, maxy);
+        }
 
         for(int x = minx; x <= maxx; x++){
             for(int y = miny; y <= maxy; y++){

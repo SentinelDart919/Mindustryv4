@@ -54,7 +54,7 @@ public class Reconstructor extends Block{
                 entity.current == null && entity.power.amount >= ((Reconstructor) tile.block()).powerPerTeleport;
     }
 
-    protected static boolean validLink(Tile tile, int position){
+    protected static boolean validLink(Tile tile, long position){
         Tile other = world.tile(position);
         return other != tile && other != null && other.block() instanceof Reconstructor;
     }
@@ -324,7 +324,7 @@ public class Reconstructor extends Block{
         Unit current;
         float updateTime;
         float time;
-        int link;
+        long link;
         boolean solid = true, departing;
 
         @Override
@@ -344,12 +344,12 @@ public class Reconstructor extends Block{
 
         @Override
         public void write(DataOutput stream) throws IOException{
-            stream.writeInt(link);
+            stream.writeLong(link);
         }
 
         @Override
         public void read(DataInput stream) throws IOException{
-            link = stream.readInt();
+            link = stream.readLong();
         }
     }
 }

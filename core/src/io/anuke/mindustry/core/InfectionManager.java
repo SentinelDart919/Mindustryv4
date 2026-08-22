@@ -1,6 +1,6 @@
 package io.anuke.mindustry.core;
 
-import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.LongSet;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
@@ -10,8 +10,8 @@ import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Mathf;
 
 public class InfectionManager extends Module {
-    private IntSet infectedQueue = new IntSet();
-    private IntSet nextQueue = new IntSet();
+    private LongSet infectedQueue = new LongSet();
+    private LongSet nextQueue = new LongSet();
     private float timer;
     private static final float INTERVAL = 60f * 1.5f;
     private static final float BASE_CHANCE = 0.05f;
@@ -75,9 +75,9 @@ public class InfectionManager extends Module {
 
         nextQueue.clear();
         
-        IntSet.IntSetIterator it = infectedQueue.iterator();
+        LongSet.LongSetIterator it = infectedQueue.iterator();
         while (it.hasNext) {
-            int packed = it.next();
+            long packed = it.next();
             Tile tile = Vars.world.tile(packed);
             if (tile == null) {
                 continue;
@@ -132,7 +132,7 @@ public class InfectionManager extends Module {
         return false;
     }
     
-    public IntSet getInfectedQueue() {
+    public LongSet getInfectedQueue() {
         return infectedQueue;
     }
 

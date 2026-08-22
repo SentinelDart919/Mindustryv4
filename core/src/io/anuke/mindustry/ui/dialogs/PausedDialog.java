@@ -58,8 +58,20 @@ public class PausedDialog extends FloatingDialog{
             content().addButton("$text.settings", ui.settings::show);
 
             content().row();
-            content().addButton("$text.savegame", save::show).disabled(s -> world.getSector() != null);
-            content().addButton("$text.loadgame", load::show).disabled(b -> Net.active());
+            content().addButton("$text.savegame", () -> {
+                if(world.isOpenWorld() && world.chunks() != null && world.chunks().getSaveName() != null){
+                    ui.loadLogic("$text.saveload", () -> {
+                        try{
+                            world.chunks().saveAllChunks();
+                        }catch(Throwable e){
+                            e.printStackTrace();
+                        }
+                    });
+                }else{
+                    save.show();
+                }
+            }).disabled(s -> world.getSector() != null);
+            content().addButton("$text.loadgame", load::show).disabled(b -> Net.active() || world.isOpenWorld());
 
             content().row();
 
@@ -83,11 +95,23 @@ public class PausedDialog extends FloatingDialog{
                 hide();
             });
             content().addRowImageTextButton("$text.settings", "icon-tools", isize, ui.settings::show);
-            content().addRowImageTextButton("$text.save", "icon-save", isize, save::show).disabled(b -> world.getSector() != null);
+            content().addRowImageTextButton("$text.save", "icon-save", isize, () -> {
+                if(world.isOpenWorld() && world.chunks() != null && world.chunks().getSaveName() != null){
+                    ui.loadLogic("$text.saveload", () -> {
+                        try{
+                            world.chunks().saveAllChunks();
+                        }catch(Throwable e){
+                            e.printStackTrace();
+                        }
+                    });
+                }else{
+                    save.show();
+                }
+            }).disabled(b -> world.getSector() != null);
 
             content().row();
 
-            content().addRowImageTextButton("$text.load", "icon-load", isize, load::show).disabled(b -> Net.active());
+            content().addRowImageTextButton("$text.load", "icon-load", isize, load::show).disabled(b -> Net.active() || world.isOpenWorld());
             content().addRowImageTextButton("$text.hostserver.mobile", "icon-host", isize, ui.host::show).disabled(b -> Net.active());
             content().addRowImageTextButton("$text.quit", "icon-quit", isize, () -> {
                 ui.showConfirm("$text.confirm", "$text.quit.confirm", () -> {
@@ -102,6 +126,18 @@ public class PausedDialog extends FloatingDialog{
     public void runExitSave(){
         if(world.getSector() != null){
             world.sectors.refreshSectorPreview(world.getSector());
+        }
+
+        if(world.isOpenWorld() && world.chunks() != null && world.chunks().getSaveName() != null){
+            ui.loadLogic("$text.saveload", () -> {
+                try{
+                    world.chunks().saveAllChunks();
+                }catch(Throwable e){
+                    e.printStackTrace();
+                }
+                state.set(State.menu);
+            });
+            return;
         }
 
         if(control.saves.getCurrent() == null ||

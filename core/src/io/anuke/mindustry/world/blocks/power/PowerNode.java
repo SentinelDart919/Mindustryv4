@@ -2,7 +2,7 @@ package io.anuke.mindustry.world.blocks.power;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -34,7 +34,7 @@ public class PowerNode extends PowerBlock{
     public static final float flashScl = 0.12f;
 
     //last distribution block placed
-    private static int lastPlaced = -1;
+    private static long lastPlaced = -1;
     private static final ObjectSet<PowerGraph> graphs = new ObjectSet<>();
     private static final Array<Tile> tempTiles = new Array<>();
 
@@ -237,7 +237,7 @@ public class PowerNode extends PowerBlock{
         for(int i = 0; i < entity.power.links.size; i++){
             Tile link = world.tile(entity.power.links.get(i));
             if(linkValid(tile, link) && (!(link.block() instanceof PowerNode)
-                || ((tile.block().size > link.block().size) || (tile.block().size == link.block().size && tile.id() < link.id())))){
+                || ((tile.block().size > link.block().size) || (tile.block().size == link.block().size && tile.packedPosition() < link.packedPosition())))){
                 drawLaser(tile, link);
             }
         }
@@ -435,7 +435,7 @@ public class PowerNode extends PowerBlock{
         @Override
         public Object config(){
             if(power == null) return null;
-            IntArray links = power.links;
+            LongArray links = power.links;
             if(links.size == 0) return null;
             int[] relLinks = new int[links.size];
             for(int i = 0; i < links.size; i++){

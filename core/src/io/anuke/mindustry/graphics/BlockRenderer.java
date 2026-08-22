@@ -98,10 +98,18 @@ public class BlockRenderer{
         java.util.Arrays.fill(teamChecks, false);
         requestidx = 0;
 
-        int minx = Math.max(avgx - rangex - expandr, 0);
-        int miny = Math.max(avgy - rangey - expandr, 0);
-        int maxx = Math.min(world.width() - 1, avgx + rangex + expandr);
-        int maxy = Math.min(world.height() - 1, avgy + rangey + expandr);
+        int minx, miny, maxx, maxy;
+        if(world.isOpenWorld()){
+            minx = avgx - rangex - expandr;
+            miny = avgy - rangey - expandr;
+            maxx = avgx + rangex + expandr;
+            maxy = avgy + rangey + expandr;
+        }else{
+            minx = Math.max(avgx - rangex - expandr, 0);
+            miny = Math.max(avgy - rangey - expandr, 0);
+            maxx = Math.min(world.width() - 1, avgx + rangex + expandr);
+            maxy = Math.min(world.height() - 1, avgy + rangey + expandr);
+        }
 
         int shadowW = rangex * tilesize * 2, shadowH = rangey * tilesize * 2;
 

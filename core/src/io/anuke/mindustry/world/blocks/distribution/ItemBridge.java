@@ -3,9 +3,9 @@ package io.anuke.mindustry.world.blocks.distribution;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.IntSet.IntSetIterator;
+import com.badlogic.gdx.utils.LongSet;
+import com.badlogic.gdx.utils.LongSet.LongSetIterator;
+import com.badlogic.gdx.utils.LongArray;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.entities.Player;
@@ -34,12 +34,12 @@ import static io.anuke.mindustry.Vars.world;
 import io.anuke.mindustry.Vars;
 
 public class ItemBridge extends Block{
-    protected static int lastPlaced;
+    protected static long lastPlaced = -1;
 
     protected int timerTransport = timers++;
     protected int range;
     protected float transportTime = 2f;
-    protected IntArray removals = new IntArray();
+    protected LongArray removals = new LongArray();
 
     protected TextureRegion endRegion, bridgeRegion, arrowRegion;
 
@@ -167,10 +167,10 @@ public class ItemBridge extends Block{
 
         removals.clear();
 
-        IntSetIterator it = entity.incoming.iterator();
+        LongSetIterator it = entity.incoming.iterator();
 
         while(it.hasNext){
-            int i = it.next();
+            long i = it.next();
             Tile other = world.tile(i);
             if(!linkValid(tile, other, false)){
                 removals.add(i);
@@ -278,12 +278,12 @@ public class ItemBridge extends Block{
             Tile edge = Edges.getFacingEdge(to, tile);
             int i = tile.absoluteRelativeTo(edge.x, edge.y);
 
-            IntSetIterator it = entity.incoming.iterator();
+            LongSetIterator it = entity.incoming.iterator();
 
             while(it.hasNext){
-                int v = it.next();
-                int x = v % world.width();
-                int y = v / world.width();
+                long v = it.next();
+                int x = (int)(v >> 32);
+                int y = (int)(v & 0xFFFFFFFFL);
                 if(tile.absoluteRelativeTo(x, y) == i){
                     return false;
                 }
@@ -328,8 +328,8 @@ public class ItemBridge extends Block{
     }
 
     public static class ItemBridgeEntity extends TileEntity{
-        public int link = -1;
-        public IntSet incoming = new IntSet();
+        public long link = -1;
+        public LongSet incoming = new LongSet();
         public float uptime;
         public float time;
         public float time2;
@@ -337,24 +337,24 @@ public class ItemBridge extends Block{
 
         @Override
         public void write(DataOutput stream) throws IOException{
-            stream.writeInt(link);
+            stream.writeLong(link);
             stream.writeFloat(uptime);
             stream.writeByte(incoming.size);
 
-            IntSetIterator it = incoming.iterator();
+            LongSetIterator it = incoming.iterator();
 
             while(it.hasNext){
-                stream.writeInt(it.next());
+                stream.writeLong(it.next());
             }
         }
 
         @Override
         public void read(DataInput stream) throws IOException{
-            link = stream.readInt();
+            link = stream.readLong();
             uptime = stream.readFloat();
             byte links = stream.readByte();
             for(int i = 0; i < links; i++){
-                incoming.add(stream.readInt());
+                incoming.add(stream.readLong());
             }
         }
 

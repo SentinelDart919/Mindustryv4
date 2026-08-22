@@ -72,7 +72,7 @@ public interface BuilderTrait extends Entity{
 
         if(request != null){
             output.writeByte(request.breaking ? 1 : 0);
-            output.writeInt(world.toPacked(request.x, request.y));
+            output.writeLong(world.toPacked(request.x, request.y));
             output.writeFloat(request.progress);
             if(!request.breaking){
                 output.writeByte(request.recipe.id);
@@ -92,16 +92,20 @@ public interface BuilderTrait extends Entity{
 
         byte type = input.readByte();
         if(type != -1){
-            int position = input.readInt();
+            long position = input.readLong();
             float progress = input.readFloat();
             BuildRequest request;
 
             if(type == 1){ //remove
-                request = new BuildRequest(position % world.width(), position / world.width());
+                int px = (int)(position >> 32);
+                int py = (int)(position & 0xFFFFFFFFL);
+                request = new BuildRequest(px, py);
             }else{ //place
                 byte recipe = input.readByte();
                 byte rotation = input.readByte();
-                request = new BuildRequest(position % world.width(), position / world.width(), rotation, content.recipe(recipe & 0xFF));
+                int px = (int)(position >> 32);
+                int py = (int)(position & 0xFFFFFFFFL);
+                request = new BuildRequest(px, py, rotation, content.recipe(recipe & 0xFF));
             }
 
             request.progress = progress;

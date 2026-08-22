@@ -154,6 +154,7 @@ public class Renderer extends RendererModule{
         clearColor = new Color(0f, 0f, 0f, 1f);
 
         Settings.defaults("renderer", 100);
+        Settings.defaults("fogofwar", true);
         lastRenderScale = Settings.getInt("renderer", 100);
 
         effectSurface = Graphics.createSurface(renderScale());
@@ -213,8 +214,10 @@ public class Renderer extends RendererModule{
             }else if(!mobile){
                 setCamera(position.x + 0.0001f, position.y + 0.0001f);
             }
-            camera.position.x = Mathf.clamp(camera.position.x, -tilesize / 2f, world.width() * tilesize - tilesize / 2f);
-            camera.position.y = Mathf.clamp(camera.position.y, -tilesize / 2f, world.height() * tilesize - tilesize / 2f);
+            if(!world.isOpenWorld()){
+                camera.position.x = Mathf.clamp(camera.position.x, -tilesize / 2f, world.width() * tilesize - tilesize / 2f);
+                camera.position.y = Mathf.clamp(camera.position.y, -tilesize / 2f, world.height() * tilesize - tilesize / 2f);
+            }
 
             float prex = camera.position.x, prey = camera.position.y;
             updateShake(0.75f);
@@ -397,10 +400,18 @@ public class Renderer extends RendererModule{
         int rangex = (int)(camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
         int rangey = (int)(camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
 
-        int minx = Math.max(avgx - rangex - lightMargin, 0);
-        int miny = Math.max(avgy - rangey - lightMargin, 0);
-        int maxx = Math.min(world.width() - 1, avgx + rangex + lightMargin);
-        int maxy = Math.min(world.height() - 1, avgy + rangey + lightMargin);
+        int minx, miny, maxx, maxy;
+        if(world.isOpenWorld()){
+            minx = avgx - rangex - lightMargin;
+            miny = avgy - rangey - lightMargin;
+            maxx = avgx + rangex + lightMargin;
+            maxy = avgy + rangey + lightMargin;
+        }else{
+            minx = Math.max(avgx - rangex - lightMargin, 0);
+            miny = Math.max(avgy - rangey - lightMargin, 0);
+            maxx = Math.min(world.width() - 1, avgx + rangex + lightMargin);
+            maxy = Math.min(world.height() - 1, avgy + rangey + lightMargin);
+        }
 
         lightRect.set(camera.position.x - camera.viewportWidth * camera.zoom / 2f,
                 camera.position.y - camera.viewportHeight * camera.zoom / 2f,
@@ -657,6 +668,8 @@ public class Renderer extends RendererModule{
 
     /** Detects render scale changes and rebuilds the surfaces when it changes. */
     private void checkRendererSettings(){
+        showFog = Settings.getBool("fogofwar");
+
         int rs = Settings.getInt("renderer", 100);
         if(rs != lastRenderScale){
             lastRenderScale = rs;

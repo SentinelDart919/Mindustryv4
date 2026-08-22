@@ -15,29 +15,29 @@ public class Recipes implements ContentList{
     @Override
     public void load(){
         //DEBUG
-        new Recipe(turret, TurretBlocks.evilDuo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilSalvo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilScatter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilRipple).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilCyclone).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilFuse).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.infectiontest).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.hiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.airHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.heavyHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, CraftingBlocks.biomassGenerator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.veins).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.stackRouter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.biomassBulb).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.corruptedcultivator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, StorageBlocks.hive).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemSource).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(liquid, DebugBlocks.liquidSource).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerInfinite).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilDuo).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilSalvo).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilScatter).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilRipple).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilCyclone).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilFuse).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, DebugBlocks.infectiontest).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, UnitBlocks.hiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, UnitBlocks.airHiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, UnitBlocks.heavyHiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(production, CraftingBlocks.biomassGenerator).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DistributionBlocks.veins).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DistributionBlocks.stackRouter).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(production, ProductionBlocks.biomassBulb).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(production, ProductionBlocks.corruptedcultivator).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, StorageBlocks.hive).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DebugBlocks.itemSource).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(distribution, DebugBlocks.itemVoid).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(liquid, DebugBlocks.liquidSource).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(power, DebugBlocks.powerVoid).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(power, DebugBlocks.powerInfinite).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(effect, DebugBlocks.superBooster).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(units, DebugBlocks.debugFactory).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
         //new Recipe(effect, PowerBlocks.lightBlock).setMode(GameMode.sandbox).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/

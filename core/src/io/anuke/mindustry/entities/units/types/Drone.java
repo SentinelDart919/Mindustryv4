@@ -43,6 +43,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
     protected boolean isBreaking;
     protected boolean followPlayerMode = false;
     protected int followPlayerID = -1;
+    protected UnitState previousState;
 
     public UnitState
 
@@ -59,6 +60,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
             TileEntity core = getClosestCore();
 
             if(entity == null){
+                checkRetreat();
                 setState(repair);
                 return;
             }
@@ -67,6 +69,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
             if((entity.progress() < 1f || entity.progress() > 0f) && entity.tile.block() instanceof BuildBlock){ //building is valid
                 if(!isBuilding() && distanceTo(target) < placeDistance * 0.9f){ //within distance, begin placing
+                    checkRetreat();
                     if(isBreaking){
                         getPlaceQueue().addLast(new BuildRequest(entity.tile.x, entity.tile.y));
                     }else{
@@ -80,6 +83,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
                         if(!core.items.has(stack.item, stack.amount) && type.toMine.contains(stack.item)){
                             targetItem = stack.item;
                             getPlaceQueue().clear();
+                            checkRetreat();
                             setState(mine);
                             return;
                         }
@@ -88,6 +92,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
                 circle(placeDistance * 0.7f);
             }else{ //building isn't valid
+                checkRetreat();
                 setState(repair);
             }
         }
@@ -105,6 +110,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
                 target = Units.findDamagedTile(team, x, y);
 
                 if(target == null){
+                    checkRetreat();
                     setState(mine);
                 }
             });
@@ -135,15 +141,18 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
             //core full
             if(targetItem != null && entity.tile.block().acceptStack(targetItem, 1, entity.tile, Drone.this) == 0){
+                checkRetreat();
                 setState(repair);
                 return;
             }
 
             //if inventory is full, drop it off.
             if(inventory.isFull()){
+                checkRetreat();
                 setState(drop);
             }else{
                 if(targetItem != null && !inventory.canAcceptItem(targetItem)){
+                    checkRetreat();
                     setState(drop);
                     return;
                 }
@@ -166,6 +175,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
                     }
 
                     if(((Tile) target).block() != Blocks.air){
+                        checkRetreat();
                         setState(drop);
                     }
                 }
@@ -183,12 +193,14 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
         public void update(){
             if(inventory.isEmpty()){
+                checkRetreat();
                 setState(mine);
                 return;
             }
 
             if(inventory.getItem().item.type != ItemType.material){
                 inventory.clearItem();
+                checkRetreat();
                 setState(mine);
                 return;
             }
@@ -205,6 +217,7 @@ public class Drone extends FlyingUnit implements BuilderTrait{
                     inventory.clearItem();
                 }
 
+                checkRetreat();
                 setState(repair);
             }
 
@@ -218,11 +231,13 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
         public void update(){
             if(health >= maxHealth()){
-                state.set(attack);
+                setState(previousState == null ? repair : previousState);
             }else if(!targetHasFlag(BlockFlag.repair)){
-                if(timer.get(timerTarget, 20)){
-                    Tile target = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair));
-                    if(target != null) Drone.this.target = target.entity;
+                if(retarget()){
+                    targetClosestAllyFlag(BlockFlag.repair);
+                    if(target == null){
+                        target = Units.getClosest(team, x, y, getType().healRange, u -> u.isHealer() && u != Drone.this);
+                    }
                 }
             }else{
                 circle(40f);
@@ -345,9 +360,27 @@ public class Drone extends FlyingUnit implements BuilderTrait{
 
     @Override
     public void behavior(){
-        if(health <= health * type.retreatPercent &&
-                Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair)) != null){
-            setState(retreat);
+        if(health < maxHealth() * type.retreatPercent){
+            boolean hasRepairPoint = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair)) != null ||
+                    Units.getClosest(team, x, y, 400f, u -> u.isHealer() && u != this) != null;
+
+            if(hasRepairPoint){
+                if(!state.is(retreat)){
+                    previousState = state.get();
+                    setState(retreat);
+                }
+            }
+        }
+    }
+
+    protected void checkRetreat(){
+        if(health < maxHealth() * type.retreatPercent){
+            boolean hasRepairPoint = Geometry.findClosest(x, y, world.indexer.getAllied(team, BlockFlag.repair)) != null ||
+                    Units.getClosest(team, x, y, 400f, u -> u.isHealer() && u != this) != null;
+            if(hasRepairPoint){
+                previousState = state.get();
+                setState(retreat);
+            }
         }
     }
 
@@ -398,16 +431,16 @@ public class Drone extends FlyingUnit implements BuilderTrait{
     @Override
     public void write(DataOutput data) throws IOException{
         super.write(data);
-        data.writeInt(mineTile == null || !state.is(mine) ? -1 : mineTile.packedPosition());
-        data.writeInt(state.is(repair) && target instanceof TileEntity ? ((TileEntity)target).tile.packedPosition() : -1);
+        data.writeLong(mineTile == null || !state.is(mine) ? -1 : mineTile.packedPosition());
+        data.writeLong(state.is(repair) && target instanceof TileEntity ? ((TileEntity)target).tile.packedPosition() : -1);
         writeBuilding(data);
     }
 
     @Override
     public void read(DataInput data, long time) throws IOException{
         super.read(data, time);
-        int mined = data.readInt();
-        int repairing = data.readInt();
+        long mined = data.readLong();
+        long repairing = data.readLong();
 
         readBuilding(data);
 

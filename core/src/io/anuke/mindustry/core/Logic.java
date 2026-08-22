@@ -16,6 +16,7 @@ import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.io.SaveFileVersion;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.maps.missions.WaveExtraMission;
+import io.anuke.mindustry.maps.generation.ChunkManager;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
 import io.anuke.mindustry.world.Tile;
@@ -38,6 +39,7 @@ import static io.anuke.mindustry.Vars.*;
  * This class should <i>not</i> call any outside methods to change state of modules, but instead fire events.
  */
 public class Logic extends Module{
+    private int lastRecenterX = Integer.MIN_VALUE, lastRecenterY = Integer.MIN_VALUE;
 
     public Logic(){
         Events.on(TileChangeEvent.class, event -> {
@@ -104,6 +106,10 @@ public class Logic extends Module{
     public void reset(){
         if(world.getSector() != null){
             world.sectors.refreshSectorPreview(world.getSector());
+        }
+
+        if(world.isOpenWorld()){
+            world.endOpenWorld();
         }
 
         //any entities created from now on use the newest serialization format
@@ -283,12 +289,44 @@ public class Logic extends Module{
                 infection.update();
                 MassAI.update();
                 updateRtsAI();
+
+                if(world.isOpenWorld() && world.chunks() != null){
+                    world.chunks().update();
+                }
+
+                if(world.isOpenWorld() && !headless && players.length > 0 && players[0] != null){
+                    recenterOpenWorld();
+                }
             }
 
             if(!Net.client() && !world.isInvalidMap()){
                 updateSectors();
                 checkGameOver();
             }
+        }
+    }
+
+    private void recenterOpenWorld(){
+        int playerTX = (int)(players[0].x / tilesize);
+        int playerTY = (int)(players[0].y / tilesize);
+
+        int halfW = world.width() / 2;
+        int halfH = world.height() / 2;
+
+        int dx = playerTX - (lastRecenterX + halfW);
+        int dy = playerTY - (lastRecenterY + halfH);
+
+        int threshold = ChunkManager.CHUNK_SIZE * ChunkManager.LOAD_RADIUS;
+
+        if(lastRecenterX == Integer.MIN_VALUE || Math.abs(dx) > threshold || Math.abs(dy) > threshold){
+            lastRecenterX = playerTX - halfW;
+            lastRecenterY = playerTY - halfH;
+
+            int worldSize = world.width();
+            EntityQuery.resizeTree(lastRecenterX * tilesize, lastRecenterY * tilesize,
+                worldSize * tilesize, worldSize * tilesize);
+
+            world.pathfinder.recenter(playerTX, playerTY);
         }
     }
 }

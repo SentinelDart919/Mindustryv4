@@ -1,7 +1,7 @@
 package io.anuke.mindustry.world.blocks.power;
 
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.LongSet;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Queue;
 import io.anuke.mindustry.world.Tile;
@@ -11,7 +11,7 @@ import static io.anuke.mindustry.Vars.threads;
 public class PowerGraph{
     private final static Queue<Tile> queue = new Queue<>();
     private final static Array<Tile> outArray2 = new Array<>();
-    private final static IntSet closedSet = new IntSet();
+    private final static LongSet closedSet = new LongSet();
 
     private final ObjectSet<Tile> producers = new ObjectSet<>();
     private final ObjectSet<Tile> consumers = new ObjectSet<>();

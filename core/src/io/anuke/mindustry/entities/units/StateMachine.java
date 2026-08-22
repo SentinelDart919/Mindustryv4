@@ -3,6 +3,10 @@ package io.anuke.mindustry.entities.units;
 public class StateMachine{
     private UnitState state;
 
+    public UnitState get(){
+        return state;
+    }
+
     public void update(){
         if(state != null) state.update();
     }

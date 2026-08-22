@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.storage;
 
-import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.LongSet;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Queue;
 import io.anuke.mindustry.type.Item;
@@ -9,7 +9,7 @@ import io.anuke.mindustry.world.blocks.storage.StorageBlock.StorageEntity;
 import io.anuke.mindustry.world.modules.ItemModule;
 
 public class StorageGraph{
-    private static IntSet closedSet = new IntSet();
+    private static LongSet closedSet = new LongSet();
     private static Queue<Tile> queue = new Queue<>();
     private static ObjectSet<ItemModule> itemSet = new ObjectSet<>();
     private static int lastID;

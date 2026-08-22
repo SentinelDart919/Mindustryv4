@@ -4,7 +4,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.LongArray;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.Player;
@@ -395,8 +395,8 @@ public class Block extends BaseBlock {
      * Call super!*/
     public void transformLinks(Tile tile, int oldWidth, int oldHeight, int newWidth, int newHeight, int shiftX, int shiftY){
         if(tile.entity != null && tile.entity.power != null){
-            IntArray links = tile.entity.power.links;
-            IntArray out = new IntArray();
+            LongArray links = tile.entity.power.links;
+            LongArray out = new LongArray();
             for(int i = 0; i < links.size; i++){
                 out.add(world.transform(links.get(i), oldWidth, oldHeight, newWidth, shiftX, shiftY));
             }

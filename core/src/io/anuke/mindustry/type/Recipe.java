@@ -36,6 +36,7 @@ public class Recipe extends UnlockableContent{
     public boolean onlyCampaign;
     public boolean hidden;
     public boolean alwaysUnlocked;
+    public boolean unlockInfinite;
 
     private UnlockableContent[] dependencies;
     private Block[] blockDependencies;
@@ -61,7 +62,9 @@ public class Recipe extends UnlockableContent{
     public static Array<Recipe> getByCategory(Category category){
         returnArray.clear();
         for(Recipe recipe : content.recipes()){
-            if(recipe.category == category && recipe.visibility.shown() && (recipe.mode == state.mode || recipe.mode == null) && (!recipe.onlyCampaign || world.getSector() != null)){
+            if(recipe.category == category && recipe.visibility.shown() && 
+                    (recipe.mode == state.mode || recipe.mode == null || (recipe.unlockInfinite && state.mode.infiniteResources)) && 
+                    (!recipe.onlyCampaign || world.getSector() != null)){
                 returnArray.add(recipe);
             }
         }
@@ -98,6 +101,11 @@ public class Recipe extends UnlockableContent{
         return this;
     }
 
+    public Recipe setUnlockInfinite(boolean unlockInfinite){
+        this.unlockInfinite = unlockInfinite;
+        return this;
+    }
+
     @Override
     public boolean alwaysUnlocked(){
         return alwaysUnlocked;
@@ -105,6 +113,7 @@ public class Recipe extends UnlockableContent{
 
     @Override
     public boolean isHidden(){
+        if(unlockInfinite && state.mode.infiniteResources) return false;
         return !visibility.shown() || hidden;
     }
 

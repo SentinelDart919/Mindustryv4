@@ -125,6 +125,7 @@ public class Control extends Module{
         });
 
         Events.on(WaveEvent.class, event -> {
+            if(world.getMap() == null) return;
 
             int last = Settings.getInt("hiscore" + world.getMap().name, 0);
 

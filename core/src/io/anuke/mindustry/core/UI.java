@@ -74,6 +74,8 @@ public class UI extends SceneModule{
     public SectorsDialog sectors;
     public CampaignDialog campaigns;
     public MissionDialog missions;
+    public CustomGamemodesDialog customGamemodes;
+    public OpenWorldStartDialog openWorldStart;
 
     public UI(){
         Dialog.setShowAction(() -> sequence(
@@ -182,6 +184,8 @@ public class UI extends SceneModule{
         sectors = new SectorsDialog();
         campaigns = new CampaignDialog();
         missions = new MissionDialog();
+        customGamemodes = new CustomGamemodesDialog();
+        openWorldStart = new OpenWorldStartDialog();
 
         Group group = Core.scene.getRoot();
 

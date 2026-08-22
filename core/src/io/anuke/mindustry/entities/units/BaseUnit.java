@@ -59,7 +59,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     protected boolean isWave;
     protected Squad squad;
-    protected int spawner = -1;
+    protected long spawner = -1;
 
     /**internal constructor used for deserialization, DO NOT USE*/
     public BaseUnit(){
@@ -189,7 +189,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         this.spawner = tile.packedPosition();
     }
 
-    public void setIntSpawner(int pos){
+    public void setIntSpawner(long pos){
         this.spawner = pos;
     }
 
@@ -454,8 +454,10 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
         if(target != null) behavior();
 
-        x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);
-        y = Mathf.clamp(y, tilesize, world.height() * tilesize - tilesize);
+        if(!world.isOpenWorld()){
+            x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);
+            y = Mathf.clamp(y, tilesize, world.height() * tilesize - tilesize);
+        }
     }
 
     @Override
@@ -535,7 +537,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         super.writeSave(stream);
         stream.writeByte(type.id);
         stream.writeBoolean(isWave);
-        stream.writeInt(spawner);
+        stream.writeLong(spawner);
     }
 
     @Override
@@ -543,7 +545,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         super.readSave(stream);
         byte type = stream.readByte();
         this.isWave = stream.readBoolean();
-        this.spawner = stream.readInt();
+        this.spawner = stream.readLong();
 
         this.type = content.getByID(ContentType.unit, type & 0xFF);
         add();

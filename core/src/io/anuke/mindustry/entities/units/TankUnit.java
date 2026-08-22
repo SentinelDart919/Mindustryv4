@@ -2,8 +2,8 @@ package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntIntMap;
+import com.badlogic.gdx.utils.LongArray;
+import com.badlogic.gdx.utils.LongMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.TileEntity;
@@ -40,10 +40,10 @@ public class TankUnit extends BaseUnit{
     protected float weaponRotation;
     protected float treadTime;
     protected Weapon weapon;
-    protected IntArray orderPath = new IntArray();
+    protected LongArray orderPath = new LongArray();
     protected int orderPathCursor = 0;
     protected int orderPathRepath = 0;
-    protected IntArray movePath = new IntArray();
+    protected LongArray movePath = new LongArray();
     protected int movePathCursor = 0;
     protected int movePathRepath = 0;
     protected float movePathTargetX, movePathTargetY;
@@ -295,9 +295,17 @@ public class TankUnit extends BaseUnit{
     protected void moveToEnemyCore(){
         Tile tile = world.tileWorld(x, y);
         if(tile == null) return;
+
+        TileEntity core = getClosestEnemyCore();
+        if(core == null) return;
+
         Tile targetTile = world.pathfinder.getTargetTile(team, tile);
 
-        if(tile == targetTile) return;
+        if(tile == targetTile){
+            float angle = angleTo(core);
+            velocity.add(vec.trns(angle, type.speed * Timers.delta()));
+            return;
+        }
 
         velocity.add(vec.trns(angleTo(targetTile), type.speed * Timers.delta()));
     }
@@ -490,14 +498,14 @@ public class TankUnit extends BaseUnit{
 
         if(start == goal) return;
 
-        IntArray open = new IntArray();
-        IntIntMap cameFrom = new IntIntMap();
-        IntIntMap gScore = new IntIntMap();
-        IntIntMap fScore = new IntIntMap();
-        IntIntMap closed = new IntIntMap();
+        LongArray open = new LongArray();
+        LongMap<Long> cameFrom = new LongMap<Long>();
+        LongMap<Integer> gScore = new LongMap<Integer>();
+        LongMap<Integer> fScore = new LongMap<Integer>();
+        LongMap<Integer> closed = new LongMap<Integer>();
 
-        int startPos = start.packedPosition();
-        int goalPos = goal.packedPosition();
+        long startPos = start.packedPosition();
+        long goalPos = goal.packedPosition();
 
         open.add(startPos);
         gScore.put(startPos, 0);
@@ -507,11 +515,11 @@ public class TankUnit extends BaseUnit{
 
         while(open.size > 0 && expanded < movePathMaxNodes){
             int bestIndex = 0;
-            int current = open.get(0);
+            long current = open.get(0);
             int bestScore = fScore.get(current, Integer.MAX_VALUE);
 
             for(int i = 1; i < open.size; i++){
-                int node = open.get(i);
+                long node = open.get(i);
                 int score = fScore.get(node, Integer.MAX_VALUE);
                 if(score < bestScore){
                     bestScore = score;
@@ -543,7 +551,7 @@ public class TankUnit extends BaseUnit{
                         continue;
                     }
 
-                    int nextPos = next.packedPosition();
+                    long nextPos = next.packedPosition();
                     if(closed.get(nextPos, 0) == 1) continue;
 
                     int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
@@ -571,8 +579,8 @@ public class TankUnit extends BaseUnit{
         }
     }
 
-    protected void reconstructMovePath(IntIntMap cameFrom, int current, int startPos){
-        IntArray rev = new IntArray();
+    protected void reconstructMovePath(LongMap<Long> cameFrom, long current, long startPos){
+        LongArray rev = new LongArray();
         rev.add(current);
 
         while(cameFrom.containsKey(current)){
@@ -665,14 +673,14 @@ public class TankUnit extends BaseUnit{
             return;
         }
 
-        IntArray open = new IntArray();
-        IntIntMap cameFrom = new IntIntMap();
-        IntIntMap gScore = new IntIntMap();
-        IntIntMap fScore = new IntIntMap();
-        IntIntMap closed = new IntIntMap();
+        LongArray open = new LongArray();
+        LongMap<Long> cameFrom = new LongMap<Long>();
+        LongMap<Integer> gScore = new LongMap<Integer>();
+        LongMap<Integer> fScore = new LongMap<Integer>();
+        LongMap<Integer> closed = new LongMap<Integer>();
 
-        int startPos = start.packedPosition();
-        int goalPos = goal.packedPosition();
+        long startPos = start.packedPosition();
+        long goalPos = goal.packedPosition();
 
         open.add(startPos);
         gScore.put(startPos, 0);
@@ -682,11 +690,11 @@ public class TankUnit extends BaseUnit{
 
         while(open.size > 0 && expanded < maxOrderPathNodes){
             int bestIndex = 0;
-            int current = open.get(0);
+            long current = open.get(0);
             int bestScore = fScore.get(current, Integer.MAX_VALUE);
 
             for(int i = 1; i < open.size; i++){
-                int node = open.get(i);
+                long node = open.get(i);
                 int score = fScore.get(node, Integer.MAX_VALUE);
                 if(score < bestScore){
                     bestScore = score;
@@ -718,7 +726,7 @@ public class TankUnit extends BaseUnit{
                         continue;
                     }
 
-                    int nextPos = next.packedPosition();
+                    long nextPos = next.packedPosition();
                     if(closed.get(nextPos, 0) == 1) continue;
 
                     int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
@@ -746,8 +754,8 @@ public class TankUnit extends BaseUnit{
         }
     }
 
-    protected void reconstructOrderPath(IntIntMap cameFrom, int current, int startPos){
-        IntArray rev = new IntArray();
+    protected void reconstructOrderPath(LongMap<Long> cameFrom, long current, long startPos){
+        LongArray rev = new LongArray();
         rev.add(current);
 
         while(cameFrom.containsKey(current)){

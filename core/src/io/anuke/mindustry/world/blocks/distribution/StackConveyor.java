@@ -284,7 +284,7 @@ public class StackConveyor extends Block implements Autotiler{
         public int state = stateMove;
         public int blendbits;
         public int blendsclx = 1, blendscly = 1;
-        public int link = -1;
+        public long link = -1;
         public float cooldown;
         public int lastItem = -1;
 
@@ -294,7 +294,7 @@ public class StackConveyor extends Block implements Autotiler{
             stream.writeInt(blendbits);
             stream.writeInt(blendsclx);
             stream.writeInt(blendscly);
-            stream.writeInt(link);
+            stream.writeLong(link);
             stream.writeFloat(cooldown);
             stream.writeInt(lastItem);
         }
@@ -305,7 +305,7 @@ public class StackConveyor extends Block implements Autotiler{
             blendbits = stream.readInt();
             blendsclx = stream.readInt();
             blendscly = stream.readInt();
-            link = stream.readInt();
+            link = stream.readLong();
             cooldown = stream.readFloat();
             lastItem = stream.readInt();
         }
