@@ -33,10 +33,11 @@ public class Recipe extends UnlockableContent{
     public RecipeVisibility visibility = RecipeVisibility.all;
     //the only gamemode in which the recipe shows up
     public GameMode mode;
+    /** A predicate that returns whether this recipe should be shown in a certain gamemode. */
+    public java.util.function.Predicate<GameMode> showIf;
     public boolean onlyCampaign;
     public boolean hidden;
     public boolean alwaysUnlocked;
-    public boolean unlockInfinite;
 
     private UnlockableContent[] dependencies;
     private Block[] blockDependencies;
@@ -63,7 +64,8 @@ public class Recipe extends UnlockableContent{
         returnArray.clear();
         for(Recipe recipe : content.recipes()){
             if(recipe.category == category && recipe.visibility.shown() && 
-                    (recipe.mode == state.mode || recipe.mode == null || (recipe.unlockInfinite && state.mode.infiniteResources)) && 
+                    (recipe.mode == state.mode || recipe.mode == null || state.mode.infiniteResources) && 
+                    (recipe.showIf == null || recipe.showIf.test(state.mode)) &&
                     (!recipe.onlyCampaign || world.getSector() != null)){
                 returnArray.add(recipe);
             }
@@ -96,15 +98,16 @@ public class Recipe extends UnlockableContent{
         return this;
     }
 
+    public Recipe setShowIf(java.util.function.Predicate<GameMode> showIf){
+        this.showIf = showIf;
+        return this;
+    }
+
     public Recipe setAlwaysUnlocked(boolean unlocked){
         this.alwaysUnlocked = unlocked;
         return this;
     }
 
-    public Recipe setUnlockInfinite(boolean unlockInfinite){
-        this.unlockInfinite = unlockInfinite;
-        return this;
-    }
 
     @Override
     public boolean alwaysUnlocked(){
@@ -113,7 +116,8 @@ public class Recipe extends UnlockableContent{
 
     @Override
     public boolean isHidden(){
-        if(unlockInfinite && state.mode.infiniteResources) return false;
+        if(state.mode.infiniteResources) return false;
+        if(showIf != null && !showIf.test(state.mode)) return true;
         return !visibility.shown() || hidden;
     }
 

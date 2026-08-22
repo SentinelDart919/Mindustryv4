@@ -15,29 +15,29 @@ public class Recipes implements ContentList{
     @Override
     public void load(){
         //DEBUG
-        new Recipe(turret, TurretBlocks.evilDuo).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilSalvo).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilScatter).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilRipple).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilCyclone).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilFuse).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.infectiontest).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.hiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.airHiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.heavyHiveSpawner).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, CraftingBlocks.biomassGenerator).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.veins).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.stackRouter).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.biomassBulb).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.corruptedcultivator).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, StorageBlocks.hive).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemSource).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemVoid).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(liquid, DebugBlocks.liquidSource).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerVoid).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerInfinite).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.superBooster).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, DebugBlocks.debugFactory).setUnlockInfinite(true).setHidden(true).setAlwaysUnlocked(true);
+        new Recipe(turret, TurretBlocks.evilDuo).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilSalvo).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilScatter).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilRipple).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilCyclone).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilFuse).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(effect, DebugBlocks.infectiontest).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.hiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.airHiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.heavyHiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, CraftingBlocks.biomassGenerator).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DistributionBlocks.veins).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DistributionBlocks.stackRouter).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, ProductionBlocks.biomassBulb).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, ProductionBlocks.corruptedcultivator).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(effect, StorageBlocks.hive).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DebugBlocks.itemSource).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DebugBlocks.itemVoid).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(liquid, DebugBlocks.liquidSource).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(power, DebugBlocks.powerVoid).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(power, DebugBlocks.powerInfinite).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(effect, DebugBlocks.superBooster).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, DebugBlocks.debugFactory).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
         //new Recipe(effect, PowerBlocks.lightBlock).setMode(GameMode.sandbox).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
