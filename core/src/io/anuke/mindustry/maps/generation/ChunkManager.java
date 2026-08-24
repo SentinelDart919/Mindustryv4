@@ -146,6 +146,7 @@ public class ChunkManager{
                 chunk.pathStamp++;
             }else{
                 queueRestoredTiles(chunk);
+                chunk.restored = true;
                 chunk.pathStamp++;
             }
 
@@ -252,15 +253,19 @@ public class ChunkManager{
                 }
             }
 
-            generateOresForChunk(chunk);
+            boolean cleanTerrain = !chunk.restored && !chunk.modified;
 
-            for(int i = 0; i < chunk.tiles.length; i++){
-                Tile tile = chunk.tiles[i];
-                if(tile.floor() instanceof OreBlock && tile.hasCliffs()){
-                    tile.setFloor(((OreBlock)tile.floor()).base);
-                }
-                if(tile.block() != Blocks.air && tile.hasCliffs() && !tile.block().isMultiblock() && !(tile.block() instanceof BlockPart)){
-                    tile.setBlock(Blocks.air);
+            if(cleanTerrain){
+                generateOresForChunk(chunk);
+
+                for(int i = 0; i < chunk.tiles.length; i++){
+                    Tile tile = chunk.tiles[i];
+                    if(tile.floor() instanceof OreBlock && tile.hasCliffs()){
+                        tile.setFloor(((OreBlock)tile.floor()).base);
+                    }
+                    if(tile.block() != Blocks.air && tile.hasCliffs() && !tile.block().isMultiblock() && !(tile.block() instanceof BlockPart)){
+                        tile.setBlock(Blocks.air);
+                    }
                 }
             }
 
@@ -273,6 +278,8 @@ public class ChunkManager{
                 int ndx = Geometry.d4[d].x;
                 int ndy = Geometry.d4[d].y;
 
+                boolean cleanNeighbor = !neighbor.restored && !neighbor.modified;
+
                 for(int lx = 0; lx < CHUNK_SIZE; lx++){
                     for(int ly = 0; ly < CHUNK_SIZE; ly++){
                         boolean onBorder = (ndx != 0 && (ndx > 0 ? lx == 0 : lx == CHUNK_SIZE - 1))
@@ -284,10 +291,11 @@ public class ChunkManager{
                         int wy = neighbor.cy * CHUNK_SIZE + ly;
 
                         if(tile.floor() instanceof OreBlock){
-                            tile.setFloor(((OreBlock)tile.floor()).base);
+                            Floor base = ((OreBlock)tile.floor()).base;
+                            if(tile.floor() != base) tile.setFloor(base);
                         }
 
-                        if(tile.floor() instanceof Floor && ((Floor)tile.floor()).hasOres
+                        if(cleanNeighbor && tile.floor() instanceof Floor && ((Floor)tile.floor()).hasOres
                             && !tile.hasCliffs() && tile.block() == Blocks.air){
                             Array<Item> ores = Item.getAllOres();
                             int ox = wx + Short.MAX_VALUE;
@@ -299,13 +307,14 @@ public class ChunkManager{
                                 if(noise.octaveNoise2D(1, 0.7, 1f / (4 + i * 2), ox, oy) / 4f +
                                     Math.abs(0.5f - noise.octaveNoise2D(2, 0.7, 1f / (50 + i * 2), ox, oy)) > 0.48f &&
                                     Math.abs(0.5f - noise.octaveNoise2D(1, 1, 1f / (55 + i * 4), ox, oy)) > 0.22f){
-                                    tile.setFloor((Floor) OreBlocks.get(baseFloor, entry));
+                                    Floor oreFloor = (Floor) OreBlocks.get(baseFloor, entry);
+                                    if(tile.floor() != oreFloor) tile.setFloor(oreFloor);
                                     break;
                                 }
                             }
                         }
 
-                        if(tile.block() != Blocks.air && tile.hasCliffs() && !tile.block().isMultiblock() && !(tile.block() instanceof BlockPart)){
+                        if(cleanNeighbor && tile.block() != Blocks.air && tile.hasCliffs() && !tile.block().isMultiblock() && !(tile.block() instanceof BlockPart)){
                             tile.setBlock(Blocks.air);
                         }
                     }
@@ -637,10 +646,12 @@ public class ChunkManager{
 
         if(restored != null && restored.tiles != null){
             chunk.tiles = restored.tiles;
+            chunk.restored = true;
             chunk.generated = true;
         }else{
             Log.err("Failed to restore cold-stored chunk at {0}, {1}; regenerating", chunk.cx, chunk.cy);
             chunk.tiles = new Tile[CHUNK_SIZE * CHUNK_SIZE];
+            chunk.restored = false;
             generatingChunk = true;
             try{
                 generateChunkTerrain(chunk);
@@ -850,6 +861,8 @@ public class ChunkManager{
         public boolean active = false;
         /** Set when the player changes something in this chunk; modified chunks are never unloaded unsaved. */
         public boolean modified = false;
+        /** True when this chunk's tiles came from disk or cold storage instead of fresh generation; restored chunks are never terrain-cleaned, since that would delete player builds on elevated ground. */
+        public boolean restored = false;
         /** True when resident tile entities are detached from the logic group; the chunk costs zero update time and wakes instantly. */
         public boolean frozen = false;
         /** Non-null when this chunk is compressed into cold storage; tiles/entities are freed and restored transparently on access. */
