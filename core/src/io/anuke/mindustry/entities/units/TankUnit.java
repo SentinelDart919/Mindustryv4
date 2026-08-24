@@ -75,6 +75,16 @@ public class TankUnit extends BaseUnit{
                 target = core;
             }
 
+            if(target == null && core == null){
+                targetClosestEnemyFlag(BlockFlag.producer);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.turret);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.target);
+                if(target != null){
+                    moveTo(target.getX(), target.getY());
+                    return;
+                }
+            }
+
             if(dst > getWeapon().getAmmo().getRange() * 0.5f){
                 moveToEnemyCore();
             }
@@ -249,17 +259,18 @@ public class TankUnit extends BaseUnit{
         if(health <= health * type.retreatPercent && !isCommanded()){
             setState(retreat);
         }
+    }
 
-        if(!Units.invalidateTarget(target, this)){
-            if(distanceTo(target) < getWeapon().getAmmo().getRange()){
-                rotate(angleTo(target));
+    @Override
+    protected void updateShooting(){
+        Weapon weapon = getWeapon();
+        if(weapon == null || weapon.getAmmo() == null || target == null) return;
 
-                if(Mathf.angNear(angleTo(target), weaponRotation, 13f)){
-                    AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(this, target, ammo.bullet.speed);
-                    getWeapon().update(this, to.x, to.y);
-                }
-            }
+        if(Units.invalidateTarget(target, team, x, y, weapon.getAmmo().getRange())) return;
+
+        Vector2 to = Predict.intercept(this, target, weapon.getAmmo().bullet.speed);
+        if(Mathf.angNear(angleTo(target), weaponRotation, type.shootCone)){
+            weapon.update(this, to.x, to.y);
         }
     }
 
@@ -289,6 +300,7 @@ public class TankUnit extends BaseUnit{
             moveAngle = curAngle + delta * 0.2f;
         }
 
+        moveAngle = avoidAngle(moveAngle);
         velocity.add(vec.trns(moveAngle, type.speed * Timers.delta()));
     }
 
@@ -302,12 +314,20 @@ public class TankUnit extends BaseUnit{
         Tile targetTile = world.pathfinder.getTargetTile(team, tile);
 
         if(tile == targetTile){
-            float angle = angleTo(core);
+            float ddx = core.getX() - x, ddy = core.getY() - y;
+            boolean nearCore = ddx * ddx + ddy * ddy < (12 * tilesize) * (12 * tilesize);
+
+            if(!nearCore && steerAlongChunkPath(core.getX(), core.getY())){
+                return;
+            }
+
+            float angle = avoidAngle(angleTo(core));
             velocity.add(vec.trns(angle, type.speed * Timers.delta()));
             return;
         }
 
-        velocity.add(vec.trns(angleTo(targetTile), type.speed * Timers.delta()));
+        float gangle = avoidAngle(angleTo(targetTile));
+        velocity.add(vec.trns(gangle, type.speed * Timers.delta()));
     }
 
     protected void moveToHome(){
@@ -353,7 +373,9 @@ public class TankUnit extends BaseUnit{
             vec.rotate((circleLength - vec.len()) / circleLength * 180f);
         }
 
-        vec.setLength(type.speed * Timers.delta());
+        float moveAngle = avoidAngle(vec.angle());
+        float len = type.speed * Timers.delta();
+        vec.set(Angles.trnsx(moveAngle, len), Angles.trnsy(moveAngle, len));
 
         velocity.add(vec);
     }
@@ -617,6 +639,9 @@ public class TankUnit extends BaseUnit{
         }
 
         if(orderPath.size == 0 || orderPathCursor >= orderPath.size){
+            if(steerAlongChunkPath(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f)){
+                return;
+            }
             moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
             return;
         }

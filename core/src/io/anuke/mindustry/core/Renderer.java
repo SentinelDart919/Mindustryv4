@@ -423,7 +423,7 @@ public class Renderer extends RendererModule{
         //Blocks
         for(int x = minx; x <= maxx; x++){
             for(int y = miny; y <= maxy; y++){
-                Tile tile = world.rawTile(x, y);
+                Tile tile = world.peekTile(x, y);
                 if(tile != null && tile.block() != Blocks.air){
                     Block block = tile.block();
                     float radius = Math.max(block.lightRadius() * tilesize, block.layerLightRadius * tilesize) + tilesize * 2f;
@@ -726,7 +726,11 @@ public class Renderer extends RendererModule{
     public void clampScale(){
         float s = io.anuke.ucore.scene.ui.layout.Unit.dp.scl(1f);
         int amp = Math.max(Settings.getInt("zoom", 100), 100);
-        targetscale = Mathf.clamp(targetscale, Math.max(1, Math.round(s * 2 * 100f / amp)), Math.round(s * 5));
+        int minScale = Math.max(1, Math.round(s * 2 * 100f / amp));
+        if(world.isOpenWorld() && !headless){
+            minScale = Math.max(minScale, (int)Math.ceil((float)Gdx.graphics.getWidth() / (world.width() * tilesize)));
+        }
+        targetscale = Mathf.clamp(targetscale, minScale, Math.round(s * 5));
     }
 
     public void takeMapScreenshot(){

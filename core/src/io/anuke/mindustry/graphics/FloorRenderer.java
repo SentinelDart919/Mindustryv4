@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.LongMap;
+import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadGraphicsEvent;
 import io.anuke.mindustry.maps.generation.ChunkManager;
@@ -34,6 +36,10 @@ public class FloorRenderer{
     private int chunksx, chunksy;
     private boolean initialized = false;
     private LongMap<Chunk> openWorldCache = new LongMap<>();
+    private LongArray incompleteChunks = new LongArray();
+    private int lastSeenChunkLoads = -1;
+    private long lastIncompleteCheck;
+    private boolean recacheTilePending;
 
     public FloorRenderer(){
         Events.on(WorldLoadGraphicsEvent.class, event -> {
@@ -143,7 +149,14 @@ public class FloorRenderer{
 
         Graphics.end();
 
-        boolean anyDirty = false;
+        //re-cache chunks that were built against unloaded terrain once it becomes available
+        refreshIncompleteChunks();
+
+        //incrementally build cache chunks around the view so panning doesn't trigger full rebuilds
+        precacheChunks(minx, miny, maxx, maxy);
+
+        boolean anyDirty = recacheTilePending;
+        recacheTilePending = false;
         for(int x = minx; x <= maxx && !anyDirty; x++){
             for(int y = miny; y <= maxy && !anyDirty; y++){
                 long key = ChunkManager.packKey(x, y);
@@ -154,6 +167,20 @@ public class FloorRenderer{
 
         if(anyDirty){
             cbatch.clear();
+
+            //drop cached chunks far outside the view to bound memory use
+            int margin = 6;
+            LongArray toEvict = new LongArray();
+            for(LongMap.Entry<Chunk> entry : openWorldCache.entries()){
+                int cx = ChunkManager.keyCx(entry.key);
+                int cy = ChunkManager.keyCy(entry.key);
+                if(cx < minx - margin || cx > maxx + margin || cy < miny - margin || cy > maxy + margin){
+                    toEvict.add(entry.key);
+                }
+            }
+            for(int i = 0; i < toEvict.size; i++){
+                openWorldCache.remove(toEvict.items[i]);
+            }
 
             for(Chunk chunk : openWorldCache.values()){
                 java.util.Arrays.fill(chunk.caches, -1);
@@ -169,7 +196,9 @@ public class FloorRenderer{
                         openWorldCache.put(key, chunk);
                     }
                     chunk.allDirty = false;
-                    cacheChunkOpenWorld(x, y, chunk);
+                    if(cacheChunkOpenWorld(x, y, chunk)){
+                        incompleteChunks.add(key);
+                    }
                 }
             }
         }
@@ -197,7 +226,78 @@ public class FloorRenderer{
         Graphics.begin();
     }
 
-    private void cacheChunkOpenWorld(int cx, int cy, Chunk chunk){
+    /** Makes sure a cache entry exists for this floor chunk; returns true if it was built now. */
+    private boolean ensureCached(int x, int y){
+        long key = ChunkManager.packKey(x, y);
+        if(openWorldCache.containsKey(key)) return false;
+        Chunk chunk = new Chunk();
+        openWorldCache.put(key, chunk);
+        chunk.allDirty = false;
+        if(cacheChunkOpenWorld(x, y, chunk)){
+            incompleteChunks.add(key);
+        }
+        return true;
+    }
+
+    /** Builds up to a few cache chunks per frame in a ring around the view, so moving never hits uncached chunks. */
+    private void precacheChunks(int minx, int miny, int maxx, int maxy){
+        final int pad = 2;
+        int budget = 1;
+
+        for(int r = 1; r <= pad && budget > 0; r++){
+            int rx0 = minx - r, rx1 = maxx + r, ry0 = miny - r, ry1 = maxy + r;
+
+            for(int x = rx0; x <= rx1 && budget > 0; x++){
+                if(ensureCached(x, ry0)) budget--;
+                if(budget > 0 && ensureCached(x, ry1)) budget--;
+            }
+            for(int y = ry0 + 1; y <= ry1 - 1 && budget > 0; y++){
+                if(ensureCached(rx0, y)) budget--;
+                if(budget > 0 && ensureCached(rx1, y)) budget--;
+            }
+        }
+    }
+
+    /** Re-caches chunks that were built while their terrain was not loaded yet. Throttled to avoid rebuild storms. */
+    private void refreshIncompleteChunks(){
+        if(world.chunks() == null) return;
+        if(world.chunks().chunkLoadCounter == lastSeenChunkLoads) return;
+        if(TimeUtils.millis() - lastIncompleteCheck < 250) return;
+
+        lastSeenChunkLoads = world.chunks().chunkLoadCounter;
+        lastIncompleteCheck = TimeUtils.millis();
+
+        boolean anyComplete = false;
+        for(int i = incompleteChunks.size - 1; i >= 0; i--){
+            long key = incompleteChunks.items[i];
+            Chunk chunk = openWorldCache.get(key);
+            if(chunk == null){
+                incompleteChunks.removeIndex(i);
+                continue;
+            }
+            if(isRegionLoaded(ChunkManager.keyCx(key), ChunkManager.keyCy(key))){
+                chunk.allDirty = true;
+                anyComplete = true;
+                incompleteChunks.removeIndex(i);
+            }
+        }
+
+        //a full rebuild happens via the normal dirty path when drawing
+        if(anyComplete){
+            recacheTilePending = true;
+        }
+    }
+
+    /** Samples corners + center of a floor cache block to detect unloaded terrain (cache blocks straddle world chunks). */
+    private boolean isRegionLoaded(int cx, int cy){
+        int startX = cx * chunksize, startY = cy * chunksize;
+        int endX = startX + chunksize - 1, endY = startY + chunksize - 1;
+        return world.peekTile(startX, startY) != null && world.peekTile(endX, startY) != null
+            && world.peekTile(startX, endY) != null && world.peekTile(endX, endY) != null
+            && world.peekTile(startX + chunksize / 2, startY + chunksize / 2) != null;
+    }
+
+    private boolean cacheChunkOpenWorld(int cx, int cy, Chunk chunk){
         java.util.Arrays.fill(usedLayers, false);
 
         int startX = cx * chunksize;
@@ -205,11 +305,16 @@ public class FloorRenderer{
         int endX = startX + chunksize;
         int endY = startY + chunksize;
 
+        boolean incomplete = false;
+
         for(int tilex = startX; tilex < endX; tilex++){
             for(int tiley = startY; tiley < endY; tiley++){
-                Tile tile = world.rawTile(tilex, tiley);
+                //peek: never generate chunks from the render thread
+                Tile tile = world.peekTile(tilex, tiley);
                 if(tile != null){
                     usedLayers[tile.floor().cacheLayer.ordinal()] = true;
+                }else{
+                    incomplete = true;
                 }
             }
         }
@@ -220,6 +325,8 @@ public class FloorRenderer{
                 cacheChunkLayerOpenWorld(cx, cy, chunk, layers[i]);
             }
         }
+
+        return incomplete;
     }
 
     private void cacheChunkLayerOpenWorld(int cx, int cy, Chunk chunk, CacheLayer layer){
@@ -233,7 +340,8 @@ public class FloorRenderer{
 
         for(int tilex = startX; tilex < endX; tilex++){
             for(int tiley = startY; tiley < endY; tiley++){
-                Tile tile = world.rawTile(tilex, tiley);
+                //peek: never generate chunks from the render thread
+                Tile tile = world.peekTile(tilex, tiley);
 
                 if(tile == null) continue;
 
@@ -382,6 +490,8 @@ public class FloorRenderer{
             dirty = null;
             cbatch = new CacheBatch(worldSize * worldSize * numLayers);
             openWorldCache.clear();
+            incompleteChunks.clear();
+            lastSeenChunkLoads = -1;
         }else{
             chunksx = Mathf.ceil((float)(world.width()) / chunksize);
             chunksy = Mathf.ceil((float)(world.height()) / chunksize);

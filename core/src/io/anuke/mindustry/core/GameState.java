@@ -32,7 +32,7 @@ public class GameState{
     /**The team used as the enemy in waves and custom attack maps.*/
     public Team enemyTeam = Team.red;
     /**Default bitmask of teams that should use RTS AI.*/
-    public static final long defaultRtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
+    public static final long defaultRtsAIBits = 0L;
     /**Bitmask of teams that should use RTS AI.*/
     public long rtsAIBits = defaultRtsAIBits;
     /**Current map darkness level.*/

@@ -1,5 +1,6 @@
 package io.anuke.mindustry.graphics;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Sort;
 import io.anuke.mindustry.content.blocks.Blocks;
@@ -32,6 +33,8 @@ public class BlockRenderer{
     private int requestidx = 0;
     private int iterateidx = 0;
     private Surface shadows = Graphics.createSurface().setSize(2, 2);
+    /** World position the shadow FBO content was last rendered with; must match the projection origin exactly. */
+    private float shadowOriginX, shadowOriginY;
     private Array<Tile> visibleTiles = new Array<>();
     private boolean blocksDirty = false;
 
@@ -62,10 +65,9 @@ public class BlockRenderer{
 
     public void drawShadows(){
         Draw.color(0, 0, 0, 0.15f);
-        Draw.rect(shadows.texture(),
-            Core.camera.position.x - Core.camera.position.x % tilesize,
-            Core.camera.position.y - Core.camera.position.y % tilesize,
-            shadows.width(), -shadows.height());
+        //draw the FBO anchored at its exact render origin; snapping independently of the
+        //projection center desyncs content from display and clips shadows inside the camera
+        Draw.rect(shadows.texture(), shadowOriginX, shadowOriginY, shadows.width(), -shadows.height());
         Draw.color();
     }
 
@@ -111,28 +113,43 @@ public class BlockRenderer{
             maxy = Math.min(world.height() - 1, avgy + rangey + expandr);
         }
 
-        int shadowW = rangex * tilesize * 2, shadowH = rangey * tilesize * 2;
+        float halfW = camera.viewportWidth * camera.zoom / 2f;
+        float halfH = camera.viewportHeight * camera.zoom / 2f;
+        int shadowPad = 3;
+        int shMinX = MathUtils.floor((camera.position.x - halfW) / tilesize) - shadowPad;
+        int shMaxX = MathUtils.floor((camera.position.x + halfW) / tilesize) + shadowPad;
+        int shMinY = MathUtils.floor((camera.position.y - halfH) / tilesize) - shadowPad;
+        int shMaxY = MathUtils.floor((camera.position.y + halfH) / tilesize) + shadowPad;
+
+        float boxMinX = shMinX * tilesize, boxMaxX = (shMaxX + 1) * tilesize;
+        float boxMinY = shMinY * tilesize, boxMaxY = (shMaxY + 1) * tilesize;
+        int rawW = (int)(boxMaxX - boxMinX), rawH = (int)(boxMaxY - boxMinY);
+        int shadowW = (rawW + 127) / 128 * 128;
+        int shadowH = (rawH + 127) / 128 * 128;
 
         Graphics.end();
         if(shadows.width() != shadowW || shadows.height() != shadowH){
             shadows.setSize(shadowW, shadowH);
         }
+        shadowOriginX = (boxMinX + boxMaxX) / 2f;
+        shadowOriginY = (boxMinY + boxMaxY) / 2f;
         Core.batch.getProjectionMatrix().setToOrtho2D(
-            Mathf.round(Core.camera.position.x, tilesize) - shadowW / 2f,
-            Mathf.round(Core.camera.position.y, tilesize) - shadowH / 2f,
+            shadowOriginX - shadowW / 2f,
+            shadowOriginY - shadowH / 2f,
             shadowW, shadowH);
         Graphics.surface(shadows);
 
         for(int x = minx; x <= maxx; x++){
             for(int y = miny; y <= maxy; y++){
                 boolean expanded = (Math.abs(x - avgx) > rangex || Math.abs(y - avgy) > rangey);
-                Tile tile = world.rawTile(x, y);
+                boolean inShadowZone = x >= shMinX && x <= shMaxX && y >= shMinY && y <= shMaxY;
+                Tile tile = world.peekTile(x, y);
 
                 if(tile != null){
                     Block block = tile.block();
                     Team team = tile.getTeam();
 
-                    if(!expanded && block != Blocks.air && world.isAccessible(x, y)){
+                    if(inShadowZone && block != Blocks.air && world.isAccessible(x, y)){
                         tile.block().drawShadow(tile);
                         visibleTiles.add(tile);
                     }

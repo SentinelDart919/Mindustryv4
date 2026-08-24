@@ -177,6 +177,15 @@ public class World extends Module{
         return tiles[x][y];
     }
 
+    public Tile peekTile(int x, int y){
+        if(openWorldMode){
+            if(chunkManager == null) return null;
+            return chunkManager.peekTile(x, y);
+        }
+        if(tiles == null || !Structs.inBounds(x, y, tiles)) return null;
+        return tiles[x][y];
+    }
+
     public Tile tileWorld(float x, float y){
         return tile(Mathf.scl2(x, tilesize), Mathf.scl2(y, tilesize));
     }

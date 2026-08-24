@@ -232,8 +232,7 @@ public class CustomGameDialog extends FloatingDialog{
         for(Team team : Team.all){
             if(team == Team.none || team == Team.themass) continue;
 
-            boolean def = (state.rtsAIBits & (1L << team.ordinal())) != 0;
-            table.addCheck("$team." + team.name() + ".name", def, b -> {
+            table.addCheck("$team." + team.name() + ".name", (state.rtsAIBits & (1L << team.ordinal())) != 0, b -> {
                 if(b){
                     state.rtsAIBits |= (1L << team.ordinal());
                 }else{

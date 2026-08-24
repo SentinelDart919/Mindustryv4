@@ -4,6 +4,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.LongArray;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
@@ -243,6 +244,22 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
 
     }
 
+    /**
+     * Fires at the current target whenever it is valid, in weapon range and aimed at.
+     * Runs every tick, independent of AI states, orders and movement (modern-style
+     * autonomous weapon targeting). No-op by default; combat classes override it.
+     */
+    protected void updateShooting(){
+
+    }
+
+    /**True when a valid enemy target is inside weapon range; movement code must not fight body rotation while this is set.*/
+    protected boolean isAiming(){
+        Weapon weapon = getWeapon();
+        return target != null && weapon != null && weapon.getAmmo() != null
+                && !Units.invalidateTarget(target, team, x, y, weapon.getAmmo().getRange());
+    }
+
     public boolean isRetreating(){
         return false;
     }
@@ -265,7 +282,8 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     }
 
     public void targetClosest(){
-        target = Units.getClosestTarget(team, x, y, Math.max(getWeapon().getAmmo().getRange(), type.range), u -> type.targetAir || !u.isFlying());
+        TargetTrait next = Units.getClosestTarget(team, x, y, Math.max(getWeapon().getAmmo().getRange(), type.range), u -> type.targetAir || !u.isFlying());
+        if(next != null) target = next;
     }
 
     public TileEntity getClosestEnemyCore(){
@@ -278,6 +296,99 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         }
 
         return null;
+    }
+
+    protected transient LongArray chunkPath;
+    protected transient int chunkPathIndex;
+    protected transient float chunkPathGoalX, chunkPathGoalY;
+    protected transient int chunkPathCooldown;
+    private final transient Translator chunkVec = new Translator();
+    private static final float[] avoidOffsets = {40f, -40f, 80f, -80f, 120f, -120f};
+
+    /** Returns true when a ground unit moving along this angle would hit solid terrain or deeper drowning liquid. */
+    protected boolean blockedAtAngle(float angle){
+        float look = type.hitsize * 0.75f + 5f;
+        float lx = x + Angles.trnsx(angle, look);
+        float ly = y + Angles.trnsy(angle, look);
+        Tile t = world.tileWorld(lx, ly);
+        if(t == null || t.solid()) return true;
+
+        if(!isFlying()){
+            Tile here = world.tileWorld(x, y);
+            float curDrown = here == null ? 0f : here.floor().drownTime;
+            if(t.floor().drownTime > curDrown + 0.01f) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Adjusts a movement angle to slide around obstacles instead of grinding into
+     * walls/corners. Flying units pass through unchanged.
+     */
+    protected float avoidAngle(float angle){
+        if(isFlying() || !blockedAtAngle(angle)) return angle;
+
+        for(float off : avoidOffsets){
+            if(!blockedAtAngle(angle + off)) return angle + off;
+        }
+        return angle;
+    }
+
+    /**
+     * Steers along a cached waypoint path toward (gx, gy).
+     * Tries the hierarchical chunk graph first (open world only), then a fine tile-level
+     * A* over the team's flow snapshot (both modes). Returns false when no path is
+     * available (caller should fall back to direct steering).
+     */
+    protected boolean steerAlongChunkPath(float gx, float gy){
+        if(chunkPathCooldown > 0) chunkPathCooldown--;
+
+        boolean valid = chunkPath != null && chunkPathIndex < chunkPath.size
+                && Mathf.dst(chunkPathGoalX - x, chunkPathGoalY - y) < 8 * tilesize;
+
+        if(!valid && chunkPathCooldown <= 0){
+            chunkPathCooldown = 90;
+            chunkPath = null;
+
+            if(world.isOpenWorld()){
+                chunkPath = world.pathfinder.findChunkPath(x, y, gx, gy);
+            }
+
+            if(chunkPath == null){
+                chunkPath = world.pathfinder.findUnitPath(team, x, y, gx, gy);
+            }
+
+            if(chunkPath == null){
+                Long fallback = world.pathfinder.findFallbackWaypoint(team, x, y, gx, gy);
+                if(fallback != null){
+                    chunkPath = new LongArray();
+                    chunkPath.add(fallback);
+                }
+            }
+
+            chunkPathIndex = 0;
+            chunkPathGoalX = gx;
+            chunkPathGoalY = gy;
+        }
+
+        if(chunkPath == null || chunkPath.size == 0) return false;
+
+        long wp = chunkPath.items[Math.min(chunkPathIndex, chunkPath.size - 1)];
+        float wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
+        float wy = (int)wp * tilesize + tilesize / 2f;
+
+        if(Mathf.dst(wx - x, wy - y) < 3 * tilesize){
+            if(chunkPathIndex >= chunkPath.size - 1) return false; //path consumed
+            chunkPathIndex++;
+            wp = chunkPath.items[chunkPathIndex];
+            wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
+            wy = (int)wp * tilesize + tilesize / 2f;
+        }
+
+        float angle = angleTo(wx, wy);
+        velocity.add(chunkVec.trns(angle, type.speed * Timers.delta()));
+        if(!isAiming()) rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
+        return true;
     }
 
     public UnitState getStartState(){
@@ -453,6 +564,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         updateVelocityStatus();
 
         if(target != null) behavior();
+        updateShooting();
 
         if(!world.isOpenWorld()){
             x = Mathf.clamp(x, tilesize, world.width() * tilesize - tilesize);

@@ -77,8 +77,16 @@ public abstract class GroundUnit extends BaseUnit{
                 target = core;
             }
 
+            if(target == null){
+                targetClosestEnemyFlag(BlockFlag.producer);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.turret);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.target);
+            }
+
             if(core != null && distanceTo(core) > getWeapon().getAmmo().getRange() * 0.5f){
                 moveToEnemyCore();
+            }else if(core == null && target != null){
+                moveTo(target.getX(), target.getY());
             }
         }
     },
@@ -249,15 +257,6 @@ public abstract class GroundUnit extends BaseUnit{
                 targetClosest();
             }
 
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
-                rotate(angleTo(target));
-                if(Mathf.angNear(angleTo(target), rotation, 13f)){
-                    AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
-                    getWeapon().update(GroundUnit.this, to.x, to.y);
-                }
-            }
-
             float dst = distanceTo(getOrderX(), getOrderY());
             if(dst <= arrivalDst){
                 clearOrder();
@@ -280,15 +279,6 @@ public abstract class GroundUnit extends BaseUnit{
 
             orderX = target.getX();
             orderY = target.getY();
-
-            if(target != null && !Units.invalidateTarget(target, this) && distanceTo(target) < getWeapon().getAmmo().getRange()){
-                rotate(angleTo(target));
-                if(Mathf.angNear(angleTo(target), rotation, 13f)){
-                    AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
-                    getWeapon().update(GroundUnit.this, to.x, to.y);
-                }
-            }
 
             followOrderPath();
             return true;
@@ -361,7 +351,7 @@ public abstract class GroundUnit extends BaseUnit{
             clearMovePath();
             float jitterAngle = Mathf.atan2(targetX - x, targetY - y) + Mathf.range(120f);
             velocity.add(vec.trns(jitterAngle, type.speed * 0.7f * Timers.delta()));
-            rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
+            if(!isAiming()) rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
             return;
         }
 
@@ -493,6 +483,9 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         if(orderPath.size == 0 || orderPathCursor >= orderPath.size){
+            if(steerAlongChunkPath(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f)){
+                return;
+            }
             moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
             return;
         }
@@ -714,52 +707,59 @@ public abstract class GroundUnit extends BaseUnit{
         }
 
         if(!Units.invalidateTarget(target, this)){
-            boolean inRange = distanceTo(target) < getWeapon().getAmmo().getRange();
-
-            if(inRange){
+            if(isAiming()){
                 rotate(angleTo(target));
             }else if(!velocity.isZero()){
                 rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
             }
+        }else if(!velocity.isZero()){
+            rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
+        }
+    }
 
-            if(type.rotateWeapon){
-                for(boolean left : new boolean[]{true, false}){
-                    int wi = left ? 1 : 0;
-                    float side = left ? 1f : -1f;
-                    float mountAngle = rotation - 90;
-                    float wx = x + Angles.trnsx(mountAngle, getWeapon().width * side);
-                    float wy = y + Angles.trnsy(mountAngle, getWeapon().width * side);
+    @Override
+    protected void updateShooting(){
+        Weapon weapon = getWeapon();
+        if(weapon == null) return;
 
-                    if(inRange){
-                        weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()) - rotation, 0.1f);
-                    }else{
-                        weaponAngles[wi] = 0f;
-                    }
+        if(type.rotateWeapon){//rotating mounts track independently of the hull
+            boolean valid = target != null && weapon.getAmmo() != null
+                    && !Units.invalidateTarget(target, team, x, y, Math.max(weapon.getAmmo().getRange(), type.range));
 
-                    if(inRange){
-                        float worldAngle = rotation - 90 + weaponAngles[wi];
-                        float tipX = wx + Angles.trnsx(worldAngle, getWeapon().length);
-                        float tipY = wy + Angles.trnsy(worldAngle, getWeapon().length);
-                        getWeapon().update(GroundUnit.this, tipX, tipY, worldAngle, left);
-                    }
-                }
-            }else if(inRange && Mathf.angNear(angleTo(target), rotation, 13f)){
-                AmmoType ammo = getWeapon().getAmmo();
+            for(boolean left : new boolean[]{true, false}){
+                int wi = left ? 1 : 0;
+                float side = left ? 1f : -1f;
+                float mountAngle = rotation - 90f;
+                float wx = x + Angles.trnsx(mountAngle, weapon.width * side);
+                float wy = y + Angles.trnsy(mountAngle, weapon.width * side);
 
-                Vector2 to = Predict.intercept(GroundUnit.this, target, ammo.bullet.speed);
-
-                getWeapon().update(GroundUnit.this, to.x, to.y);
-            }
-        }else{
-            if(!velocity.isZero()){
-                rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
-            }
-            if(type.rotateWeapon){
-                for(boolean left : new boolean[]{true, false}){
-                    int wi = left ? 1 : 0;
+                if(!valid){
                     weaponAngles[wi] = 0f;
+                    continue;
+                }
+
+                weaponAngles[wi] = Mathf.slerpDelta(weaponAngles[wi], Angles.angle(wx, wy, target.getX(), target.getY()) - rotation, 0.1f);
+
+                float fireAngle = rotation + weaponAngles[wi];
+                float targetAngle = Angles.angle(wx, wy, target.getX(), target.getY());
+
+                if(distanceTo(target) < weapon.getAmmo().getRange() && Mathf.angNear(fireAngle, targetAngle, type.shootCone)){
+                    float tipX = wx + Angles.trnsx(fireAngle, weapon.length);
+                    float tipY = wy + Angles.trnsy(fireAngle, weapon.length);
+                    weapon.update(this, tipX, tipY, fireAngle, left);
                 }
             }
+            return;
+        }
+
+        if(weapon.getAmmo() == null || target == null) return;
+
+        //fixed weapons fire from the body require body alignment within the shoot cone
+        if(Units.invalidateTarget(target, team, x, y, weapon.getAmmo().getRange())) return;
+
+        Vector2 to = Predict.intercept(this, target, weapon.getAmmo().bullet.speed);
+        if(Mathf.angNear(angleTo(target), rotation, type.shootCone)){
+            weapon.update(this, to.x, to.y);
         }
     }
 
@@ -814,7 +814,7 @@ public abstract class GroundUnit extends BaseUnit{
             baseRotation += Mathf.sign(id % 2 - 0.5f) * Timers.delta() * 3f;
         }
 
-        rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
+        if(!isAiming()) rotation = Mathf.slerpDelta(rotation, velocity.angle(), type.rotatespeed);
     }
 
     protected void circle(float circleLength){
@@ -826,15 +826,17 @@ public abstract class GroundUnit extends BaseUnit{
             vec.rotate((circleLength - vec.len()) / circleLength * 180f);
         }
 
-        vec.setLength(type.speed * Timers.delta());
+        float moveAngle = avoidAngle(vec.angle());
+        float len = type.speed * Timers.delta();
+        vec.set(Angles.trnsx(moveAngle, len), Angles.trnsy(moveAngle, len));
 
         velocity.add(vec);
     }
 
     protected void moveTo(float x, float y){
-        float angle = angleTo(x, y);
+        float angle = avoidAngle(angleTo(x, y));
         velocity.add(vec.trns(angle, type.speed * Timers.delta()));
-        rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
+        if(!isAiming()) rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
     }
 
     protected void getBehindTarget(Unit target, float behindDist, Translator out){
@@ -860,12 +862,21 @@ public abstract class GroundUnit extends BaseUnit{
         Tile targetTile = world.pathfinder.getTargetTile(team, tile);
 
         if(tile == targetTile){
-            float angle = angleTo(core);
+            //gradient exhausted: either arrived, or (open world) the field has no coverage here
+            float ddx = core.getX() - x, ddy = core.getY() - y;
+            boolean nearCore = ddx * ddx + ddy * ddy < (12 * tilesize) * (12 * tilesize);
+
+            if(!nearCore && steerAlongChunkPath(core.getX(), core.getY())){
+                return;
+            }
+
+            float angle = avoidAngle(angleTo(core));
             velocity.add(vec.trns(angle, type.speed * Timers.delta()));
             return;
         }
 
-        velocity.add(vec.trns(angleTo(targetTile), type.speed*Timers.delta()));
+        float gangle = avoidAngle(angleTo(targetTile));
+        velocity.add(vec.trns(gangle, type.speed*Timers.delta()));
     }
 
     protected void moveToHome(){

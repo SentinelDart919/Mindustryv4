@@ -2,6 +2,7 @@ package io.anuke.mindustry.maps.generation;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.LongSet;
 import io.anuke.mindustry.content.Items;
@@ -10,6 +11,7 @@ import io.anuke.mindustry.content.blocks.OreBlocks;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Team;
+import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -17,6 +19,7 @@ import io.anuke.mindustry.world.blocks.Floor;
 import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.mindustry.world.blocks.OreBlock;
 import io.anuke.mindustry.world.blocks.storage.CoreBlock;
+import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.noise.RidgedPerlin;
 import io.anuke.ucore.noise.Simplex;
@@ -31,9 +34,16 @@ public class ChunkManager{
     public static final int LOAD_RADIUS = 3;
     public static final int RENDER_RADIUS = 5;
     public static final int UNLOAD_CHECK_INTERVAL = 120;
+    /** Frozen chunks beyond this Chebyshev chunk distance are compressed into cold storage. */
+    public static final int COLD_RADIUS = RENDER_RADIUS * 2 + 2;
+    /** Ticks between cold-storage sweeps. */
+    public static final int COLD_CHECK_INTERVAL = 600;
+    /** Max chunks generated, disk-loaded, or woken from cold storage proactively per tick; prevents frame spikes when crossing chunk borders. */
+    private static final int MAX_CHUNK_LOADS_PER_TICK = 1;
 
     private final LongMap<WorldChunk> loadedChunks = new LongMap<>();
     private final LongSet coreChunks = new LongSet();
+    private final LongArray sweepScratch = new LongArray();
     private final long worldSeed;
     private final Simplex sim;
     private final Simplex sim2;
@@ -43,9 +53,18 @@ public class ChunkManager{
     private final Simplex[] oreNoises;
 
     private int lastUnloadCheck = 0;
+    private int lastColdCheck = 0;
     private boolean generatingChunk = false;
     private String saveName;
     private final OpenWorldSaveManager saveManager = new OpenWorldSaveManager();
+
+    /** Incremented every time a new chunk is loaded/generated, used by systems tracking chunk changes. */
+    public int chunkLoadCounter = 0;
+
+    /** Tiles restored from disk that are already fog-discovered; swapped/drained by the FogRenderer. */
+    private Array<Tile> discoverFill = new Array<>(), discoverDrain = new Array<>();
+    /** Synthetic view-range blocks restored from disk; swapped/drained by the FogRenderer. */
+    private Array<Tile> viewFill = new Array<>(), viewDrain = new Array<>();
 
     public ChunkManager(long seed){
         this(seed, null);
@@ -64,6 +83,18 @@ public class ChunkManager{
         for(int i = 0; i < oreCount; i++){
             this.oreNoises[i] = new Simplex(seed + 100 + i);
         }
+
+        //mark chunks with player-made changes as modified so they are never unloaded unsaved
+        Events.on(TileChangeEvent.class, event -> {
+            if(generatingChunk || !world.isOpenWorld() || world.chunks() != this) return;
+            int cx = MathUtils.floor((float)event.tile.x / CHUNK_SIZE);
+            int cy = MathUtils.floor((float)event.tile.y / CHUNK_SIZE);
+            WorldChunk chunk = loadedChunks.get(packKey(cx, cy));
+            if(chunk != null){
+                chunk.modified = true;
+                chunk.pathStamp++;
+            }
+        });
     }
 
     public long getSeed(){
@@ -112,13 +143,73 @@ public class ChunkManager{
                     generatingChunk = false;
                 }
                 chunk.generated = true;
+                chunk.pathStamp++;
+            }else{
+                queueRestoredTiles(chunk);
+                chunk.pathStamp++;
             }
 
             loadedChunks.put(key, chunk);
+            chunkLoadCounter++;
             updateChunkAndNeighborCliffs(cx, cy);
+            world.indexer.indexChunk(chunk);
+            world.pathfinder.onChunkLive(cx, cy);
         }
         chunk.lastAccessFrame = (long)Timers.time();
         return chunk;
+    }
+
+    /** Queues restored fog data from a disk-loaded chunk so the FogRenderer can paint it without full-window rescans. */
+    private void queueRestoredTiles(WorldChunk chunk){
+        if(headless || !world.isOpenWorld()) return;
+        for(int i = 0; i < chunk.tiles.length; i++){
+            Tile tile = chunk.tiles[i];
+            if(tile.discovered()){
+                discoverFill.add(tile);
+            }
+            if(tile.block().synthetic() && tile.block().viewRange > 0){
+                viewFill.add(tile);
+            }
+        }
+    }
+
+    /** Called on the graphics thread; returns tiles queued by the logic thread since the last call. */
+    public Array<Tile> swapDiscoverQueue(){
+        Array<Tile> t = discoverFill;
+        discoverFill = discoverDrain;
+        discoverDrain = t;
+        return t;
+    }
+
+    /** Called on the graphics thread; returns view-range blocks queued by the logic thread since the last call. */
+    public Array<Tile> swapViewQueue(){
+        Array<Tile> t = viewFill;
+        viewFill = viewDrain;
+        viewDrain = t;
+        return t;
+    }
+
+    /** Flags the chunk containing this tile as modified, so it is kept in memory and saved. */
+    public void markModified(int worldX, int worldY){
+        int cx = MathUtils.floor((float)worldX / CHUNK_SIZE);
+        int cy = MathUtils.floor((float)worldY / CHUNK_SIZE);
+        WorldChunk chunk = loadedChunks.get(packKey(cx, cy));
+        if(chunk != null) chunk.modified = true;
+    }
+
+    /** Returns a tile from an already-loaded chunk without triggering chunk generation. Returns null if the chunk is not loaded. */
+    public Tile peekTile(int worldX, int worldY){        int cx = MathUtils.floor((float)worldX / CHUNK_SIZE);
+        int cy = MathUtils.floor((float)worldY / CHUNK_SIZE);
+        WorldChunk chunk = loadedChunks.get(packKey(cx, cy));
+        if(chunk == null || chunk.tiles == null){
+            return null;
+        }
+        int lx = worldX - cx * CHUNK_SIZE;
+        int ly = worldY - cy * CHUNK_SIZE;
+        if(lx < 0 || lx >= CHUNK_SIZE || ly < 0 || ly >= CHUNK_SIZE){
+            return null;
+        }
+        return chunk.tile(lx, ly);
     }
 
     public String getSaveName(){
@@ -149,8 +240,15 @@ public class ChunkManager{
                 int ncy = cy + Geometry.d4[d].y;
                 WorldChunk neighbor = loadedChunks.get(packKey(ncx, ncy));
                 if(neighbor == null || neighbor.tiles == null) continue;
-                for(int i = 0; i < neighbor.tiles.length; i++){
-                    neighbor.tiles[i].updateOcclusion();
+
+                int ndx = Geometry.d4[d].x;
+                int ndy = Geometry.d4[d].y;
+
+                //only the neighbor strip adjacent to the new chunk is affected by it
+                for(int s = 0; s < CHUNK_SIZE; s++){
+                    int sx = ndx != 0 ? (ndx > 0 ? 0 : CHUNK_SIZE - 1) : s;
+                    int sy = ndy != 0 ? (ndy > 0 ? 0 : CHUNK_SIZE - 1) : s;
+                    neighbor.tiles[sx + sy * CHUNK_SIZE].updateOcclusion();
                 }
             }
 
@@ -284,7 +382,11 @@ public class ChunkManager{
         if(saveName == null) return;
         int count = 0;
         for(WorldChunk chunk : loadedChunks.values()){
-            if(chunk.generated){
+            if(chunk.coldData != null){
+                //already serialized; write the payload as-is
+                saveManager.saveRawChunk(saveName, chunk.cx, chunk.cy, chunk.coldData);
+                count++;
+            }else if(chunk.generated && chunk.tiles != null){
                 saveManager.saveChunk(saveName, chunk);
                 count++;
             }
@@ -320,6 +422,9 @@ public class ChunkManager{
             chunk = getOrCreateChunk(cx, cy);
             if(chunk == null) return null;
         }
+        if(chunk.tiles == null){
+            return null;
+        }
         int lx = worldX - cx * CHUNK_SIZE;
         int ly = worldY - cy * CHUNK_SIZE;
         if(lx < 0 || lx >= CHUNK_SIZE || ly < 0 || ly >= CHUNK_SIZE){
@@ -336,6 +441,11 @@ public class ChunkManager{
 
     public boolean isChunkLoaded(int cx, int cy){
         return loadedChunks.containsKey(packKey(cx, cy));
+    }
+
+    /** Returns the chunk if it is resident (frozen counts), without generating anything. Null for unloaded or cold-stored chunks. */
+    public WorldChunk peekChunk(int cx, int cy){
+        return loadedChunks.get(packKey(cx, cy));
     }
 
     public boolean isChunkActive(int cx, int cy){
@@ -357,17 +467,43 @@ public class ChunkManager{
         int playerCX = MathUtils.floor(players[0].x / (CHUNK_SIZE * tilesize));
         int playerCY = MathUtils.floor(players[0].y / (CHUNK_SIZE * tilesize));
 
-        for(int dx = -LOAD_RADIUS; dx <= LOAD_RADIUS; dx++){
-            for(int dy = -LOAD_RADIUS; dy <= LOAD_RADIUS; dy++){
-                getOrCreateChunk(playerCX + dx, playerCY + dy);
+        //load and wake chunks nearest-first, a limited number per tick to avoid lag spikes
+        int budget = MAX_CHUNK_LOADS_PER_TICK;
+        outer:
+        for(int r = 0; r <= LOAD_RADIUS; r++){
+            for(int dx = -r; dx <= r; dx++){
+                for(int dy = -r; dy <= r; dy++){
+                    if(Math.max(Math.abs(dx), Math.abs(dy)) != r) continue;
+                    long key = packKey(playerCX + dx, playerCY + dy);
+                    WorldChunk chunk = loadedChunks.get(key);
+                    if(chunk == null){
+                        getOrCreateChunk(playerCX + dx, playerCY + dy);
+                        if(--budget <= 0) break outer;
+                    }else if(chunk.frozen || chunk.coldData != null){
+                        wakeChunk(chunk);
+                        if(--budget <= 0) break outer;
+                    }
+                }
             }
         }
 
         markActiveChunks();
 
-        if((int)Timers.time() - lastUnloadCheck > UNLOAD_CHECK_INTERVAL){
-            lastUnloadCheck = (int)Timers.time();
+        //chunks containing units or players that wandered into frozen territory resume simulation immediately
+        for(WorldChunk chunk : loadedChunks.values()){
+            if(chunk.active && (chunk.frozen || chunk.coldData != null)){
+                wakeChunk(chunk);
+            }
+        }
+
+        int now = (int)Timers.time();
+        if(now - lastUnloadCheck > UNLOAD_CHECK_INTERVAL){
+            lastUnloadCheck = now;
             unloadDistantChunks(playerCX, playerCY);
+        }
+        if(now - lastColdCheck > COLD_CHECK_INTERVAL){
+            lastColdCheck = now;
+            coldSweep(playerCX, playerCY);
         }
     }
 
@@ -405,28 +541,128 @@ public class ChunkManager{
         }
     }
 
+    /**
+     * Freezes chunks far from the player: tiles stay resident for rendering/minimap/fog,
+     * but their tile entities are detached from the logic group so they cost zero update time.
+     * Waking is instant since no data is destroyed. Runs every {@link #UNLOAD_CHECK_INTERVAL} ticks.
+     */
     private void unloadDistantChunks(int playerCX, int playerCY){
-        Array<Long> toRemove = new Array<>();
-
-        for(LongMap.Entry<WorldChunk> entry : loadedChunks.entries()){
-            WorldChunk chunk = entry.value;
-            int cx = chunk.cx;
-            int cy = chunk.cy;
-
-            int dist = Math.max(Math.abs(cx - playerCX), Math.abs(cy - playerCY));
+        for(WorldChunk chunk : loadedChunks.values()){
+            int dist = Math.max(Math.abs(chunk.cx - playerCX), Math.abs(chunk.cy - playerCY));
 
             if(dist <= LOAD_RADIUS) continue;
             if(chunk.active) continue;
-            if(coreChunks.contains(packKey(cx, cy))) continue;
+            if(coreChunks.contains(packKey(chunk.cx, chunk.cy))) continue;
 
             if(dist > RENDER_RADIUS + 2){
-                toRemove.add(entry.key);
+                freezeChunk(chunk);
             }
         }
+    }
 
-        for(long key : toRemove){
-            loadedChunks.remove(key);
+    /** Compresses frozen chunks far outside the render window into compact byte payloads, freeing their object graphs. Unmodified pristine chunks are dropped outright - their terrain regenerates deterministically from the seed. */
+    private void coldSweep(int playerCX, int playerCY){
+        sweepScratch.clear();
+
+        for(LongMap.Entry<WorldChunk> entry : loadedChunks.entries()){
+            WorldChunk chunk = entry.value;
+            if(!chunk.frozen || chunk.tiles == null) continue;
+
+            int dist = Math.max(Math.abs(chunk.cx - playerCX), Math.abs(chunk.cy - playerCY));
+            if(dist <= COLD_RADIUS) continue;
+            if(chunk.active) continue;
+            if(coreChunks.contains(packKey(chunk.cx, chunk.cy))) continue;
+
+            sweepScratch.add(entry.key);
         }
+
+        for(int i = 0; i < sweepScratch.size; i++){
+            WorldChunk chunk = loadedChunks.get(sweepScratch.items[i]);
+            if(chunk == null || !chunk.frozen || chunk.tiles == null || chunk.coldData != null) continue;
+
+            if(chunk.modified){
+                byte[] payload = saveManager.serializeChunk(chunk);
+                if(payload == null) continue; //serialization failed; keep resident rather than risk loss
+                chunk.tiles = null;
+                chunk.frozen = false;
+                chunk.coldData = payload;
+            }else{
+                loadedChunks.remove(sweepScratch.items[i]);
+            }
+        }
+    }
+
+    /** Detaches all resident tile entities from the logic group; the chunk stops updating entirely but stays renderable. */
+    private void freezeChunk(WorldChunk chunk){
+        if(chunk.frozen || chunk.tiles == null) return;
+
+        for(int i = 0; i < chunk.tiles.length; i++){
+            TileEntity entity = chunk.tiles[i].entity;
+            if(entity != null && entity.getGroup() != null){
+                entity.remove();
+            }
+        }
+        chunk.frozen = true;
+    }
+
+    /** Re-attaches resident tile entities to the logic group. */
+    private void thawChunk(WorldChunk chunk){
+        if(!chunk.frozen) return;
+        chunk.frozen = false;
+        if(chunk.tiles == null) return;
+
+        for(int i = 0; i < chunk.tiles.length; i++){
+            TileEntity entity = chunk.tiles[i].entity;
+            //entities put to sleep before freezing were detached by design; leave them asleep
+            if(entity != null && !entity.isDead() && entity.getGroup() == null && !entity.isSleeping()){
+                entity.add();
+            }
+        }
+    }
+
+    /** Brings a frozen or cold-stored chunk back to full simulation. */
+    private void wakeChunk(WorldChunk chunk){
+        if(chunk.coldData != null && !materializeColdChunk(chunk)){
+            return;
+        }
+        thawChunk(chunk);
+    }
+
+    /** Rebuilds live tiles/entities from a cold-stored payload in place. Returns false if there was nothing to restore. */
+    private boolean materializeColdChunk(WorldChunk chunk){
+        if(chunk.coldData == null) return false;
+
+        WorldChunk restored = saveManager.deserializeChunk(chunk.coldData);
+        chunk.coldData = null;
+
+        if(restored != null && restored.tiles != null){
+            chunk.tiles = restored.tiles;
+            chunk.generated = true;
+        }else{
+            Log.err("Failed to restore cold-stored chunk at {0}, {1}; regenerating", chunk.cx, chunk.cy);
+            chunk.tiles = new Tile[CHUNK_SIZE * CHUNK_SIZE];
+            generatingChunk = true;
+            try{
+                generateChunkTerrain(chunk);
+            }finally{
+                generatingChunk = false;
+            }
+            chunk.generated = true;
+        }
+
+        chunk.pathStamp++;
+        updateChunkAndNeighborCliffs(chunk.cx, chunk.cy);
+        world.indexer.indexChunk(chunk);
+        world.pathfinder.onChunkLive(chunk.cx, chunk.cy);
+
+        //re-link machines to their neighbors now that all tiles are back
+        for(int i = 0; i < chunk.tiles.length; i++){
+            TileEntity entity = chunk.tiles[i].entity;
+            if(entity != null && !entity.isDead()){
+                entity.updateProximity();
+            }
+        }
+        return true;
     }
 
     private void generateChunkTerrain(WorldChunk chunk){
@@ -442,28 +678,7 @@ public class ChunkManager{
             }
         }
 
-        for(int lx = 0; lx < CHUNK_SIZE; lx++){
-            for(int ly = 0; ly < CHUNK_SIZE; ly++){
-                int wx = worldStartX + lx;
-                int wy = worldStartY + ly;
-                Tile tile = chunk.tiles[lx + ly * CHUNK_SIZE];
-                byte elevation = tile.getElevation();
-
-                if(elevation <= 0) continue;
-
-                for(int d = 0; d < 4; d++){
-                    int nx = wx + Geometry.d4[d].x;
-                    int ny = wy + Geometry.d4[d].y;
-                    Tile neighbor = getTile(nx, ny);
-                    if(neighbor != null && neighbor.getElevation() < elevation){
-                        if(sim2.octaveNoise2D(1, 1, 1.0 / 8, wx + Short.MAX_VALUE, wy + Short.MAX_VALUE) > 0.8){
-                            tile.setElevation(-1);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+        applySlopes(chunk, worldStartX, worldStartY);
 
         for(int lx = 0; lx < CHUNK_SIZE; lx++){
             for(int ly = 0; ly < CHUNK_SIZE; ly++){
@@ -508,7 +723,57 @@ public class ChunkManager{
         return true;
     }
 
+    private void applySlopes(WorldChunk chunk, int worldStartX, int worldStartY){
+        int pad = CHUNK_SIZE + 2;
+        byte[] heights = new byte[pad * pad];
+
+        for(int x = 0; x < pad; x++){
+            for(int y = 0; y < pad; y++){
+                heights[x + y * pad] = sampleTerrain(worldStartX + x - 1, worldStartY + y - 1).elevation;
+            }
+        }
+
+        for(int lx = 0; lx < CHUNK_SIZE; lx++){
+            for(int ly = 0; ly < CHUNK_SIZE; ly++){
+                Tile tile = chunk.tiles[lx + ly * CHUNK_SIZE];
+                int elevation = tile.getElevation();
+
+                if(elevation <= 0) continue;
+
+                boolean lowerNeighbor = false;
+                for(int d = 0; d < 4 && !lowerNeighbor; d++){
+                    int hx = lx + 1 + Geometry.d4[d].x;
+                    int hy = ly + 1 + Geometry.d4[d].y;
+                    if(heights[hx + hy * pad] < elevation){
+                        lowerNeighbor = true;
+                    }
+                }
+
+                if(lowerNeighbor && sim2.octaveNoise2D(1, 1, 1.0 / 8,
+                    worldStartX + lx + Short.MAX_VALUE, worldStartY + ly + Short.MAX_VALUE) > 0.8){
+                    tile.setElevation(-1);
+                }
+            }
+        }
+    }
+
     private Tile generateTileAt(int wx, int wy){
+        TerrainSample sample = sampleTerrain(wx, wy);
+
+        Block wall = Blocks.air;
+
+        if(decoration.containsKey(sample.floor) && random.chance(0.03)){
+            wall = decoration.get(sample.floor);
+        }
+
+        if(wall == Blocks.air && (sample.floor == Blocks.snow || sample.floor == Blocks.ice) && random.chance(0.0045)){
+            wall = Blocks.frozenTree;
+        }
+
+        return Tile.createRaw(wx, wy, (Floor)sample.floor, wall, sample.elevation);
+    }
+
+    private TerrainSample sampleTerrain(int wx, int wy){
         int x = wx + Short.MAX_VALUE;
         int y = wy + Short.MAX_VALUE;
 
@@ -520,8 +785,7 @@ public class ChunkManager{
 
         elevation -= Math.pow(lake + 0.15f, 5);
 
-        io.anuke.mindustry.world.Block floor;
-        io.anuke.mindustry.world.Block wall = Blocks.air;
+        Block floor;
 
         if(elevation < 0.7){
             floor = Blocks.deepwater;
@@ -551,20 +815,21 @@ public class ChunkManager{
             floor = Blocks.ice;
         }
 
-        if(((io.anuke.mindustry.world.blocks.Floor)floor).liquidDrop != null){
+        if(((Floor)floor).liquidDrop != null){
             elevation = 0;
         }
 
-        if(wall == Blocks.air && decoration.containsKey(floor) && random.chance(0.03)){
-            wall = decoration.get(floor);
-        }
+        return new TerrainSample(floor, (byte)Math.max(elevation, 0));
+    }
 
-        if(wall == Blocks.air && (floor == Blocks.snow || floor == Blocks.ice) && random.chance(0.0045)){
-            wall = Blocks.frozenTree;
-        }
+    private static class TerrainSample{
+        final Block floor;
+        final byte elevation;
 
-        byte elev = (byte)Math.max(elevation, 0);
-        return Tile.createRaw(wx, wy, (Floor)floor, wall, elev);
+        TerrainSample(Block floor, byte elevation){
+            this.floor = floor;
+            this.elevation = elevation;
+        }
     }
 
     private static final com.badlogic.gdx.utils.ObjectMap<io.anuke.mindustry.world.Block, io.anuke.mindustry.world.Block> decoration;
@@ -583,6 +848,14 @@ public class ChunkManager{
         public Tile[] tiles;
         public boolean generated = false;
         public boolean active = false;
+        /** Set when the player changes something in this chunk; modified chunks are never unloaded unsaved. */
+        public boolean modified = false;
+        /** True when resident tile entities are detached from the logic group; the chunk costs zero update time and wakes instantly. */
+        public boolean frozen = false;
+        /** Non-null when this chunk is compressed into cold storage; tiles/entities are freed and restored transparently on access. */
+        public byte[] coldData = null;
+        /** Bumped whenever this chunk's tile data mutates or is replaced; used by AI caches (e.g. the chunk waypoint graph) for invalidation. */
+        public int pathStamp = 0;
         public long lastAccessFrame = 0;
 
         public WorldChunk(int cx, int cy){

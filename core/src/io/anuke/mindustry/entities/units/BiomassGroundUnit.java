@@ -36,18 +36,6 @@ public class BiomassGroundUnit extends GroundUnit{
                 if(distanceTo(target) > getWeapon().getAmmo().getRange() * 0.8f){
                     moveTo(target.getX(), target.getY());
                 }
-
-                if(distanceTo(target) < getWeapon().getAmmo().getRange()){
-                    rotate(angleTo(target));
-
-                    if(Mathf.angNear(angleTo(target), rotation, 13f)){
-                        AmmoType ammo = getWeapon().getAmmo();
-
-                        Vector2 to = Predict.intercept(BiomassGroundUnit.this, target, ammo.bullet.speed);
-
-                        getWeapon().update(BiomassGroundUnit.this, to.x, to.y);
-                    }
-                }
             }
         }
     };

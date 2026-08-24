@@ -1,58 +1,129 @@
 package io.anuke.mindustry.ai;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.Bits;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.Queue;
+import com.badlogic.gdx.utils.LongArray;
+import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
 import io.anuke.mindustry.game.Team;
-import io.anuke.mindustry.game.Teams.TeamData;
+import io.anuke.mindustry.maps.generation.ChunkManager;
+import io.anuke.mindustry.maps.generation.ChunkManager.WorldChunk;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
 import io.anuke.ucore.core.Events;
-import io.anuke.ucore.core.Timers;
-import io.anuke.ucore.util.Geometry;
-import io.anuke.ucore.util.Structs;
+import io.anuke.ucore.util.Mathf;
 
 import static io.anuke.mindustry.Vars.*;
 
 
 public class Pathfinder{
-    private long maxUpdate = TimeUtils.millisToNanos(4);
+    private long maxUpdate = TimeUtils.millisToNanos(2);
     private PathData[] paths;
-    private IntArray blocked = new IntArray();
+    private ChunkWaypointGraph graph;
+
+    //packed cell layout
+    private static final int B_SOLID = 1;
+    private static final int B_BREAKABLE = 1 << 1;
+    private static final int TEAM_SHIFT = 2;
+    private static final int COST_SHIFT = 7;
+    private static final int CELL_BLOCKED = B_SOLID;
 
     public Pathfinder(){
         Events.on(WorldLoadEvent.class, event -> clear());
         Events.on(TileChangeEvent.class, event -> {
-            if(Net.client()) return;
+            if(Net.client() || paths == null) return;
 
-            for(Team team : Team.all){
-                TeamData data = state.teams.get(team);
-                if(state.teams.isActive(team) && data.team != event.tile.getTeam()){
-                    update(event.tile, data.team);
-                }
+            Tile tile = event.tile;
+            for(int i = 0; i < paths.length; i++){
+                PathData path = ensurePath(i);
+                if(path == null) continue;
+
+                int lx = tile.x - path.offsetX;
+                int ly = tile.y - path.offsetY;
+                if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.size) continue;
+
+                path.tileData[lx + ly * path.size] = packCell(tile);
+                path.dirty = true;
             }
-
-            update(event.tile, event.tile.getTeam());
         });
+    }
+
+    /**
+     * Returns ready-to-use path data for an active team. Teams that became active after
+     * world load (e.g. waveTeam in open world) get their arrays built lazily on first need;
+     * inactive teams return null.
+     */
+    private PathData ensurePath(int i){
+        Team team = Team.all[i];
+        if(!state.teams.isActive(team)) return null;
+
+        PathData path = paths[i];
+        if(path == null || path.tileData == null){
+            path = createFor(team);
+        }
+        return path;
     }
 
     public void activateTeamPath(Team team){
         createFor(team);
     }
 
+    /**
+     * Refreshes packed cells for a chunk that just became resident (generated, loaded from
+     * disk, or cold-restored). Without this, fields permanently treat streamed terrain as
+     * blocked since bulk tile creation fires no events.
+     */
+    public void onChunkLive(int cx, int cy){
+        if(Net.client() || paths == null) return;
+        invalidateMemo();
+
+        int wx0 = cx * ChunkManager.CHUNK_SIZE, wy0 = cy * ChunkManager.CHUNK_SIZE;
+        int cs = ChunkManager.CHUNK_SIZE;
+
+        for(int i = 0; i < paths.length; i++){
+            PathData path = ensurePath(i);
+            if(path == null) continue;
+
+            int x0 = Math.max(wx0, path.offsetX);
+            int x1 = Math.min(wx0 + cs, path.offsetX + path.size);
+            int y0 = Math.max(wy0, path.offsetY);
+            int y1 = Math.min(wy0 + cs, path.offsetY + path.size);
+            if(x0 >= x1 || y0 >= y1) continue;
+
+            for(int x = x0; x < x1; x++){
+                for(int y = y0; y < y1; y++){
+                    path.tileData[(x - path.offsetX) + (y - path.offsetY) * path.size] = packCell(fastTile(x, y));
+                }
+            }
+            path.dirty = true;
+        }
+    }
+
+    /**
+     * Coarse chunk-level waypoints (packed tile coords) for long-distance open-world travel.
+     * Returns null when unavailable or unreachable; callers should fall back to direct steering.
+     */
+    public LongArray findChunkPath(float fromWorldX, float fromWorldY, float toWorldX, float toWorldY){
+        if(!world.isOpenWorld()) return null;
+        if(graph == null){
+            graph = new ChunkWaypointGraph();
+        }
+        return graph.findPath(fromWorldX / tilesize, fromWorldY / tilesize, toWorldX / tilesize, toWorldY / tilesize);
+    }
+
     public void recenter(int playerTX, int playerTY){
         if(paths == null) return;
 
-        for(Team team : Team.all){
-            PathData path = paths[team.ordinal()];
+        for(int i = 0; i < paths.length; i++){
+            PathData path = ensurePath(i);
             if(path == null) continue;
 
-            int halfGrid = path.gridSize / 2;
+            int halfGrid = path.size / 2;
             int gridCenterX = path.offsetX + halfGrid;
             int gridCenterY = path.offsetY + halfGrid;
 
@@ -60,7 +131,7 @@ public class Pathfinder{
             int dy = playerTY - gridCenterY;
 
             if(Math.abs(dx) > halfGrid / 2 || Math.abs(dy) > halfGrid / 2){
-                createFor(team);
+                rebuildWindow(path, playerTX - halfGrid, playerTY - halfGrid);
             }
         }
     }
@@ -68,44 +139,76 @@ public class Pathfinder{
     public void update(){
         if(Net.client() || paths == null) return;
 
-        for(Team team : Team.all){
-            if(state.teams.isActive(team)){
-                updateFrontier(team, maxUpdate);
+        for(int i = 0; i < paths.length; i++){
+            Team team = Team.all[i];
+
+            PathData path = ensurePath(i);
+            if(path == null) continue;
+
+            if(path.dirty && path.heapSize == 0){
+                java.util.Arrays.fill(path.weights, Float.MAX_VALUE);
+                seedTargets(team, path);
+                path.dirty = false;
             }
+
+            updateFrontier(team, maxUpdate);
         }
     }
 
     public Tile getTargetTile(Team team, Tile tile){
         PathData path = paths[team.ordinal()];
-        if(path == null) return tile;
+        if(path == null || tile == null) return tile;
 
-        float[][] values = path.weights;
-        if(values == null || tile == null) return tile;
+        if(!path.hasComplete) return tile;
+
+        float[] values = path.completeWeights;
 
         int ax = tile.x - path.offsetX;
         int ay = tile.y - path.offsetY;
-        if(ax < 0 || ay < 0 || ax >= path.gridSize || ay >= path.gridSize) return tile;
+        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.size) return tile;
 
-        float value = values[ax][ay];
+        int pos = ax + ay * path.size;
+        float value = values[pos];
 
         Tile target = null;
         float tl = 0f;
-        for(GridPoint2 point : Geometry.d8){
-            int dx = tile.x + point.x, dy = tile.y + point.y;
 
-            Tile other = world.tile(dx, dy);
-            if(other == null) continue;
-
-            int bx = dx - path.offsetX;
-            int by = dy - path.offsetY;
-            if(bx < 0 || by < 0 || bx >= path.gridSize || by >= path.gridSize) continue;
-
-            if(values[bx][by] < value && (target == null || values[bx][by] < tl) &&
-                    !other.solid() &&
-                    !(point.x != 0 && point.y != 0 && (world.solid(tile.x + point.x, tile.y) || world.solid(tile.x, tile.y + point.y)))){ //diagonal corner trap
-                target = other;
-                tl = values[bx][by];
+        for(int d = 0; d < 8; d++){
+            int dx, dy;
+            switch(d){
+                case 0: dx = 0; dy = -1; break;
+                case 1: dx = 0; dy = 1; break;
+                case 2: dx = -1; dy = 0; break;
+                case 3: dx = 1; dy = 0; break;
+                case 4: dx = -1; dy = -1; break;
+                case 5: dx = 1; dy = -1; break;
+                case 6: dx = -1; dy = 1; break;
+                default: dx = 1; dy = 1; break;
             }
+
+            int nx = tile.x + dx, ny = tile.y + dy;
+
+            int bx = nx - path.offsetX;
+            int by = ny - path.offsetY;
+            if(bx < 0 || by < 0 || bx >= path.size || by >= path.size) continue;
+
+            int npos = bx + by * path.size;
+            float v = values[npos];
+
+            if(v >= value || Float.MAX_VALUE - v < 1f) continue;
+            if(target != null && v >= tl) continue;
+
+            if(dx != 0 && dy != 0){
+                int c1 = cellAt(path, tile.x + dx, tile.y);
+                int c2 = cellAt(path, tile.x, tile.y + dy);
+                if(isSolid(c1) || isSolid(c2)) continue;
+            }
+
+            Tile other = peekWorldTile(nx, ny);
+            if(other == null || other.solid()) continue;
+
+            target = other;
+            tl = v;
         }
 
         if(target == null || tl == Float.MAX_VALUE) return tile;
@@ -116,130 +219,110 @@ public class Pathfinder{
     public float getValueforTeam(Team team, int x, int y){
         if(paths == null || team.ordinal() >= paths.length || paths[team.ordinal()] == null) return 0;
         PathData path = paths[team.ordinal()];
+        if(path.weights == null) return 0;
         int ax = x - path.offsetX;
         int ay = y - path.offsetY;
-        if(ax < 0 || ay < 0 || ax >= path.gridSize || ay >= path.gridSize) return 0;
-        return path.weights[ax][ay];
+        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.size) return Float.MAX_VALUE;
+        float[] source = path.hasComplete ? path.completeWeights : path.weights;
+        return source[ax + ay * path.size];
     }
 
-    private boolean passable(Tile tile, Team team){
-        return (!tile.solid()) || (tile.breakable() && (tile.target().getTeam() != team));
+    private boolean isSolid(int cellData){
+        return (cellData & B_SOLID) != 0;
     }
 
-    /**Clears the frontier, increments the search and sets up all flow sources.
-     * This only occurs for active teams.*/
-    private void update(Tile tile, Team team){
-        //make sure team exists and has path data
-        if(paths == null || team.ordinal() >= paths.length || paths[team.ordinal()] == null) return;
+    private boolean passable(int cellData, int teamOrdinal){
+        if((cellData & B_SOLID) == 0) return true;
+        return (cellData & B_BREAKABLE) != 0 && ((cellData >> TEAM_SHIFT) & 0x1F) != teamOrdinal;
+    }
 
-        PathData path = paths[team.ordinal()];
+    private float costOf(int cellData){
+        int cost = (cellData >> COST_SHIFT) & 0xFF;
+        return Math.max(cost, 1);
+    }
 
-        int ax = tile.x - path.offsetX;
-        int ay = tile.y - path.offsetY;
-        if(ax < 0 || ay < 0 || ax >= path.gridSize || ay >= path.gridSize) return;
+    private int cellAt(PathData path, int worldX, int worldY){
+        int lx = worldX - path.offsetX;
+        int ly = worldY - path.offsetY;
+        if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.size) return CELL_BLOCKED;
+        return path.tileData[lx + ly * path.size];
+    }
 
-        //impassable tiles have a weight of float.max
-        if(!passable(tile, team)){
-            path.weights[ax][ay] = Float.MAX_VALUE;
+    private int packCell(Tile tile){
+        if(tile == null) return CELL_BLOCKED;
+
+        int data = 0;
+        if(tile.solid()) data |= B_SOLID;
+        if(tile.breakable()) data |= B_BREAKABLE;
+
+        Tile head = tile.target();
+        data |= (head == null ? 0 : head.getTeam().ordinal()) << TEAM_SHIFT;
+
+        int cost = tile.cost & 0xFF;
+        if(cost < 1) cost = 1;
+        data |= cost << COST_SHIFT;
+
+        return data;
+    }
+
+
+    private WorldChunk memoChunk;
+    private int memoCx = Integer.MIN_VALUE, memoCy, memoStamp;
+
+    private void invalidateMemo(){
+        memoCx = Integer.MIN_VALUE;
+        memoChunk = null;
+    }
+
+    private Tile fastTile(int wx, int wy){
+        if(!world.isOpenWorld()){
+            return world.tile(wx, wy);
         }
 
-        //increment search, clear frontier
-        path.search++;
-        path.frontier.clear();
-        path.lastSearchTime = TimeUtils.millis();
+        ChunkManager chunks = world.chunks();
+        if(chunks == null) return null;
 
-        //add all targets to the frontier
-        for(Tile other : world.indexer.getEnemy(team, BlockFlag.target)){
-            int ox = other.x - path.offsetX;
-            int oy = other.y - path.offsetY;
-            if(ox >= 0 && oy >= 0 && ox < path.gridSize && oy < path.gridSize){
-                path.weights[ox][oy] = 0;
-                path.searches[ox][oy] = path.search;
-                path.frontier.addFirst(other);
-            }
-        }
-    }
+        int cx = MathUtils.floor((float)wx / ChunkManager.CHUNK_SIZE);
+        int cy = MathUtils.floor((float)wy / ChunkManager.CHUNK_SIZE);
 
-    private void createFor(Team team){
-        PathData path = new PathData();
-        path.search++;
-        path.frontier.ensureCapacity((path.gridSize + path.gridSize) * 3);
-
-        paths[team.ordinal()] = path;
-
-        int hw = path.gridSize / 2;
-
-        for(int x = 0; x < path.gridSize; x++){
-            for(int y = 0; y < path.gridSize; y++){
-                int wx = x + path.offsetX;
-                int wy = y + path.offsetY;
-                Tile tile = world.tile(wx, wy);
-
-                if(tile == null){
-                    path.weights[x][y] = Float.MAX_VALUE;
-                    continue;
-                }
-
-                if(tile.block().flags != null && state.teams.areEnemies(tile.getTeam(), team)
-                        && tile.block().flags.contains(BlockFlag.target)){
-                    path.frontier.addFirst(tile);
-                    path.weights[x][y] = 0;
-                    path.searches[x][y] = path.search;
-                }else{
-                    path.weights[x][y] = Float.MAX_VALUE;
-                }
-            }
+        WorldChunk chunk;
+        if(cx == memoCx && cy == memoCy){
+            chunk = memoChunk;
+        }else{
+            chunk = chunks.peekChunk(cx, cy);
+            memoChunk = chunk;
+            memoCx = cx;
+            memoCy = cy;
+            memoStamp = chunk == null ? -1 : chunk.pathStamp;
         }
 
-        updateFrontier(team, -1);
-    }
-
-    private void updateFrontier(Team team, long nsToRun){
-        PathData path = paths[team.ordinal()];
-
-        long start = TimeUtils.nanoTime();
-
-        while(path.frontier.size > 0 && (nsToRun < 0 || TimeUtils.timeSinceNanos(start) <= nsToRun)){
-            Tile tile = path.frontier.removeLast();
-            int ax = tile.x - path.offsetX;
-            int ay = tile.y - path.offsetY;
-            if(ax < 0 || ay < 0 || ax >= path.gridSize || ay >= path.gridSize) continue;
-
-            float cost = path.weights[ax][ay];
-
-            if(cost < Float.MAX_VALUE){
-                for(GridPoint2 point : Geometry.d4){
-
-                    int dx = tile.x + point.x, dy = tile.y + point.y;
-                    Tile other = world.tile(dx, dy);
-
-                    if(other != null){
-                        int bx = dx - path.offsetX;
-                        int by = dy - path.offsetY;
-                        if(bx >= 0 && by >= 0 && bx < path.gridSize && by < path.gridSize){
-                            if((path.weights[bx][by] > cost + other.cost || path.searches[bx][by] < path.search)
-                                    && passable(other, team)){
-                                path.frontier.addFirst(other);
-                                path.weights[bx][by] = cost + other.cost;
-                                path.searches[bx][by] = path.search;
-                            }
-                        }
-                    }
-                }
-            }
+        if(chunk == null || chunk.tiles == null) return null;
+        if(chunk.pathStamp != memoStamp){
+            chunk = chunks.peekChunk(cx, cy);
+            memoChunk = chunk;
+            memoStamp = chunk == null ? -1 : chunk.pathStamp;
+            if(chunk == null || chunk.tiles == null) return null;
         }
+
+        int lx = wx - cx * ChunkManager.CHUNK_SIZE;
+        int ly = wy - cy * ChunkManager.CHUNK_SIZE;
+        if(lx < 0 || ly < 0 || lx >= ChunkManager.CHUNK_SIZE || ly >= ChunkManager.CHUNK_SIZE) return null;
+        return chunk.tiles[lx + ly * ChunkManager.CHUNK_SIZE];
     }
 
+    /** Resolves a tile for gradient-following output without ever generating chunks. */
+    private Tile peekWorldTile(int wx, int wy){
+        return fastTile(wx, wy);
+    }
+
+    /**Clears all path data and rebuilds fields for active teams.*/
     private void clear(){
-        Timers.mark();
-
         paths = new PathData[Team.all.length];
-        blocked.clear();
+        invalidateMemo();
+        if(graph != null) graph.reset();
 
         for(Team team : Team.all){
-            PathData path = new PathData();
-            paths[team.ordinal()] = path;
-
+            paths[team.ordinal()] = new PathData();
             if(state.teams.isActive(team)){
                 createFor(team);
             }
@@ -248,32 +331,417 @@ public class Pathfinder{
         world.spawner.checkAllQuadrants();
     }
 
+    private PathData createFor(Team team){
+        PathData path = paths[team.ordinal()];
+        if(path == null){
+            path = new PathData();
+            paths[team.ordinal()] = path;
+        }
+        path.resetArrays();
+
+        for(int y = 0; y < path.size; y++){
+            for(int x = 0; x < path.size; x++){
+                int idx = x + y * path.size;
+                path.tileData[idx] = packCell(fastTile(x + path.offsetX, y + path.offsetY));
+                path.weights[idx] = Float.MAX_VALUE;
+            }
+        }
+        path.completeWeights = path.weights.clone();
+        path.hasComplete = false;
+        path.dirty = false;
+        path.heapSize = 0;
+
+        seedTargets(team, path);
+        updateFrontier(team, -1); //blocking initial flood
+        System.arraycopy(path.weights, 0, path.completeWeights, 0, path.weights.length);
+        path.hasComplete = true;
+        return path;
+    }
+
+    /** Rebuilds the window around a new origin, preserving overlapping weights as an interim readable snapshot. */
+    private void rebuildWindow(PathData path, int newOffX, int newOffY){
+        int size = path.size;
+        int oldOffX = path.offsetX, oldOffY = path.offsetY;
+
+        int[] newData = new int[size * size];
+        float[] newWeights = new float[size * size];
+
+        for(int y = 0; y < size; y++){
+            for(int x = 0; x < size; x++){
+                int idx = x + y * size;
+                newData[idx] = packCell(fastTile(x + newOffX, y + newOffY));
+                newWeights[idx] = Float.MAX_VALUE;
+            }
+        }
+
+        //copy the overlap region so units have sane weights while the refresh flood runs
+        int copyX0 = Math.max(newOffX, oldOffX);
+        int copyY0 = Math.max(newOffY, oldOffY);
+        int copyX1 = Math.min(newOffX + size, oldOffX + size);
+        int copyY1 = Math.min(newOffY + size, oldOffY + size);
+
+        for(int wy = copyY0; wy < copyY1; wy++){
+            int srcRow = (wy - oldOffY) * size + (copyX0 - oldOffX);
+            int dstRow = (wy - newOffY) * size + (copyX0 - newOffX);
+            System.arraycopy(path.weights, srcRow, newWeights, dstRow, Math.max(0, copyX1 - copyX0));
+        }
+
+        path.tileData = newData;
+        path.weights = newWeights;
+        path.offsetX = newOffX;
+        path.offsetY = newOffY;
+        path.completeWeights = newWeights.clone();
+        path.hasComplete = true;
+        path.dirty = true;
+        path.heapSize = 0;
+    }
+
+    /**
+     * Fine-grained A* over an active team's window snapshot. Works in both classic and
+     * open world mode. Returns packed world tile coords from start to goal (exclusive of
+     * start), or null when no route exists within the expansion budget.
+     */
+    public LongArray findUnitPath(Team team, float fromWorldX, float fromWorldY, float toWorldX, float toWorldY){
+        if(paths == null) return null;
+        PathData path = paths[team.ordinal()];
+        if(path == null || path.tileData == null || !path.hasComplete) return null;
+
+        int size = path.size;
+        int sx = MathUtils.floor(fromWorldX / tilesize) - path.offsetX;
+        int sy = MathUtils.floor(fromWorldY / tilesize) - path.offsetY;
+        int gx = MathUtils.floor(toWorldX / tilesize) - path.offsetX;
+        int gy = MathUtils.floor(toWorldY / tilesize) - path.offsetY;
+
+        if(sx < 0 || sy < 0 || sx >= size || sy >= size) return null;
+
+        //snap goal into bounds
+        gx = Mathf.clamp(gx, 0, size - 1);
+        gy = Mathf.clamp(gy, 0, size - 1);
+
+        int start = sx + sy * size, goal = gx + gy * size;
+        if(start == goal) return null;
+
+        int teamOrdinal = team.ordinal();
+
+        LongMap<Long> cameFrom = new LongMap<>();
+        LongMap<Float> gScore = new LongMap<>();
+        //binary min-heap keyed by f-score; parallel arrays store node positions and keys
+        IntArray heap = new IntArray();
+        FloatArray fKeys = new FloatArray();
+
+        long startPacked = start, goalPacked = goal;
+        gScore.put(startPacked, 0f);
+
+        //push start
+        {
+            float h0 = Math.abs(sx - gx) + Math.abs(sy - gy);
+            heap.add(start);
+            fKeys.add(h0);
+            siftHeapUp(heap, fKeys, heap.size - 1);
+        }
+
+        int expanded = 0;
+        int maxExpansions = 4000;
+        LongArray result = null;
+
+        while(heap.size > 0 && expanded++ < maxExpansions){
+            //extract min
+            int current = heap.get(0);
+            int last = heap.pop();
+            float lastKey = fKeys.pop();
+            if(heap.size > 0){
+                heap.set(0, last);
+                fKeys.set(0, lastKey);
+                siftHeapDown(heap, fKeys, 0);
+            }
+
+            if(current == goalPacked){
+                result = new LongArray();
+                long c = current;
+                while(c != startPacked){
+                    int cx = (int)(c % size) + path.offsetX;
+                    int cy = (int)(c / size) + path.offsetY;
+                    result.add(((long)cx << 32) | (cy & 0xFFFFFFFFL));
+                    c = cameFrom.get(c, c);
+                }
+                result.reverse();
+                break;
+            }
+
+            int px = current % size, py = current / size;
+
+            for(int d = 0; d < 4; d++){
+                int nx = px + (d == 0 ? 1 : d == 1 ? -1 : 0);
+                int ny = py + (d == 2 ? 1 : d == 3 ? -1 : 0);
+                if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+
+                int npos = nx + ny * size;
+                int cell = path.tileData[npos];
+                boolean isGoal = npos == goalPacked;
+                if(!isGoal && !passable(cell, teamOrdinal)) continue;
+
+                float step = costOf(cell);
+                float ng = gScore.get(current, Float.MAX_VALUE) + step;
+                //diagonals not used keeps paths wall-safe without corner checks
+                if(ng < gScore.get(npos, Float.MAX_VALUE)){
+                    cameFrom.put(npos, (long)current);
+                    gScore.put(npos, ng);
+                    float hf = Math.abs(nx - gx) + Math.abs(ny - gy);
+                    heap.add(npos);
+                    fKeys.add(ng + hf);
+                    siftHeapUp(heap, fKeys, heap.size - 1);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static void siftHeapUp(IntArray heap, FloatArray keys, int i){
+        while(i > 0){
+            int p = (i - 1) / 2;
+            if(keys.get(p) <= keys.get(i)) break;
+            heap.swap(p, i);
+            keys.swap(p, i);
+            i = p;
+        }
+    }
+
+    private static void siftHeapDown(IntArray heap, FloatArray keys, int i){
+        int n = heap.size;
+        while(true){
+            int c = i * 2 + 1;
+            if(c >= n) break;
+            if(c + 1 < n && keys.get(c + 1) < keys.get(c)) c++;
+            if(keys.get(c) >= keys.get(i)) break;
+            heap.swap(c, i);
+            keys.swap(c, i);
+            i = c;
+        }
+    }
+
+    /**
+     * Finds the passable cell reachable from the unit's position that lies closest
+     * (euclidean) to the goal, for cases where no complete route exists ("unreachable"
+     * targets). Units move to this waypoint and wall-hug toward the target instead of
+     * blindly walking into terrain. Returns packed world tile coords, or null when the
+     * unit is already at the closest reachable spot.
+     */
+    public Long findFallbackWaypoint(Team team, float fromWorldX, float fromWorldY, float toWorldX, float toWorldY){
+        if(paths == null) return null;
+        PathData path = paths[team.ordinal()];
+        if(path == null || path.tileData == null || !path.hasComplete) return null;
+
+        int size = path.size;
+        int sx = MathUtils.floor(fromWorldX / tilesize) - path.offsetX;
+        int sy = MathUtils.floor(fromWorldY / tilesize) - path.offsetY;
+        float gx = MathUtils.floor(toWorldX / tilesize) - path.offsetX + 0.5f;
+        float gy = MathUtils.floor(toWorldY / tilesize) - path.offsetY + 0.5f;
+
+        if(sx < 0 || sy < 0 || sx >= size || sy >= size) return null;
+
+        int start = sx + sy * size;
+        int teamOrdinal = team.ordinal();
+
+        Bits visited = new Bits(size * size);
+        IntArray queue = new IntArray();
+        queue.add(start);
+        visited.set(start);
+
+        float sdx = sx + 0.5f - gx, sdy = sy + 0.5f - gy;
+        float bestDist = sdx * sdx + sdy * sdy;
+        int bestCell = -1;
+
+        int maxCells = 4096;
+        int head = 0;
+        while(head < queue.size && maxCells-- > 0){
+            int current = queue.get(head++);
+
+            float cdx = current % size + 0.5f - gx, cdy = current / size + 0.5f - gy;
+            float curDist = cdx * cdx + cdy * cdy;
+            if(curDist < bestDist){
+                bestDist = curDist;
+                bestCell = current;
+            }
+
+            int px = current % size, py = current / size;
+            for(int d = 0; d < 4; d++){
+                int nx = px + (d == 0 ? 1 : d == 1 ? -1 : 0);
+                int ny = py + (d == 2 ? 1 : d == 3 ? -1 : 0);
+                if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+
+                int npos = nx + ny * size;
+                if(visited.get(npos)) continue;
+
+                //walk through breakable blocks the waypoint may sit against an enemy wall
+                if(!passable(path.tileData[npos], teamOrdinal)) continue;
+
+                visited.set(npos);
+                queue.add(npos);
+            }
+        }
+
+        if(bestCell < 0) return null;
+        int wx = bestCell % size + path.offsetX;
+        int wy = bestCell / size + path.offsetY;
+        return ((long)wx << 32) | (wy & 0xFFFFFFFFL);
+    }
+
+    private void seedTargets(Team team, PathData path){
+        for(Tile other : world.indexer.getEnemy(team, BlockFlag.target)){
+            if(other == null) continue;
+
+            int ox = other.x - path.offsetX;
+            int oy = other.y - path.offsetY;
+            if(ox < 0 || oy < 0 || ox >= path.size || oy >= path.size) continue;
+
+            //seed even sealed-in targets neighbors relax toward them through breakable walls
+            int idx = ox + oy * path.size;
+            path.weights[idx] = 0;
+            heapPush(path, idx, 0f);
+        }
+    }
+
+    private void updateFrontier(Team team, long nsToRun){
+        PathData path = paths[team.ordinal()];
+        int teamOrdinal = team.ordinal();
+        int size = path.size;
+
+        boolean hadAny = path.heapSize > 0;
+        long start = TimeUtils.nanoTime();
+        int counter = 0;
+
+        while(path.heapSize > 0){
+            int pos = heapPop(path);
+
+            if(path.weights[pos] < path.heapVals[pos]){
+                continue;
+            }
+
+            float cost = path.weights[pos];
+            if(cost < Float.MAX_VALUE){
+                int x = pos % size;
+                int y = pos / size;
+
+                for(int d = 0; d < 4; d++){
+                    int nx = x + (d == 0 ? 1 : d == 1 ? -1 : 0);
+                    int ny = y + (d == 2 ? 1 : d == 3 ? -1 : 0);
+                    if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+
+                    int npos = nx + ny * size;
+                    int cell = path.tileData[npos];
+                    if(!passable(cell, teamOrdinal)) continue;
+
+                    float nw = cost + costOf(cell);
+                    if(nw < path.weights[npos]){
+                        path.weights[npos] = nw;
+                        heapPush(path, npos, nw);
+                    }
+                }
+            }
+
+            if(nsToRun >= 0 && (++counter) >= 200){
+                counter = 0;
+                if(TimeUtils.timeSinceNanos(start) >= nsToRun){
+                    return;
+                }
+            }
+        }
+
+        //frontier drained
+        if(hadAny){
+            System.arraycopy(path.weights, 0, path.completeWeights, 0, path.weights.length);
+            path.hasComplete = true;
+        }
+    }
+
+
+    private void heapPush(PathData path, int pos, float weight){
+        if(path.heapSize >= path.heap.length){
+            int newCap = path.heap.length * 2;
+            int[] nh = new int[newCap];
+            System.arraycopy(path.heap, 0, nh, 0, path.heapSize);
+            path.heap = nh;
+        }
+        path.heapVals[pos] = weight;
+
+        int[] h = path.heap;
+        float[] keys = path.heapVals;
+
+        int i = path.heapSize++;
+        while(i > 0){
+            int p = (i - 1) / 2;
+            if(keys[h[p]] <= weight) break;
+            h[i] = h[p];
+            i = p;
+        }
+        h[i] = pos;
+    }
+
+    /** Pops the minimum-weight cell position. */
+    private int heapPop(PathData path){
+        int[] h = path.heap;
+        float[] keys = path.heapVals;
+
+        int root = h[0];
+        path.heapSize--;
+
+        if(path.heapSize > 0){
+            int lastPos = h[path.heapSize];
+            float lastKey = keys[lastPos];
+
+            int i = 0;
+            while(true){
+                int c = i * 2 + 1;
+                if(c >= path.heapSize) break;
+                if(c + 1 < path.heapSize && keys[h[c + 1]] < keys[h[c]]) c++;
+                if(keys[h[c]] >= lastKey) break;
+                h[i] = h[c];
+                i = c;
+            }
+            h[i] = lastPos;
+        }
+
+        return root;
+    }
+
     class PathData{
-        float[][] weights;
-        int[][] searches;
-        int search = 0;
-        long lastSearchTime;
-        Queue<Tile> frontier = new Queue<>();
-        int gridSize;
+        int size;
         int offsetX, offsetY;
+        float[] weights;
+        float[] completeWeights;
+        boolean hasComplete;
+        boolean dirty;
+        int[] tileData;
+        int[] heap = new int[512];
+        float[] heapVals = new float[512];
+        int heapSize = 0;
 
         PathData(){
-            gridSize = world.width();
+            size = world.width();
 
             if(world.isOpenWorld()){
                 int playerTX = players.length > 0 && players[0] != null
                         ? MathUtils.floor(players[0].x / tilesize) : 0;
                 int playerTY = players.length > 0 && players[0] != null
                         ? MathUtils.floor(players[0].y / tilesize) : 0;
-                offsetX = playerTX - gridSize / 2;
-                offsetY = playerTY - gridSize / 2;
+                offsetX = playerTX - size / 2;
+                offsetY = playerTY - size / 2;
             }else{
                 offsetX = 0;
                 offsetY = 0;
             }
+        }
 
-            weights = new float[gridSize][gridSize];
-            searches = new int[gridSize][gridSize];
+        void resetArrays(){
+            weights = new float[size * size];
+            completeWeights = new float[size * size];
+            tileData = new int[size * size];
+            heapVals = new float[size * size];
+            heap = new int[512];
+            heapSize = 0;
+            dirty = false;
+            hasComplete = false;
         }
     }
 }
