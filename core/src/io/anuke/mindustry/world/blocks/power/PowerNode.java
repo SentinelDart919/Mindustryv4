@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.ObjectSet;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.core.Renderer;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.gen.Call;
@@ -17,6 +18,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.PowerBlock;
 import io.anuke.mindustry.world.meta.BlockStat;
 import io.anuke.mindustry.world.meta.StatUnit;
+import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.Draw;
@@ -46,6 +48,7 @@ public class PowerNode extends PowerBlock{
 
     public PowerNode(String name){
         super(name);
+        hasBloom = true;
         expanded = true;
         layer = Layer.power;
         powerCapacity = 5f;
@@ -230,6 +233,88 @@ public class PowerNode extends PowerBlock{
 
     @Override
     public void drawLayer(Tile tile){
+        if(!Settings.getBool("lasers")) return;
+
+        com.badlogic.gdx.math.Matrix4 saved = null;
+        if(Renderer.captureReflections){
+            saved = Core.batch.getTransformMatrix().cpy();
+            com.badlogic.gdx.math.Matrix4 ghost = new com.badlogic.gdx.math.Matrix4();
+            ghost.setToTranslation(0f, -2f * Renderer.reflectionGroundGap(), 0f);
+            Core.batch.setTransformMatrix(ghost);
+        }
+
+        TileEntity entity = tile.entity();
+
+        for(int i = 0; i < entity.power.links.size; i++){
+            Tile link = world.tile(entity.power.links.get(i));
+            if(linkValid(tile, link) && (!(link.block() instanceof PowerNode)
+                || ((tile.block().size > link.block().size) || (tile.block().size == link.block().size && tile.packedPosition() < link.packedPosition())))){
+                drawLaser(tile, link);
+            }
+        }
+
+        Draw.reset();
+
+        if(Renderer.captureReflections && saved != null){
+            Core.batch.setTransformMatrix(saved);
+        }
+    }
+
+    @Override
+    public void drawLight(Tile tile){
+        if(!Settings.getBool("lasers")) return;
+
+        TileEntity entity = tile.entity();
+
+        for(int i = 0; i < entity.power.links.size; i++){
+            Tile link = world.tile(entity.power.links.get(i));
+            if(linkValid(tile, link) && (!(link.block() instanceof PowerNode)
+                || ((tile.block().size > link.block().size) || (tile.block().size == link.block().size && tile.packedPosition() < link.packedPosition())))){
+                drawLineLight(tile, link);
+            }
+        }
+
+        //center glow
+        super.drawLight(tile);
+    }
+
+    protected void drawLineLight(Tile tile, Tile target){
+        float x1 = tile.drawx(), y1 = tile.drawy(),
+                x2 = target.drawx(), y2 = target.drawy();
+
+        float angle1 = Angles.angle(x1, y1, x2, y2);
+
+        t1.trns(angle1, tile.block().size * tilesize / 2f - 1f);
+        float lx1 = x1 + t1.x;
+        float ly1 = y1 + t1.y;
+
+        t1.trns(angle1 + 180f, target.block().size * tilesize / 2f - 1f);
+        float lx2 = x2 + t1.x;
+        float ly2 = y2 + t1.y;
+
+        float pulse = Mathf.absin(Timers.time(), 5f, 0.3f) + 0.5f;
+
+        Draw.color(Palette.powerLight, Palette.power, pulse);
+
+        //draw small light circles along the line
+        float space = Vector2.dst(lx1, ly1, lx2, ly2);
+        int segments = Mathf.ceil(space / (tilesize * 2f));
+        segments = Math.max(segments, 1);
+
+        float lightRadius = tilesize * 1.5f;
+        for(int i = 0; i <= segments; i++){
+            float f = (float)i / segments;
+            float px = Mathf.lerp(lx1, lx2, f);
+            float py = Mathf.lerp(ly1, ly2, f);
+            Draw.alpha(0.15f * pulse);
+            Draw.rect("circle", px, py, lightRadius * 2, lightRadius * 2);
+        }
+
+        Draw.color();
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
         if(!Settings.getBool("lasers")) return;
 
         TileEntity entity = tile.entity();

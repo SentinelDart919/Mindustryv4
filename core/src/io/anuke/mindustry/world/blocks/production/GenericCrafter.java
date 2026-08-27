@@ -87,6 +87,7 @@ public class GenericCrafter extends Block{
 
     public GenericCrafter(String name){
         super(name);
+        hasBloom = true;
         setAmbientSound("loopMachine", 0.09f);
         update = true;
         solid = true;
@@ -227,6 +228,30 @@ public class GenericCrafter extends Block{
     @Override
     public TextureRegion[] getIcon(){
         return new TextureRegion[]{Draw.region(name)};
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        if(!smelter) return;
+
+        GenericCrafterEntity entity = tile.entity();
+        if(entity.heat <= 0f || flameColor.a <= 0.001f) return;
+
+        float g = 0.3f;
+        float r = 0.06f;
+        float cr = Mathf.random(0.1f);
+
+        Draw.alpha(((1f - g) + Mathf.absin(Timers.time(), 8f, g) + Mathf.random(r) - r) * entity.heat);
+        Draw.tint(flameColor);
+        Fill.circle(tile.drawx(), tile.drawy(), 3f + Mathf.absin(Timers.time(), 5f, 2f) + cr);
+        Draw.color(1f, 1f, 1f, entity.heat);
+        Fill.circle(tile.drawx(), tile.drawy(), 1.9f + Mathf.absin(Timers.time(), 5f, 1f) + cr);
+
+        if(topRegion != null){
+            Draw.color(1f, 1f, 1f, entity.heat * 0.8f);
+            Draw.rect(topRegion, tile.drawx(), tile.drawy());
+        }
+        Draw.color();
     }
 
     @Override

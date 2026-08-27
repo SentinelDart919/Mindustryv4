@@ -88,6 +88,7 @@ public abstract class Turret extends Block{
 
     public Turret(String name){
         super(name);
+        hasBloom = true;
         update = true;
         solid = true;
         layer = Layer.turret;
@@ -157,6 +158,18 @@ public abstract class Turret extends Block{
             heatDrawer.accept(tile, entity);
         }
 
+        Draw.color();
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        TurretEntity entity = tile.entity();
+        if(entity.heat <= 0.00001f || heatRegion == Draw.region("error")) return;
+
+        tr2.trns(entity.rotation, -entity.recoil);
+        Draw.color(heatColor);
+        Draw.alpha(entity.heat);
+        Draw.rect(heatRegion, tile.drawx() + tr2.x, tile.drawy() + tr2.y, entity.rotation - 90);
         Draw.color();
     }
 

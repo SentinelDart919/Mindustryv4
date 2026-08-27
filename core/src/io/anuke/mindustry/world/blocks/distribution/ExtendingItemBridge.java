@@ -1,6 +1,9 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
+import com.badlogic.gdx.graphics.Color;
+import io.anuke.mindustry.core.Renderer;
 import io.anuke.mindustry.world.Tile;
+import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.graphics.CapStyle;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
@@ -25,6 +28,14 @@ public class ExtendingItemBridge extends ItemBridge{
         if(!linkValid(tile, other)) return;
 
         int i = tile.absoluteRelativeTo(other.x, other.y);
+
+        if(Renderer.captureReflections){
+            Draw.color(Color.WHITE, Color.BLACK, Mathf.absin(Timers.time(), 6f, 0.07f));
+            Draw.alpha(Math.max(entity.uptime, 0.25f));
+            Draw.rect(endRegion, tile.drawx(), tile.drawy(), i * 90 + 90);
+            Draw.reset();
+            return;
+        }
 
         float ex = other.worldx() - tile.worldx() - Geometry.d4[i].x * tilesize / 2f,
                 ey = other.worldy() - tile.worldy() - Geometry.d4[i].y * tilesize / 2f;

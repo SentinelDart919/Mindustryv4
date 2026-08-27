@@ -17,6 +17,7 @@ import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.ColorMapper;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Graphics;
+import io.anuke.ucore.function.Consumer;
 import io.anuke.ucore.scene.ui.Image;
 import io.anuke.ucore.scene.ui.Label;
 import io.anuke.ucore.scene.ui.ScrollPane;
@@ -150,7 +151,7 @@ public class SectorGenerateDialog extends FloatingDialog{
         }).left();
     }
 
-    void addSlider(Table t, String label, float min, float max, io.anuke.ucore.function.Consumer<Float> setter, java.util.function.Supplier<Float> getter){
+    void addSlider(Table t, String label, float min, float max, Consumer<Float> setter, java.util.function.Supplier<Float> getter){
         t.table(sliderTable -> {
             sliderTable.defaults().left();
             sliderTable.add(label).width(160f).padRight(10);

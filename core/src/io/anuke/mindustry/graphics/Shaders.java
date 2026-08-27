@@ -19,7 +19,7 @@ public class Shaders{
     public static BlockBuild blockbuild;
     public static BlockPreview blockpreview;
     public static Shield shield;
-    public static SurfaceShader water;
+    public static Water water;
     public static SurfaceShader lava;
     public static SurfaceShader oil;
     public static Space space;
@@ -35,7 +35,7 @@ public class Shaders{
         blockbuild = new BlockBuild();
         blockpreview = new BlockPreview();
         shield = new Shield();
-        water = new SurfaceShader("water");
+        water = new Water();
         lava = new SurfaceShader("lava");
         oil = new SurfaceShader("oil");
         space = new Space();
@@ -214,6 +214,36 @@ public class Shaders{
             shader.setUniformf("u_texsize", Core.camera.viewportWidth * Core.camera.zoom,
             Core.camera.viewportHeight * Core.camera.zoom);
             shader.setUniformf("u_teamColor", teamColor);
+        }
+    }
+
+    /** Composites the water surface onto the scene, with the reflection buffer
+     * (Renderer.reflectSurface) sampled at the same distorted coordinates, masked by its alpha
+     * and washed toward refTint. */
+    public static class Water extends SurfaceShader{
+        /** Reflection buffer texture; null disables reflections. */
+        public Texture reflection;
+        /** Reflection wash color and blend amount. */
+        public Color refTint = new Color(0x29619bff);
+        public float refTintAmount = 0.42f;
+        /** Overall reflection strength multiplier on reflection alpha. */
+        public float refOpacity = 0.9f;
+
+        public Water(){
+            super("water");
+        }
+
+        @Override
+        public void apply(){
+            super.apply();
+
+            if(reflection != null){
+                reflection.bind(1);
+                Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
+                shader.setUniformi("u_reflection", 1);
+                shader.setUniformf("u_refTint", refTint.r, refTint.g, refTint.b, refTintAmount);
+                shader.setUniformf("u_refOpacity", refOpacity);
+            }
         }
     }
 

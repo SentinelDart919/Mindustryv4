@@ -24,10 +24,17 @@ import io.anuke.mindustry.entities.bullet.Bullet;
 import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
+import io.anuke.mindustry.entities.effect.Lightning;
+import io.anuke.mindustry.entities.effect.Lightning;
+import io.anuke.mindustry.entities.effect.Puddle;
 import io.anuke.mindustry.entities.traits.BelowLiquidTrait;
 import io.anuke.mindustry.entities.units.BaseUnit;
+import io.anuke.mindustry.entities.units.FlyingUnit;
+import io.anuke.mindustry.entities.traits.MinerTrait;
+import io.anuke.mindustry.entities.traits.BuilderTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.*;
+import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
@@ -38,15 +45,18 @@ import io.anuke.ucore.entities.EntityDraw;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.impl.EffectEntity;
 import io.anuke.ucore.entities.trait.DrawTrait;
+import io.anuke.ucore.entities.trait.PosTrait;
 import io.anuke.ucore.entities.trait.Entity;
 import io.anuke.ucore.function.Consumer;
 import io.anuke.ucore.function.Predicate;
 import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.graphics.Hue;
 import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.graphics.Surface;
 import io.anuke.ucore.modules.RendererModule;
 import io.anuke.ucore.scene.utils.Cursors;
 import io.anuke.ucore.util.Bundles;
+import io.anuke.ucore.util.Log;
 import io.anuke.ucore.util.Mathf;
 import io.anuke.ucore.util.Pooling;
 import io.anuke.ucore.util.Translator;
@@ -58,6 +68,10 @@ import static io.anuke.ucore.core.Core.camera;
 public class Renderer extends RendererModule{
     public final Surface effectSurface;
     public final Surface lightSurface;
+    /** Off-screen buffer holding vertically mirrored, tinted copies of blocks and units, composited onto water. */
+    public final Surface reflectSurface;
+    /** Emission buffer for selective bloom: only bloom-contributing objects are drawn here. */
+    public final Surface bloomSurface;
     public final BlockRenderer blocks = new BlockRenderer();
     public final MinimapRenderer minimap = new MinimapRenderer();
     public final OverlayRenderer overlays = new OverlayRenderer();
@@ -71,6 +85,21 @@ public class Renderer extends RendererModule{
     private Rectangle rect = new Rectangle(), rect2 = new Rectangle();
     private Vector2 avgPosition = new Translator();
     private Color ambient = new Color();
+
+    /** Water reflection sprites re-drawn mirrored, then washed toward the tint configured
+     * on Shaders.water during composite. */
+    /** When true, unit draw() calls skip internally drawn shadows so reflections stay clean. */
+    public static boolean captureReflections = false;
+    private static final float reflectionGroundGap = 3f;
+    private static final float reflectionFlyerGap = 10f;
+
+    /** Public accessor for the ground reflection gap, used by blocks that need to
+     *  override their transform during capture. */
+    public static float reflectionGroundGap(){ return reflectionGroundGap; }
+    /** Caps error logging from the reflection capture pass so a persistently broken
+     * draw() can't flood the console every frame. */
+    private int reflectErrors;
+    private boolean loggedReflectCounts;
 
     private boolean currentFlying;
     private Team currentTeam;
@@ -160,10 +189,13 @@ public class Renderer extends RendererModule{
         effectSurface = Graphics.createSurface(renderScale());
         pixelSurface = Graphics.createSurface(renderScale());
         lightSurface = Graphics.createSurface(renderScale());
+        reflectSurface = Graphics.createSurface(renderScale());
+        bloomSurface = Graphics.createSurface(renderScale());
 
         Settings.defaults("bloom", true);
-        Settings.defaults("bloomintensity", 14);
+        Settings.defaults("bloomintensity", 10);
         Settings.defaults("bloomblur", 2);
+        Settings.defaults("bloomthreshold", 15);
 
         Settings.defaults("showweather", true);
 
@@ -257,6 +289,7 @@ public class Renderer extends RendererModule{
 
         if(bloom != null){
             bloom.setBloomIntensity(Settings.getInt("bloomintensity") / 10f);
+            bloom.setThreshold(Settings.getInt("bloomthreshold") / 100f);
             bloom.blurPasses = Settings.getInt("bloomblur");
         }
 
@@ -338,6 +371,13 @@ public class Renderer extends RendererModule{
 
         overlays.drawTop();
 
+        drawReflections();
+
+        // render bloom sources into the emission buffer for selective bloom
+        if(bloom != null && Settings.getBool("bloom")){
+            drawBloomSources();
+        }
+
         boolean postActive = bloom != null && Settings.getBool("bloom");
 
         if((weather.isDayNight() ? weather.cycleDarkness() : state.darkness) > 0.01f){
@@ -345,9 +385,11 @@ public class Renderer extends RendererModule{
             drawLightmap();
             Graphics.surface();
             batch.end();
+            // fog must run before bloom so pixelSurface contains the fogged scene
+            if(showFog) fog.draw();
             if(postActive){
                 drawPost();
-            }else{
+            }else if(!showFog){
                 Gdx.gl.glEnable(GL20.GL_BLEND);
                 Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 batch.setProjectionMatrix(camera.combined);
@@ -358,6 +400,8 @@ public class Renderer extends RendererModule{
         }else if(showFog){
             Graphics.surface();
             batch.end();
+            fog.draw();
+            if(postActive) drawPost();
         }else if(postActive){
             Graphics.surface();
             batch.end();
@@ -365,10 +409,6 @@ public class Renderer extends RendererModule{
         }else{
             Graphics.flushSurface();
             batch.end();
-        }
-
-        if(showFog){
-            fog.draw();
         }
 
         Graphics.beginCam();
@@ -432,6 +472,17 @@ public class Renderer extends RendererModule{
                         block.drawLayerLight(tile);
                     }
                 }
+                // liquid floor light emission (lava, slag, cryofluid)
+                if(tile != null && tile.block() == Blocks.air
+                    && tile.floor().liquidDrop != null && tile.floor().liquidDrop.emitLight
+                    && lightVisible(tile.drawx(), tile.drawy(), tilesize * 3f)){
+                    Draw.color(tile.floor().liquidDrop.color);
+                    Shaders.light.region = Draw.region("circle");
+                    Draw.alpha(0.35f);
+                    Draw.rect("circle", tile.drawx(), tile.drawy(), tilesize * 4f, tilesize * 4f);
+                    Draw.alpha(0.18f);
+                    Draw.rect("circle", tile.drawx(), tile.drawy(), tilesize * 4f, tilesize * 4f);
+                }
             }
         }
 
@@ -442,6 +493,17 @@ public class Renderer extends RendererModule{
                 BulletType type = bullet.getBulletType();
                 if(lightVisible(bullet.x, bullet.y, Math.max(type.lightRadius, bullet.lightRadius))){
                     type.drawLight(bullet);
+                }
+            }else if(entity instanceof Lightning){
+                Lightning l = (Lightning) entity;
+                float fade = l.fout();
+                if(fade > 0.01f && lightVisible(l.x, l.y, 30f * fade)){
+                    Draw.color(l.color);
+                    Shaders.light.region = Draw.region("circle");
+                    Draw.alpha(fade * 0.5f);
+                    Draw.rect("circle", l.x, l.y, 60f * fade, 60f * fade);
+                    Draw.alpha(fade * 0.25f);
+                    Draw.rect("circle", l.x, l.y, 60f * fade, 60f * fade);
                 }
             }
         }
@@ -461,6 +523,45 @@ public class Renderer extends RendererModule{
             }
         }
 
+        //mining lasers
+        for(EntityGroup<? extends BaseUnit> group : unitGroups){
+            for(BaseUnit unit : group.all()){
+                if(unit.isDead()) continue;
+                if(unit instanceof BuilderTrait){
+                    BuilderTrait builder = (BuilderTrait) unit;
+                    Tile mineTile = builder.getMineTile();
+                    if(mineTile != null){
+                        float tx = mineTile.worldx(), ty = mineTile.worldy();
+                        if(lightVisible(tx, ty, 12f)){
+                            Draw.color(Palette.accent);
+                            Shaders.light.region = Draw.region("circle");
+                            Draw.alpha(0.4f);
+                            Draw.rect("circle", tx, ty, 24f, 24f);
+                            Draw.alpha(0.2f);
+                            Draw.rect("circle", tx, ty, 24f, 24f);
+                        }
+                    }
+                }
+            }
+        }
+        for(Player player : playerGroup.all()){
+            if(!player.isDead() && player instanceof BuilderTrait){
+                BuilderTrait builder = (BuilderTrait) player;
+                Tile mineTile = builder.getMineTile();
+                if(mineTile != null){
+                    float tx = mineTile.worldx(), ty = mineTile.worldy();
+                    if(lightVisible(tx, ty, 12f)){
+                        Draw.color(Palette.accent);
+                        Shaders.light.region = Draw.region("circle");
+                        Draw.alpha(0.4f);
+                        Draw.rect("circle", tx, ty, 24f, 24f);
+                        Draw.alpha(0.2f);
+                        Draw.rect("circle", tx, ty, 24f, 24f);
+                    }
+                }
+            }
+        }
+
         //Effects
         for(Entity entity : effectGroup.all()){
             if(entity instanceof EffectEntity){
@@ -470,6 +571,24 @@ public class Renderer extends RendererModule{
         for(DrawTrait entity : groundEffectGroup.all()){
             if(entity instanceof EffectEntity){
                 drawEffectLight((EffectEntity) entity);
+            }
+        }
+
+        //puddles with light-emitting liquids
+        for(Entity entity : puddleGroup.all()){
+            if(entity instanceof Puddle){
+                Puddle p = (Puddle) entity;
+                if(p.getLiquid() != null && p.getLiquid().emitLight && lightVisible(p.x, p.y, 14f)){
+                    float f = Mathf.clamp(p.getAmount() / 46f);
+                    if(f > 0.01f){
+                        Draw.color(p.getLiquid().color);
+                        Shaders.light.region = Draw.region("circle");
+                        Draw.alpha(f * 0.3f);
+                        Draw.rect("circle", p.x, p.y, f * 28f, f * 28f);
+                        Draw.alpha(f * 0.15f);
+                        Draw.rect("circle", p.x, p.y, f * 28f, f * 28f);
+                    }
+                }
             }
         }
 
@@ -518,6 +637,183 @@ public class Renderer extends RendererModule{
         }
     }
 
+    /** Renders bloom-contributing objects (additive glow, effects, bullets, shields, unit flares,
+     *  block bloom parts, liquid glow) into {@code bloomSurface} for the selective bloom pass. */
+    private void drawBloomSources(){
+        Graphics.surface(bloomSurface, false, false);
+        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.setProjectionMatrix(camera.combined);
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+        Graphics.shader();
+
+        int avgx = Mathf.scl(camera.position.x, tilesize);
+        int avgy = Mathf.scl(camera.position.y, tilesize);
+        int rangex = (int)(camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
+        int rangey = (int)(camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+
+        int minx, miny, maxx, maxy;
+        if(world.isOpenWorld()){
+            minx = avgx - rangex;
+            miny = avgy - rangey;
+            maxx = avgx + rangex;
+            maxy = avgy + rangey;
+        }else{
+            minx = Math.max(avgx - rangex, 0);
+            miny = Math.max(avgy - rangey, 0);
+            maxx = Math.min(world.width() - 1, avgx + rangex);
+            maxy = Math.min(world.height() - 1, avgy + rangey);
+        }
+
+        // block bloom + liquid floor glow (single tile loop)
+        for(int x = minx; x <= maxx; x++){
+            for(int y = miny; y <= maxy; y++){
+                Tile tile = world.peekTile(x, y);
+                if(tile == null) continue;
+
+                Block block = tile.block();
+                if(block.hasBloom){
+                    block.drawBloom(tile);
+                }
+
+                // liquid floor glow
+                if(block == Blocks.air && tile.floor().liquidDrop != null && tile.floor().liquidDrop.emitLight){
+                    Draw.color(tile.floor().liquidDrop.color);
+                    Draw.alpha(0.15f);
+                    Draw.rect("circle", tile.drawx(), tile.drawy(), tilesize * 3f, tilesize * 3f);
+                    Draw.color();
+                }
+            }
+        }
+
+        // effects that emit light (merged effectGroup + groundEffectGroup)
+        for(Entity entity : effectGroup.all()){
+            if(entity instanceof EffectEntity){
+                drawEffectBloom((EffectEntity) entity);
+            }
+        }
+        for(DrawTrait entity : groundEffectGroup.all()){
+            if(entity instanceof EffectEntity){
+                drawEffectBloom((EffectEntity) entity);
+            }
+        }
+
+        // bullets with bloom enabled
+        for(Entity entity : bulletGroup.all()){
+            if(entity instanceof Bullet){
+                Bullet bullet = (Bullet) entity;
+                BulletType type = bullet.getBulletType();
+                if(type.bloom){
+                    type.drawBloom(bullet);
+                }
+            }else if(entity instanceof Lightning){
+                Lightning l = (Lightning) entity;
+                float fade = l.fout();
+                if(fade > 0.01f){
+                    Draw.color(l.color, Color.WHITE, fade);
+                    Lines.stroke(fade * 6f);
+                    Draw.alpha(0.4f);
+                    float lx = l.x, ly = l.y;
+                    for(int i = 0; i < l.lines.size; i++){
+                        PosTrait v = l.lines.get(i);
+                        Lines.line(lx, ly, v.getX(), v.getY());
+                        lx = v.getX();
+                        ly = v.getY();
+                    }
+                    Draw.reset();
+                }
+            }
+        }
+
+        // units mining laser + trail (merged into single iteration)
+        for(EntityGroup<? extends BaseUnit> group : unitGroups){
+            for(BaseUnit unit : group.all()){
+                if(unit.isDead()) continue;
+
+                // mining laser bloom
+                if(unit instanceof MinerTrait){
+                    MinerTrait miner = (MinerTrait) unit;
+                    if(miner.isMining()){
+                        miner.drawMining(unit);
+                    }
+                }
+                if(unit instanceof BuilderTrait){
+                    BuilderTrait builder = (BuilderTrait) unit;
+                    if(builder.getMineTile() != null){
+                        builder.drawMining(unit);
+                    }
+                }
+
+                // flying unit trail bloom (skip biomass)
+                if(unit instanceof FlyingUnit
+                    && !unit.getClass().getSimpleName().startsWith("Biomass")){
+                    FlyingUnit fu = (FlyingUnit) unit;
+                    if(fu.type != null){
+                        fu.trail.draw(fu.type.trailColor, fu.type.engineSize);
+                        if(fu.type.engineMirror){
+                            fu.trail2.draw(fu.type.trailColor, fu.type.engineSize);
+                        }
+                    }
+                }
+            }
+        }
+
+        // players mining + trail + mech bloom
+        for(Player player : playerGroup.all()){
+            if(player.isDead()) continue;
+
+            // mining laser bloom
+            if(player instanceof BuilderTrait){
+                BuilderTrait builder = (BuilderTrait) player;
+                if(builder.getMineTile() != null){
+                    builder.drawMining(player);
+                }
+            }
+
+            // trail bloom
+            if(player.mech.flying || player.boostHeat > 0.001f){
+                player.trail.draw(
+                    Hue.mix(player.mech.trailColor, player.mech.trailColorTo, player.mech.flying ? 0f : player.boostHeat, Tmp.c1),
+                    5f * (player.isFlying() ? 1f : player.boostHeat));
+            }
+
+            // mech bloom
+            player.mech.drawBloom(player);
+        }
+
+        // puddle bloom for light-emitting liquids
+        for(Entity entity : puddleGroup.all()){
+            if(entity instanceof Puddle){
+                ((Puddle) entity).drawBloom();
+            }
+        }
+
+        // shield bloom
+        for(ShieldEntity shield : shieldGroup.all()){
+            shield.draw();
+        }
+
+        // restore
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Graphics.shader();
+        Graphics.surface();
+    }
+
+    private void drawEffectBloom(EffectEntity ee){
+        Effects.Effect effect = ee.effect;
+        if(effect != null && effect.emitLight){
+            float fin = ee.fin();
+            float fade = Mathf.clamp(fin < 0.2f ? fin / 0.2f : (1f - fin) / 0.8f, 0f, 1f);
+            if(fade > 0.001f){
+                Draw.color(ee.color);
+                Draw.alpha(fade * 0.3f);
+                float sz = effect.size * 0.5f * fade;
+                Draw.rect("circle", ee.x, ee.y, sz, sz);
+                Draw.color();
+            }
+        }
+    }
+
     // multiplies the scene (pixelSurface) by the lightmap (lightSurface): scene * (ambient + light)
     private void drawLightmap(){
         batch.flush();
@@ -549,10 +845,208 @@ public class Renderer extends RendererModule{
             return;
         }
 
-        bloom.render(pixelSurface.texture());
+        bloom.render(pixelSurface.texture(), bloomSurface.texture());
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    /** Water Reflections: re-draws visible blocks, units, bullets and effects vertically
+     * mirrored around their own base into reflectSurface. The water cache layer composites this
+     * buffer over water tiles (masked by reflection alpha, distorted by the same wave noise,
+     * tinted by Shaders.water.refTint) next frame. Captured with the plain pipeline so sprite
+     * alpha stays intact; shadows are skipped via Renderer.captureReflections.
+     * Each object is drawn in isolation so a single bad draw can never corrupt the rest
+     * of the capture or leave the surface/transform stack unbalanced. */
+    private void drawReflections(){
+        int avgx = Mathf.scl(camera.position.x, tilesize);
+        int avgy = Mathf.scl(camera.position.y, tilesize);
+        int rangex = (int)(camera.viewportWidth * camera.zoom / tilesize / 2) + 2;
+        int rangey = (int)(camera.viewportHeight * camera.zoom / tilesize / 2) + 2;
+
+        float halfW = camera.viewportWidth * camera.zoom / 2f;
+        float halfH = camera.viewportHeight * camera.zoom / 2f;
+
+        Graphics.surface(reflectSurface, true, false);
+
+        Matrix4 mat = batch.getTransformMatrix();
+        captureReflections = true;
+
+        try{
+            int blockCount = 0, layeredBlocks = 0;
+
+            for(int x = avgx - rangex; x <= avgx + rangex; x++){
+                for(int y = avgy - rangey; y <= avgy + rangey; y++){
+                    Tile tile = world.peekTile(x, y);
+                    if(tile == null || tile.block() == Blocks.air) continue;
+                    blockCount++;
+
+                    Block block = tile.block();
+                    float ax = tile.drawx();
+                    float ay = tile.drawy() - block.size * tilesize / 2f;
+                    Draw.color();
+                    float yScl = block.reflectionFlip ? -block.reflectYdisplace : block.reflectYdisplace;
+                    mat.setToTranslation(ax, ay, 0f)
+                       .scale(block.reflectXdisplace, yScl, 1f)
+                       .translate(-ax, -ay, 0f);
+                    batch.setTransformMatrix(mat);
+
+                    try{
+                        block.draw(tile);
+
+                        if(block.layer != null && block.isLayer(tile)){
+                            block.drawLayer(tile);
+                            layeredBlocks++;
+                        }
+
+                        if(block.layer2 != null && block.isLayer2(tile)){
+                            block.drawLayer2(tile);
+                        }
+                    }catch(Throwable t){
+                        logReflectError(t);
+                    }
+                }
+            }
+
+            int units = 0, players = 0, bullets = 0, effects = 0;
+
+            Shaders.mix.color.set(Color.WHITE);
+            Graphics.shader(Shaders.mix, true);
+
+            for(EntityGroup<? extends BaseUnit> group : unitGroups){
+                for(BaseUnit unit : group.all()){
+                    if(unit.isDead()) continue;
+                    try{
+                        float gap = unit.isFlying() ? reflectionFlyerGap : reflectionGroundGap;
+                        drawReflected(unit, gap, false, halfW, halfH, mat);
+                        units++;
+                    }catch(Throwable t){
+                        logReflectError(t);
+                    }
+                }
+            }
+            for(Player player : playerGroup.all()){
+                if(player.isDead()) continue;
+                try{
+                    float gap;
+                    if(player.isFlying() && (player.mech == null || player.mech.flying)){
+                        gap = reflectionFlyerGap;
+                    }else{
+                        gap = reflectionGroundGap +
+                            (reflectionFlyerGap - reflectionGroundGap) * player.boostHeat;
+                    }
+                    drawReflected(player, gap, false, halfW, halfH, mat);
+                    players++;
+                }catch(Throwable t){
+                    logReflectError(t);
+                }
+            }
+
+            Graphics.shader();
+            bullets += drawReflected(bulletGroup, false, halfW, halfH, mat);
+            effects += drawReflected(effectGroup, false, halfW, halfH, mat);
+            effects += drawReflected(groundEffectGroup, false, halfW, halfH, mat);
+
+            for(EntityGroup<? extends BaseUnit> group : unitGroups){
+                for(BaseUnit unit : group.all()){
+                    if(unit.isDead()) continue;
+                    try{
+                        float gap = unit.isFlying() ? reflectionFlyerGap : reflectionGroundGap;
+                        drawReflectedOver(unit, gap, false, halfW, halfH, mat);
+                    }catch(Throwable t){
+                        logReflectError(t);
+                    }
+                }
+            }
+            for(Player player : playerGroup.all()){
+                if(player.isDead()) continue;
+                try{
+                    float gap;
+                    if(player.isFlying() && (player.mech == null || player.mech.flying)){
+                        gap = reflectionFlyerGap;
+                    }else{
+                        gap = reflectionGroundGap +
+                            (reflectionFlyerGap - reflectionGroundGap) * player.boostHeat;
+                    }
+                    drawReflectedOver(player, gap, false, halfW, halfH, mat);
+                }catch(Throwable t){
+                    logReflectError(t);
+                }
+            }
+
+            if(!loggedReflectCounts){
+                loggedReflectCounts = true;
+                Log.info("[reflect] captured blocks={0} (layered={1}), units={2}, players={3}, bullets={4}, effects={5}",
+                    blockCount, layeredBlocks, units, players, bullets, effects);
+            }
+        }finally{
+            captureReflections = false;
+
+            mat.idt();
+            batch.setTransformMatrix(mat);
+
+            Graphics.surface();
+
+            Draw.color();
+        }
+    }
+
+    private void logReflectError(Throwable t){
+        if(reflectErrors++ < 5) Log.err(t);
+    }
+
+    private <T extends DrawTrait> int drawReflected(EntityGroup<T> group, boolean flip, float halfW, float halfH, Matrix4 mat){
+        int count = 0;
+        for(T entity : group.all()){
+            try{
+                drawReflected(entity, reflectionGroundGap, flip, halfW, halfH, mat);
+                count++;
+            }catch(Throwable t){
+                logReflectError(t);
+            }
+        }
+        return count;
+    }
+
+    private <T extends DrawTrait> void drawReflected(T entity, float gap, boolean flip, float halfW, float halfH, Matrix4 mat){
+        if(Math.abs(entity.getX() - camera.position.x) > halfW + tilesize * 8 ||
+           Math.abs(entity.getY() - camera.position.y) > halfH + tilesize * 8){
+            return;
+        }
+
+        Draw.color();
+        if(flip){
+            mat.setToTranslation(0f, (entity.getY() - gap) * 2f, 0f).scale(1f, -1f, 1f);
+        }else{
+            mat.setToTranslation(0f, -2f * gap, 0f);
+        }
+        batch.setTransformMatrix(mat);
+        entity.draw();
+    }
+
+    /** Same transform as drawReflected but calls drawOver() — used for engine trails and
+     *  other over-layer content that FlyingUnit/Player render outside their main draw(). */
+    private <T extends DrawTrait> void drawReflectedOver(T entity, float gap, boolean flip, float halfW, float halfH, Matrix4 mat){
+        if(Math.abs(entity.getX() - camera.position.x) > halfW + tilesize * 8 ||
+           Math.abs(entity.getY() - camera.position.y) > halfH + tilesize * 8){
+            return;
+        }
+
+        if(!(entity instanceof BaseUnit) && !(entity instanceof Player)) return;
+
+        Draw.color();
+        if(flip){
+            mat.setToTranslation(0f, (entity.getY() - gap) * 2f, 0f).scale(1f, -1f, 1f);
+        }else{
+            mat.setToTranslation(0f, -2f * gap, 0f);
+        }
+        batch.setTransformMatrix(mat);
+
+        if(entity instanceof BaseUnit){
+            ((BaseUnit)entity).drawOver();
+        }else if(entity instanceof Player){
+            ((Player)entity).drawOver();
+        }
     }
 
     private void drawFlyerShadows(){
@@ -632,6 +1126,8 @@ public class Renderer extends RendererModule{
         effectSurface.onResize();
         pixelSurface.onResize();
         lightSurface.onResize();
+        reflectSurface.onResize();
+        bloomSurface.onResize();
 
         rebuildPost();
     }
@@ -642,6 +1138,8 @@ public class Renderer extends RendererModule{
         effectSurface.dispose();
         pixelSurface.dispose();
         lightSurface.dispose();
+        reflectSurface.dispose();
+        bloomSurface.dispose();
         if(bloom != null) bloom.dispose();
     }
 
@@ -690,7 +1188,7 @@ public class Renderer extends RendererModule{
         int height = Math.max(Gdx.graphics.getHeight(), 1);
 
         bloom = new Bloom(width, height);
-        bloom.setThreshold(0.5f);
+        bloom.setThreshold(Settings.getInt("bloomthreshold") / 100f);
         bloom.setOriginalIntensity(1f);
         bloom.setBloomIntensity(Settings.getInt("bloomintensity") / 10f);
         bloom.blurPasses = Settings.getInt("bloomblur");

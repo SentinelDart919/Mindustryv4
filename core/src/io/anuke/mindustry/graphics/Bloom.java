@@ -51,7 +51,7 @@ public class Bloom{
         gaussianShader.setUniformf("size", w, h);
         gaussianShader.end();
 
-        setThreshold(0.5f);
+        setThreshold(0.15f);
         setBloomIntensity(2.5f);
         setOriginalIntensity(1f);
 
@@ -98,15 +98,20 @@ public class Bloom{
 
     /** Applies the bloom to the given scene texture and draws the result onto the current framebuffer target. */
     public void render(Texture scene){
+        render(scene, scene);
+    }
+
+    /** Applies selective bloom: thresholds from {@code emission} (only bloom sources), blurs, then composites onto {@code scene}. */
+    public void render(Texture scene, Texture emission){
         if(!ready) return;
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
         Gdx.gl.glDepthMask(false);
 
-        // threshold the bright areas of the scene into the smaller buffer
+        // threshold the bright areas of the emission buffer into the smaller buffer
         pingPong1.begin();
-        scene.bind(0);
+        emission.bind(0);
         thresholdShader.begin();
         quad.render(thresholdShader);
         thresholdShader.end();

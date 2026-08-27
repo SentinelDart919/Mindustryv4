@@ -813,9 +813,11 @@ public class TankUnit extends BaseUnit{
         Floor floor = getFloorOn();
 
         // Soft shadow
-        Draw.color(0f, 0f, 0f, 0.35f);
-        Draw.rect(type.iconRegion, x, y - 1.5f);
-        Draw.color(Color.WHITE);
+        if(!io.anuke.mindustry.core.Renderer.captureReflections){
+            Draw.color(0f, 0f, 0f, 0.35f);
+            Draw.rect(type.iconRegion, x, y - 1.5f);
+            Draw.color(Color.WHITE);
+        }
 
         // Treads
         if(floor.isLiquid){

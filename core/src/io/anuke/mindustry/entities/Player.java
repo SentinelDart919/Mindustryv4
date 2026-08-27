@@ -79,7 +79,7 @@ public class Player extends Unit implements BuilderTrait, CarryTrait, ShooterTra
     private Queue<BuildRequest> placeQueue = new Queue<>();
     private Tile mining;
     private CarriableTrait carrying;
-    private Trail trail = new Trail(12);
+    public Trail trail = new Trail(12);
     private Vector2 movement = new Translator();
     private boolean moved;
 

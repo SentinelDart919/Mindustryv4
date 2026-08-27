@@ -54,6 +54,7 @@ public class Conveyor extends Block implements Autotiler{
         autoSleep = true;
         itemCapacity = 4;
         noSideBlend = false;
+        reflectYdisplace = 0.25f;
         setAmbientSound("loopConveyor", 0.03f, 4);
     }
 

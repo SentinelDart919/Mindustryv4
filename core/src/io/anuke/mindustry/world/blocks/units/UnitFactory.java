@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.units;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -38,6 +39,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import static io.anuke.mindustry.Vars.tilesize;
+
 public class UnitFactory extends Block{
     protected float gracePeriodMultiplier = 40f;
     protected float speedupTime = 60f * 60f * 20;
@@ -53,6 +56,7 @@ public class UnitFactory extends Block{
 
     public UnitFactory(String name){
         super(name);
+        hasBloom = true;
         update = true;
         hasPower = true;
         hasItems = true;
@@ -168,6 +172,36 @@ public class UnitFactory extends Block{
         Draw.reset();
 
         Draw.rect(topRegion, tile.drawx(), tile.drawy());
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        UnitFactoryEntity entity = tile.entity();
+        if(entity.speedScl <= 0f) return;
+
+        Draw.color(Palette.accent);
+        Draw.alpha(entity.speedScl * 0.3f);
+        Draw.rect("circle", tile.drawx(), tile.drawy(), size * tilesize * 1.5f, size * tilesize * 1.5f);
+
+        Draw.color(Palette.accent);
+        Draw.alpha(entity.speedScl * 0.8f);
+        Lines.stroke(2f);
+        Lines.lineAngleCenter(
+                tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 2f * size - 2f),
+                tile.drawy(),
+                90,
+                size * Vars.tilesize - 4f);
+
+        Draw.color(Color.WHITE);
+        Draw.alpha(entity.speedScl * 0.5f);
+        Lines.stroke(1f);
+        Lines.lineAngleCenter(
+                tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 2f * size - 2f),
+                tile.drawy(),
+                90,
+                size * Vars.tilesize - 4f);
+
+        Draw.reset();
     }
 
     @Override

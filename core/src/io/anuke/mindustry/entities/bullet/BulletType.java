@@ -1,9 +1,6 @@
 package io.anuke.mindustry.entities.bullet;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.StatusEffects;
 import io.anuke.mindustry.content.fx.BulletFx;
 import io.anuke.mindustry.game.Content;
@@ -57,13 +54,7 @@ public abstract class BulletType extends Content implements BaseBulletType<Bulle
     public float lightOpacity = 0.5f;
 
     /**Whether this bullet type renders a bloom glow behind the sprite.*/
-    public boolean bloom = true;
-    /**Color of the bloom glow.*/
-    public Color bloomColor = Color.WHITE;
-    /**Radius of the bloom glow in world units.*/
-    public float bloomRadius = 24f;
-    /**Strength of the bloom glow, 0-1. Should stay bright enough to pass the bloom threshold.*/
-    public float bloomOpacity = 1f;
+    public boolean bloom = false;
 
     protected Translator vector = new Translator();
 
@@ -149,22 +140,10 @@ public abstract class BulletType extends Content implements BaseBulletType<Bulle
         }
     }
 
-    private static TextureRegion glowRegion;
-
-    /**Draws an additive bloom glow behind the bullet. Called by the bullet entity before.*/
-    /*public void drawBloom(Bullet b){
-        if(bloom && bloomRadius > 0.001f){
-            if(glowRegion == null){
-                glowRegion = ;
-            }
-            Draw.color(bloomColor);
-            Draw.alpha(bloomOpacity);
-            Draw.rect(glowRegion, b.x, b.y, bloomRadius * 2, bloomRadius * 2);
-            Draw.alpha(bloomOpacity * 0.5f);
-            Draw.rect(glowRegion, b.x, b.y, bloomRadius * 2, bloomRadius * 2);
-            Draw.color();
-        }
-    }*/
+    /**Draws the bullet body into the bloom emission surface. The bullet's own sprite is used as the bloom source.*/
+    public void drawBloom(Bullet b){
+        draw(b);
+    }
 
     @Override
     public void despawned(Bullet b){

@@ -47,6 +47,7 @@ public class StackConveyor extends Block implements Autotiler{
         layer = Layer.overlay;
         ambientSound = Sounds.loopConveyor;
         ambientSoundVolume = 0.004f;
+        reflectYdisplace = 0.25f;
     }
 
     @Override

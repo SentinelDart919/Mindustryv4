@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.storage;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -50,6 +51,7 @@ public class CoreBlock extends StorageBlock{
 
     public CoreBlock(String name){
         super(name);
+        hasBloom = true;
 
         solid = false;
         solidifes = true;
@@ -159,6 +161,39 @@ public class CoreBlock extends StorageBlock{
 
             Draw.color(Palette.accent);
 
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.reset();
+        }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        CoreEntity entity = tile.entity();
+
+        if(entity.currentUnit != null){
+            float progress = entity.progress;
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.15f);
+            Draw.rect("circle", tile.drawx(), tile.drawy(), size * tilesize * 1.2f, size * tilesize * 1.2f);
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.5f);
+            Lines.stroke(2f);
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.color(Color.WHITE);
+            Draw.alpha(progress * 0.3f);
+            Lines.stroke(1f);
             Lines.lineAngleCenter(
                     tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
                     tile.drawy(),

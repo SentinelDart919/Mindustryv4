@@ -57,6 +57,8 @@ public class Mech extends UnlockableContent{
 
     public void drawOver(Player player){}
 
+    public void drawBloom(Player player){}
+
     public float getExtraArmor(Player player){
         return 0f;
     }

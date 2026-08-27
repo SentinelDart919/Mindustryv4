@@ -4,6 +4,9 @@ precision mediump int;
 #endif
 
 uniform sampler2D u_texture;
+uniform sampler2D u_reflection;
+uniform vec4 u_refTint;
+uniform float u_refOpacity;
 
 uniform vec2 camerapos;
 uniform vec2 screensize;
@@ -62,12 +65,28 @@ void main() {
 	//if there's something actually there
 	if(color.r > 0.01){
 	    vec4 old = color;
-	    color = texture2D(u_texture, c + vec2(sin(stime/3.0 + coords.y/0.75) * v.x, 0.0)) * vec4(0.9, 0.9, 1, 1.0);
+
+	    float ft = time / 400.0;
+
+	    float rw1 = snoise(coords / 20.0 + vec2(ft * 0.5, ft * 0.35));
+	    float rw2 = snoise(coords / 10.5 - vec2(ft * 0.42, ft * 0.31) + vec2(147.3, 89.1));
+
+	    vec2 roffs = vec2(rw1 + rw2 * 0.5, rw2 - rw1 * 0.45) * v * 1.3;
+
+	    vec4 refl = texture2D(u_reflection, c + roffs);
+
+	    color = texture2D(u_texture, c + roffs) * vec4(0.92, 0.95, 1.0, 1.0);
+	    vec3 tinted = mix(refl.rgb, u_refTint.rgb, u_refTint.a * refl.a);
+	    color.rgb = mix(color.rgb, tinted, refl.a * u_refOpacity);
 	    color.a = 1.0;
-	    
-	    if(color.r < 0.01){
+
+	    if(color.r < 0.01 && refl.a < 0.01){
 	        color = old;
+	        color.a = 1.0;
 	    }
+
+	    float glint = pow(max(0.0, 1.0 - abs(rw1 - rw2)), 10.0);
+	    color.rgb += glint * 0.14;
 	    
 	    float n1 = snoise(coords / 40.0 + vec2(time) / 200.0);
 	    float n2 = snoise((coords + vec2(632.0)) / 25.0 + vec2(0.0, -time) / 190.0);

@@ -13,6 +13,7 @@ public class LiquidJunction extends LiquidBlock{
     public LiquidJunction(String name){
         super(name);
         hasLiquids = true;
+        reflectYdisplace = 0.35f;
     }
 
     @Override

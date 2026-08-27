@@ -27,6 +27,7 @@ public class TrainRail extends Block implements Autotiler{
         size = 2;
         layer = Layer.overlay;
         group = BlockGroup.none;
+        reflectYdisplace = 0.25f;
     }
 
     @Override

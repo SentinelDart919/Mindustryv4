@@ -10,6 +10,7 @@ import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.content.fx.ExplosionFx;
 import io.anuke.mindustry.entities.Damage;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.GenericCrafter.GenericCrafterEntity;
 import io.anuke.mindustry.world.meta.BlockStat;
@@ -37,6 +38,7 @@ public class FusionReactor extends PowerGenerator{
 
     public FusionReactor(String name){
         super(name);
+        hasBloom = true;
         hasPower = true;
         hasLiquids = true;
         powerCapacity = 150f;
@@ -44,6 +46,10 @@ public class FusionReactor extends PowerGenerator{
         hasItems = true;
         itemCapacity = 20;
         setAmbientSound("");
+
+        emitLight = true;
+        lightColor = plasma1;
+        lightOpacity = 0.6f;
 
         consumes.item(Items.blastCompound);
         consumes.liquid(Liquids.cryofluid, 0.09f);
@@ -133,6 +139,40 @@ public class FusionReactor extends PowerGenerator{
     @Override
     public TextureRegion[] getIcon(){
         return new TextureRegion[]{Draw.region(name + "-bottom"), Draw.region(name), Draw.region(name + "-top")};
+    }
+
+    @Override
+    public void drawLight(Tile tile){
+        FusionReactorEntity entity = tile.entity();
+        if(entity.warmup <= 0.001f) return;
+
+        float pulse = 0.8f + Mathf.absin(Timers.time(), 2f, 0.2f);
+        float radius = lightRadius() * tilesize * (0.5f + entity.warmup * 0.5f) * pulse;
+        float opacity = lightOpacity * entity.warmup;
+
+        Draw.color(plasma1);
+        Shaders.light.region = Draw.region("circle");
+        Draw.alpha(opacity);
+        Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
+        Draw.alpha(opacity * 0.5f);
+        Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
+        Draw.color();
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        FusionReactorEntity entity = tile.entity();
+        if(entity.warmup <= 0.001f) return;
+
+        for(int i = 0; i < plasmas; i++){
+            float r = 29f + Mathf.absin(Timers.time(), 2f + i * 1f, 5f - i * 0.5f);
+
+            Draw.color(plasma1, plasma2, (float) i / plasmas);
+            Draw.alpha((0.3f + Mathf.absin(Timers.time(), 2f + i * 2f, 0.3f + i * 0.05f)) * entity.warmup);
+            Draw.rect(name + "-plasma-" + i, tile.drawx(), tile.drawy(), r, r, Timers.time() * (12 + i * 6f) * entity.warmup);
+        }
+
+        Draw.color();
     }
 
     @Override

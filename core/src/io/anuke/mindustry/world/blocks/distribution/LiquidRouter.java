@@ -7,6 +7,7 @@ public class LiquidRouter extends LiquidBlock{
 
     public LiquidRouter(String name){
         super(name);
+        reflectYdisplace = 0.35f;
     }
 
     @Override

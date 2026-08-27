@@ -35,6 +35,10 @@ public abstract class ItemGenerator extends PowerGenerator{
 
     public ItemGenerator(String name){
         super(name);
+        hasBloom = true;
+        emitLight = true;
+        lightColor = heatColor;
+        lightOpacity = 0.45f;
         itemCapacity = 20;
         hasItems = true;
         setAmbientSound("loopCombustion");
@@ -75,6 +79,31 @@ public abstract class ItemGenerator extends PowerGenerator{
             float alpha = (entity.items.total() > 0 ? 1f : Mathf.clamp(entity.generateTime));
             alpha = alpha * 0.7f + Mathf.absin(Timers.time(), 12f, 0.3f) * alpha;
             Draw.alpha(alpha);
+            Draw.rect(topRegion, tile.drawx(), tile.drawy());
+            Draw.reset();
+        }
+    }
+
+    @Override
+    public void drawLight(Tile tile){
+        GeneratorEntity entity = tile.entity();
+
+        if(entity.generateTime > 0){
+            float alpha = (entity.items.total() > 0 ? 1f : Mathf.clamp(entity.generateTime));
+            alpha = alpha * 0.7f + Mathf.absin(Timers.time(), 12f, 0.3f) * alpha;
+            drawLight(tile.drawx(), tile.drawy(), lightRadius() * tilesize, lightOpacity * alpha, heatColor);
+        }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        GeneratorEntity entity = tile.entity();
+
+        if(entity.generateTime > 0){
+            Draw.color(heatColor);
+            float alpha = (entity.items.total() > 0 ? 1f : Mathf.clamp(entity.generateTime));
+            alpha = alpha * 0.7f + Mathf.absin(Timers.time(), 12f, 0.3f) * alpha;
+            Draw.alpha(alpha * 0.7f);
             Draw.rect(topRegion, tile.drawx(), tile.drawy());
             Draw.reset();
         }

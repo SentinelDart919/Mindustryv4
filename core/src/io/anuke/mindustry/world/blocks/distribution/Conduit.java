@@ -35,6 +35,7 @@ public class Conduit extends LiquidBlock implements Autotiler{
         rotate = true;
         solid = false;
         floating = true;
+        reflectYdisplace = 0.25f;
     }
 
     @Override

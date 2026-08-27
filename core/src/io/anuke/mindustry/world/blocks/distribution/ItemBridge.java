@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.LongSet.LongSetIterator;
 import com.badlogic.gdx.utils.LongArray;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
+import io.anuke.mindustry.core.Renderer;
 import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.gen.Call;
@@ -54,6 +55,7 @@ public class ItemBridge extends Block{
         configurable = true;
         hasItems = true;
         group = BlockGroup.transportation;
+        reflectYdisplace = 0.35f;
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
@@ -222,6 +224,12 @@ public class ItemBridge extends Block{
 
         Draw.color(Color.WHITE, Color.BLACK, Mathf.absin(Timers.time(), 6f, 0.07f));
         Draw.alpha(Math.max(entity.uptime, 0.25f));
+
+        if(Renderer.captureReflections){
+            Draw.rect(endRegion, tile.drawx(), tile.drawy(), i * 90 + 90);
+            Draw.reset();
+            return;
+        }
 
         Draw.rect(endRegion, tile.drawx(), tile.drawy(), i * 90 + 90);
         Draw.rect(endRegion, other.drawx(), other.drawy(), i * 90 + 270);

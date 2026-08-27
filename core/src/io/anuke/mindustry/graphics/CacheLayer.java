@@ -17,6 +17,7 @@ public enum CacheLayer{
 
         @Override
         public void end(){
+            Shaders.water.reflection = renderer.reflectSurface.texture();
             endShader(Shaders.water);
         }
     },

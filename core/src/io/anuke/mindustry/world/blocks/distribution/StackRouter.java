@@ -27,6 +27,7 @@ public class StackRouter extends Block{
         hasItems = true;
         itemCapacity = 10;
         group = BlockGroup.transportation;
+        reflectYdisplace = 0.35f;
     }
 
     @Override

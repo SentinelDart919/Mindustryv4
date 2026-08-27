@@ -48,6 +48,7 @@ public class ForceProjector extends Block {
 
     public ForceProjector(String name) {
         super(name);
+        hasBloom = true;
         update = true;
         solid = true;
         hasPower = true;
@@ -182,6 +183,16 @@ public class ForceProjector extends Block {
         Graphics.setNormalBlending();
 
         Draw.reset();
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        ForceEntity entity = tile.entity();
+        if(entity.buildup <= 0f) return;
+
+        Draw.alpha(entity.buildup / breakage * 0.75f);
+        Draw.rect(topRegion, tile.drawx(), tile.drawy());
+        Draw.color();
     }
 
     @Override

@@ -50,7 +50,7 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     protected static final int timerShootLeft = timerIndex++;
     protected static final int timerShootRight = timerIndex++;
 
-    protected UnitType type;
+    public UnitType type;
     protected Timer timer = new Timer(10);
     protected StateMachine state = new StateMachine();
     protected TargetTrait target;

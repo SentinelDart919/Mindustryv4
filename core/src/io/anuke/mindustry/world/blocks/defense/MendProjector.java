@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.LongSet;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.graphics.Shaders;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Effects;
@@ -40,11 +41,16 @@ public class MendProjector extends Block{
 
     public MendProjector(String name){
         super(name);
+        hasBloom = true;
         solid = true;
         update = true;
         hasPower = true;
         hasItems = true;
         itemCapacity = 10;
+
+        emitLight = true;
+        lightColor = color;
+        lightOpacity = 0.4f;
     }
 
     @Override
@@ -119,6 +125,40 @@ public class MendProjector extends Block{
         Draw.alpha(1f);
         Lines.stroke((2f  * f + 0.2f)* entity.heat);
         Lines.circle(tile.drawx(), tile.drawy(), (1f-f) * 9f);
+
+        Draw.reset();
+    }
+
+    @Override
+    public void drawLight(Tile tile){
+        MendEntity entity = tile.entity();
+        if(entity.heat <= 0.001f) return;
+
+        float opacity = lightOpacity * entity.heat;
+        float radius = lightRadius() * tilesize * (0.6f + entity.heat * 0.4f);
+        Color c = Hue.mix(color, phase, entity.phaseHeat);
+
+        Draw.color(c);
+        Shaders.light.region = Draw.region("circle");
+        Draw.alpha(opacity);
+        Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
+        Draw.alpha(opacity * 0.5f);
+        Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
+        Draw.color();
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        MendEntity entity = tile.entity();
+        float f = 1f - (Timers.time() / 100f) % 1f;
+
+        Draw.color(color, phase, entity.phaseHeat);
+        Draw.alpha(entity.heat * Mathf.absin(Timers.time(), 10f, 1f) * 0.5f);
+        Draw.rect(topRegion, tile.drawx(), tile.drawy());
+
+        Draw.alpha(1f);
+        Lines.stroke((2f * f + 0.2f) * entity.heat);
+        Lines.circle(tile.drawx(), tile.drawy(), (1f - f) * 9f);
 
         Draw.reset();
     }

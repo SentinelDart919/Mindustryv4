@@ -152,6 +152,14 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         puddleGroup.removeByID(puddleid);
     }
 
+    public float getAmount(){
+        return amount;
+    }
+
+    public Liquid getLiquid(){
+        return liquid;
+    }
+
     public float getFlammability(){
         return liquid.flammability * amount;
     }
@@ -240,6 +248,18 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
             seeds++;
         });
         Draw.color();
+    }
+
+    public void drawBloom(){
+        if(liquid != null && liquid.emitLight){
+            float f = Mathf.clamp(amount / (maxLiquid / 1.5f));
+            if(f > 0.01f){
+                Draw.color(liquid.color);
+                Draw.alpha(f * 0.25f);
+                Draw.rect("circle", x, y, f * 24f, f * 24f);
+                Draw.color();
+            }
+        }
     }
 
     @Override

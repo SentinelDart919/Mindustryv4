@@ -75,6 +75,15 @@ public class Block extends BaseBlock {
     public boolean noSideBlend = false;
     /** Whether to draw this block in the expanded draw range. */
     public boolean expanded = false;
+    /** Horizontal squash applied to this block's water reflection. 1 = full-size mirrored sprite,
+     * 0.5 = reflection compressed to half width around the block's center axis. */
+    public float reflectXdisplace = 1f;
+    /** Vertical squash applied to this block's water reflection, measured from the mirror anchor
+     * (block base). 1 = full-height mirrored sprite; 0.25 makes flat blocks like rail */
+    public float reflectYdisplace = 0.75f;
+    /** When true (default), this block's reflection is vertically flipped like a mirror.
+     * Set to false to ghost the block below the waterline without flipping. */
+    public boolean reflectionFlip = true;
     /** Max of timers used. */
     public int timers = 0;
     /** Cache layer. Only used for 'cached' rendering. */
@@ -141,6 +150,8 @@ public class Block extends BaseBlock {
     public float layerLightRadius = 4f;
     /** Opacity of the light emitted by this block's layer. */
     public float layerLightOpacity = 0.5f;
+    /** Whether this block overrides drawBloom(). Used to skip virtual dispatch in the bloom pass. */
+    public boolean hasBloom = false;
     /** Color of the light emitted by this block's layer. */
     public Color layerLightColor = Color.WHITE;
 
@@ -677,6 +688,12 @@ public class Block extends BaseBlock {
         Draw.rect(shadowRegion, tile.drawx(), tile.drawy());
     }
 
+    /** Draws bloom-only visuals for this block (additive glow, heat overlays, etc.) into the emission buffer.
+     *  Override in subclasses that have bloom sources. Default is empty. */
+    public void drawBloom(Tile tile){
+    }
+
+    /** Draws the radial light emitted by this block. */
     public void drawLight(Tile tile){
         boolean emit = emitLight;
         float radius = lightRadius() * tilesize;

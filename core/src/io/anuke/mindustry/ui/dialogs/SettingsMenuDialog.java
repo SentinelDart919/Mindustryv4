@@ -223,8 +223,9 @@ public class SettingsMenuDialog extends SettingsDialog{
 
         graphics.sliderPref("renderer", "Render Scale", 100, 50, 100, i -> i + "%");
         graphics.checkPref("bloom", "Bloom", true);
-        graphics.sliderPref("bloomintensity", "Bloom Intensity", 14, 5, 40, i -> (i / 10f) + "x");
+        graphics.sliderPref("bloomintensity", "Bloom Intensity", 10, 5, 40, i -> (i / 10f) + "x");
         graphics.sliderPref("bloomblur", "Bloom Blur", 2, 1, 16, s -> s + "x");
+        graphics.sliderPref("bloomthreshold", "Bloom Threshold", 15, 5, 80, i -> (i / 100f) + "");
     }
 
     private void back(){
