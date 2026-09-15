@@ -25,7 +25,6 @@ import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity;
 import io.anuke.mindustry.entities.effect.GroundEffectEntity.GroundEffect;
 import io.anuke.mindustry.entities.effect.Lightning;
-import io.anuke.mindustry.entities.effect.Lightning;
 import io.anuke.mindustry.entities.effect.Puddle;
 import io.anuke.mindustry.entities.traits.BelowLiquidTrait;
 import io.anuke.mindustry.entities.units.BaseUnit;
@@ -34,7 +33,6 @@ import io.anuke.mindustry.entities.traits.MinerTrait;
 import io.anuke.mindustry.entities.traits.BuilderTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.*;
-import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.production.*;
@@ -281,6 +279,8 @@ public class Renderer extends RendererModule{
 
     @Override
     public void draw(){
+        PerfCounter.render.begin();
+
         camera.update();
         if(Float.isNaN(Core.camera.position.x) || Float.isNaN(Core.camera.position.y)){
             Core.camera.position.x = players[0].x;
@@ -418,6 +418,8 @@ public class Renderer extends RendererModule{
         EntityDraw.setClip(true);
         Graphics.end();
         Draw.color();
+
+        PerfCounter.render.end();
     }
 
     public void drawLights(){
@@ -790,7 +792,7 @@ public class Renderer extends RendererModule{
 
         // shield bloom
         for(ShieldEntity shield : shieldGroup.all()){
-            shield.draw();
+            shield.drawBloom();
         }
 
         // restore
@@ -854,7 +856,7 @@ public class Renderer extends RendererModule{
     /** Water Reflections: re-draws visible blocks, units, bullets and effects vertically
      * mirrored around their own base into reflectSurface. The water cache layer composites this
      * buffer over water tiles (masked by reflection alpha, distorted by the same wave noise,
-     * tinted by Shaders.water.refTint) next frame. Captured with the plain pipeline so sprite
+     * washed toward the water color sampled from the scene) next frame. Captured with the plain pipeline so sprite
      * alpha stays intact; shadows are skipped via Renderer.captureReflections.
      * Each object is drawn in isolation so a single bad draw can never corrupt the rest
      * of the capture or leave the surface/transform stack unbalanced. */

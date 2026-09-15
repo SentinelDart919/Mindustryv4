@@ -39,6 +39,8 @@ public class GameState{
     public float darkness = 0f;
     /**Whether rain is forced on for the current map. Set in the custom game dialog.*/
     public boolean rain = false;
+    /**The currently selected tech tree for this game.*/
+    public String techTree;
     /**Current game state.*/
     private State state = State.menu;
 
@@ -52,6 +54,7 @@ public class GameState{
         rtsAIBits = defaultRtsAIBits;
         darkness = 0f;
         rain = false;
+        techTree = null;
     }
 
     public int enemies(){
@@ -59,6 +62,9 @@ public class GameState{
     }
 
     public void set(State astate){
+        if(astate == State.menu){
+            techTree = null;
+        }
         Events.fire(new StateChangeEvent(state, astate));
         state = astate;
     }

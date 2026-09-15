@@ -33,9 +33,9 @@ import static io.anuke.mindustry.Vars.*;
 
 public abstract class GroundUnit extends BaseUnit{
     protected static Translator vec = new Translator();
-    private static final int maxOrderPathNodes = 700;
+    private static final int maxOrderPathNodes = 1500;
     private static final int orderPathRepathDelay = 30;
-    protected static final int movePathMaxNodes = 400;
+    protected static final int movePathMaxNodes = 1100;
     protected static final int movePathRepathDelay = 15;
 
     protected float walkTime;

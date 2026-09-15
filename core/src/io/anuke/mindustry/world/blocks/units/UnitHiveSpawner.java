@@ -8,6 +8,7 @@ import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.graphics.Layer;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Block;
@@ -133,6 +134,7 @@ public class UnitHiveSpawner extends Block {
 
     @Override
     public void update(Tile tile) {
+        if(Net.client()) return;
         UnitHiveSpawnerEntity entity = tile.entity();
 
         if (entity.spawned == null || entity.spawned.length < types.length) {
@@ -179,6 +181,7 @@ public class UnitHiveSpawner extends Block {
     }
 
     public void spawnUnit(Tile tile, int typeIdx) {
+        if(Net.client()) return;
         UnitType type = getType(typeIdx);
         if (type == null) return;
 

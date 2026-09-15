@@ -24,6 +24,7 @@ import io.anuke.ucore.entities.impl.BaseEntity;
 import io.anuke.ucore.entities.trait.DrawTrait;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Fill;
+import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.util.Mathf;
 
 import java.io.DataInput;
@@ -158,11 +159,11 @@ public class ForceProjector extends Block {
         }
     }
 
-    float realRadius(ForceEntity entity){
+    protected float realRadius(ForceEntity entity){
         return (radius+entity.phaseHeat*phaseRadiusBoost) * entity.radscl;
     }
 
-    boolean isInsideHexagon(float x0, float y0, float d, float x, float y) {
+    protected boolean isInsideHexagon(float x0, float y0, float d, float x, float y) {
         float dx = Math.abs(x - x0)/d;
         float dy = Math.abs(y - y0)/d;
         float a = 0.25f * Mathf.sqrt3;
@@ -200,14 +201,14 @@ public class ForceProjector extends Block {
         return new ForceEntity();
     }
 
-    class ForceEntity extends TileEntity{
-        ShieldEntity shield;
-        boolean broken = true;
-        float buildup = 0f;
-        float radscl = 0f;
-        float hit;
-        float warmup;
-        float phaseHeat;
+    public class ForceEntity extends TileEntity{
+        public ShieldEntity shield;
+        public boolean broken = true;
+        public float buildup = 0f;
+        public float radscl = 0f;
+        public float hit;
+        public float warmup;
+        public float phaseHeat;
 
         @Override
         public void write(DataOutput stream) throws IOException{
@@ -229,7 +230,7 @@ public class ForceProjector extends Block {
     }
 
     public class ShieldEntity extends BaseEntity implements DrawTrait{
-        final ForceEntity entity;
+        public final ForceEntity entity;
 
         public ShieldEntity(Tile tile){
             this.entity = tile.entity();
@@ -255,6 +256,16 @@ public class ForceProjector extends Block {
             Draw.color(shieldColor);
             Fill.poly(x, y, 6, realRadius(entity));
             Draw.color();
+        }
+
+        public void drawBloom(){
+            if(entity.broken || entity.radscl <= 0f) return;
+            Color teamColor = entity.getTeam().color;
+            if(teamColor != null)shieldColor = teamColor; else shieldColor = Palette.accent;
+            Draw.color(shieldColor);
+            Lines.stroke(4f * entity.radscl);
+            Lines.poly(x, y, 6, realRadius(entity));
+            Draw.reset();
         }
 
         public void drawOver(){

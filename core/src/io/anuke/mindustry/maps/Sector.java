@@ -35,6 +35,14 @@ public class Sector{
     public transient int difficulty;
     /**Items the player starts with on this sector.*/
     public transient Array<ItemStack> startingItems;
+    /**Whether this sector represents a linear campaign level rather than an open-world sector.*/
+    public transient boolean linear;
+    /**Name of the linear campaign this level belongs to. Null for open-world sectors.*/
+    public transient String linearCampaign;
+    /**Index of the level within its linear campaign. -1 for open-world sectors.*/
+    public transient int linearLevelIndex = -1;
+    /**Custom display name for the level's map. Null for open-world sectors.*/
+    public transient String mapName;
 
     public Mission getDominantMission(){
         for(Mission mission : missions){

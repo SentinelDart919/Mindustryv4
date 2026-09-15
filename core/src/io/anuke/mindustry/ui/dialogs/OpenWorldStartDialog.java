@@ -7,6 +7,7 @@ import io.anuke.mindustry.content.blocks.StorageBlocks;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.EventType.WorldLoadEvent;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.TechTree;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.maps.generation.ChunkManager;
 import io.anuke.mindustry.maps.generation.OpenWorldSaveManager;
@@ -14,6 +15,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.scene.ui.ButtonGroup;
 import io.anuke.ucore.scene.ui.ScrollPane;
 import io.anuke.ucore.scene.ui.TextButton;
 import io.anuke.ucore.scene.ui.layout.Table;
@@ -27,6 +29,7 @@ import static io.anuke.mindustry.Vars.*;
 public class OpenWorldStartDialog extends FloatingDialog{
     private String seedText = "";
     private String worldName = "";
+    private String techTree = TechTree.defaultTech;
     private final OpenWorldSaveManager saveManager = new OpenWorldSaveManager();
 
     public OpenWorldStartDialog(){
@@ -36,6 +39,7 @@ public class OpenWorldStartDialog extends FloatingDialog{
         shown(() -> {
             seedText = "";
             worldName = "";
+            techTree = TechTree.defaultTech;
             rebuild();
         });
     }
@@ -74,6 +78,19 @@ public class OpenWorldStartDialog extends FloatingDialog{
                 Mathf.mod(state.difficulty.ordinal() + 1, Difficulty.values().length)];
         });
         newWorldTable.add(difButtons);
+        newWorldTable.row();
+
+        newWorldTable.add("$text.techtree.select").padRight(10f);
+        Table techButtons = new Table();
+        techButtons.defaults().size(90f, 34f);
+        ButtonGroup<TextButton> techGroup = new ButtonGroup<>();
+        for(int i = 0; i < TechTree.all().size; i++){
+            String tree = TechTree.all().get(i);
+            techButtons.addButton(TechTree.localizedName(tree), "toggle", () -> techTree = tree)
+                .update(b -> b.setChecked(tree.equals(techTree))).group(techGroup).size(90f, 34f);
+            if(i % 2 == 1) techButtons.row();
+        }
+        newWorldTable.add(techButtons);
         newWorldTable.row();
 
         main.add(newWorldTable).colspan(2).left().padBottom(8f);
@@ -174,6 +191,7 @@ public class OpenWorldStartDialog extends FloatingDialog{
         ui.loadLogic(() -> {
             logic.reset();
             state.mode = GameMode.openWorld;
+            state.techTree = techTree.equals(TechTree.defaultTech) ? null : techTree;
 
             world.beginOpenWorld(seed, finalSaveName);
 
@@ -195,6 +213,7 @@ public class OpenWorldStartDialog extends FloatingDialog{
             meta.name = finalSaveName;
             meta.seed = seed;
             meta.difficulty = state.difficulty;
+            meta.techTree = state.techTree == null ? "" : state.techTree;
             meta.dateCreated = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
             meta.build = io.anuke.mindustry.game.Version.build;
             meta.chunksSaved = 0;
@@ -221,6 +240,7 @@ public class OpenWorldStartDialog extends FloatingDialog{
             logic.reset();
             state.mode = GameMode.openWorld;
             state.difficulty = meta.difficulty;
+            state.techTree = meta.techTree == null || meta.techTree.isEmpty() || meta.techTree.equals(TechTree.defaultTech) ? null : meta.techTree;
 
             world.beginOpenWorld(meta.seed, saveName);
 

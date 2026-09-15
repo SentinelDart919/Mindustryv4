@@ -74,9 +74,10 @@ void main() {
 	    vec2 roffs = vec2(rw1 + rw2 * 0.5, rw2 - rw1 * 0.45) * v * 1.3;
 
 	    vec4 refl = texture2D(u_reflection, c + roffs);
+	    vec4 sampled = texture2D(u_texture, c + roffs);
 
-	    color = texture2D(u_texture, c + roffs) * vec4(0.92, 0.95, 1.0, 1.0);
-	    vec3 tinted = mix(refl.rgb, u_refTint.rgb, u_refTint.a * refl.a);
+	    color = sampled * vec4(0.92, 0.95, 1.0, 1.0);
+	    vec3 tinted = mix(refl.rgb, sampled.rgb, u_refTint.a * refl.a);
 	    color.rgb = mix(color.rgb, tinted, refl.a * u_refOpacity);
 	    color.a = 1.0;
 

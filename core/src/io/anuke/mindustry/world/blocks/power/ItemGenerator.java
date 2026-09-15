@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
@@ -135,10 +136,12 @@ public abstract class ItemGenerator extends PowerGenerator{
             entity.power.amount += maxPower;
             entity.generateTime = Mathf.clamp(entity.generateTime);
 
-            if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
-                //this block is run last so that in the event of a block destruction, no code relies on the block type
-                entity.damage(Mathf.random(8f));
-                Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+            if(Net.server()){
+                if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
+                    //this block is run last so that in the event of a block destruction, no code relies on the block type
+                    entity.damage(Mathf.random(8f));
+                    Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+                }
             }
         }
         entity.ambientSoundEnabled = entity.generateTime > 0;

@@ -3,6 +3,7 @@ package io.anuke.mindustry.core;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Base64Coder;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.annotations.Annotations.Loc;
@@ -21,8 +22,10 @@ import io.anuke.mindustry.gen.RemoteReadClient;
 import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.net.Net.SendMode;
 import io.anuke.mindustry.net.NetworkIO;
+import io.anuke.mindustry.net.Packets;
 import io.anuke.mindustry.net.Packets.*;
 import io.anuke.mindustry.net.ValidateException;
+import io.anuke.mindustry.maps.generation.ChunkManager;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.ucore.core.Core;
@@ -70,6 +73,8 @@ public class NetClient extends Module{
 
     /**List of entities that were removed, and need not be added while syncing.*/
     private IntSet removed = new IntSet();
+    /**Timer pacing open-world chunk requests to the server.*/
+    private float reqTimer = 0f;
     /**Byte stream for reading in snapshots.*/
     private ReusableByteArrayInputStream byteStream = new ReusableByteArrayInputStream();
     private DataInputStream dataStream = new DataInputStream(byteStream);
@@ -129,6 +134,24 @@ public class NetClient extends Module{
             NetworkIO.loadWorld(new InflaterInputStream(data.stream));
 
             finishConnecting();
+        });
+
+        Net.handleClient(ChunkStream.class, data -> {
+            try(DataInputStream in = new DataInputStream(data.stream)){
+                int count = in.readInt();
+                for(int i = 0; i < count; i++){
+                    int len = in.readInt();
+                    byte[] bytes = new byte[len];
+                    in.readFully(bytes);
+                    if(!world.isOpenWorld() || world.chunks() == null) continue;
+                    ChunkManager.WorldChunk chunk = world.chunks().getSaveManager().deserializeChunk(bytes);
+                    if(chunk != null){
+                        world.chunks().installChunk(chunk);
+                    }
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
         });
 
         Net.handleClient(InvokePacket.class, packet -> {
@@ -344,6 +367,7 @@ public class NetClient extends Module{
 
         if(!state.is(State.menu)){
             if(!connecting) sync();
+            if(!connecting) sendChunkRequests();
         }else if(!connecting){
             Net.disconnect();
         }else{ //...must be connecting
@@ -361,6 +385,25 @@ public class NetClient extends Module{
 
     public boolean isConnecting(){
         return connecting;
+    }
+
+    /**Sends pending open-world chunk requests to the server. The server pushes new chunks on its own,
+     * so these requests only carry chunks the client evicted earlier and needs back; a short gate keeps
+     * them quick without spamming. */
+    private void sendChunkRequests(){
+        if(!world.isOpenWorld() || world.chunks() == null) return;
+        reqTimer += Timers.delta();
+        if(reqTimer < 8f) return;
+        reqTimer = 0f;
+
+        Array<long[]> requests = world.chunks().pollChunkRequests();
+        if(requests.size == 0) return;
+        ChunkRequest req = new ChunkRequest();
+        req.keys = new long[requests.size];
+        for(int i = 0; i < requests.size; i++){
+            req.keys[i] = ((long)requests.get(i)[0] << 32) | (requests.get(i)[1] & 0xFFFFFFFFL);
+        }
+        Net.send(req, Net.SendMode.tcp);
     }
 
     private void finishConnecting(){

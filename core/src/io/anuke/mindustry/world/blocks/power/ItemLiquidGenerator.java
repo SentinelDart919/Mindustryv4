@@ -3,6 +3,7 @@ package io.anuke.mindustry.world.blocks.power;
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
@@ -108,9 +109,11 @@ public abstract class ItemLiquidGenerator extends ItemGenerator{
 
                 emitSmoke(tile);
 
-                if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
-                    entity.damage(Mathf.random(8f));
-                    Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+                if(Net.server()){
+                    if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
+                        entity.damage(Mathf.random(8f));
+                        Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+                    }
                 }
             }
         }

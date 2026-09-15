@@ -6,6 +6,7 @@ import io.anuke.annotations.Annotations.Remote;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.ai.MassAI;
 import io.anuke.mindustry.core.GameState.State;
+import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.game.EventType.*;
 import io.anuke.mindustry.game.GameMode;
@@ -40,11 +41,15 @@ import static io.anuke.mindustry.Vars.*;
  */
 public class Logic extends Module{
     private int lastRecenterX = Integer.MIN_VALUE, lastRecenterY = Integer.MIN_VALUE;
+    private int lastTreeX = Integer.MIN_VALUE, lastTreeY = Integer.MIN_VALUE, lastTreeW, lastTreeH;
 
     public Logic(){
         Events.on(TileChangeEvent.class, event -> {
-            if(event.tile.getTeam() == defaultTeam && Recipe.getByResult(event.tile.block()) != null){
-                handleContent(Recipe.getByResult(event.tile.block()));
+            if(event.tile.getTeam() == defaultTeam){
+                Recipe recipe = Recipe.getByResult(event.tile.block());
+                if(recipe != null && recipe.belongsToTech(state.techTree)){
+                    handleContent(recipe);
+                }
             }
         });
 
@@ -225,6 +230,7 @@ public class Logic extends Module{
 
     @Override
     public void update(){
+        PerfCounter.update.begin();
 
         if(Vars.control != null){
             control.runUpdateLogic();
@@ -260,16 +266,29 @@ public class Logic extends Module{
                     Entities.update(groundEffectGroup);
                 }
 
+                PerfCounter.unitUpdate.begin();
                 for(EntityGroup group : unitGroups){
                     Entities.update(group);
                 }
+                PerfCounter.unitUpdate.end();
 
+                PerfCounter.entityMisc.begin();
                 Entities.update(puddleGroup);
                 Entities.update(shieldGroup);
+                PerfCounter.entityMisc.end();
+
+                PerfCounter.bulletUpdate.begin();
                 Entities.update(bulletGroup);
+                PerfCounter.bulletUpdate.end();
+
+                PerfCounter.buildingUpdate.begin();
                 Entities.update(tileGroup);
+                PerfCounter.buildingUpdate.end();
+
+                PerfCounter.entityMisc.begin();
                 Entities.update(fireGroup);
                 Entities.update(playerGroup);
+                PerfCounter.entityMisc.end();
 
                 //effect group only contains item transfers in the headless version, update it!
                 if(headless){
@@ -300,10 +319,14 @@ public class Logic extends Module{
             }
 
             if(!Net.client() && !world.isInvalidMap()){
+                PerfCounter.stateUpdate.begin();
                 updateSectors();
                 checkGameOver();
+                PerfCounter.stateUpdate.end();
             }
         }
+
+        PerfCounter.update.end();
     }
 
     private void recenterOpenWorld(){
@@ -318,15 +341,41 @@ public class Logic extends Module{
 
         int threshold = ChunkManager.CHUNK_SIZE * ChunkManager.LOAD_RADIUS;
 
+        //pathfinder flow grid follows the local/host player window, as before
         if(lastRecenterX == Integer.MIN_VALUE || Math.abs(dx) > threshold || Math.abs(dy) > threshold){
             lastRecenterX = playerTX - halfW;
             lastRecenterY = playerTY - halfH;
 
-            int worldSize = world.width();
-            EntityQuery.resizeTree(lastRecenterX * tilesize, lastRecenterY * tilesize,
-                worldSize * tilesize, worldSize * tilesize);
-
             world.pathfinder.recenter(playerTX, playerTY);
+        }
+
+        int minTX = Integer.MAX_VALUE, minTY = Integer.MAX_VALUE, maxTX = Integer.MIN_VALUE, maxTY = Integer.MIN_VALUE;
+
+        for(Player player : playerGroup.all()){
+            if(player == null) continue;
+            int tx = (int)(player.x / tilesize);
+            int ty = (int)(player.y / tilesize);
+            minTX = Math.min(minTX, tx);
+            minTY = Math.min(minTY, ty);
+            maxTX = Math.max(maxTX, tx);
+            maxTY = Math.max(maxTY, ty);
+        }
+
+        if(minTX == Integer.MAX_VALUE) return;
+
+        int margin = ChunkManager.CHUNK_SIZE * 5;
+        int leftTX = minTX - halfW - margin;
+        int topTY = minTY - halfH - margin;
+        int widthT = (maxTX - minTX) + (halfW + margin) * 2;
+        int heightT = (maxTY - minTY) + (halfH + margin) * 2;
+
+        if(lastTreeW != widthT || lastTreeH != heightT || leftTX < lastTreeX || topTY < lastTreeY
+                || leftTX + widthT > lastTreeX + lastTreeW || topTY + heightT > lastTreeY + lastTreeH){
+            lastTreeX = leftTX;
+            lastTreeY = topTY;
+            lastTreeW = widthT;
+            lastTreeH = heightT;
+            EntityQuery.resizeTree(leftTX * tilesize, topTY * tilesize, widthT * tilesize, heightT * tilesize);
         }
     }
 }

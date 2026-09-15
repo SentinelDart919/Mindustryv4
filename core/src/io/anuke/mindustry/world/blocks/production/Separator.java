@@ -100,11 +100,9 @@ public class Separator extends Block{
             int sum = 0;
             for(ItemStack stack : results) sum += stack.amount;
 
-            int i = Mathf.random(sum);
+            int i = Mathf.randomSeed(tile.id(), 0, sum);
             int count = 0;
             Item item = null;
-
-            //TODO possible desync since items are random
             for(ItemStack stack : results){
                 if(i >= count && i < count + stack.amount){
                     item = stack.item;

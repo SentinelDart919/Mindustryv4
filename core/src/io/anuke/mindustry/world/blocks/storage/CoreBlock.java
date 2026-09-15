@@ -25,7 +25,6 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.core.Timers;
@@ -78,6 +77,10 @@ public class CoreBlock extends StorageBlock{
 
         CoreEntity entity = tile.entity();
         Effects.effect(Fx.spawn, entity);
+        CoreBlock block = (CoreBlock) tile.block();
+        if(block != null && Vars.soundController != null && block.buildPlayerSound != null){
+            Vars.soundController.at(block.buildPlayerSound, tile.drawx(), tile.drawy(), 1f, 0.2f);
+        }
         entity.solid = false;
         entity.progress = 0;
         entity.currentUnit = player;
@@ -226,6 +229,7 @@ public class CoreBlock extends StorageBlock{
 
         if(entity.currentUnit != null){
             if(!entity.currentUnit.isDead()){
+                entity.ambientSoundEnabled = false;
                 entity.currentUnit = null;
                 return;
             }
@@ -234,17 +238,15 @@ public class CoreBlock extends StorageBlock{
             entity.ambientSoundEnabled = true;
             entity.progress += 1f / (entity.currentUnit instanceof Player ? state.mode.respawnTime : droneRespawnDuration) * entity.delta();
 
-            if(entity.progress >= 1f){
+            if(entity.progress >= 1f && (Net.server() || !Net.active())){
+                entity.progress = 0f;
                 Call.onUnitRespawn(tile, entity.currentUnit);
-                Sound sound = buildPlayerSound;
-                if(Vars.soundController != null && sound != null){
-                    Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
                 entity.ambientSoundEnabled = false;
             }
         }else if(!netServer.isWaitingForPlayers()){
             entity.warmup += Timers.delta();
 
-            if(entity.solid && entity.warmup > 60f && unitGroups[tile.getTeamID()].getByID(entity.droneID) == null && !Net.client()){
+            if(droneType != null && entity.solid && entity.warmup > 60f && unitGroups[tile.getTeamID()].getByID(entity.droneID) == null && !Net.client()){
 
                 boolean found = false;
                 for(BaseUnit unit : unitGroups[tile.getTeamID()].all()){

@@ -302,21 +302,43 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
     protected transient int chunkPathIndex;
     protected transient float chunkPathGoalX, chunkPathGoalY;
     protected transient int chunkPathCooldown;
+    protected transient boolean chunkPathFallback;
+    protected transient int chunkPathLayer = -1;
+    protected transient float steerGoalX = Float.NaN, steerGoalY = Float.NaN;
+    protected transient int chunkPathRefresh = 0;
+    protected transient long pathEditStamp = -1;
+    protected transient long chunkStuckTarget = 0;
+    protected transient float chunkStuckProg = Float.NaN;
+    protected transient int chunkStuck = 0;
+    protected transient int chunkSpliceFail = 0;
+    protected transient boolean chunkPathFine = false;
     private final transient Translator chunkVec = new Translator();
-    private static final float[] avoidOffsets = {40f, -40f, 80f, -80f, 120f, -120f};
+    private static final float[] avoidOffsets = {40f, -40f, 80f, -80f, 120f, -120f, 160f, -160f};
 
     /** Returns true when a ground unit moving along this angle would hit solid terrain or deeper drowning liquid. */
     protected boolean blockedAtAngle(float angle){
-        float look = type.hitsize * 0.75f + 5f;
-        float lx = x + Angles.trnsx(angle, look);
-        float ly = y + Angles.trnsy(angle, look);
-        Tile t = world.tileWorld(lx, ly);
-        if(t == null || t.solid()) return true;
+        float look = Math.max(type.hitsize * 0.75f + 5f, 12f);
+        float half = Math.max(type.hitsize * 0.5f - 1.5f, 3f);
+        float step = Math.max(3f, look * 0.3f);
+
+        for(float d = step; d <= look + 0.01f; d += step){
+            float lx = x + Angles.trnsx(angle, d);
+            float ly = y + Angles.trnsy(angle, d);
+            Tile t = world.tileWorld(lx, ly);
+            if(t == null || t.solid()) return true;
+        }
+        for(int s = -1; s <= 1; s += 2){
+            float px = x + Angles.trnsx(angle, look * 0.5f) + Angles.trnsx(angle + 90f, s * half);
+            float py = y + Angles.trnsy(angle, look * 0.5f) + Angles.trnsy(angle + 90f, s * half);
+            Tile t = world.tileWorld(px, py);
+            if(t == null || t.solid()) return true;
+        }
 
         if(!isFlying()){
             Tile here = world.tileWorld(x, y);
             float curDrown = here == null ? 0f : here.floor().drownTime;
-            if(t.floor().drownTime > curDrown + 0.01f) return true;
+            Tile probe = world.tileWorld(x + Angles.trnsx(angle, look), y + Angles.trnsy(angle, look));
+            if(probe != null && probe.floor().drownTime > curDrown + 0.01f) return true;
         }
         return false;
     }
@@ -331,64 +353,380 @@ public abstract class BaseUnit extends Unit implements ShooterTrait{
         for(float off : avoidOffsets){
             if(!blockedAtAngle(angle + off)) return angle + off;
         }
-        return angle;
+        return angle + 180f;
+    }
+
+    /**
+     * Tries, in order: the HPA chunk graph (open world only), fine window A*, then a
+     * fallback corridor for unreachable/too-far targets. Cooldowns differ per layer so
+     * repeated queries stay cheap.
+     */
+    private boolean queryPath(float gx, float gy){
+        chunkPath = null;
+        chunkPathIndex = 0;
+        chunkPathFallback = false;
+        chunkPathLayer = -1;
+        chunkPathFine = false;
+        resetChunkSteer();
+
+        if(world.isOpenWorld()){
+            chunkPath = world.pathfinder.findChunkPath(x, y, gx, gy);
+            if(chunkPath != null && chunkPath.size > 0){
+                LongArray refined = refineChunkCorridor(chunkPath, gx, gy);
+                if(refined != null && refined.size > 1){
+                    chunkPath = refined;
+                    chunkPathFine = true;
+                }
+                chunkPathGoalX = gx;
+                chunkPathGoalY = gy;
+                chunkPathCooldown = 12;
+                chunkPathLayer = 0;
+                return true;
+            }
+        }
+
+        chunkPath = world.pathfinder.findUnitPath(team, x, y, gx, gy);
+        if(chunkPath != null && chunkPath.size > 0){
+            chunkPathGoalX = gx;
+            chunkPathGoalY = gy;
+            chunkPathCooldown = 20;
+            chunkPathLayer = 1;
+            return true;
+        }
+
+        chunkPath = world.pathfinder.findFallbackWaypoint(team, x, y, gx, gy);
+        if(chunkPath != null && chunkPath.size > 0){
+            chunkPathGoalX = gx;
+            chunkPathGoalY = gy;
+            chunkPathFallback = true;
+            chunkPathCooldown = 15;
+            chunkPathLayer = 2;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Refines a coarse door-by-door corridor into an actual walkable fine-grid polyline by A*ing
+     * leg by leg (unit -> door -> door -> ... -> goal) while all of it lies inside the loaded window.
+     * Steering then follows slopes and ramps for real instead of straight-lining between border
+     * doors - the straight hops cut cliff faces and are the source of the corner-wedging and the
+     * constant re-route churn. Returns null whenever any single leg cannot reach its endpoint
+     * (goal out of window / unloaded frontier); the caller keeps the coarse corridor, whose reactive
+     * stuck logic then still stands in until a later re-query manages to refine.
+     */
+    private LongArray refineChunkCorridor(LongArray coarse, float gx, float gy){
+        LongArray out = new LongArray();
+        float curX = x, curY = y;
+        for(int i = 0; i < coarse.size; i++){
+            long wp = coarse.items[i];
+            float wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
+            float wy = (int)wp * tilesize + tilesize / 2f;
+            LongArray leg = world.pathfinder.findUnitPath(team, curX, curY, wx, wy);
+            if(leg == null || leg.size == 0) return null;
+            for(int j = 0; j < leg.size; j++){
+                if(leg.items[j] == wp) continue;
+                out.add(leg.items[j]);
+            }
+            long last = leg.peek();
+            curX = (int)(last >> 32) * tilesize + tilesize / 2f;
+            curY = (int)last * tilesize + tilesize / 2f;
+        }
+        LongArray tail = world.pathfinder.findUnitPath(team, curX, curY, gx, gy);
+        if(tail == null || tail.size == 0) return null;
+        for(int j = 0; j < tail.size; j++){
+            out.add(tail.items[j]);
+        }
+        return out.size > 1 ? out : null;
     }
 
     /**
      * Steers along a cached waypoint path toward (gx, gy).
-     * Tries the hierarchical chunk graph first (open world only), then a fine tile-level
-     * A* over the team's flow snapshot (both modes). Returns false when no path is
-     * available (caller should fall back to direct steering).
+     * If a real path is already active it is kept until fully consumed (mirroring v7's
+     * persistent-route behavior) instead of being thrown away whenever the final goal sits
+     * far outside the fine window; once consumed, the route is re-queried immediately from
+     * the new position so units never fall back to straight-line walking except when no
+     * route exists at all. The fallback corridor also re-arms instantly on each hop so units
+     * keep contouring around big obstacle clusters. Returns false only when no path layer
+     * produced a route (caller may then steering directly).
      */
+    /** Resets the corner-steering trackers whenever the active route is replaced or dropped. */
+    private void resetChunkSteer(){
+        chunkStuckTarget = 0;
+        chunkStuckProg = Float.NaN;
+        chunkStuck = 0;
+        chunkSpliceFail = 0;
+    }
+
     protected boolean steerAlongChunkPath(float gx, float gy){
+        steerGoalX = gx;
+        steerGoalY = gy;
         if(chunkPathCooldown > 0) chunkPathCooldown--;
 
-        boolean valid = chunkPath != null && chunkPathIndex < chunkPath.size
-                && Mathf.dst(chunkPathGoalX - x, chunkPathGoalY - y) < 8 * tilesize;
-
-        if(!valid && chunkPathCooldown <= 0){
-            chunkPathCooldown = 90;
+        //target moved far from the current route's goal: never keep marching toward the old goal
+        //(e.g. the unit retargeted to a different core or issued a new order). Drop now so the
+        //route re-queries towards the new target this same frame instead of driving to the old one.
+        if(chunkPath != null && chunkPath.size > 0
+                && Mathf.dst(chunkPathGoalX - gx, chunkPathGoalY - gy) > 8f * tilesize){
             chunkPath = null;
+            chunkPathIndex = 0;
+            chunkPathCooldown = 0;
+            resetChunkSteer();
+        }
 
-            if(world.isOpenWorld()){
-                chunkPath = world.pathfinder.findChunkPath(x, y, gx, gy);
+        //world changed since the route was built: only drop it when the edit actually sits on the
+        //route's remaining waypoint(s). Dropping every route on ANY tile edit (mining, tree cutting,
+        //building anywhere in the world) makes HPA throw brand new paths every frame and the unit
+        //visibly hop between different polylines mid-journey. A wall placed off-route is instead
+        //handled by the stuck detector below, which stitches a fine local detour only when needed.
+        long stamp = world.pathfinder.editStamp;
+        if(stamp != pathEditStamp && chunkPath != null && chunkPathIndex < chunkPath.size){
+            pathEditStamp = stamp;
+            Tile head = world.tile(chunkPath.get(chunkPathIndex));
+            if(head != null && (head.solid() || head.floor().isLiquid)){
+                chunkPath = null;
+                chunkPathIndex = 0;
+                chunkPathCooldown = 0;
+                resetChunkSteer();
+            }
+        }
+
+        if(chunkPath != null && chunkPath.size > 0){
+            //re-anchor to the actual unit position: drop waypoints already underfoot or behind the
+            //unit relative to the target so a route never makes it backtrack to an earlier door
+            pruneLeadingWaypoints(gx, gy);
+            if(chunkPathIndex >= chunkPath.size){
+                chunkPath = null;
+                chunkPathIndex = 0;
+                chunkPathCooldown = 0;
+                resetChunkSteer();
+                return steerAlongChunkPath(gx, gy);
             }
 
-            if(chunkPath == null){
-                chunkPath = world.pathfinder.findUnitPath(team, x, y, gx, gy);
+            //refresh the corridor only as a slow keep-alive: extending it happens automatically when the
+            //unit consumes the tail and re-queries from the new position. Rebuilding the route every
+            //few ticks from a mid-route position made the unit visibly swap between different polyline
+            //shapes mid-process, which reads as HPA "throwing" new paths while it is still walking.
+            if(++chunkPathRefresh >= 150){
+                chunkPathRefresh = 0;
+                chunkPath = null;
+                chunkPathIndex = 0;
+                chunkPathCooldown = 0;
+                resetChunkSteer();
+            }
+        }
+
+        boolean needsQuery = chunkPath == null || chunkPath.size == 0 || chunkPathIndex >= chunkPath.size;
+        boolean targetMoved = chunkPath != null
+                && Mathf.dst(chunkPathGoalX - gx, chunkPathGoalY - gy) > 8 * tilesize;
+
+        if((needsQuery || targetMoved) && chunkPathCooldown <= 0){
+            queryPath(gx, gy);
+            pathEditStamp = world.pathfinder.editStamp;
+            chunkPathRefresh = 0;
+        }
+
+        if(chunkPath == null || chunkPath.size == 0 || chunkPathIndex >= chunkPath.size) return false;
+
+        //rubber-band: skip ahead over waypoints that are nearly on the same heading AND mutually visible
+        //with the unit - only then is the straight cut provably clear. A blind angle check alone let
+        //units cut the very corner the path detected (chunk doors on opposite sides of a slope),
+        //walk straight into it and wedge there until the route happened to re-form.
+        int idx = Math.min(chunkPathIndex, chunkPath.size - 1);
+        while(idx + 1 < chunkPath.size){
+            float first = angleTo(waypointX(idx), waypointY(idx));
+            float next = angleTo(waypointX(idx + 1), waypointY(idx + 1));
+            if(Math.abs(Angles.angleDist(first, next)) > 14f) break;
+            if(!inlineClear(x, y, waypointX(idx + 1), waypointY(idx + 1))) break;
+            idx++;
+        }
+        chunkPathIndex = idx;
+
+        float wx = waypointX(idx), wy = waypointY(idx);
+        if(Mathf.dst(wx - x, wy - y) < 3 * tilesize){
+            chunkPathIndex = Math.min(idx + 1, chunkPath.size - 1);
+        }
+
+        long wp = chunkPath.items[chunkPathIndex];
+        wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
+        wy = (int)wp * tilesize + tilesize / 2f;
+        float wayDist = Mathf.dst(x - wx, y - wy);
+
+        if(wp != chunkStuckTarget){
+            chunkStuckTarget = wp;
+            chunkStuckProg = Float.NaN;
+            chunkStuck = 0;
+            chunkSpliceFail = 0;
+        }
+
+        if(Float.isNaN(chunkStuckProg) || chunkStuckProg - wayDist > tilesize * 0.15f){
+            chunkStuck = 0;
+        }else{
+            chunkStuck++;
+        }
+        chunkStuckProg = wayDist;
+        boolean hopBlocked = !inlineClear(x, y, wx, wy);
+        //chronic jam: refined-fine hops are clear by construction so a jam is a fresh obstruction or a
+        //gap too narrow for the body (>30 frames). Coarse fallback: >14 frames on a truly blocking hop,
+        //or >44 even when the hop line looks clear. Either way the waypoint is unusable for this unit.
+        if(chunkStuck > (chunkPathFine ? 30 : (hopBlocked ? 14 : 44)) && !isFlying()){
+            chunkStuck = 0;
+            chunkStuckProg = Float.NaN;
+
+            if(chunkPathFine){
+                //refined corridor: consecutive waypoints are sub-segments of one walkable polyline, so
+                //skipping the jammed one keeps the rest of the route valid - no splicing or re-throwing
+                if(chunkPathIndex + 1 < chunkPath.size){
+                    chunkPathIndex++;
+                    resetChunkSteer();
+                    return true;
+                }
+                chunkPath = null;
+                chunkPathIndex = 0;
+                chunkPathCooldown = 0;
+                resetChunkSteer();
+                return steerAlongChunkPath(gx, gy);
             }
 
-            if(chunkPath == null){
-                Long fallback = world.pathfinder.findFallbackWaypoint(team, x, y, gx, gy);
-                if(fallback != null){
-                    chunkPath = new LongArray();
-                    chunkPath.add(fallback);
+            //second attempt on a still-blocked hop (the fine grid may have been unavailable earlier)
+            if(hopBlocked && chunkSpliceFail <= 1){
+                chunkSpliceFail = 2;
+                LongArray detour = world.pathfinder.findUnitPath(team, x, y, wx, wy);
+                if(detour != null && detour.size > 0){
+                    LongArray merged = new LongArray();
+                    merged.addAll(detour.items, 0, detour.size);
+                    for(int i = chunkPathIndex + 1; i < chunkPath.size; i++){
+                        merged.add(chunkPath.get(i));
+                    }
+                    chunkPath = merged;
+                    chunkPathIndex = 0;
+                    chunkPathCooldown = 12;
+                    resetChunkSteer();
+                    return true;
                 }
             }
 
+            //the door is genuinely unreachable (fine-grid route fails or gap too narrow for the body):
+            //skip it and steer at the next waypoint instead of grinding or re-throwing the same path
+            if(chunkPathIndex + 1 < chunkPath.size){
+                chunkPathIndex++;
+                resetChunkSteer();
+                return true;
+            }
+            //at the last waypoint the coarse corridor cannot finish the goal; a fine-grid leg straight
+            //to the target works whenever the goal still lies inside the loaded window (else the coarse
+            //re-query below re-adopts whatever corridor is cached)
+            LongArray direct = world.pathfinder.findUnitPath(team, x, y, gx, gy);
+            if(direct != null && direct.size > 0){
+                chunkPath = direct;
+                chunkPathIndex = 0;
+                chunkPathGoalX = gx;
+                chunkPathGoalY = gy;
+                chunkPathFallback = false;
+                chunkPathLayer = 1;
+                chunkPathFine = false;
+                chunkPathCooldown = 20;
+                resetChunkSteer();
+                return true;
+            }
+            chunkPath = null;
             chunkPathIndex = 0;
-            chunkPathGoalX = gx;
-            chunkPathGoalY = gy;
+            chunkPathCooldown = 0;
+            resetChunkSteer();
+            return steerAlongChunkPath(gx, gy);
         }
 
-        if(chunkPath == null || chunkPath.size == 0) return false;
-
-        long wp = chunkPath.items[Math.min(chunkPathIndex, chunkPath.size - 1)];
-        float wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
-        float wy = (int)wp * tilesize + tilesize / 2f;
-
-        if(Mathf.dst(wx - x, wy - y) < 3 * tilesize){
-            if(chunkPathIndex >= chunkPath.size - 1) return false; //path consumed
-            chunkPathIndex++;
-            wp = chunkPath.items[chunkPathIndex];
-            wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
-            wy = (int)wp * tilesize + tilesize / 2f;
-        }
-
-        float angle = angleTo(wx, wy);
+        float angle = avoidAngle(angleTo(wx, wy));
         velocity.add(chunkVec.trns(angle, type.speed * Timers.delta()));
         if(!isAiming()) rotation = Mathf.slerpDelta(rotation, angle, type.rotatespeed);
         return true;
+    }
+
+    /** Advances {@link #chunkPathIndex} past waypoints that are already at/behind the unit. */
+    private void pruneLeadingWaypoints(float gx, float gy){
+        int idx = chunkPathIndex;
+        float gdx = gx - x, gdy = gy - y;
+        float goalDistSq = gdx * gdx + gdy * gdy;
+        while(idx < chunkPath.size){
+            float toWpX = waypointX(idx) - x, toWpY = waypointY(idx) - y;
+            if(Mathf.dst(toWpX, toWpY) < 3 * tilesize){
+                idx++;
+                continue;
+            }
+            //strictly-behind waypoints (>90° away from the goal direction) would make the unit
+            //backtrack; skip them unless the goal itself is basically adjacent
+            if(goalDistSq > tilesize * tilesize && (gdx * toWpX + gdy * toWpY) <= 0){
+                idx++;
+                continue;
+            }
+            break;
+        }
+        chunkPathIndex = idx;
+    }
+
+    private float waypointX(int index){
+        long wp = chunkPath.items[index];
+        return (int)(wp >> 32) * tilesize + tilesize / 2f;
+    }
+
+    private float waypointY(int index){
+        long wp = chunkPath.items[index];
+        return (int)wp * tilesize + tilesize / 2f;
+    }
+
+    /**
+     * True when a straight line between two world-space points crosses only walkable tiles,
+     * sampled across the unit's body width. Keeps the rubber-band corner-cutting from skipping
+     * chunk doors that hide a slope just around the corner.
+     */
+    private boolean inlineClear(float ax, float ay, float bx, float by){
+        if(Mathf.dst(ax - bx, ay - by) <= tilesize) return true;
+        int steps = Math.max(2, (int)(Mathf.dst(ax - bx, ay - by) / (tilesize * 0.5f)));
+        float ang = Mathf.atan2(by - ay, bx - ax);
+        float half = Math.max(type.hitsize * 0.35f, 2f);
+        float dx = (bx - ax) / steps, dy = (by - ay) / steps;
+        for(int s = 1; s < steps; s++){
+            float px = ax + dx * s, py = ay + dy * s;
+            for(int o = -1; o <= 1; o++){
+                Tile t = world.tileWorld(px + Angles.trnsx(ang + 90f, half * o), py + Angles.trnsy(ang + 90f, half * o));
+                if(t == null || t.solid() || t.floor().isLiquid) return false;
+            }
+        }
+        return true;
+    }
+
+    /** @return the currently followed waypoint route, or null when the unit has none (debug preview). */
+    public LongArray getChunkPath(){
+        return chunkPath;
+    }
+
+    public int getChunkPathIndex(){
+        return chunkPathIndex;
+    }
+
+    /** 0 = chunk HPA, 1 = unit A*, 2 = fallback corridor, -1 = none (debug preview). */
+    public int getChunkPathLayer(){
+        return chunkPathLayer;
+    }
+
+    public boolean isChunkPathFallback(){
+        return chunkPathFallback;
+    }
+
+    public float getSteerGoalX(){
+        return steerGoalX;
+    }
+
+    public float getSteerGoalY(){
+        return steerGoalY;
+    }
+
+    public float getChunkPathGoalX(){
+        return chunkPathGoalX;
+    }
+
+    public float getChunkPathGoalY(){
+        return chunkPathGoalY;
     }
 
     public UnitState getStartState(){

@@ -153,7 +153,7 @@ public class Control extends Module{
 
         //autohost for pvp sectors
         Events.on(WorldLoadEvent.class, event -> {
-            if(state.mode.isPvp && !Net.active()){
+            if((state.mode.isPvp) && !Net.active()){
                 try{
                     Net.host(port);
                     players[0].isAdmin = true;
@@ -237,6 +237,7 @@ public class Control extends Module{
             if(customDarkness){
                 map.meta.tags.put("darkness", Float.toString(state.darkness));
             }
+            map.meta.tags.put("tech", state.techTree == null ? "" : state.techTree);
             customDarkness = false;
         }
         ui.loadLogic(() -> {
@@ -264,7 +265,7 @@ public class Control extends Module{
         outer:
         for(int i = 0; i < content.recipes().size; i ++){
             Recipe recipe = content.recipes().get(i);
-            if(!recipe.isHidden() && recipe.requirements != null){
+            if(!recipe.isHidden() && recipe.belongsToTech(state.techTree) && recipe.requirements != null){
                 for(ItemStack stack : recipe.requirements){
                     if(!entity.items.has(stack.item, Math.min((int) (stack.amount * unlockResourceScaling), 2000))) continue outer;
                 }

@@ -25,6 +25,7 @@ public class Pathfinder{
     private long maxUpdate = TimeUtils.millisToNanos(2);
     private PathData[] paths;
     private ChunkWaypointGraph graph;
+    public volatile long editStamp = 0;
 
     //packed cell layout
     private static final int B_SOLID = 1;
@@ -37,6 +38,7 @@ public class Pathfinder{
         Events.on(WorldLoadEvent.class, event -> clear());
         Events.on(TileChangeEvent.class, event -> {
             if(Net.client() || paths == null) return;
+            editStamp++;
 
             Tile tile = event.tile;
             for(int i = 0; i < paths.length; i++){
@@ -45,7 +47,7 @@ public class Pathfinder{
 
                 int lx = tile.x - path.offsetX;
                 int ly = tile.y - path.offsetY;
-                if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.size) continue;
+                if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.sizeY) continue;
 
                 path.tileData[lx + ly * path.size] = packCell(tile);
                 path.dirty = true;
@@ -92,7 +94,7 @@ public class Pathfinder{
             int x0 = Math.max(wx0, path.offsetX);
             int x1 = Math.min(wx0 + cs, path.offsetX + path.size);
             int y0 = Math.max(wy0, path.offsetY);
-            int y1 = Math.min(wy0 + cs, path.offsetY + path.size);
+            int y1 = Math.min(wy0 + cs, path.offsetY + path.sizeY);
             if(x0 >= x1 || y0 >= y1) continue;
 
             for(int x = x0; x < x1; x++){
@@ -165,7 +167,7 @@ public class Pathfinder{
 
         int ax = tile.x - path.offsetX;
         int ay = tile.y - path.offsetY;
-        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.size) return tile;
+        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.sizeY) return tile;
 
         int pos = ax + ay * path.size;
         float value = values[pos];
@@ -190,7 +192,7 @@ public class Pathfinder{
 
             int bx = nx - path.offsetX;
             int by = ny - path.offsetY;
-            if(bx < 0 || by < 0 || bx >= path.size || by >= path.size) continue;
+            if(bx < 0 || by < 0 || bx >= path.size || by >= path.sizeY) continue;
 
             int npos = bx + by * path.size;
             float v = values[npos];
@@ -222,7 +224,7 @@ public class Pathfinder{
         if(path.weights == null) return 0;
         int ax = x - path.offsetX;
         int ay = y - path.offsetY;
-        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.size) return Float.MAX_VALUE;
+        if(ax < 0 || ay < 0 || ax >= path.size || ay >= path.sizeY) return Float.MAX_VALUE;
         float[] source = path.hasComplete ? path.completeWeights : path.weights;
         return source[ax + ay * path.size];
     }
@@ -244,7 +246,7 @@ public class Pathfinder{
     private int cellAt(PathData path, int worldX, int worldY){
         int lx = worldX - path.offsetX;
         int ly = worldY - path.offsetY;
-        if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.size) return CELL_BLOCKED;
+        if(lx < 0 || ly < 0 || lx >= path.size || ly >= path.sizeY) return CELL_BLOCKED;
         return path.tileData[lx + ly * path.size];
     }
 
@@ -339,7 +341,7 @@ public class Pathfinder{
         }
         path.resetArrays();
 
-        for(int y = 0; y < path.size; y++){
+        for(int y = 0; y < path.sizeY; y++){
             for(int x = 0; x < path.size; x++){
                 int idx = x + y * path.size;
                 path.tileData[idx] = packCell(fastTile(x + path.offsetX, y + path.offsetY));
@@ -361,12 +363,13 @@ public class Pathfinder{
     /** Rebuilds the window around a new origin, preserving overlapping weights as an interim readable snapshot. */
     private void rebuildWindow(PathData path, int newOffX, int newOffY){
         int size = path.size;
+        int sizeY = path.sizeY;
         int oldOffX = path.offsetX, oldOffY = path.offsetY;
 
-        int[] newData = new int[size * size];
-        float[] newWeights = new float[size * size];
+        int[] newData = new int[size * sizeY];
+        float[] newWeights = new float[size * sizeY];
 
-        for(int y = 0; y < size; y++){
+        for(int y = 0; y < sizeY; y++){
             for(int x = 0; x < size; x++){
                 int idx = x + y * size;
                 newData[idx] = packCell(fastTile(x + newOffX, y + newOffY));
@@ -378,7 +381,7 @@ public class Pathfinder{
         int copyX0 = Math.max(newOffX, oldOffX);
         int copyY0 = Math.max(newOffY, oldOffY);
         int copyX1 = Math.min(newOffX + size, oldOffX + size);
-        int copyY1 = Math.min(newOffY + size, oldOffY + size);
+        int copyY1 = Math.min(newOffY + sizeY, oldOffY + sizeY);
 
         for(int wy = copyY0; wy < copyY1; wy++){
             int srcRow = (wy - oldOffY) * size + (copyX0 - oldOffX);
@@ -407,16 +410,17 @@ public class Pathfinder{
         if(path == null || path.tileData == null || !path.hasComplete) return null;
 
         int size = path.size;
+        int sizeY = path.sizeY;
         int sx = MathUtils.floor(fromWorldX / tilesize) - path.offsetX;
         int sy = MathUtils.floor(fromWorldY / tilesize) - path.offsetY;
         int gx = MathUtils.floor(toWorldX / tilesize) - path.offsetX;
         int gy = MathUtils.floor(toWorldY / tilesize) - path.offsetY;
 
-        if(sx < 0 || sy < 0 || sx >= size || sy >= size) return null;
+        if(sx < 0 || sy < 0 || sx >= size || sy >= sizeY) return null;
 
         //snap goal into bounds
         gx = Mathf.clamp(gx, 0, size - 1);
-        gy = Mathf.clamp(gy, 0, size - 1);
+        gy = Mathf.clamp(gy, 0, sizeY - 1);
 
         int start = sx + sy * size, goal = gx + gy * size;
         if(start == goal) return null;
@@ -440,8 +444,13 @@ public class Pathfinder{
             siftHeapUp(heap, fKeys, heap.size - 1);
         }
 
+        float deepBias = 0.02f;
+
         int expanded = 0;
-        int maxExpansions = 4000;
+        int maxExpansions = 12000;
+
+        int bestSlot = start;
+        float bestH = Math.abs(sx - gx) + Math.abs(sy - gy);
         LongArray result = null;
 
         while(heap.size > 0 && expanded++ < maxExpansions){
@@ -470,10 +479,16 @@ public class Pathfinder{
 
             int px = current % size, py = current / size;
 
+            float curH = Math.abs(px - gx) + Math.abs(py - gy);
+            if(curH < bestH){
+                bestH = curH;
+                bestSlot = current;
+            }
+
             for(int d = 0; d < 4; d++){
                 int nx = px + (d == 0 ? 1 : d == 1 ? -1 : 0);
                 int ny = py + (d == 2 ? 1 : d == 3 ? -1 : 0);
-                if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+                if(nx < 0 || ny < 0 || nx >= size || ny >= sizeY) continue;
 
                 int npos = nx + ny * size;
                 int cell = path.tileData[npos];
@@ -488,13 +503,55 @@ public class Pathfinder{
                     gScore.put(npos, ng);
                     float hf = Math.abs(nx - gx) + Math.abs(ny - gy);
                     heap.add(npos);
-                    fKeys.add(ng + hf);
+                    fKeys.add(ng + hf + ng * deepBias);
                     siftHeapUp(heap, fKeys, heap.size - 1);
                 }
             }
         }
 
-        return result;
+        if(result != null) return decimate(result);
+        if(bestSlot == start) return null;
+
+        result = new LongArray();
+        long c = bestSlot;
+        while(c != startPacked){
+            int cx = (int)(c % size) + path.offsetX;
+            int cy = (int)(c / size) + path.offsetY;
+            result.add(((long)cx << 32) | (cy & 0xFFFFFFFFL));
+            c = cameFrom.get(c, c);
+        }
+        result.reverse();
+        return decimate(result);
+    }
+
+    static LongArray decimate(LongArray in){
+        if(in == null || in.size <= 2) return in;
+
+        LongArray out = new LongArray(Math.max(2, in.size / 2));
+        out.add(in.items[0]);
+
+        for(int i = 1; i < in.size - 1; i++){
+            long a = out.peek();
+            long b = in.items[i];
+            long c = in.items[i + 1];
+            int ax = (int)(a >> 32), ay = (int)a;
+            int bx = (int)(b >> 32), by = (int)b;
+            int cx = (int)(c >> 32), cy = (int)c;
+
+            int e1x = bx - ax, e1y = by - ay;
+            int e2x = cx - bx, e2y = cy - by;
+
+            //sub-cell or two-tile noise between consecutive points
+            if(e1x == 0 && e1y == 0 || e1x * e1x + e1y * e1y < 4) continue;
+            //same heading: collinear midpoints don't change direction, drop them
+            long cross = (long)e1x * e2y - (long)e1y * e2x;
+            if(Math.abs(cross) < 24) continue;
+
+            out.add(b);
+        }
+
+        out.add(in.peek());
+        return out;
     }
 
     private static void siftHeapUp(IntArray heap, FloatArray keys, int i){
@@ -521,29 +578,33 @@ public class Pathfinder{
     }
 
     /**
-     * Finds the passable cell reachable from the unit's position that lies closest
-     * (euclidean) to the goal, for cases where no complete route exists ("unreachable"
-     * targets). Units move to this waypoint and wall-hug toward the target instead of
-     * blindly walking into terrain. Returns packed world tile coords, or null when the
-     * unit is already at the closest reachable spot.
+     * Finds a corridor of passable cells (packed world tile coords) leading from the unit's
+     * position toward the cell closest (euclidean) to the goal within the connected component,
+     * for cases where no complete route exists ("unreachable"/too-far targets). Returning a
+     * waypoint stream instead of a single hop lets units keep contouring around large obstacle
+     * clusters - each consumed corridor is re-queried from the new position. Returns null when
+     * the unit is already at the closest reachable spot or no path data is available.
      */
-    public Long findFallbackWaypoint(Team team, float fromWorldX, float fromWorldY, float toWorldX, float toWorldY){
+    public LongArray findFallbackWaypoint(Team team, float fromWorldX, float fromWorldY, float toWorldX, float toWorldY){
         if(paths == null) return null;
         PathData path = paths[team.ordinal()];
         if(path == null || path.tileData == null || !path.hasComplete) return null;
 
         int size = path.size;
+        int sizeY = path.sizeY;
         int sx = MathUtils.floor(fromWorldX / tilesize) - path.offsetX;
         int sy = MathUtils.floor(fromWorldY / tilesize) - path.offsetY;
         float gx = MathUtils.floor(toWorldX / tilesize) - path.offsetX + 0.5f;
         float gy = MathUtils.floor(toWorldY / tilesize) - path.offsetY + 0.5f;
 
-        if(sx < 0 || sy < 0 || sx >= size || sy >= size) return null;
+        if(sx < 0 || sy < 0 || sx >= size || sy >= sizeY) return null;
 
         int start = sx + sy * size;
         int teamOrdinal = team.ordinal();
 
-        Bits visited = new Bits(size * size);
+        Bits visited = new Bits(size * sizeY);
+        int[] parent = new int[size * sizeY];
+        java.util.Arrays.fill(parent, -1);
         IntArray queue = new IntArray();
         queue.add(start);
         visited.set(start);
@@ -552,7 +613,7 @@ public class Pathfinder{
         float bestDist = sdx * sdx + sdy * sdy;
         int bestCell = -1;
 
-        int maxCells = 4096;
+        int maxCells = 8000;
         int head = 0;
         while(head < queue.size && maxCells-- > 0){
             int current = queue.get(head++);
@@ -568,7 +629,7 @@ public class Pathfinder{
             for(int d = 0; d < 4; d++){
                 int nx = px + (d == 0 ? 1 : d == 1 ? -1 : 0);
                 int ny = py + (d == 2 ? 1 : d == 3 ? -1 : 0);
-                if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+                if(nx < 0 || ny < 0 || nx >= size || ny >= sizeY) continue;
 
                 int npos = nx + ny * size;
                 if(visited.get(npos)) continue;
@@ -577,14 +638,24 @@ public class Pathfinder{
                 if(!passable(path.tileData[npos], teamOrdinal)) continue;
 
                 visited.set(npos);
+                parent[npos] = current;
                 queue.add(npos);
             }
         }
 
-        if(bestCell < 0) return null;
-        int wx = bestCell % size + path.offsetX;
-        int wy = bestCell / size + path.offsetY;
-        return ((long)wx << 32) | (wy & 0xFFFFFFFFL);
+        if(bestCell < 0 || bestCell == start) return null;
+
+        LongArray out = new LongArray();
+        int cur = bestCell;
+        int hops = 0;
+        while(cur != -1 && cur != start && hops++ < 48){
+            int wx = cur % size + path.offsetX;
+            int wy = cur / size + path.offsetY;
+            out.add(((long)wx << 32) | (wy & 0xFFFFFFFFL));
+            cur = parent[cur];
+        }
+        out.reverse();
+        return decimate(out);
     }
 
     private void seedTargets(Team team, PathData path){
@@ -593,7 +664,7 @@ public class Pathfinder{
 
             int ox = other.x - path.offsetX;
             int oy = other.y - path.offsetY;
-            if(ox < 0 || oy < 0 || ox >= path.size || oy >= path.size) continue;
+            if(ox < 0 || oy < 0 || ox >= path.size || oy >= path.sizeY) continue;
 
             //seed even sealed-in targets neighbors relax toward them through breakable walls
             int idx = ox + oy * path.size;
@@ -606,6 +677,7 @@ public class Pathfinder{
         PathData path = paths[team.ordinal()];
         int teamOrdinal = team.ordinal();
         int size = path.size;
+        int sizeY = path.sizeY;
 
         boolean hadAny = path.heapSize > 0;
         long start = TimeUtils.nanoTime();
@@ -626,7 +698,7 @@ public class Pathfinder{
                 for(int d = 0; d < 4; d++){
                     int nx = x + (d == 0 ? 1 : d == 1 ? -1 : 0);
                     int ny = y + (d == 2 ? 1 : d == 3 ? -1 : 0);
-                    if(nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+                    if(nx < 0 || ny < 0 || nx >= size || ny >= sizeY) continue;
 
                     int npos = nx + ny * size;
                     int cell = path.tileData[npos];
@@ -707,6 +779,7 @@ public class Pathfinder{
 
     class PathData{
         int size;
+        int sizeY;
         int offsetX, offsetY;
         float[] weights;
         float[] completeWeights;
@@ -719,6 +792,7 @@ public class Pathfinder{
 
         PathData(){
             size = world.width();
+            sizeY = world.isOpenWorld() ? size : world.height();
 
             if(world.isOpenWorld()){
                 int playerTX = players.length > 0 && players[0] != null
@@ -734,10 +808,10 @@ public class Pathfinder{
         }
 
         void resetArrays(){
-            weights = new float[size * size];
-            completeWeights = new float[size * size];
-            tileData = new int[size * size];
-            heapVals = new float[size * size];
+            weights = new float[size * sizeY];
+            completeWeights = new float[size * sizeY];
+            tileData = new int[size * sizeY];
+            heapVals = new float[size * sizeY];
             heap = new int[512];
             heapSize = 0;
             dirty = false;

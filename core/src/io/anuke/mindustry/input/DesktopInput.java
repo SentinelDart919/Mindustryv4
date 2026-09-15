@@ -3,10 +3,12 @@ package io.anuke.mindustry.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.LongArray;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.entities.Player;
@@ -18,6 +20,7 @@ import io.anuke.mindustry.entities.units.GroundUnit;
 import io.anuke.mindustry.entities.units.UnitOrderType;
 import io.anuke.mindustry.entities.units.types.Drone;
 import io.anuke.mindustry.game.Schematic;
+import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.input.PlaceUtils.NormalizeDrawResult;
@@ -35,6 +38,7 @@ import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.graphics.Lines;
 import io.anuke.ucore.input.Input;
 import io.anuke.ucore.util.Mathf;
+import io.anuke.ucore.entities.EntityGroup;
 
 import static io.anuke.mindustry.Vars.*;
 import static io.anuke.mindustry.input.CursorType.*;
@@ -621,7 +625,10 @@ public class DesktopInput extends InputHandler{
 
     @Override
     public void drawUnderUnitsAndBlocks(){
-        if(!Settings.getBool("massai-debug", false)) return;
+        boolean squadDebug = Settings.getBool("massai-debug", false);
+        boolean pathDebug = Settings.getBool("massai-path-debug", false);
+        boolean pathPreview = Settings.getBool("path-preview", false);
+        if(!squadDebug && !pathDebug && !pathPreview) return;
 
         IntSet.IntSetIterator it = selectedUnits.iterator();
         while(it.hasNext){
@@ -631,12 +638,14 @@ public class DesktopInput extends InputHandler{
 
             float ox = unit.getOrderX(), oy = unit.getOrderY();
 
-            Draw.color(Palette.command);
-            Lines.stroke(1.4f);
-            Lines.line(unit.x, unit.y, ox, oy);
-            Lines.circle(ox, oy, 4f);
+            if(squadDebug){
+                Draw.color(Palette.command);
+                Lines.stroke(1.4f);
+                Lines.line(unit.x, unit.y, ox, oy);
+                Lines.circle(ox, oy, 4f);
+            }
 
-            if(unit instanceof GroundUnit){
+            if(pathDebug && unit instanceof GroundUnit){
                 GroundUnit g = (GroundUnit)unit;
                 int cursor = g.getOrderPathCursor();
                 int size = g.getOrderPathSize();
@@ -655,6 +664,80 @@ public class DesktopInput extends InputHandler{
                 if(size > cursor){
                     Lines.line(lastx, lasty, ox, oy);
                 }
+            }
+        }
+        Draw.color();
+
+        if(pathPreview) drawPathPreview();
+    }
+
+    protected void drawPathPreview(){
+        Draw.color();
+        Lines.stroke(1.4f);
+
+        for(Team team : Team.values()){
+            EntityGroup<BaseUnit> group = unitGroups[team.ordinal()];
+            if(group.isEmpty()) continue;
+            for(BaseUnit unit : group.all()){
+                if(unit == null || !unit.isAdded() || unit.isDead()) continue;
+
+                LongArray path = unit.getChunkPath();
+                int pathIndex = unit.getChunkPathIndex();
+                float steerX = unit.getSteerGoalX(), steerY = unit.getSteerGoalY();
+                boolean routeActive = path != null && path.size > 0 && pathIndex < path.size;
+                if(routeActive){
+                    float rgx = unit.getChunkPathGoalX(), rgy = unit.getChunkPathGoalY();
+                    if(unit.hasOrder()){
+                        routeActive = Mathf.dst(rgx - unit.getOrderX(), rgy - unit.getOrderY()) <= 8f * tilesize;
+                    }else if(!Float.isNaN(steerX)){
+                        routeActive = Mathf.dst(rgx - steerX, rgy - steerY) <= 8f * tilesize;
+                    }
+                }
+                float goalX, goalY;
+                if(routeActive){
+                    goalX = unit.getChunkPathGoalX();
+                    goalY = unit.getChunkPathGoalY();
+                }else if(unit.hasOrder()){
+                    goalX = unit.getOrderX();
+                    goalY = unit.getOrderY();
+                }else if(!Float.isNaN(steerX)){
+                    goalX = steerX;
+                    goalY = steerY;
+                }else{
+                    continue;
+                }
+
+                if(routeActive){
+                    int layer = unit.getChunkPathLayer();
+                    Draw.color(layer == 0 ? Color.valueOf("56ffec")
+                            : layer == 1 ? Palette.heal : layer == 2 ? Color.valueOf("ffb380") : Palette.place);
+                    Lines.stroke(1.8f);
+                    float lastx = unit.x, lasty = unit.y;
+                    for(int i = Math.max(pathIndex - 1, 0); i < path.size; i++){
+                        long wp = path.items[i];
+                        float wx = (int)(wp >> 32) * tilesize + tilesize / 2f;
+                        float wy = (int)wp * tilesize + tilesize / 2f;
+                        Lines.line(lastx, lasty, wx, wy);
+                        lastx = wx;
+                        lasty = wy;
+                    }
+                    Lines.line(lastx, lasty, goalX, goalY);
+                    Draw.color(Color.WHITE);
+                    Lines.stroke(1f);
+                    for(int i = Math.max(pathIndex, 0); i < path.size; i++){
+                        long wp = path.items[i];
+                        Lines.circle((int)(wp >> 32) * tilesize + tilesize / 2f, (int)wp * tilesize + tilesize / 2f, 2.2f);
+                    }
+                }else{
+                    Draw.color(Palette.remove);
+                    Lines.stroke(1.4f);
+                    Lines.line(unit.x, unit.y, goalX, goalY);
+                }
+
+                Draw.color(Color.WHITE);
+                Lines.stroke(2f);
+                Lines.circle(goalX, goalY, 4f);
+                Lines.circle(goalX, goalY, 1.2f);
             }
         }
         Draw.color();

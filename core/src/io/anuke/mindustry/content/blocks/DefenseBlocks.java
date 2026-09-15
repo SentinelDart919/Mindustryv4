@@ -8,7 +8,8 @@ import io.anuke.mindustry.world.blocks.defense.*;
 
 public class DefenseBlocks extends BlockList implements ContentList{
     public static Block copperWall, copperWallLarge, scrapWall, scrapWallLarge, denseAlloyWall, denseAlloyWallLarge, chromiumWall, chromiumWallLarge, thoriumWall, thoriumWallLarge, door, doorLarge,
-            phaseWall, phaseWallLarge, surgeWall, surgeWallLarge, mender, mendProjector, overdriveProjector, forceProjector, shockMine;
+            phaseWall, phaseWallLarge, surgeWall, surgeWallLarge, mender, mendProjector, overdriveProjector, forceProjector, shockMine,
+            stoneWall;
 
     @Override
     public void load(){
@@ -128,6 +129,10 @@ public class DefenseBlocks extends BlockList implements ContentList{
             tileDamage = 7f;
             length = 10;
             tendrils = 5;
+        }};
+
+        stoneWall = new Wall("stone-wall"){{
+            health = 20 * wallHealthMultiplier;
         }};
 
         /*thoriumWallEXTRALarge = new Wall("thorium-wall-extralarge"){{

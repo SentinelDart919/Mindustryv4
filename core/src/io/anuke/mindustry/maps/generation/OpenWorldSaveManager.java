@@ -67,6 +67,7 @@ public class OpenWorldSaveManager{
             meta.playerX = val.getFloat("playerX", 0f);
             meta.playerY = val.getFloat("playerY", 0f);
             meta.playerTeam = val.getInt("playerTeam", Team.blue.ordinal());
+            meta.techTree = val.getString("techTree", "");
             return meta;
         }catch(Exception e){
             e.printStackTrace();
@@ -89,7 +90,8 @@ public class OpenWorldSaveManager{
         sb.append("  \"build\": ").append(meta.build).append(",\n");
         sb.append("  \"playerX\": ").append(meta.playerX).append(",\n");
         sb.append("  \"playerY\": ").append(meta.playerY).append(",\n");
-        sb.append("  \"playerTeam\": ").append(meta.playerTeam).append("\n");
+        sb.append("  \"playerTeam\": ").append(meta.playerTeam).append(",\n");
+        sb.append("  \"techTree\": \"").append(meta.techTree == null ? "" : meta.techTree).append("\"\n");
         sb.append("}");
         metaFile.writeString(sb.toString(), false);
     }
@@ -330,5 +332,6 @@ public class OpenWorldSaveManager{
         public int build = 0;
         public float playerX, playerY;
         public int playerTeam = Team.blue.ordinal();
+        public String techTree = "";
     }
 }

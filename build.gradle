@@ -322,7 +322,7 @@ project(":kryonet") {
             implementation "com.github.anuken:ucore:$uCoreVersion"
         }
         implementation "org.lz4:lz4-java:1.4.1"
-        implementation 'com.github.Anuken:kryonet:53b10247b1'
+        implementation 'com.github.Anuken:kryonet:a64d2280880e80566ca1bdaffa55de43e51cad38'
         implementation 'com.github.Anuken:WaifUPnP:05eb46bc577fd7674596946ba288c96c0cedd893'
     }
 }

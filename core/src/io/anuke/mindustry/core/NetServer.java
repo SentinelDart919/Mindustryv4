@@ -2,10 +2,13 @@ package io.anuke.mindustry.core;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Colors;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.LongSet;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.annotations.Annotations.Loc;
@@ -21,6 +24,7 @@ import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.Version;
 import io.anuke.mindustry.gen.Call;
 import io.anuke.mindustry.gen.RemoteReadServer;
+import io.anuke.mindustry.maps.generation.ChunkManager;
 import io.anuke.mindustry.net.*;
 import io.anuke.mindustry.net.Administration.PlayerInfo;
 import io.anuke.mindustry.net.Packets.*;
@@ -62,11 +66,21 @@ public class NetServer extends Module{
     private final static Array<Entity> returnArray = new Array<>();
     /**If a player goes away of their server-side coordinates by this distance, they get teleported back.*/
     private final static float correctDist = 16f;
+    /** Max chunks serialized/generated for a client per tick, so open-world chunk delivery never freezes the host. */
+    private static final int MAX_CHUNKS_PER_TICK = 3;
+    /** How far around each connected client the server prefetches chunks, past their render radius so terrain arrives before it becomes visible. */
+    private static final int PUSH_RADIUS = ChunkManager.RENDER_RADIUS + 1;
 
     public final Administration admins = new Administration();
 
     /**Maps connection IDs to players.*/
     private IntMap<Player> connections = new IntMap<>();
+    /**Pending open-world chunk requests per connection, drained at a fixed rate. */
+    private final IntMap<Array<long[]>> chunkRequestQueues = new IntMap<>();
+    /**Deduplication keysets aligned with {@link #chunkRequestQueues}. */
+    private final IntMap<LongSet> chunkQueueKeys = new IntMap<>();
+    /**Chunk keys already pushed to each connection; the server only pushes chunks outside this set, so clients are never re-delivered terrain they already own. */
+    private final IntMap<LongSet> sentChunks = new IntMap<>();
     private boolean closing = false;
 
     private ByteBuffer writeBuffer = ByteBuffer.allocate(127);
@@ -222,6 +236,151 @@ public class NetServer extends Module{
             if(player == null) return;
             RemoteReadServer.readPacket(packet.writeBuffer, packet.type, player);
         });
+
+        Net.handleServer(ChunkRequest.class, (id, request) -> {
+            netServer.serveChunkRequest(id, request);
+        });
+    }
+
+    /** Queues a client's open-world chunk requests; they are served with the push stream in {@link #pushChunks()}. */
+    void serveChunkRequest(int id, ChunkRequest request){
+        if(!world.isOpenWorld() || world.chunks() == null) return;
+        Array<long[]> queue = chunkRequestQueues.get(id);
+        LongSet keys = chunkQueueKeys.get(id);
+        if(queue == null){
+            queue = new Array<>();
+            keys = new LongSet();
+            chunkRequestQueues.put(id, queue);
+            chunkQueueKeys.put(id, keys);
+        }
+        for(long key : request.keys){
+            if(keys.add(key)){
+                queue.add(new long[]{ (int)(key >> 32), (int)key });
+            }
+        }
+    }
+
+    /** Pushes chunks to connected clients. */
+    private void pushChunks(){
+        if(!world.isOpenWorld() || world.chunks() == null) return;
+
+        //prefill each connection's queue with chunks in its player's push radius that it hasn't received yet
+        for(int i = 0; i < playerGroup.size(); i++){
+            Player player = playerGroup.all().get(i);
+            if(player == null || player.con == null || !player.con.isConnected() || !player.con.hasConnected) continue;
+
+            int id = player.con.id;
+            Array<long[]> queue = chunkRequestQueues.get(id);
+            LongSet keys = chunkQueueKeys.get(id);
+            if(queue == null){
+                queue = new Array<>();
+                keys = new LongSet();
+                chunkRequestQueues.put(id, queue);
+                chunkQueueKeys.put(id, keys);
+            }
+            LongSet sent = sentChunks.get(id);
+            if(sent == null){
+                sent = new LongSet();
+                sentChunks.put(id, sent);
+            }
+
+            int pCX = MathUtils.floor(player.x / (ChunkManager.CHUNK_SIZE * tilesize));
+            int pCY = MathUtils.floor(player.y / (ChunkManager.CHUNK_SIZE * tilesize));
+
+            for(int r = 0; r <= PUSH_RADIUS; r++){
+                for(int dx = -r; dx <= r; dx++){
+                    for(int dy = -r; dy <= r; dy++){
+                        if(Math.max(Math.abs(dx), Math.abs(dy)) != r) continue;
+                        long key = ChunkManager.packKey(pCX + dx, pCY + dy);
+                        if(sent.contains(key) || keys.contains(key)) continue;
+                        keys.add(key);
+                        queue.add(new long[]{pCX + dx, pCY + dy});
+                    }
+                }
+            }
+
+            for(LongSet.LongSetIterator it = sent.iterator(); it.hasNext; ){
+                long k = it.next();
+                if(Math.max(Math.abs(ChunkManager.keyCx(k) - pCX), Math.abs(ChunkManager.keyCy(k) - pCY)) > PUSH_RADIUS + 1){
+                    it.remove();
+                }
+            }
+        }
+
+        IntArray drained = null;
+        for(IntMap.Entry<Array<long[]>> entry : chunkRequestQueues){
+            int id = entry.key;
+            NetConnection con = Net.getConnection(id);
+            if(con == null || !con.isConnected()){
+                if(drained == null) drained = new IntArray();
+                drained.add(id);
+                continue;
+            }
+            Array<long[]> queue = entry.value;
+            LongSet sent = sentChunks.get(id);
+            if(sent == null){
+                sent = new LongSet();
+                sentChunks.put(id, sent);
+            }
+            int budget = Math.min(MAX_CHUNKS_PER_TICK, queue.size);
+            Array<byte[]> payloads = new Array<>();
+            for(int i = 0; i < budget; i++){
+                long[] key = queue.pop();
+                byte[] data = world.chunks().serializeChunkAt((int)key[0], (int)key[1]);
+                if(data != null){
+                    payloads.add(data);
+                    sent.add(ChunkManager.packKey((int)key[0], (int)key[1]));
+                }
+            }
+            if(payloads.size > 0){
+                sendChunkBatch(id, buildChunkBatch(payloads));
+            }
+            if(queue.size == 0){
+                if(drained == null) drained = new IntArray();
+                drained.add(id);
+            }
+        }
+        if(drained != null){
+            for(int i = 0; i < drained.size; i++){
+                int id = drained.get(i);
+                chunkRequestQueues.remove(id);
+                chunkQueueKeys.remove(id);
+            }
+        }
+    }
+
+    /** Serializes all currently-dirty chunks and broadcasts them to every connected client. */
+    private void sendDirtyChunks(){
+        if(!world.isOpenWorld() || world.chunks() == null) return;
+        Array<byte[]> payloads = world.chunks().takeDirtyChunkPayloads();
+        if(payloads.size == 0) return;
+        byte[] bytes = buildChunkBatch(payloads);
+        for(NetConnection con : Net.getConnections()){
+            sendChunkBatch(con.id, bytes);
+        }
+    }
+
+    private static byte[] buildChunkBatch(Array<byte[]> payloads){
+        try{
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(baos);
+            out.writeInt(payloads.size);
+            for(byte[] data : payloads){
+                out.writeInt(data.length);
+                out.write(data);
+            }
+            out.flush();
+            return baos.toByteArray();
+        }catch(IOException e){
+            e.printStackTrace();
+            return new byte[4];
+        }
+    }
+
+    private static void sendChunkBatch(int id, byte[] bytes){
+        ChunkStream cs = new ChunkStream();
+        cs.stream = new ByteArrayInputStream(bytes);
+        Net.sendStream(id, cs);
     }
 
     /** Sends a raw byte[] snapshot to a client, splitting up into chunks when needed.*/
@@ -279,6 +438,9 @@ public class NetServer extends Module{
             Call.sendMessage("[accent]" + player.name + "[accent] has disconnected.");
             Call.onPlayerDisconnect(player.id);
         }
+        netServer.chunkRequestQueues.remove(player.con.id);
+        netServer.chunkQueueKeys.remove(player.con.id);
+        netServer.sentChunks.remove(player.con.id);
         player.remove();
         netServer.connections.remove(player.con.id);
     }
@@ -520,7 +682,16 @@ public class NetServer extends Module{
             }
 
             returnArray.clear();
-            if(represent.isClipped()){
+            if(world.isOpenWorld()){
+                //open world: the host's entity trees only cover the host's own 352x352 window, so the tree-based
+                //clipping below drops entities near a remote client (its units freeze on screen). Cull by the
+                //client's own viewport instead - it already holds this client's position, far from the host.
+                for(Entity entity : group.all()){
+                    if(((SyncTrait) entity).isSyncing() && viewport.contains(entity.getX(), entity.getY())){
+                        returnArray.add(entity);
+                    }
+                }
+            }else if(represent.isClipped()){
                 EntityQuery.getNearby(group, viewport, entity -> {
                     if(((SyncTrait) entity).isSyncing() && viewport.contains(entity.getX(), entity.getY())){
                         returnArray.add(entity);
@@ -598,6 +769,8 @@ public class NetServer extends Module{
     }
 
     void sync(){
+        sendDirtyChunks();
+        pushChunks();
 
         try{
 

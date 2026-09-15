@@ -219,7 +219,7 @@ public class Shaders{
 
     /** Composites the water surface onto the scene, with the reflection buffer
      * (Renderer.reflectSurface) sampled at the same distorted coordinates, masked by its alpha
-     * and washed toward refTint. */
+     * and washed toward the water color sampled from the scene. */
     public static class Water extends SurfaceShader{
         /** Reflection buffer texture; null disables reflections. */
         public Texture reflection;

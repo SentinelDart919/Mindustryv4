@@ -17,6 +17,7 @@ import io.anuke.mindustry.entities.traits.TargetTrait;
 import io.anuke.mindustry.entities.units.types.BlockDefenseDrone;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.net.Net;
 import io.anuke.ucore.entities.trait.Entity;
 import io.anuke.mindustry.sounds.Sounds;
 import io.anuke.mindustry.world.Block;
@@ -197,7 +198,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
                 world.indexer.notifyTileDamaged(this);
             }
 
-            if(tile.getTeam() == Team.themass){
+            if(tile.getTeam() == Team.themass && !Net.client()){
                 MassAI.onDamage();
 
                 if(Mathf.chance(0.4)){
@@ -206,7 +207,7 @@ public class TileEntity extends BaseEntity implements TargetTrait, HealthTrait{
                 }
             }
 
-            if(tile.block().defenseDrones){
+            if(tile.block().defenseDrones && !Net.client()){
                 for(int i = defenseDronesCount; i < tile.block().maxDefenseDrones; i++){
                     BlockDefenseDrone drone = (BlockDefenseDrone) tile.block().defenseDroneType.create(tile.getTeam());
                     drone.leader = this;

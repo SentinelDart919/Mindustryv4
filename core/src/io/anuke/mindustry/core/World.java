@@ -122,6 +122,8 @@ public class World extends Module{
         int worldSize = ChunkManager.CHUNK_SIZE * (ChunkManager.RENDER_RADIUS * 2 + 1);
         createTiles(worldSize, worldSize);
         EntityQuery.resizeTree(0, 0, worldSize * tilesize, worldSize * tilesize);
+
+        setMap(new Map("Open World", new MapMeta(0, new ObjectMap<>(), worldSize, worldSize, null), true, () -> null));
     }
 
     public void endOpenWorld(){
@@ -245,9 +247,16 @@ public class World extends Module{
      * A WorldLoadEvent will be fire.
      */
     public void endMapLoad(){
+        if(openWorldMode){
+            generating = false;
+            Events.fire(new WorldLoadEvent());
+            return;
+        }
+
         for(int x = 0; x < tiles.length; x++){
             for(int y = 0; y < tiles[0].length; y++){
                 Tile tile = tiles[x][y];
+                if(tile == null) continue;
                 tile.updateOcclusion();
 
                 if(tile.floor() instanceof OreBlock && tile.hasCliffs()){
@@ -311,6 +320,10 @@ public class World extends Module{
         try{
             generator.loadTileData(tiles, MapIO.readTileData(map, true), map.meta.hasOreGen(), Mathf.random(99999));
             state.darkness = Float.parseFloat(map.meta.tags.get("darkness", "0"));
+
+            String tech = map.meta.tags.get("tech", "");
+            state.techTree = tech.isEmpty() || tech.equals(io.anuke.mindustry.game.TechTree.defaultTech) ? null : tech;
+
             if(!headless && renderer != null){
                 renderer.weather.setRain(map.meta.tags.get("rain", "0").equals("1"));
             }

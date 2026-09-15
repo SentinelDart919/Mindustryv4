@@ -14,14 +14,14 @@ import static io.anuke.mindustry.Vars.*;
 
 /**
  * Hierarchical pathfinding (HPA*) over open-world chunks.
- *
+ * <p>
  * Each loaded chunk is abstracted into entrance nodes on its borders (midpoints of maximal
  * runs of passable border tiles) plus connectivity components of its interior. Intra-chunk
  * edges connect entrance nodes sharing a component; inter-chunk edges connect entrance nodes
  * of adjacent chunks whose border runs overlap. A coarse A* over this tiny graph produces a
  * corridor of waypoints that units steer along when the fine-grained flow field has no
  * coverage (e.g. targets far outside the 352-tile window).
- *
+ * <p>
  * All abstraction data is cached per chunk and invalidated automatically through
  * {@link WorldChunk#pathStamp}, so there is no explicit lifecycle coupling with the
  * ChunkManager. Unloaded or cold-stored chunks simply have no nodes.
@@ -29,8 +29,8 @@ import static io.anuke.mindustry.Vars.*;
 public class ChunkWaypointGraph{
     private static final int CSIZE = ChunkManager.CHUNK_SIZE;
     private static final int SIDE_LEFT = 0, SIDE_RIGHT = 1, SIDE_BOTTOM = 2, SIDE_TOP = 3;
-    private static final int MAX_NODES_PER_CHUNK = 60;
-    private static final int MAX_EXPANSIONS = 600;
+    private static final int MAX_NODES_PER_CHUNK = 120;
+    private static final int MAX_EXPANSIONS = 3000;
     private static final int MAX_CACHE = 1024;
 
     private static int nextUid = 1;
@@ -43,8 +43,11 @@ public class ChunkWaypointGraph{
 
     /**
      * Finds a coarse chunk-level path. All coordinates are world tile coordinates.
-     * Returns packed waypoints ((x << 32) | y), ending with the exact destination tile,
-     * or null if either endpoint is not resident/unreachable.
+     * Returns packed waypoints ((x << 32) | y), ending with the exact destination tile when
+     * the goal chunk is resident, or null if the start is not resident/unreachable.
+     * Goals in ungenerated/cold territory still produce a corridor that leads as far as the
+     * loaded frontier in the goal direction; re-querying from the unit's new position keeps
+     * extending it as more chunks load.
      */
     public LongArray findPath(float fromX, float fromY, float toX, float toY){
         ChunkManager cm = world.isOpenWorld() ? world.chunks() : null;
@@ -54,24 +57,43 @@ public class ChunkWaypointGraph{
         int tcx = MathUtils.floor(toX / CSIZE), tcy = MathUtils.floor(toY / CSIZE);
 
         WorldChunk startChunk = cm.peekChunk(scx, scy);
-        WorldChunk goalChunk = cm.peekChunk(tcx, tcy);
-        if(startChunk == null || startChunk.tiles == null || goalChunk == null || goalChunk.tiles == null){
-            return null;
-        }
+        if(startChunk == null || startChunk.tiles == null) return null;
 
         ChunkNodes start = getNodes(cm, scx, scy);
-        ChunkNodes goal = getNodes(cm, tcx, tcy);
-        if(start == null || goal == null) return null;
+        if(start == null) return null;
 
         int slx = clampLocal((int)fromX - scx * CSIZE), sly = clampLocal((int)fromY - scy * CSIZE);
         int glx = clampLocal((int)toX - tcx * CSIZE), gly = clampLocal((int)toY - tcy * CSIZE);
 
-        int startNode = nearestNodeInComponent(start, slx, sly);
-        int goalNode = nearestNodeInComponent(goal, glx, gly);
-        if(startNode < 0 || goalNode < 0) return null;
+        //solid endpoints (cores, walls, orders onto trees/lakes) snap to the nearest passable tile so
+        //attacks on structures and long-range orders still produce a corridor into the destination chunk
+        if(start.comp[slx + sly * CSIZE] == 0){
+            int[] snapped = nearestPassable(start, slx, sly);
+            if(snapped == null) return null;
+            slx = snapped[0];
+            sly = snapped[1];
+        }
 
-        //trivial case: both endpoints in one chunk, same component -> straight shot
-        if(start == goal && start.nComp[startNode] == goal.nComp[goalNode]){
+        int startNode = nearestNodeInComponent(start, slx, sly);
+        if(startNode < 0) return null;
+
+        WorldChunk goalChunk = cm.peekChunk(tcx, tcy);
+        ChunkNodes goal = goalChunk != null && goalChunk.tiles != null ? getNodes(cm, tcx, tcy) : null;
+        int goalNode = -1;
+        if(goal != null){
+            if(goal.comp[glx + gly * CSIZE] == 0){
+                int[] snapped = nearestPassable(goal, glx, gly);
+                if(snapped == null){
+                    goal = null;
+                }else{
+                    glx = snapped[0];
+                    gly = snapped[1];
+                }
+            }
+            if(goal != null) goalNode = nearestNodeInComponent(goal, glx, gly);
+        }
+
+        if(goal != null && goalNode >= 0 && start == goal && start.nComp[startNode] == goal.nComp[goalNode]){
             LongArray out = new LongArray(2);
             out.add(packWorld(scx, scy, start.nLx[startNode], start.nLy[startNode]));
             out.add(packWorld(tcx, tcy, glx, gly));
@@ -95,6 +117,8 @@ public class ChunkWaypointGraph{
         ctx.push(startSlot, heuristic(nodeWx(startNodes, startNode), nodeWy(startNodes, startNode), gxw, gyw));
 
         int goalSlot = -1;
+        int bestSlot = startSlot;
+        float bestH = heuristic(nodeWx(startNodes, startNode), nodeWy(startNodes, startNode), gxw, gyw);
         int expansions = 0;
 
         while(ctx.heapSize > 0){
@@ -102,31 +126,39 @@ public class ChunkWaypointGraph{
             if(ctx.closed.items[cur]) continue;
             ctx.closed.items[cur] = true;
 
-            if(ctx.uids.items[cur] == goalNodes.uid && ctx.nodes.items[cur] == goalNode){
+            if(goalNodes != null && goalNode >= 0 && ctx.uids.items[cur] == goalNodes.uid && ctx.nodes.items[cur] == goalNode){
                 goalSlot = cur;
                 break;
+            }
+
+            float h = ctx.f.items[cur] - ctx.g.items[cur];
+            if(h < bestH){
+                bestH = h;
+                bestSlot = cur;
             }
             if(++expansions > MAX_EXPANSIONS) break;
 
             expand(ctx, cm, cur, gxw, gyw);
         }
 
-        if(goalSlot < 0) return null;
+        int target = goalSlot >= 0 ? goalSlot : bestSlot;
+        if(target < 0 || (goalSlot < 0 && bestSlot == startSlot)) return null;
 
         //reconstruct waypoint chain (world tile coords stored per slot)
         LongArray out = new LongArray();
-        for(int cur = goalSlot; cur != -1; cur = ctx.parent.items[cur]){
+        for(int cur = target; cur != -1; cur = ctx.parent.items[cur]){
             out.add(packWorld(0, 0, ctx.wx.items[cur], ctx.wy.items[cur]));
         }
         out.reverse();
 
-        //exact destination last
-        long last = out.peek();
-        int lx = (int)(last >> 32), ly = (int)last;
-        if(lx != tcx * CSIZE + glx || ly != tcy * CSIZE + gly){
-            out.add(packWorld(tcx, tcy, glx, gly));
+        if(goalSlot >= 0){
+            long last = out.peek();
+            int lx = (int)(last >> 32), ly = (int)last;
+            if(lx != tcx * CSIZE + glx || ly != tcy * CSIZE + gly){
+                out.add(packWorld(tcx, tcy, glx, gly));
+            }
         }
-        return out;
+        return Pathfinder.decimate(out);
     }
 
     /** Expands implicit edges of the node stored at {@code slot}: same-component entrances + overlapping foreign border runs. */
@@ -204,6 +236,22 @@ public class ChunkWaypointGraph{
             }
         }
         return best;
+    }
+
+    /** Snaps an impassable local point to the nearest passable tile inside its chunk (ring search), or null when none exists. */
+    private int[] nearestPassable(ChunkNodes n, int lx, int ly){
+        if(n.comp[lx + ly * CSIZE] != 0) return new int[]{lx, ly};
+        for(int r = 1; r < CSIZE; r++){
+            for(int dy = -r; dy <= r; dy++){
+                for(int dx = -r; dx <= r; dx++){
+                    if(Math.abs(dx) != r && Math.abs(dy) != r) continue;
+                    int nx = lx + dx, ny = ly + dy;
+                    if(nx < 0 || ny < 0 || nx >= CSIZE || ny >= CSIZE) continue;
+                    if(n.comp[nx + ny * CSIZE] != 0) return new int[]{nx, ny};
+                }
+            }
+        }
+        return null;
     }
 
     /** Builds or returns the cached abstraction for a chunk; null when the chunk is not resident. */
@@ -378,7 +426,7 @@ public class ChunkWaypointGraph{
         final FloatArray f = new FloatArray();
         final IntArray parent = new IntArray();
         final BooleanArray closed = new BooleanArray();
-        final IntArray heap = new IntArray();
+        int[] heap = new int[64];
         int heapSize = 0;
 
         int slot(long uid, int node){
@@ -400,50 +448,48 @@ public class ChunkWaypointGraph{
 
         void push(int slot, float priority){
             f.items[slot] = priority;
-            if(heapSize >= heap.items.length){
-                heap.add(slot);
-            }else{
-                heap.items[heapSize] = slot;
+            if(heapSize >= heap.length){
+                heap = java.util.Arrays.copyOf(heap, heap.length * 2);
             }
-            heapSize++;
+            heap[heapSize++] = slot;
             siftUp(heapSize - 1);
         }
 
         int pop(){
-            int root = heap.items[0];
+            int root = heap[0];
             heapSize--;
             if(heapSize > 0){
-                heap.items[0] = heap.items[heapSize];
+                heap[0] = heap[heapSize];
                 siftDown(0);
             }
             return root;
         }
 
         private void siftUp(int i){
-            int v = heap.items[i];
+            int v = heap[i];
             float fv = f.items[v];
             while(i > 0){
                 int p = (i - 1) / 2;
-                int pv = heap.items[p];
+                int pv = heap[p];
                 if(f.items[pv] <= fv) break;
-                heap.items[i] = pv;
+                heap[i] = pv;
                 i = p;
             }
-            heap.items[i] = v;
+            heap[i] = v;
         }
 
         private void siftDown(int i){
-            int v = heap.items[i];
+            int v = heap[i];
             float fv = f.items[v];
             while(true){
                 int c = i * 2 + 1;
                 if(c >= heapSize) break;
-                if(c + 1 < heapSize && f.items[heap.items[c + 1]] < f.items[heap.items[c]]) c++;
-                if(f.items[heap.items[c]] >= fv) break;
-                heap.items[i] = heap.items[c];
+                if(c + 1 < heapSize && f.items[heap[c + 1]] < f.items[heap[c]]) c++;
+                if(f.items[heap[c]] >= fv) break;
+                heap[i] = heap[c];
                 i = c;
             }
-            heap.items[i] = v;
+            heap[i] = v;
         }
     }
 }

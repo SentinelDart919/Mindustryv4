@@ -1,6 +1,7 @@
 package io.anuke.mindustry.core;
 
 import com.badlogic.gdx.utils.LongSet;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.Rock;
@@ -61,6 +62,7 @@ public class InfectionManager extends Module {
 
     @Override
     public void update() {
+        if(Net.client()) return;
         if (Vars.state.isPaused() || infectedQueue.size == 0) return;
 
         timer += Timers.delta();

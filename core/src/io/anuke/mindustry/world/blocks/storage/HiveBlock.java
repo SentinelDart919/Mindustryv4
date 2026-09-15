@@ -10,6 +10,7 @@ import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.graphics.Palette;
 import io.anuke.mindustry.graphics.Shaders;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.ucore.core.Graphics;
@@ -43,6 +44,8 @@ public class HiveBlock extends CoreBlock {
         super.update(tile);
         setAmbientSound("none", 0.09f);
         setBuildPlayerSound("none");
+
+        if(Net.client()) return;
 
         HiveEntity entity = tile.entity();
         if(entity == null) return;

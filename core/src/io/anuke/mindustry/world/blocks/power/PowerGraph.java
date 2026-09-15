@@ -96,6 +96,14 @@ public class PowerGraph{
         }
     }
 
+    /**Returns whether any tile in this graph is currently storing usable power.*/
+    public boolean hasPower(){
+        for(Tile producer : producers){
+            if(producer.entity != null && producer.entity.power != null && producer.entity.power.amount > 0.01f) return true;
+        }
+        return false;
+    }
+
     public void add(PowerGraph graph){
         for(Tile tile : graph.all){
             add(tile);

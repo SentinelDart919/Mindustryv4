@@ -5,13 +5,16 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.LongSet;
+import com.badlogic.gdx.utils.TimeUtils;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.content.blocks.OreBlocks;
+import io.anuke.mindustry.entities.Player;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.game.EventType.TileChangeEvent;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -20,12 +23,14 @@ import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.mindustry.world.blocks.OreBlock;
 import io.anuke.mindustry.world.blocks.storage.CoreBlock;
 import io.anuke.ucore.core.Events;
+import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.noise.RidgedPerlin;
 import io.anuke.ucore.noise.Simplex;
 import io.anuke.ucore.util.Geometry;
 import io.anuke.ucore.util.Log;
 import io.anuke.ucore.util.SeedRandom;
+import io.anuke.ucore.util.Strings;
 
 import static io.anuke.mindustry.Vars.*;
 
@@ -40,10 +45,20 @@ public class ChunkManager{
     public static final int COLD_CHECK_INTERVAL = 600;
     /** Max chunks generated, disk-loaded, or woken from cold storage proactively per tick; prevents frame spikes when crossing chunk borders. */
     private static final int MAX_CHUNK_LOADS_PER_TICK = 1;
+    /** Network clients drop chunks beyond this Chebyshev distance to the local player to bound memory (Minetest-style). Far chunks are re-fetched from the server on return. */
+    public static final int CLIENT_EVICT_RADIUS = RENDER_RADIUS + 2;
+
+    /** Chunks farther than this Chebyshev chunk distance from every player are never generated on demand.
+     * Far tile access returns the synthetic ocean tile instead, so build/extend systems (e.g. far AI base
+     * expansion) cannot force runaway generation outside the playable ring. Covers {@link #LOAD_RADIUS}
+     * and the network PUSH ({@code RENDER_RADIUS+1}) / {@link #CLIENT_EVICT_RADIUS} radii. */
+    public static final int GENERATE_RADIUS = RENDER_RADIUS + 2;
 
     private final LongMap<WorldChunk> loadedChunks = new LongMap<>();
     private final LongSet coreChunks = new LongSet();
     private final LongArray sweepScratch = new LongArray();
+    /** Scratch chunk centers of every player on this machine (host local player + connected clients); drives load/wake/unload/cold sweeps. */
+    private final Array<int[]> playerCenters = new Array<>(false, 8, int[].class);
     private final long worldSeed;
     private final Simplex sim;
     private final Simplex sim2;
@@ -58,8 +73,18 @@ public class ChunkManager{
     private String saveName;
     private final OpenWorldSaveManager saveManager = new OpenWorldSaveManager();
 
+    /** When true this manager is a network client: chunks are supplied by the server and never regenerated locally. */
+    private boolean netMode = false;
+    /** Chunk keys already requested from the server but not yet received; prevents request spam. */
+    private final LongSet requestedChunks = new LongSet();
+
     /** Incremented every time a new chunk is loaded/generated, used by systems tracking chunk changes. */
     public int chunkLoadCounter = 0;
+
+    /** Open world debug stats: milliseconds spent generating/loading chunks (see the "openworld-debug" setting). */
+    public static float lastChunkGenMs = 0f;
+    public static float totalChunkGenMs = 0f;
+    public static int chunksGenerated = 0;
 
     /** Tiles restored from disk that are already fog-discovered; swapped/drained by the FogRenderer. */
     private Array<Tile> discoverFill = new Array<>(), discoverDrain = new Array<>();
@@ -93,12 +118,113 @@ public class ChunkManager{
             if(chunk != null){
                 chunk.modified = true;
                 chunk.pathStamp++;
+                if(Net.server()) chunk.netDirty = true;
             }
         });
     }
 
     public long getSeed(){
         return worldSeed;
+    }
+
+    public boolean isNetMode(){
+        return netMode;
+    }
+
+    public void setNetMode(boolean netMode){
+        this.netMode = netMode;
+    }
+
+    /** Returns the set of chunk payloads that have changed since the last successful push to clients, and clears the dirty flags. */
+    public Array<byte[]> takeDirtyChunkPayloads(){
+        Array<byte[]> result = new Array<>();
+        for(WorldChunk chunk : loadedChunks.values()){
+            if(chunk.tiles != null && chunk.netDirty){
+                byte[] payload = saveManager.serializeChunk(chunk);
+                if(payload != null){
+                    result.add(payload);
+                    chunk.netDirty = false;
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Serializes a single chunk by world coordinate; generates it on demand if not loaded. Returns null if it could not be produced. */
+    public byte[] serializeChunkAt(int cx, int cy){
+        WorldChunk chunk = loadedChunks.get(packKey(cx, cy));
+        if(chunk == null){
+            chunk = getOrCreateChunk(cx, cy);
+        }
+        if(chunk == null) return null;
+        if(chunk.coldData != null || chunk.frozen){
+            wakeChunk(chunk);
+        }
+        if(chunk.tiles == null) return null;
+        return saveManager.serializeChunk(chunk);
+    }
+
+    /** Installs a chunk received from the server (or loaded from disk) into the loaded set, replacing any existing one. */
+    public void installChunk(ChunkManager.WorldChunk chunk){
+        if(chunk == null || chunk.tiles == null) return;
+        long key = packKey(chunk.cx, chunk.cy);
+
+        WorldChunk old = loadedChunks.get(key);
+        Tile[] prev = old != null && old.tiles != null ? old.tiles : null;
+        if(old != null && old != chunk){
+            //detach old entities before replacing
+            for(int i = 0; i < old.tiles.length; i++){
+                TileEntity entity = old.tiles[i].entity;
+                if(entity != null && entity.getGroup() != null){
+                    entity.remove();
+                }
+            }
+        }
+
+        chunk.restored = true;
+        chunk.modified = true;
+        chunk.netDirty = false;
+        chunk.frozen = false;
+        chunk.coldData = null;
+        chunk.generated = true;
+        chunk.pathStamp++;
+
+        loadedChunks.put(key, chunk);
+        requestedChunks.remove(key);
+        chunkLoadCounter++;
+
+        generatingChunk = true;
+        try{
+            updateChunkAndNeighborCliffs(chunk.cx, chunk.cy);
+        }finally{
+            generatingChunk = false;
+        }
+        world.indexer.indexChunk(chunk);
+        world.pathfinder.onChunkLive(chunk.cx, chunk.cy);
+
+        for(int i = 0; i < chunk.tiles.length; i++){
+            Tile tile = chunk.tiles[i];
+            tile.updateOcclusion();
+            if(tile.entity != null && !tile.entity.isDead()){
+                tile.entity.updateProximity();
+            }
+            if(tile.block() instanceof CoreBlock){
+                state.teams.get(tile.getTeam()).cores.add(tile);
+            }
+        }
+
+        if(prev != null){
+            Tile[] tiles = chunk.tiles;
+            int n = Math.min(prev.length, tiles.length);
+            for(int i = 0; i < n; i++){
+                Tile a = prev[i], b = tiles[i];
+                if(a == b) continue;
+                if(a.block() != b.block() || a.floor() != b.floor() || a.getTeam() != b.getTeam()
+                    || a.getElevation() != b.getElevation() || a.getRotation() != b.getRotation()){
+                    Events.fire(new TileChangeEvent(b));
+                }
+            }
+        }
     }
 
     public static long packKey(int cx, int cy){
@@ -129,6 +255,16 @@ public class ChunkManager{
                 return null;
             }
 
+            //network clients never regenerate terrain;
+            if(netMode){
+                requestChunk(cx, cy);
+                return null;
+            }
+            if(!canAutoGenerate(cx, cy)){
+                return null;
+            }
+            double pedro = Double.MAX_VALUE;
+            long start = TimeUtils.nanoTime();
             if(saveName != null){
                 chunk = saveManager.loadChunk(saveName, cx, cy);
             }
@@ -152,12 +288,50 @@ public class ChunkManager{
 
             loadedChunks.put(key, chunk);
             chunkLoadCounter++;
+            if(Net.server()) chunk.netDirty = true;
             updateChunkAndNeighborCliffs(cx, cy);
             world.indexer.indexChunk(chunk);
             world.pathfinder.onChunkLive(cx, cy);
+            reportChunkGenerated(cx, cy, TimeUtils.timeSinceNanos(start) / 1000000f);
         }
         chunk.lastAccessFrame = (long)Timers.time();
         return chunk;
+    }
+
+    /** Tracks chunk creation statistics and, with the "openworld-debug" setting enabled, reports each chunk
+     * creation to the log and, on a local game, to the chat. */
+    private void reportChunkGenerated(int cx, int cy, float ms){
+        lastChunkGenMs = ms;
+        totalChunkGenMs += ms;
+        chunksGenerated++;
+
+        if(!Settings.getBool("openworld-debug", false)) return;
+
+        float avg = totalChunkGenMs / Math.max(1, chunksGenerated);
+        Log.info("OpenWorld: chunk [{0}, {1}] ready in {2}ms (avg {3}ms, count {4})",
+            cx, cy, Strings.toFixed(ms, 1), Strings.toFixed(avg, 1), chunksGenerated);
+        if(!headless && ui != null){
+            ui.chatfrag.addMessage("[cyan]OpenWorld: chunk [white][" + cx + ", " + cy + "] in [white]" +
+                Strings.toFixed(ms, 1) + "ms [gray](avg " + Strings.toFixed(avg, 1) + "ms)", null);
+        }
+    }
+
+    /** Queues a request to the server for the given chunk (deduplicated). Client-side only. */
+    public void requestChunk(int cx, int cy){
+        if(!netMode || requestedChunks.contains(packKey(cx, cy))) return;
+        requestedChunks.add(packKey(cx, cy));
+    }
+
+    /** Returns and clears all chunk keys currently awaiting server data. Client-side only. */
+    public Array<long[]> pollChunkRequests(){
+        Array<long[]> result = new Array<>();
+        for(LongSet.LongSetIterator it = requestedChunks.iterator(); it.hasNext; ){
+            long key = it.next();
+            result.add(new long[]{keyCx(key), keyCy(key)});
+        }
+        requestedChunks.clear();
+        result.shrink();
+        return result;
     }
 
     /** Queues restored fog data from a disk-loaded chunk so the FogRenderer can paint it without full-window rescans. */
@@ -471,26 +645,43 @@ public class ChunkManager{
     }
 
     public void update(){
-        if(players.length == 0 || players[0] == null) return;
+        if(players.length == 0 || (players[0] == null && playerGroup.size() == 0)) return;
 
-        int playerCX = MathUtils.floor(players[0].x / (CHUNK_SIZE * tilesize));
-        int playerCY = MathUtils.floor(players[0].y / (CHUNK_SIZE * tilesize));
+        if(netMode){
+            updateClient();
+            return;
+        }
 
-        //load and wake chunks nearest-first, a limited number per tick to avoid lag spikes
+        playerCenters.clear();
+        for(int i = 0; i < playerGroup.size(); i++){
+            Player player = playerGroup.all().get(i);
+            if(player == null) continue;
+            playerCenters.add(new int[]{MathUtils.floor(player.x / (CHUNK_SIZE * tilesize)), MathUtils.floor(player.y / (CHUNK_SIZE * tilesize))});
+        }
+        if(playerCenters.size == 0 && players.length > 0 && players[0] != null){
+            playerCenters.add(new int[]{MathUtils.floor(players[0].x / (CHUNK_SIZE * tilesize)), MathUtils.floor(players[0].y / (CHUNK_SIZE * tilesize))});
+        }
+        if(playerCenters.size == 0) return;
+
+        //load and wake chunks nearest-first across all players, a limited number per tick to avoid lag spikes
         int budget = MAX_CHUNK_LOADS_PER_TICK;
         outer:
         for(int r = 0; r <= LOAD_RADIUS; r++){
-            for(int dx = -r; dx <= r; dx++){
-                for(int dy = -r; dy <= r; dy++){
-                    if(Math.max(Math.abs(dx), Math.abs(dy)) != r) continue;
-                    long key = packKey(playerCX + dx, playerCY + dy);
-                    WorldChunk chunk = loadedChunks.get(key);
-                    if(chunk == null){
-                        getOrCreateChunk(playerCX + dx, playerCY + dy);
-                        if(--budget <= 0) break outer;
-                    }else if(chunk.frozen || chunk.coldData != null){
-                        wakeChunk(chunk);
-                        if(--budget <= 0) break outer;
+            for(int i = 0; i < playerCenters.size; i++){
+                int pcx = playerCenters.items[i][0];
+                int pcy = playerCenters.items[i][1];
+                for(int dx = -r; dx <= r; dx++){
+                    for(int dy = -r; dy <= r; dy++){
+                        if(Math.max(Math.abs(dx), Math.abs(dy)) != r) continue;
+                        long key = packKey(pcx + dx, pcy + dy);
+                        WorldChunk chunk = loadedChunks.get(key);
+                        if(chunk == null){
+                            getOrCreateChunk(pcx + dx, pcy + dy);
+                            if(--budget <= 0) break outer;
+                        }else if(chunk.frozen || chunk.coldData != null){
+                            wakeChunk(chunk);
+                            if(--budget <= 0) break outer;
+                        }
                     }
                 }
             }
@@ -508,11 +699,32 @@ public class ChunkManager{
         int now = (int)Timers.time();
         if(now - lastUnloadCheck > UNLOAD_CHECK_INTERVAL){
             lastUnloadCheck = now;
-            unloadDistantChunks(playerCX, playerCY);
+            unloadDistantChunks();
         }
         if(now - lastColdCheck > COLD_CHECK_INTERVAL){
             lastColdCheck = now;
-            coldSweep(playerCX, playerCY);
+            coldSweep();
+        }
+    }
+
+    /** Network-client chunk handling: chunks come from the server (push); they are evicted beyond the view
+     * radius to bound memory and re-requested only when the local player approaches evicted territory. */
+    private void updateClient(){
+        int playerCX = MathUtils.floor(players[0].x / (CHUNK_SIZE * tilesize));
+        int playerCY = MathUtils.floor(players[0].y / (CHUNK_SIZE * tilesize));
+        for(int dx = -RENDER_RADIUS; dx <= RENDER_RADIUS; dx++){
+            for(int dy = -RENDER_RADIUS; dy <= RENDER_RADIUS; dy++){
+                if(!loadedChunks.containsKey(packKey(playerCX + dx, playerCY + dy))){
+                    getOrCreateChunk(playerCX + dx, playerCY + dy);
+                }
+            }
+        }
+        markActiveChunks();
+
+        int now = (int)Timers.time();
+        if(now - lastUnloadCheck > UNLOAD_CHECK_INTERVAL){
+            lastUnloadCheck = now;
+            clientEvict(playerCX, playerCY);
         }
     }
 
@@ -540,10 +752,11 @@ public class ChunkManager{
             }
         }
 
-        for(int i = 0; i < players.length; i++){
-            if(players[i] == null) continue;
-            int cx = MathUtils.floor(players[i].x / (CHUNK_SIZE * tilesize));
-            int cy = MathUtils.floor(players[i].y / (CHUNK_SIZE * tilesize));
+        for(int i = 0; i < playerGroup.size(); i++){
+            Player player = playerGroup.all().get(i);
+            if(player == null) continue;
+            int cx = MathUtils.floor(player.x / (CHUNK_SIZE * tilesize));
+            int cy = MathUtils.floor(player.y / (CHUNK_SIZE * tilesize));
             long key = packKey(cx, cy);
             WorldChunk chunk = loadedChunks.get(key);
             if(chunk != null) chunk.active = true;
@@ -555,9 +768,9 @@ public class ChunkManager{
      * but their tile entities are detached from the logic group so they cost zero update time.
      * Waking is instant since no data is destroyed. Runs every {@link #UNLOAD_CHECK_INTERVAL} ticks.
      */
-    private void unloadDistantChunks(int playerCX, int playerCY){
+    private void unloadDistantChunks(){
         for(WorldChunk chunk : loadedChunks.values()){
-            int dist = Math.max(Math.abs(chunk.cx - playerCX), Math.abs(chunk.cy - playerCY));
+            int dist = minDistToAnyPlayer(chunk.cx, chunk.cy);
 
             if(dist <= LOAD_RADIUS) continue;
             if(chunk.active) continue;
@@ -569,15 +782,15 @@ public class ChunkManager{
         }
     }
 
-    /** Compresses frozen chunks far outside the render window into compact byte payloads, freeing their object graphs. Unmodified pristine chunks are dropped outright - their terrain regenerates deterministically from the seed. */
-    private void coldSweep(int playerCX, int playerCY){
+    /** Compresses frozen chunks far outside every player's render window into compact byte payloads, freeing their object graphs. Unmodified pristine chunks are dropped outright - their terrain regenerates deterministically from the seed. */
+    private void coldSweep(){
         sweepScratch.clear();
 
         for(LongMap.Entry<WorldChunk> entry : loadedChunks.entries()){
             WorldChunk chunk = entry.value;
             if(!chunk.frozen || chunk.tiles == null) continue;
 
-            int dist = Math.max(Math.abs(chunk.cx - playerCX), Math.abs(chunk.cy - playerCY));
+            int dist = minDistToAnyPlayer(chunk.cx, chunk.cy);
             if(dist <= COLD_RADIUS) continue;
             if(chunk.active) continue;
             if(coreChunks.contains(packKey(chunk.cx, chunk.cy))) continue;
@@ -598,6 +811,71 @@ public class ChunkManager{
             }else{
                 loadedChunks.remove(sweepScratch.items[i]);
             }
+        }
+    }
+
+    /** Chebyshev distance from a chunk to the closest player center; keeps retention near any player, not just player 0. */
+    private int minDistToAnyPlayer(int cx, int cy){
+        int min = Integer.MAX_VALUE;
+        for(int i = 0; i < playerCenters.size; i++){
+            int dist = Math.max(Math.abs(cx - playerCenters.items[i][0]), Math.abs(cy - playerCenters.items[i][1]));
+            if(dist < min) min = dist;
+        }
+        return min;
+    }
+
+    private boolean canAutoGenerate(int cx, int cy){
+        if(generatingChunk) return true;
+        ensurePlayerCenters();
+        if(playerCenters.size == 0) return true;
+        for(int i = 0; i < playerCenters.size; i++){
+            if(Math.max(Math.abs(cx - playerCenters.items[i][0]), Math.abs(cy - playerCenters.items[i][1])) <= GENERATE_RADIUS){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Populates player centers from the current entity groups if {@link #update()} has not run yet this tick
+     * Does nothing when they are already known. */
+    private void ensurePlayerCenters(){
+        if(playerCenters.size > 0) return;
+        for(int i = 0; i < playerGroup.size(); i++){
+            Player player = playerGroup.all().get(i);
+            if(player != null){
+                playerCenters.add(new int[]{MathUtils.floor(player.x / (CHUNK_SIZE * tilesize)), MathUtils.floor(player.y / (CHUNK_SIZE * tilesize))});
+            }
+        }
+        if(playerCenters.size == 0 && players.length > 0 && players[0] != null){
+            playerCenters.add(new int[]{MathUtils.floor(players[0].x / (CHUNK_SIZE * tilesize)), MathUtils.floor(players[0].y / (CHUNK_SIZE * tilesize))});
+        }
+    }
+
+    /** Network-client eviction: chunks far enough from the player are dropped to bound memory (Minetest-style).
+     * They are re-fetched from the server when the player returns. */
+    private void clientEvict(int playerCX, int playerCY){
+        sweepScratch.clear();
+        for(LongMap.Entry<WorldChunk> entry : loadedChunks.entries()){
+            WorldChunk chunk = entry.value;
+            int dist = Math.max(Math.abs(chunk.cx - playerCX), Math.abs(chunk.cy - playerCY));
+            if(dist <= CLIENT_EVICT_RADIUS) continue;
+            if(chunk.active) continue;
+            if(coreChunks.contains(entry.key)) continue;
+            sweepScratch.add(entry.key);
+        }
+
+        for(int i = 0; i < sweepScratch.size; i++){
+            long key = sweepScratch.items[i];
+            WorldChunk chunk = loadedChunks.get(key);
+            if(chunk == null || chunk.tiles == null) continue;
+            for(int j = 0; j < chunk.tiles.length; j++){
+                TileEntity entity = chunk.tiles[j].entity;
+                if(entity != null && entity.getGroup() != null){
+                    entity.remove();
+                }
+            }
+            loadedChunks.remove(key);
+            requestedChunks.remove(key);
         }
     }
 
@@ -867,6 +1145,8 @@ public class ChunkManager{
         public boolean frozen = false;
         /** Non-null when this chunk is compressed into cold storage; tiles/entities are freed and restored transparently on access. */
         public byte[] coldData = null;
+        /** Set when this chunk's tiles or entities changed and it needs to be re-sent to connected clients. Cleared after a successful push. */
+        public boolean netDirty = false;
         /** Bumped whenever this chunk's tile data mutates or is replaced; used by AI caches (e.g. the chunk waypoint graph) for invalidation. */
         public int pathStamp = 0;
         public long lastAccessFrame = 0;

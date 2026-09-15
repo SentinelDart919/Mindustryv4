@@ -49,6 +49,7 @@ public class UI extends SceneModule{
     public final BackgroundFragment backfrag = new BackgroundFragment();
     public final LoadingFragment loadfrag = new LoadingFragment();
     public final MapFragment mapfrag = new MapFragment();
+    public final PerformanceFragment perfrag = new PerformanceFragment();
 
     public AboutDialog about;
     public RestartDialog restart;
@@ -134,7 +135,12 @@ public class UI extends SceneModule{
 
     @Override
     public void update(){
-        if(disableUI) return;
+        PerfCounter.ui.begin();
+
+        if(disableUI){
+            PerfCounter.ui.end();
+            return;
+        }
 
         if(Graphics.drawing()) Graphics.end();
 
@@ -156,6 +162,8 @@ public class UI extends SceneModule{
 
         Graphics.end();
         Draw.color();
+
+        PerfCounter.ui.end();
     }
 
     @Override
@@ -197,6 +205,7 @@ public class UI extends SceneModule{
         listfrag.build(group);
         loadfrag.build(group);
         mapfrag.build(group);
+        perfrag.build(group);
     }
 
     @Override

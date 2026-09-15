@@ -27,6 +27,7 @@ import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BaseUnit;
@@ -250,6 +251,7 @@ public class MassAI {
     }
 
     public static void update() {
+        if(Net.client()) return;
         if (Vars.state.isPaused() || Vars.state.teams == null) return;
         if(Settings.getBool("massai-debug", false) != debug){
             setDebug(Settings.getBool("massai-debug", false));

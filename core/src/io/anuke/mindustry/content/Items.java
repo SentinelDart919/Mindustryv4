@@ -2,14 +2,16 @@ package io.anuke.mindustry.content;
 
 import com.badlogic.gdx.graphics.Color;
 import io.anuke.mindustry.game.ContentList;
+import io.anuke.mindustry.game.TechTree;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.ItemType;
 
 public class Items implements ContentList{
     public static Item stone, obsidian, scrap, copper, lead, densealloy, chromium, coal, titanium, thorium, silicon, plastanium, phasefabric, surgealloy, bluemicrochip,
-            biomatter, corruptedbiomatter, sand, blastCompound, pyratite;
-
+            biomatter, corruptedbiomatter, sand, blastCompound, pyratite,
+    // classic stuff
+    iron, steel, uranium, dirium;
     @Override
     public void load(){
         copper = new Item("copper", Color.valueOf("d99d73")){{
@@ -50,6 +52,7 @@ public class Items implements ContentList{
             flammability = 0.5f;
             hardness = 2;
             genOre = true;
+            setTechTrees(TechTree.create("Classic"),TechTree.defaultTech);
         }};
 
         titanium = new Item("titanium", Color.valueOf("8da1e3")){{
@@ -57,6 +60,7 @@ public class Items implements ContentList{
             hardness = 3;
             cost = 1.1f;
             genOre = true;
+            setTechTrees(TechTree.create("Classic"),TechTree.defaultTech);
         }};
 
         thorium = new Item("thorium", Color.valueOf("f9a3c7")){{
@@ -70,6 +74,7 @@ public class Items implements ContentList{
 
         stone = new Item("stone", Color.valueOf("777777")){{
             hardness = 3;
+            setTechTrees(TechTree.create("Classic"),TechTree.defaultTech);
         }};
 
         obsidian = new Item("obsidian", Color.valueOf("21002b")){{
@@ -125,6 +130,30 @@ public class Items implements ContentList{
         pyratite = new Item("pyratite", Color.valueOf("ffaa5f")){{
             flammability = 0.7f;
             explosiveness = 0.2f;
+        }};
+        iron = new Item("iron", Color.valueOf("a68a84")){{
+            type = ItemType.material;
+            cost = 0.9f;
+            genOre = true;
+            setTechTree(TechTree.create("Classic"));
+        }};
+
+        steel = new Item("steel", Color.valueOf("f2f2f2")){{
+            type = ItemType.material;
+            cost = 1.2f;
+            setTechTree(TechTree.create("Classic"));
+        }};
+
+        dirium = new Item("dirium", Color.valueOf("a7f3cb")){{
+            type = ItemType.material;
+            cost = 1.85f;
+            setTechTree(TechTree.create("Classic"));
+        }};
+
+        uranium = new Item("uranium", Color.valueOf("abe183")){{
+            radioactivity = 1.0f;
+            genOre = true;
+            setTechTree(TechTree.create("Classic"));
         }};
     }
 
