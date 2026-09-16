@@ -22,6 +22,7 @@ import io.anuke.mindustry.world.blocks.BlockPart;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.Entities;
+import io.anuke.ucore.entities.impl.BaseEntity;
 import io.anuke.ucore.util.Bits;
 
 import java.io.*;
@@ -260,6 +261,7 @@ public class NetworkIO{
             player.resetNoAdd();
             player.read(stream, TimeUtils.millis());
             player.resetID(id);
+            BaseEntity.checkNextId(id);
             player.add();
 
             world.beginMapLoad();

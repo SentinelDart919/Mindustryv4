@@ -30,6 +30,7 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
 import io.anuke.ucore.core.Core;
 import io.anuke.ucore.core.Settings;
+import io.anuke.ucore.entities.impl.BaseEntity;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.Entities;
 import io.anuke.ucore.entities.EntityGroup;
@@ -345,6 +346,7 @@ public class NetClient extends Module{
                 if(entity == null){
                     entity = (SyncTrait) TypeTrait.getTypeByID(typeID).get(); //create entity from supplier
                     entity.resetID(id);
+                    BaseEntity.checkNextId(id);
                     if(!netClient.isEntityUsed(entity.getID())){
                         add = true;
                     }
