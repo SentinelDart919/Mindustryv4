@@ -39,8 +39,8 @@ public class Lightning extends TimedEntity implements DrawTrait, SyncTrait, Time
     private static final float hitRange = 30f;
     private static int lastSeed = 0;
 
-    private Array<PosTrait> lines = new Array<>();
-    private Color color = Palette.lancerLaser;
+    public Array<PosTrait> lines = new Array<>();
+    public Color color = Palette.lancerLaser;
 
     /**For pooling use only. Do not call directly!*/
     public Lightning(){

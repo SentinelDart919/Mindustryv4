@@ -63,6 +63,36 @@ public class Packets{
 
     }
 
+    /** Server-to-client stream of serialized open-world chunks. Byte layout: int count, then count*(int len + bytes). */
+    public static class ChunkStream extends Streamable{
+
+    }
+
+    /** Client-to-server request for specific open-world chunks by packed world-chunk key. */
+    public static class ChunkRequest implements Packet{
+        public long[] keys = new long[0];
+
+        @Override
+        public void write(ByteBuffer buffer){
+            buffer.putInt(keys.length);
+            for(long key : keys){
+                buffer.putInt((int)(key >> 32));
+                buffer.putInt((int)(key & 0xFFFFFFFFL));
+            }
+        }
+
+        @Override
+        public void read(ByteBuffer buffer){
+            int length = buffer.getInt();
+            keys = new long[length];
+            for(int i = 0; i < length; i++){
+                int x = buffer.getInt();
+                int y = buffer.getInt();
+                keys[i] = ((long)x << 32) | (y & 0xFFFFFFFFL);
+            }
+        }
+    }
+
     public static class ConnectPacket implements Packet{
         public int version;
         public String versionType;

@@ -143,13 +143,13 @@ public class BlockDefenseDrone extends FlyingUnit { // Copy paste of the Alpha D
     @Override
     public void write(DataOutput stream) throws IOException {
         super.write(stream);
-        stream.writeInt(leader == null ? -1 : leader.tile.id());
+        stream.writeLong(leader == null ? -1L : leader.tile.packedPosition());
     }
 
     @Override
     public void read(DataInput stream, long time) throws IOException {
         super.read(stream, time);
-        int id = stream.readInt();
+        long id = stream.readLong();
         Tile tile = world.tile(id);
         if(tile != null && tile.entity != null){
             leader = tile.entity;

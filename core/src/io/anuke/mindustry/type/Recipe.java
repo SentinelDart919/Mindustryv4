@@ -5,7 +5,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.OrderedMap;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.core.GameState.State;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.TechTree;
 import io.anuke.mindustry.game.UnlockableContent;
 import io.anuke.mindustry.ui.ContentDisplay;
 import io.anuke.mindustry.world.Block;
@@ -33,6 +35,8 @@ public class Recipe extends UnlockableContent{
     public RecipeVisibility visibility = RecipeVisibility.all;
     //the only gamemode in which the recipe shows up
     public GameMode mode;
+    /** A predicate that returns whether this recipe should be shown in a certain gamemode. */
+    public java.util.function.Predicate<GameMode> showIf;
     public boolean onlyCampaign;
     public boolean hidden;
     public boolean alwaysUnlocked;
@@ -61,11 +65,19 @@ public class Recipe extends UnlockableContent{
     public static Array<Recipe> getByCategory(Category category){
         returnArray.clear();
         for(Recipe recipe : content.recipes()){
-            if(recipe.category == category && recipe.visibility.shown() && (recipe.mode == state.mode || recipe.mode == null) && (!recipe.onlyCampaign || world.getSector() != null)){
+            if(recipe.category == category && recipe.visibility.shown() && 
+                    (recipe.mode == state.mode || recipe.mode == null || state.mode.infiniteResources) && 
+                    (recipe.showIf == null || recipe.showIf.test(state.mode) || recipe.techOverrideVisible()) &&
+                    (!recipe.onlyCampaign || world.getSector() != null) &&
+                    recipe.belongsToTech(state.techTree)){
                 returnArray.add(recipe);
             }
         }
         return returnArray;
+    }
+
+    public boolean techOverrideVisible(){
+        return state.techTree != null && !state.techTree.equals(TechTree.defaultTech) && belongsToTech(state.techTree);
     }
 
     public static Recipe getByResult(Block block){
@@ -93,10 +105,32 @@ public class Recipe extends UnlockableContent{
         return this;
     }
 
+    public Recipe setShowIf(java.util.function.Predicate<GameMode> showIf){
+        this.showIf = showIf;
+        return this;
+    }
+
     public Recipe setAlwaysUnlocked(boolean unlocked){
         this.alwaysUnlocked = unlocked;
         return this;
     }
+
+    @Override
+    public Recipe setTechTree(String techTree){
+        super.setTechTree(techTree);
+        return this;
+    }
+
+    public void addTechTree(String techTree){
+        super.addTechTree(techTree);
+    }
+
+    public void joinAllTechTrees(){
+        for(String tree : TechTree.all()){
+            super.addTechTree(tree);
+        }
+    }
+
 
     @Override
     public boolean alwaysUnlocked(){
@@ -105,6 +139,10 @@ public class Recipe extends UnlockableContent{
 
     @Override
     public boolean isHidden(){
+        GameMode mode = state.is(State.menu) ? GameMode.waves : state.mode;
+        if(mode.infiniteResources) return false;
+        if(techOverrideVisible()) return false;
+        if(showIf != null && techTree.size == 0 && !showIf.test(mode)) return true;
         return !visibility.shown() || hidden;
     }
 

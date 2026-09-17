@@ -1,5 +1,6 @@
 package io.anuke.mindustry.ai;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.content.blocks.Blocks;
 import io.anuke.mindustry.entities.units.BaseUnit;
@@ -123,24 +124,52 @@ public class WaveSpawner{
                 if(group.type.isFlying){
                     FlyerSpawn spawn = flySpawns.get(flyCount);
 
-                    float margin = 40f; //how far away from the edge flying units spawn
-                    spawnX = world.width() * tilesize / 2f + Mathf.sqrwavex(spawn.angle) * (world.width() / 2f * tilesize + margin);
-                    spawnY = world.height() * tilesize / 2f + Mathf.sqrwavey(spawn.angle) * (world.height() / 2f * tilesize + margin);
-                    spread = margin / 1.5f;
+                    if(world.isOpenWorld()){
+                        float playerX = players[0].x;
+                        float playerY = players[0].y;
+                        float flyRadius = world.width() * tilesize / 2f + 40f;
+                        spawnX = playerX + Mathf.sqrwavex(spawn.angle) * flyRadius;
+                        spawnY = playerY + Mathf.sqrwavey(spawn.angle) * flyRadius;
+                    }else{
+                        float margin = 40f;
+                        spawnX = world.width() * tilesize / 2f + Mathf.sqrwavex(spawn.angle) * (world.width() / 2f * tilesize + margin);
+                        spawnY = world.height() * tilesize / 2f + Mathf.sqrwavey(spawn.angle) * (world.height() / 2f * tilesize + margin);
+                    }
+                    spread = 40f / 1.5f;
 
                     flyCount++;
                 }else{ //make sure it works for non-dynamic spawns
                     GroundSpawn spawn = groundSpawns.get(groundCount);
 
                     if(dynamicSpawn){
-                        checkQuadrant(spawn.x, spawn.y);
-                        if(!getQuad(spawn.x, spawn.y)){
-                            findLocation(spawn);
+                        if(world.isOpenWorld()){
+                            int qcx = MathUtils.floor(players[0].x / tilesize / quadsize);
+                            int qcy = MathUtils.floor(players[0].y / tilesize / quadsize);
+                            int localX = spawn.x - qcx + openWorldQuadRadius();
+                            int localY = spawn.y - qcy + openWorldQuadRadius();
+                            if(localX >= 0 && localY < openWorldQuadDiameter()){
+                                checkQuadrantOpenWorld(spawn.x, spawn.y, qcx, qcy);
+                                if(!getQuadSafe(localX, localY)){
+                                    findLocation(spawn);
+                                }
+                            }else{
+                                findLocation(spawn);
+                            }
+                        }else{
+                            checkQuadrant(spawn.x, spawn.y);
+                            if(!getQuad(spawn.x, spawn.y)){
+                                findLocation(spawn);
+                            }
                         }
                     }
 
-                    spawnX = spawn.x * quadsize * tilesize + quadsize * tilesize / 2f;
-                    spawnY = spawn.y * quadsize * tilesize + quadsize * tilesize / 2f;
+                    if(world.isOpenWorld()){
+                        spawnX = spawn.x * quadsize * tilesize + quadsize * tilesize / 2f;
+                        spawnY = spawn.y * quadsize * tilesize + quadsize * tilesize / 2f;
+                    }else{
+                        spawnX = spawn.x * quadsize * tilesize + quadsize * tilesize / 2f;
+                        spawnY = spawn.y * quadsize * tilesize + quadsize * tilesize / 2f;
+                    }
                     spread = quadsize * tilesize / 3f;
 
                     groundCount++;
@@ -199,10 +228,19 @@ public class WaveSpawner{
 
             if(type.isFlying){
                 FlyerSpawn spawn = flySpawns.get(Mathf.mod(flyCount, flySpawns.size));
-                float margin = 40f;
-                spawnX = world.width() * tilesize / 2f + Mathf.sqrwavex(spawn.angle) * (world.width() / 2f * tilesize + margin);
-                spawnY = world.height() * tilesize / 2f + Mathf.sqrwavey(spawn.angle) * (world.height() / 2f * tilesize + margin);
-                spread = margin / 1.5f;
+
+                if(world.isOpenWorld()){
+                    float playerX = players[0].x;
+                    float playerY = players[0].y;
+                    float flyRadius = world.width() * tilesize / 2f + 40f;
+                    spawnX = playerX + Mathf.sqrwavex(spawn.angle) * flyRadius;
+                    spawnY = playerY + Mathf.sqrwavey(spawn.angle) * flyRadius;
+                }else{
+                    float margin = 40f;
+                    spawnX = world.width() * tilesize / 2f + Mathf.sqrwavex(spawn.angle) * (world.width() / 2f * tilesize + margin);
+                    spawnY = world.height() * tilesize / 2f + Mathf.sqrwavey(spawn.angle) * (world.height() / 2f * tilesize + margin);
+                }
+                spread = 40f / 1.5f;
                 flyCount++;
             }else{
                 if(groundSpawns.size == 0) continue;
@@ -210,9 +248,20 @@ public class WaveSpawner{
                 GroundSpawn spawn = groundSpawns.get(Mathf.mod(groundCount, groundSpawns.size));
 
                 if(dynamicSpawn){
-                    checkQuadrant(spawn.x, spawn.y);
-                    if(!getQuad(spawn.x, spawn.y)){
-                        findLocation(spawn);
+                    if(world.isOpenWorld()){
+                        int qcx = MathUtils.floor(players[0].x / tilesize / quadsize);
+                        int qcy = MathUtils.floor(players[0].y / tilesize / quadsize);
+                        checkQuadrantOpenWorld(spawn.x, spawn.y, qcx, qcy);
+                        int localX = spawn.x - qcx + openWorldQuadRadius();
+                        int localY = spawn.y - qcy + openWorldQuadRadius();
+                        if(!getQuadSafe(localX, localY)){
+                            findLocation(spawn);
+                        }
+                    }else{
+                        checkQuadrant(spawn.x, spawn.y);
+                        if(!getQuad(spawn.x, spawn.y)){
+                            findLocation(spawn);
+                        }
                     }
                 }
 
@@ -267,6 +316,9 @@ public class WaveSpawner{
     }
 
     public void checkAllQuadrants(){
+        if(world.isOpenWorld()){
+            return;
+        }
         for(int x = 0; x < quadWidth(); x++){
             for(int y = 0; y < quadHeight(); y++){
                 checkQuadrant(x, y);
@@ -290,16 +342,47 @@ public class WaveSpawner{
         }
     }
 
+    private void checkQuadrantOpenWorld(int worldQX, int worldQY, int centerQX, int centerQY){
+        int localX = worldQX - centerQX + openWorldQuadRadius();
+        int localY = worldQY - centerQY + openWorldQuadRadius();
+
+        setQuadSafe(localX, localY, true);
+
+        outer:
+        for(int dx = 0; dx < quadsize; dx++){
+            for(int dy = 0; dy < quadsize; dy++){
+                int tx = worldQX * quadsize + dx;
+                int ty = worldQY * quadsize + dy;
+                Tile tile = world.tile(tx, ty);
+
+                if(tile == null || tile.solid() || world.pathfinder.getValueforTeam(state.enemyTeam, tx, ty) == Float.MAX_VALUE){
+                    setQuadSafe(localX, localY, false);
+                    break outer;
+                }
+            }
+        }
+    }
+
     private void reset(WorldLoadEvent event){
         dynamicSpawn = false;
         flySpawns.clear();
         groundSpawns.clear();
-        quadrants = new GridBits(quadWidth(), quadHeight());
+
+        if(world.isOpenWorld()){
+            quadrants = new GridBits(openWorldQuadDiameter(), openWorldQuadDiameter());
+        }else{
+            quadrants = new GridBits(quadWidth(), quadHeight());
+        }
 
         if(world.getSector() == null){
             groups = Waves.getSpawns();
         }else{
             groups = world.getSector().spawns;
+        }
+
+        if(world.isOpenWorld()){
+            dynamicSpawn = true;
+            return;
         }
 
         dynamicSpawn = true;
@@ -321,6 +404,13 @@ public class WaveSpawner{
         return quadrants.get(quadx, quady);
     }
 
+    private boolean getQuadSafe(int quadx, int quady){
+        if(quadx < 0 || quady < 0 || quadx >= openWorldQuadDiameter() || quady >= openWorldQuadDiameter()){
+            return false;
+        }
+        return quadrants.get(quadx, quady);
+    }
+
     private void setQuad(int quadx, int quady, boolean valid){
         if(quadrants == null){
             quadrants = new GridBits(quadWidth(), quadHeight());
@@ -333,10 +423,41 @@ public class WaveSpawner{
         quadrants.set(quadx, quady, valid);
     }
 
-    //TODO instead of randomly scattering locations around the map, find spawns close to each other
+    private void setQuadSafe(int quadx, int quady, boolean valid){
+        if(quadrants == null) return;
+        int diam = openWorldQuadDiameter();
+        if(quadx < 0 || quady < 0 || quadx >= diam || quady >= diam) return;
+        quadrants.set(quadx, quady, valid);
+    }
+
     private void findLocation(GroundSpawn spawn){
         spawn.x = -1;
         spawn.y = -1;
+
+        if(world.isOpenWorld()){
+            int qcx = MathUtils.floor(players[0].x / tilesize / quadsize);
+            int qcy = MathUtils.floor(players[0].y / tilesize / quadsize);
+            int radius = openWorldQuadRadius();
+
+            for(int r = 0; r <= radius; r++){
+                for(int dx = -r; dx <= r; dx++){
+                    for(int dy = -r; dy <= r; dy++){
+                        if(Math.abs(dx) != r && Math.abs(dy) != r) continue;
+                        int localX = dx + radius;
+                        int localY = dy + radius;
+                        if(getQuadSafe(localX, localY)){
+                            spawn.x = qcx + dx;
+                            spawn.y = qcy + dy;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            spawn.x = qcx + Mathf.random(-radius, radius);
+            spawn.y = qcy + Mathf.random(-radius, radius);
+            return;
+        }
 
         int shellWidth = quadWidth() * 2 + quadHeight() * 2 * 6;
         shellWidth = Math.min(quadWidth() * quadHeight() / 4, shellWidth);
@@ -352,7 +473,6 @@ public class WaveSpawner{
         });
     }
 
-    //TODO instead of randomly scattering locations around the map, find spawns close to each other
     private void findLocation(FlyerSpawn spawn){
         spawn.angle = Mathf.random(360f);
     }
@@ -365,13 +485,21 @@ public class WaveSpawner{
         return Mathf.ceil(world.height() / (float) quadsize);
     }
 
+    private int openWorldQuadRadius(){
+        return 4;
+    }
+
+    private int openWorldQuadDiameter(){
+        return openWorldQuadRadius() * 2 + 1;
+    }
+
     private class FlyerSpawn{
         //square angle
         float angle;
     }
 
     private class GroundSpawn{
-        //quadrant spawn coordinates
+        //quadrant spawn coordinates (world-space quadrant coords)
         int x, y;
     }
 }

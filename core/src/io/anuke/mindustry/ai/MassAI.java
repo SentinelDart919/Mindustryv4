@@ -27,6 +27,7 @@ import io.anuke.mindustry.world.blocks.Rock;
 import io.anuke.ucore.core.Events;
 import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.entities.units.UnitCommand;
 import io.anuke.mindustry.entities.Units;
 import io.anuke.mindustry.entities.units.BaseUnit;
@@ -118,7 +119,7 @@ public class MassAI {
     public static void write(DataOutputStream stream) throws IOException {
         stream.writeInt(initializedCores.size);
         for (Tile core : initializedCores) {
-            stream.writeInt(core.packedPosition());
+            stream.writeLong(core.packedPosition());
         }
 
         stream.writeInt(activeLines.size);
@@ -149,7 +150,7 @@ public class MassAI {
 
         stream.writeInt(coreExpanded.size);
         for (ObjectMap.Entry<Tile, Boolean> entry : coreExpanded.entries()) {
-            stream.writeInt(entry.key.packedPosition());
+            stream.writeLong(entry.key.packedPosition());
             stream.writeBoolean(entry.value);
         }
 
@@ -163,7 +164,7 @@ public class MassAI {
         int coreCount = stream.readInt();
         initializedCores.clear();
         for (int i = 0; i < coreCount; i++) {
-            initializedCores.add(world.tile(stream.readInt()));
+            initializedCores.add(world.tile(stream.readLong()));
         }
 
         int lineCount = stream.readInt();
@@ -199,7 +200,7 @@ public class MassAI {
         int expandedCount = stream.readInt();
         coreExpanded.clear();
         for (int i = 0; i < expandedCount; i++) {
-            coreExpanded.put(world.tile(stream.readInt()), stream.readBoolean());
+            coreExpanded.put(world.tile(stream.readLong()), stream.readBoolean());
         }
 
         currentCommand = UnitCommand.values()[stream.readInt()];
@@ -250,6 +251,7 @@ public class MassAI {
     }
 
     public static void update() {
+        if(Net.client()) return;
         if (Vars.state.isPaused() || Vars.state.teams == null) return;
         if(Settings.getBool("massai-debug", false) != debug){
             setDebug(Settings.getBool("massai-debug", false));
@@ -861,15 +863,15 @@ public class MassAI {
     }
 
     private static void placeBiomassGenerator() {
-        IntSet infected = Vars.infection.getInfectedQueue();
+        LongSet infected = Vars.infection.getInfectedQueue();
         if (infected.size == 0) return;
 
         // makes the thing spawn in infected tiles
-        IntSet.IntSetIterator it = infected.iterator();
+        LongSet.LongSetIterator it = infected.iterator();
         int size = infected.size;
         for (int i = 0; i < 50; i++) {
             int targetIdx = Mathf.random(size - 1);
-            int packed = -1;
+            long packed = -1;
             it.reset();
             for(int j = 0; j <= targetIdx && it.hasNext; j++) {
                 packed = it.next();
@@ -1437,13 +1439,13 @@ public class MassAI {
         }
 
         void write(DataOutputStream stream) throws IOException {
-            stream.writeInt(startTile.packedPosition());
-            stream.writeInt(targetTile.packedPosition());
+            stream.writeLong(startTile.packedPosition());
+            stream.writeLong(targetTile.packedPosition());
             stream.writeInt(targetBlock == null ? -1 : targetBlock.id);
             stream.writeInt(targetOre == null ? -1 : targetOre.id);
             stream.writeInt(path.size);
             for (Tile t : path) {
-                stream.writeInt(t.packedPosition());
+                stream.writeLong(t.packedPosition());
             }
             stream.writeInt(progress);
             stream.writeFloat(timer);
@@ -1454,8 +1456,8 @@ public class MassAI {
         }
 
         static SubSection read(DataInputStream stream) throws IOException {
-            Tile startTile = world.tile(stream.readInt());
-            Tile targetTile = world.tile(stream.readInt());
+            Tile startTile = world.tile(stream.readLong());
+            Tile targetTile = world.tile(stream.readLong());
             int blockId = stream.readInt();
             Block targetBlock = blockId == -1 ? null : Vars.content.block(blockId);
             int oreId = stream.readInt();
@@ -1463,7 +1465,7 @@ public class MassAI {
             int pathSize = stream.readInt();
             Array<Tile> path = new Array<>(pathSize);
             for (int i = 0; i < pathSize; i++) {
-                path.add(world.tile(stream.readInt()));
+                path.add(world.tile(stream.readLong()));
             }
             SubSection sub = new SubSection(startTile, targetTile, targetBlock, targetOre, path);
             sub.progress = stream.readInt();
@@ -1711,7 +1713,7 @@ public class MassAI {
         }
 
         void write(DataOutputStream stream) throws IOException {
-            stream.writeInt(core.packedPosition());
+            stream.writeLong(core.packedPosition());
             stream.writeInt(direction);
             stream.writeInt(startX);
             stream.writeInt(startY);
@@ -1740,7 +1742,7 @@ public class MassAI {
         }
 
         static BuildingLine read(DataInputStream stream) throws IOException {
-            Tile core = world.tile(stream.readInt());
+            Tile core = world.tile(stream.readLong());
             int direction = stream.readInt();
             int sx = stream.readInt();
             int sy = stream.readInt();
@@ -1780,12 +1782,12 @@ public class MassAI {
         }
 
         void write(DataOutputStream stream) throws IOException {
-            stream.writeInt(tile.packedPosition());
+            stream.writeLong(tile.packedPosition());
             stream.writeInt(rotation);
         }
 
         static PathTile read(DataInputStream stream) throws IOException {
-            return new PathTile(world.tile(stream.readInt()), stream.readInt());
+            return new PathTile(world.tile(stream.readLong()), stream.readInt());
         }
     }
 
@@ -1843,7 +1845,7 @@ public class MassAI {
         }
 
         void write(DataOutputStream stream) throws IOException {
-            stream.writeInt(tile == null ? -1 : tile.packedPosition());
+            stream.writeLong(tile == null ? -1L : tile.packedPosition());
             stream.writeInt(block == null ? -1 : block.id);
             stream.writeInt(team == null ? -1 : team.ordinal());
             stream.writeInt(rotation);
@@ -1855,8 +1857,8 @@ public class MassAI {
         }
 
         static PendingBuild read(DataInputStream stream) throws IOException {
-            int tilePos = stream.readInt();
-            Tile tile = tilePos == -1 ? null : world.tile(tilePos);
+            long tilePos = stream.readLong();
+            Tile tile = tilePos == -1L ? null : world.tile(tilePos);
             int blockId = stream.readInt();
             Block block = blockId == -1 ? null : Vars.content.block(blockId);
             int teamId = stream.readInt();

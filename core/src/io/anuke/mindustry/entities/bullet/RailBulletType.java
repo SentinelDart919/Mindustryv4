@@ -12,6 +12,11 @@ import io.anuke.ucore.core.Effects.Effect;
 import io.anuke.ucore.util.Physics;
 import io.anuke.ucore.util.Translator;
 
+import com.badlogic.gdx.graphics.Color;
+import io.anuke.ucore.graphics.Draw;
+import io.anuke.ucore.graphics.Lines;
+import io.anuke.mindustry.graphics.Palette;
+
 import static io.anuke.mindustry.Vars.world;
 
 /**
@@ -24,9 +29,9 @@ public class RailBulletType extends BulletType{
     public float length = 100f;
     public float updateEffectSeg = 20f;
 
-    private static Rectangle rect = new Rectangle();
-    private static Rectangle hitrect = new Rectangle();
-    private static Translator tr = new Translator();
+    protected static Rectangle rect = new Rectangle();
+    protected static Rectangle hitrect = new Rectangle();
+    protected static Translator tr = new Translator();
 
     public RailBulletType(float damage){
         super(0.001f, damage);
@@ -96,5 +101,19 @@ public class RailBulletType extends BulletType{
         }
 
         b.remove();
+    }
+
+    @Override
+    public void drawBloom(Bullet b){
+        float fade = b.fout();
+        Draw.color(Palette.bulletYellowBack);
+        Draw.alpha(fade * 0.8f);
+        Lines.stroke(8f * fade);
+        Lines.line(b.x, b.y, b.x + tr.x, b.y + tr.y);
+        Draw.color(Color.WHITE);
+        Draw.alpha(fade * 0.5f);
+        Lines.stroke(3f * fade);
+        Lines.line(b.x, b.y, b.x + tr.x, b.y + tr.y);
+        Draw.reset();
     }
 }

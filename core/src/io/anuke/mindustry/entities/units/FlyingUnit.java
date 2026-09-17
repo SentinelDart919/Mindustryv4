@@ -28,8 +28,8 @@ public abstract class FlyingUnit extends BaseUnit implements CarryTrait{
     protected static float wobblyness = 0.6f;
     protected float[] weaponAngles = {0, 0};
     protected boolean itWobbles = true;
-    protected Trail trail = new Trail(8);
-    protected Trail trail2 = new Trail(8);
+    public Trail trail = new Trail(8);
+    public Trail trail2 = new Trail(8);
     protected CarriableTrait carrying;
     protected final UnitState
 

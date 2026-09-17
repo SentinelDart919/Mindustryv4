@@ -214,7 +214,7 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
     @Override
     public void write(DataOutput data) throws IOException{
         super.write(data);
-        data.writeInt(mineTile == null || !state.is(mine) ? -1 : mineTile.packedPosition());
+        data.writeLong(mineTile == null || !state.is(mine) ? -1 : mineTile.packedPosition());
     }
 
 
@@ -237,7 +237,7 @@ public class DroneMiner extends FlyingUnit implements MinerTrait {
     @Override
     public void read(DataInput data, long time) throws IOException{
         super.read(data, time);
-        int mined = data.readInt();
+        long mined = data.readLong();
 
 
         if(mined != -1){

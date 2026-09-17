@@ -33,6 +33,7 @@ public class Sorter extends Block implements SelectionTrait{
         instantTransfer = true;
         group = BlockGroup.transportation;
         configurable = true;
+        reflectYdisplace = 0.35f;
     }
 
     @Override

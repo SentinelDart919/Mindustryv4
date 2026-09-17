@@ -3,7 +3,7 @@ package io.anuke.mindustry.maps.generation;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.LongArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import io.anuke.mindustry.content.Items;
 import io.anuke.mindustry.content.blocks.Blocks;
@@ -91,7 +91,7 @@ public class WorldGenerator{
     public void prepareTiles(Tile[][] tiles){
 
         //find multiblocks
-        IntArray multiblocks = new IntArray();
+        LongArray multiblocks = new LongArray();
 
         for(int x = 0; x < tiles.length; x++){
             for(int y = 0; y < tiles[0].length; y++){
@@ -105,10 +105,10 @@ public class WorldGenerator{
 
         //place multiblocks now
         for(int i = 0; i < multiblocks.size; i++){
-            int pos = multiblocks.get(i);
+            long pos = multiblocks.get(i);
 
-            int x = pos % tiles.length;
-            int y = pos / tiles.length;
+            int x = (int)(pos >> 32);
+            int y = (int)(pos & 0xFFFFFFFFL);
 
             Block result = tiles[x][y].block();
             Team team = tiles[x][y].getTeam();

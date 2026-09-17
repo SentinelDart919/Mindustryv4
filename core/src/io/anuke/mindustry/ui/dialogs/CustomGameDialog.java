@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Scaling;
 import io.anuke.mindustry.game.Difficulty;
 import io.anuke.mindustry.game.GameMode;
 import io.anuke.mindustry.game.Team;
+import io.anuke.mindustry.game.TechTree;
 import io.anuke.mindustry.maps.Map;
 import io.anuke.mindustry.ui.BorderImage;
 import io.anuke.ucore.core.Settings;
@@ -194,6 +195,27 @@ public class CustomGameDialog extends FloatingDialog{
         table.row();
         table.addCheck("PvP", mode.isPvp, b -> mode.isPvp = b).left();
         table.row();
+        table.add("Tech Tree").padTop(8f).left();
+        table.row();
+        table.add("$text.techtree.info").color(Color.GRAY).wrap().width(300f).left().padBottom(4f);
+        table.row();
+
+        Table techs = new Table();
+        ButtonGroup<TextButton> techGroup = new ButtonGroup<>();
+        int ti = 0;
+        for(int i = 0; i < TechTree.all().size; i++){
+            String tree = TechTree.all().get(i);
+            techs.addButton(TechTree.localizedName(tree), "toggle", () -> {
+                state.techTree = tree.equals(TechTree.defaultTech) ? null : tree;
+            }).update(b -> {
+                String current = state.techTree == null ? TechTree.defaultTech : state.techTree;
+                b.setChecked(current.equals(tree));
+            }).group(techGroup).size(140f, 40f);
+            if(ti++ % 2 == 1) techs.row();
+        }
+        table.add(techs).left().padBottom(8f);
+        table.row();
+
         table.add("Enemy Selector").padTop(8f).left();
         table.row();
 
@@ -232,8 +254,7 @@ public class CustomGameDialog extends FloatingDialog{
         for(Team team : Team.all){
             if(team == Team.none || team == Team.themass) continue;
 
-            boolean def = (state.rtsAIBits & (1L << team.ordinal())) != 0;
-            table.addCheck("$team." + team.name() + ".name", def, b -> {
+            table.addCheck("$team." + team.name() + ".name", (state.rtsAIBits & (1L << team.ordinal())) != 0, b -> {
                 if(b){
                     state.rtsAIBits |= (1L << team.ordinal());
                 }else{

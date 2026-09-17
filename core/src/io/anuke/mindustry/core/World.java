@@ -19,6 +19,7 @@ import io.anuke.mindustry.maps.*;
 import io.anuke.mindustry.maps.generation.FortressGenerator;
 import io.anuke.mindustry.maps.generation.Generation;
 import io.anuke.mindustry.maps.generation.WorldGenerator;
+import io.anuke.mindustry.maps.generation.ChunkManager;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.blocks.OreBlock;
@@ -42,6 +43,8 @@ public class World extends Module{
     private Map currentMap;
     private Sector currentSector;
     private Tile[][] tiles;
+    private ChunkManager chunkManager;
+    private boolean openWorldMode = false;
 
     private Array<Tile> tempTiles = new ThreadArray<>();
     private boolean generating, invalidMap;
@@ -101,23 +104,67 @@ public class World extends Module{
         this.currentMap = map;
     }
 
+    public boolean isOpenWorld(){
+        return openWorldMode;
+    }
+
+    public ChunkManager chunks(){
+        return chunkManager;
+    }
+
+    public void beginOpenWorld(long seed){
+        beginOpenWorld(seed, null);
+    }
+
+    public void beginOpenWorld(long seed, String saveName){
+        openWorldMode = true;
+        chunkManager = new ChunkManager(seed, saveName);
+        int worldSize = ChunkManager.CHUNK_SIZE * (ChunkManager.RENDER_RADIUS * 2 + 1);
+        createTiles(worldSize, worldSize);
+        EntityQuery.resizeTree(0, 0, worldSize * tilesize, worldSize * tilesize);
+
+        setMap(new Map("Open World", new MapMeta(0, new ObjectMap<>(), worldSize, worldSize, null), true, () -> null));
+    }
+
+    public void endOpenWorld(){
+        openWorldMode = false;
+        chunkManager = null;
+    }
+
     public int width(){
+        if(openWorldMode){
+            return ChunkManager.CHUNK_SIZE * (ChunkManager.RENDER_RADIUS * 2 + 1);
+        }
         return tiles == null ? 0 : tiles.length;
     }
 
     public int height(){
+        if(openWorldMode){
+            return ChunkManager.CHUNK_SIZE * (ChunkManager.RENDER_RADIUS * 2 + 1);
+        }
         return tiles == null ? 0 : tiles[0].length;
     }
 
-    public int toPacked(int x, int y){
-        return x + y * width();
+    public long toPacked(int x, int y){
+        return ((long)x << 32) | (y & 0xFFFFFFFFL);
     }
 
-    public Tile tile(int packed){
-        return tiles == null ? null : tile(packed % width(), packed / width());
+    public Tile tile(long packed){
+        int x = (int)(packed >> 32);
+        int y = (int)(packed & 0xFFFFFFFFL);
+        return tile(x, y);
+    }
+
+    public Tile tile(int i){
+        int x = i % width();
+        int y = i / width();
+        return tile(x, y);
     }
 
     public Tile tile(int x, int y){
+        if(openWorldMode){
+            return chunkManager.getTileSafe(x, y);
+        }
         if(tiles == null){
             return null;
         }
@@ -126,6 +173,18 @@ public class World extends Module{
     }
 
     public Tile rawTile(int x, int y){
+        if(openWorldMode){
+            return chunkManager.getTileSafe(x, y);
+        }
+        return tiles[x][y];
+    }
+
+    public Tile peekTile(int x, int y){
+        if(openWorldMode){
+            if(chunkManager == null) return null;
+            return chunkManager.peekTile(x, y);
+        }
+        if(tiles == null || !Structs.inBounds(x, y, tiles)) return null;
         return tiles[x][y];
     }
 
@@ -188,9 +247,16 @@ public class World extends Module{
      * A WorldLoadEvent will be fire.
      */
     public void endMapLoad(){
+        if(openWorldMode){
+            generating = false;
+            Events.fire(new WorldLoadEvent());
+            return;
+        }
+
         for(int x = 0; x < tiles.length; x++){
             for(int y = 0; y < tiles[0].length; y++){
                 Tile tile = tiles[x][y];
+                if(tile == null) continue;
                 tile.updateOcclusion();
 
                 if(tile.floor() instanceof OreBlock && tile.hasCliffs()){
@@ -254,6 +320,10 @@ public class World extends Module{
         try{
             generator.loadTileData(tiles, MapIO.readTileData(map, true), map.meta.hasOreGen(), Mathf.random(99999));
             state.darkness = Float.parseFloat(map.meta.tags.get("darkness", "0"));
+
+            String tech = map.meta.tags.get("tech", "");
+            state.techTree = tech.isEmpty() || tech.equals(io.anuke.mindustry.game.TechTree.defaultTech) ? null : tech;
+
             if(!headless && renderer != null){
                 renderer.weather.setRain(map.meta.tags.get("rain", "0").equals("1"));
             }
@@ -431,6 +501,15 @@ public class World extends Module{
         x += shiftX;
         y += shiftY;
         return y*newWidth + x;
+    }
+
+    public long transform(long packed, int oldWidth, int oldHeight, int newWidth, int shiftX, int shiftY){
+        int x = (int)(packed >> 32);
+        int y = (int)(packed & 0xFFFFFFFFL);
+        if(!Structs.inBounds(x, y, oldWidth, oldHeight)) return -1L;
+        x += shiftX;
+        y += shiftY;
+        return ((long)x << 32) | (y & 0xFFFFFFFFL);
     }
 
     /**

@@ -11,8 +11,6 @@ import io.anuke.mindustry.entities.traits.SyncTrait;
 import io.anuke.mindustry.entities.traits.TeamTrait;
 import io.anuke.mindustry.game.Team;
 import io.anuke.mindustry.world.Tile;
-import io.anuke.ucore.core.Graphics;
-import io.anuke.ucore.core.Settings;
 import io.anuke.ucore.core.Timers;
 import io.anuke.ucore.entities.EntityGroup;
 import io.anuke.ucore.entities.impl.BulletEntity;
@@ -185,11 +183,6 @@ public class Bullet extends BulletEntity<BulletType> implements TeamTrait, SyncT
 
     @Override
     public void draw(){
-        if(type.bloom && Settings.getBool("bloom")){
-            Graphics.setAdditiveBlending();
-            //type.drawBloom(this);
-            Graphics.setNormalBlending();
-        }
         type.draw(this);
     }
 

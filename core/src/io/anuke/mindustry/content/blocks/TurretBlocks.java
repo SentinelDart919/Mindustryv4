@@ -136,6 +136,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             size = 2;
             health = 320;
             targetAir = false;
+            emitLight = true;
         }};
 
         arc = new PowerTurret("arc"){{
@@ -153,6 +154,7 @@ public class TurretBlocks extends BlockList implements ContentList{
             recoil = 1f;
             size = 1;
             targetAir = false;
+            emitLight = true;
         }};
 
         swarmer = new BurstTurret("swarmer"){{
@@ -291,6 +293,8 @@ public class TurretBlocks extends BlockList implements ContentList{
             reload = 200f;
             firingMoveFract = 0.1f;
             shootDuration = 220f;
+            emitLight = true;
+            lightColor = Color.valueOf("ff9c5a");
 
             health = 165 * size * size;
         }};
@@ -316,6 +320,7 @@ public class TurretBlocks extends BlockList implements ContentList{
                 health = 150 * size * size;
                 hasPower = true;
                 powerCapacity = 60f;
+                emitLight = true;
             }
 
             @Override

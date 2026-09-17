@@ -101,7 +101,8 @@ public class Save18 extends Save17{
         short height = stream.readShort();
 
         if(world.getSector() != null){
-            world.setMap(new Map("Sector " + world.getSector().x + ", " + world.getSector().y, width, height));
+            io.anuke.mindustry.maps.Sector sector = world.getSector();
+            world.setMap(new Map(sector.linear && sector.mapName != null ? sector.mapName : "Sector " + sector.x + ", " + sector.y, width, height));
         }else if(world.getMap() == null){
             world.setMap(new Map("unknown", width, height));
         }

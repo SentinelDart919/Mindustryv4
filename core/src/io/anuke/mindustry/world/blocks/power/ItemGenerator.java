@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.mindustry.content.fx.BlockFx;
 import io.anuke.mindustry.entities.TileEntity;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
@@ -35,6 +36,10 @@ public abstract class ItemGenerator extends PowerGenerator{
 
     public ItemGenerator(String name){
         super(name);
+        hasBloom = true;
+        emitLight = true;
+        lightColor = heatColor;
+        lightOpacity = 0.45f;
         itemCapacity = 20;
         hasItems = true;
         setAmbientSound("loopCombustion");
@@ -81,6 +86,31 @@ public abstract class ItemGenerator extends PowerGenerator{
     }
 
     @Override
+    public void drawLight(Tile tile){
+        GeneratorEntity entity = tile.entity();
+
+        if(entity.generateTime > 0){
+            float alpha = (entity.items.total() > 0 ? 1f : Mathf.clamp(entity.generateTime));
+            alpha = alpha * 0.7f + Mathf.absin(Timers.time(), 12f, 0.3f) * alpha;
+            drawLight(tile.drawx(), tile.drawy(), lightRadius() * tilesize, lightOpacity * alpha, heatColor);
+        }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        GeneratorEntity entity = tile.entity();
+
+        if(entity.generateTime > 0){
+            Draw.color(heatColor);
+            float alpha = (entity.items.total() > 0 ? 1f : Mathf.clamp(entity.generateTime));
+            alpha = alpha * 0.7f + Mathf.absin(Timers.time(), 12f, 0.3f) * alpha;
+            Draw.alpha(alpha * 0.7f);
+            Draw.rect(topRegion, tile.drawx(), tile.drawy());
+            Draw.reset();
+        }
+    }
+
+    @Override
     public boolean acceptItem(Item item, Tile tile, Tile source){
         return getItemEfficiency(item) >= minItemEfficiency && tile.entity.items.total() < itemCapacity;
     }
@@ -106,10 +136,12 @@ public abstract class ItemGenerator extends PowerGenerator{
             entity.power.amount += maxPower;
             entity.generateTime = Mathf.clamp(entity.generateTime);
 
-            if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
-                //this block is run last so that in the event of a block destruction, no code relies on the block type
-                entity.damage(Mathf.random(8f));
-                Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+            if(Net.server()){
+                if(Mathf.chance(entity.delta() * 0.06 * Mathf.clamp(entity.explosiveness - 0.25f))){
+                    //this block is run last so that in the event of a block destruction, no code relies on the block type
+                    entity.damage(Mathf.random(8f));
+                    Effects.effect(explodeEffect, tile.worldx() + Mathf.range(size * tilesize / 2f), tile.worldy() + Mathf.range(size * tilesize / 2f));
+                }
             }
         }
         entity.ambientSoundEnabled = entity.generateTime > 0;

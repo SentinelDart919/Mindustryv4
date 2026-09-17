@@ -46,6 +46,7 @@ public class BasicBulletType extends BulletType{
         this.emitLight = true;
         this.lightRadius = 30f;
         this.lightOpacity = 0.4f;
+        this.bloom = true;
     }
 
     @Override

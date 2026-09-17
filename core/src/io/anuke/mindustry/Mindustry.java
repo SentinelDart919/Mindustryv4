@@ -50,7 +50,9 @@ public class Mindustry extends ModuleCore{
     @Override
     public void render(){
         threads.handleBeginRender();
+        PerfCounter.frame.begin();
         super.render();
+        PerfCounter.frame.end();
         threads.handleEndRender();
     }
 

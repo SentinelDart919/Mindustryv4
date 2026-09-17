@@ -3,6 +3,7 @@ package io.anuke.mindustry.world.blocks.units;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import io.anuke.mindustry.core.Renderer;
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.Units;
@@ -31,6 +32,7 @@ public class RepairPoint extends Block{
 
     public RepairPoint(String name){
         super(name);
+        hasBloom = true;
         update = true;
         solid = true;
         flags = EnumSet.of(BlockFlag.repair);
@@ -39,6 +41,9 @@ public class RepairPoint extends Block{
         hasPower = true;
         powerCapacity = 20f;
         consumes.power(0.06f);
+        emitLight = true;
+        lightColor = Color.valueOf("e8ffd7");
+        lightOpacity = 0.4f;
     }
 
     @Override
@@ -64,6 +69,8 @@ public class RepairPoint extends Block{
 
     @Override
     public void drawLayer2(Tile tile){
+        if(Renderer.captureReflections) return;
+
         RepairPointEntity entity = tile.entity();
 
         if(entity.target != null &&
@@ -76,6 +83,24 @@ public class RepairPoint extends Block{
                     tile.drawx() + Angles.trnsx(ang, len), tile.drawy() + Angles.trnsy(ang, len),
                     entity.target.x, entity.target.y, entity.strength);
             Draw.color();
+        }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        RepairPointEntity entity = tile.entity();
+
+        if(entity.target != null && entity.strength > 0.01f &&
+                Angles.angleDist(entity.angleTo(entity.target), entity.rotation) < 30f){
+            float ang = entity.angleTo(entity.target);
+            float len = 5f;
+
+            Draw.color(Color.valueOf("e8ffd7"));
+            Draw.alpha(entity.strength * 0.7f);
+            Shapes.laser("laser", "laser-end",
+                    tile.drawx() + Angles.trnsx(ang, len), tile.drawy() + Angles.trnsy(ang, len),
+                    entity.target.x, entity.target.y, entity.strength);
+            Draw.reset();
         }
     }
 

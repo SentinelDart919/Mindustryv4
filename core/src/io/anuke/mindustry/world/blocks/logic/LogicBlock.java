@@ -23,7 +23,7 @@ public class LogicBlock extends Block {
     }
 
     @Remote(targets = Loc.both, called = Loc.both, forward = true)
-    public static void setLogicTarget(Player player, Tile tile, int targetPos) {
+    public static void setLogicTarget(Player player, Tile tile, long targetPos) {
         LogicEntity entity = tile.entity();
         if (entity != null) entity.targetPos = targetPos;
     }
@@ -32,40 +32,40 @@ public class LogicBlock extends Block {
     public boolean onConfigureTileTapped(Tile tile, Tile other) {
         Tile target = other.target();
         if (tile != target && target.block() instanceof LogicBlock) {
-            setLogicTarget(null, tile, target.id());
+            setLogicTarget(null, tile, target.packedPosition());
             return false;
         }
         return super.onConfigureTileTapped(tile, other);
     }
 
     public static class LogicEntity extends TileEntity {
-        public int targetPos = -1;
+        public long targetPos = -1L;
 
         @Override
         public void write(DataOutput stream) throws IOException {
             super.write(stream);
-            stream.writeInt(targetPos);
+            stream.writeLong(targetPos);
         }
 
         @Override
         public void read(DataInput stream) throws IOException {
             super.read(stream);
-            targetPos = stream.readInt();
+            targetPos = stream.readLong();
         }
 
         @Override
         public void writeConfig(DataOutput stream) throws IOException {
-            stream.writeInt(targetPos);
+            stream.writeLong(targetPos);
         }
 
         @Override
         public void readConfig(DataInput stream) throws IOException {
-            targetPos = stream.readInt();
+            targetPos = stream.readLong();
         }
 
         @Override
         public Object config(){
-            if(targetPos == -1) return null;
+            if(targetPos == -1L) return null;
             Tile other = world.tile(targetPos);
             if(other == null) return null;
             int dx = other.x - tile.x;
@@ -81,7 +81,7 @@ public class LogicBlock extends Block {
                 int dy = (short)(rel & 0xFFFF);
                 Tile other = world.tile(tile.x + dx, tile.y + dy);
                 if(other != null && other.block() instanceof LogicBlock){
-                    targetPos = other.id();
+                    targetPos = other.packedPosition();
                 }
             }
         }

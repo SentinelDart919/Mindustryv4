@@ -46,6 +46,7 @@ public class SettingsMenuDialog extends SettingsDialog{
     public SettingsTable graphics;
     public SettingsTable game;
     public SettingsTable sound;
+    public SettingsTable developer;
 
     private Table prefs;
     private Table menu;
@@ -88,6 +89,7 @@ public class SettingsMenuDialog extends SettingsDialog{
         game = new SettingsTable(s);
         graphics = new SettingsTable(s);
         sound = new SettingsTable(s);
+        developer = new SettingsTable(s);
 
         prefs = new Table();
         prefs.top();
@@ -99,6 +101,8 @@ public class SettingsMenuDialog extends SettingsDialog{
         menu.addButton("$text.settings.graphics", () -> visible(1));
         menu.row();
         menu.addButton("$text.settings.sound", () -> visible(2));
+        menu.row();
+        menu.addButton("$text.settings.developer", () -> visible(3));
         if(!Vars.mobile){
             menu.row();
             menu.addButton("$text.settings.controls", ui.controls::show);
@@ -147,12 +151,12 @@ public class SettingsMenuDialog extends SettingsDialog{
 
         game.screenshakePref();
         game.checkPref("effects", true);
+        game.checkPref("fogofwar", true);
         if(mobile){
             game.checkPref("autotarget", true);
         }
         game.sliderPref("saveinterval", 120, 10, 5 * 120, i -> Bundles.format("setting.seconds", i));
         game.checkPref("planet3d", true);
-        game.checkPref("massai-debug", false, MassAI::setDebug);
         game.sliderPref("zoom", 100, 100, 1000, i -> i + "%");
 
         game.pref(new SettingsTable.Setting(){
@@ -222,8 +226,15 @@ public class SettingsMenuDialog extends SettingsDialog{
 
         graphics.sliderPref("renderer", "Render Scale", 100, 50, 100, i -> i + "%");
         graphics.checkPref("bloom", "Bloom", true);
-        graphics.sliderPref("bloomintensity", "Bloom Intensity", 14, 5, 40, i -> (i / 10f) + "x");
+        graphics.sliderPref("bloomintensity", "Bloom Intensity", 10, 5, 40, i -> (i / 10f) + "x");
         graphics.sliderPref("bloomblur", "Bloom Blur", 2, 1, 16, s -> s + "x");
+        graphics.sliderPref("bloomthreshold", "Bloom Threshold", 15, 5, 80, i -> (i / 100f) + "");
+
+        developer.checkPref("massai-debug", false, MassAI::setDebug);
+        developer.checkPref("massai-path-debug", false);
+        developer.checkPref("path-preview", false);
+        developer.checkPref("showperformance", false);
+        developer.checkPref("openworld-debug", false);
     }
 
     private void back(){
@@ -233,7 +244,7 @@ public class SettingsMenuDialog extends SettingsDialog{
 
     private void visible(int index){
         prefs.clearChildren();
-        Table table = Mathf.select(index, game, graphics, sound);
+        Table table = Mathf.select(index, game, graphics, sound, developer);
         prefs.add(table);
     }
 

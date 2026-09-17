@@ -3,6 +3,7 @@ package io.anuke.mindustry.content;
 import io.anuke.mindustry.content.blocks.*;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.game.GameMode;
+import io.anuke.mindustry.game.TechTree;
 import io.anuke.mindustry.type.ContentType;
 import io.anuke.mindustry.type.ItemStack;
 import io.anuke.mindustry.type.Recipe;
@@ -15,29 +16,30 @@ public class Recipes implements ContentList{
     @Override
     public void load(){
         //DEBUG
-        new Recipe(turret, TurretBlocks.evilDuo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilSalvo).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilScatter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilRipple).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilCyclone).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(turret, TurretBlocks.evilFuse).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.infectiontest).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.hiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.airHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, UnitBlocks.heavyHiveSpawner).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, CraftingBlocks.biomassGenerator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.veins).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DistributionBlocks.stackRouter).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.biomassBulb).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(production, ProductionBlocks.corruptedcultivator).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, StorageBlocks.hive).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemSource).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(distribution, DebugBlocks.itemVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(liquid, DebugBlocks.liquidSource).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerVoid).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(power, DebugBlocks.powerInfinite).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(effect, DebugBlocks.superBooster).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
-        new Recipe(units, DebugBlocks.debugFactory).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);
+        String classicTech = TechTree.create("Classic");
+        new Recipe(turret, TurretBlocks.evilDuo).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilSalvo).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilScatter).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilRipple).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilCyclone).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(turret, TurretBlocks.evilFuse).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(effect, DebugBlocks.infectiontest).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.hiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.airHiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(units, UnitBlocks.heavyHiveSpawner).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, CraftingBlocks.biomassGenerator).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DistributionBlocks.veins).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DistributionBlocks.stackRouter).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, ProductionBlocks.biomassBulb).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(production, ProductionBlocks.corruptedcultivator).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(effect, StorageBlocks.hive).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources);
+        new Recipe(distribution, DebugBlocks.itemSource).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(distribution, DebugBlocks.itemVoid).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(liquid, DebugBlocks.liquidSource).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(power, DebugBlocks.powerVoid).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(power, DebugBlocks.powerInfinite).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(effect, DebugBlocks.superBooster).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
+        new Recipe(units, DebugBlocks.debugFactory).setHidden(true).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).joinAllTechTrees();
         //new Recipe(effect, PowerBlocks.lightBlock).setMode(GameMode.sandbox).setAlwaysUnlocked(true);
 
         /*new Recipe(defense, DefenseBlocks.thoriumWallEXTRALarge).setMode(GameMode.sandbox).setHidden(true).setAlwaysUnlocked(true);*/
@@ -45,29 +47,30 @@ public class Recipes implements ContentList{
         //DEFENSE
 
         //walls
-        new Recipe(defense, DefenseBlocks.copperWall, new ItemStack(Items.copper, 12)).setAlwaysUnlocked(true);
-        new Recipe(defense, DefenseBlocks.copperWallLarge, new ItemStack(Items.copper, 12 * 4)).setAlwaysUnlocked(true);
+        new Recipe(defense, DefenseBlocks.stoneWall, new ItemStack(Items.stone, 8));
+        new Recipe(defense, DefenseBlocks.copperWall, new ItemStack(Items.copper, 8)).setAlwaysUnlocked(true);
+        new Recipe(defense, DefenseBlocks.copperWallLarge, new ItemStack(Items.copper, 8 * 4)).setAlwaysUnlocked(true);
 
-        new Recipe(defense, DefenseBlocks.scrapWall, new ItemStack(Items.scrap, 12));
-        new Recipe(defense, DefenseBlocks.scrapWallLarge, new ItemStack(Items.scrap, 12 * 4));
+        new Recipe(defense, DefenseBlocks.scrapWall, new ItemStack(Items.scrap, 8));
+        new Recipe(defense, DefenseBlocks.scrapWallLarge, new ItemStack(Items.scrap, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.denseAlloyWall, new ItemStack(Items.densealloy, 12));
-        new Recipe(defense, DefenseBlocks.denseAlloyWallLarge, new ItemStack(Items.densealloy, 12 * 4));
+        new Recipe(defense, DefenseBlocks.denseAlloyWall, new ItemStack(Items.densealloy, 8));
+        new Recipe(defense, DefenseBlocks.denseAlloyWallLarge, new ItemStack(Items.densealloy, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.door, new ItemStack(Items.densealloy, 12), new ItemStack(Items.silicon, 8));
-        new Recipe(defense, DefenseBlocks.doorLarge, new ItemStack(Items.densealloy, 12 * 4), new ItemStack(Items.silicon, 8 * 4));
+        new Recipe(defense, DefenseBlocks.door, new ItemStack(Items.densealloy, 8), new ItemStack(Items.silicon, 8));
+        new Recipe(defense, DefenseBlocks.doorLarge, new ItemStack(Items.densealloy, 8 * 4), new ItemStack(Items.silicon, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.thoriumWall, new ItemStack(Items.thorium, 12));
-        new Recipe(defense, DefenseBlocks.thoriumWallLarge, new ItemStack(Items.thorium, 12 * 4));
+        new Recipe(defense, DefenseBlocks.thoriumWall, new ItemStack(Items.thorium, 8));
+        new Recipe(defense, DefenseBlocks.thoriumWallLarge, new ItemStack(Items.thorium, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.chromiumWall, new ItemStack(Items.chromium, 12));
-        new Recipe(defense, DefenseBlocks.chromiumWallLarge, new ItemStack(Items.chromium, 12 * 4));
+        new Recipe(defense, DefenseBlocks.chromiumWall, new ItemStack(Items.chromium, 8));
+        new Recipe(defense, DefenseBlocks.chromiumWallLarge, new ItemStack(Items.chromium, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.phaseWall, new ItemStack(Items.phasefabric, 12));
-        new Recipe(defense, DefenseBlocks.phaseWallLarge, new ItemStack(Items.phasefabric, 12 * 4));
+        new Recipe(defense, DefenseBlocks.phaseWall, new ItemStack(Items.phasefabric, 8));
+        new Recipe(defense, DefenseBlocks.phaseWallLarge, new ItemStack(Items.phasefabric, 8 * 4));
 
-        new Recipe(defense, DefenseBlocks.surgeWall, new ItemStack(Items.surgealloy, 12));
-        new Recipe(defense, DefenseBlocks.surgeWallLarge, new ItemStack(Items.surgealloy, 12 * 4));
+        new Recipe(defense, DefenseBlocks.surgeWall, new ItemStack(Items.surgealloy, 8));
+        new Recipe(defense, DefenseBlocks.surgeWallLarge, new ItemStack(Items.surgealloy, 8 * 4));
 
         //projectors
         new Recipe(effect, DefenseBlocks.mender, new ItemStack(Items.copper, 25),  new ItemStack(Items.lead, 30));
@@ -262,6 +265,21 @@ public class Recipes implements ContentList{
         new Recipe(liquid, LiquidBlocks.mechanicalPump, new ItemStack(Items.copper, 30), new ItemStack(Items.lead, 20)).setDependencies(CraftingBlocks.smelter);
         new Recipe(liquid, LiquidBlocks.rotaryPump, new ItemStack(Items.copper, 140), new ItemStack(Items.lead, 100), new ItemStack(Items.silicon, 40), new ItemStack(Items.titanium, 70));
         new Recipe(liquid, LiquidBlocks.thermalPump, new ItemStack(Items.copper, 160), new ItemStack(Items.lead, 130), new ItemStack(Items.silicon, 60), new ItemStack(Items.titanium, 80), new ItemStack(Items.thorium, 70));
+    // Classic shit
+
+        new Recipe(effect, ClassicBlocks.classicShield).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(effect, ClassicBlocks.classicCore).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.classicConveyor).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.classicRouter).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.classicSorter).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.classicJunction).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.conveyorTunnel).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(distribution, ClassicBlocks.teleporter).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(power, ClassicBlocks.powerLaser).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(power, ClassicBlocks.powerLaserCorner).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(power, ClassicBlocks.powerLaserRouter).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(power, ClassicBlocks.powerBooster).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
+        new Recipe(production, ClassicBlocks.stoneDrill).setAlwaysUnlocked(true).setShowIf(m -> m.infiniteResources).setTechTree(classicTech);
     }
 
     @Override

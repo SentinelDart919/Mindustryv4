@@ -32,13 +32,15 @@ public class GameState{
     /**The team used as the enemy in waves and custom attack maps.*/
     public Team enemyTeam = Team.red;
     /**Default bitmask of teams that should use RTS AI.*/
-    public static final long defaultRtsAIBits = 1L << Team.red.ordinal() | 1L << Team.green.ordinal() | 1L << Team.purple.ordinal() | 1L << Team.orange.ordinal();
+    public static final long defaultRtsAIBits = 0L;
     /**Bitmask of teams that should use RTS AI.*/
     public long rtsAIBits = defaultRtsAIBits;
     /**Current map darkness level.*/
     public float darkness = 0f;
     /**Whether rain is forced on for the current map. Set in the custom game dialog.*/
     public boolean rain = false;
+    /**The currently selected tech tree for this game.*/
+    public String techTree;
     /**Current game state.*/
     private State state = State.menu;
 
@@ -52,6 +54,7 @@ public class GameState{
         rtsAIBits = defaultRtsAIBits;
         darkness = 0f;
         rain = false;
+        techTree = null;
     }
 
     public int enemies(){
@@ -59,6 +62,9 @@ public class GameState{
     }
 
     public void set(State astate){
+        if(astate == State.menu){
+            techTree = null;
+        }
         Events.fire(new StateChangeEvent(state, astate));
         state = astate;
     }

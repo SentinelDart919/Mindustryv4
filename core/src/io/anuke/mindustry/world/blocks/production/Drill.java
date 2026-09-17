@@ -63,6 +63,7 @@ public class Drill extends Block{
 
     public Drill(String name){
         super(name);
+        hasBloom = true;
         update = true;
         solid = true;
         layer = Layer.overlay;
@@ -110,6 +111,20 @@ public class Drill extends Block{
             Draw.rect("blank", tile.drawx(), tile.drawy(), 2f, 2f);
             Draw.color();
         }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        if(!drawRim || rimRegion == null || !Draw.hasRegion(name + "-rim")) return;
+
+        float s = 0.3f;
+        float ts = 0.6f;
+        DrillEntity entity = tile.entity();
+
+        Draw.color(heatColor);
+        Draw.alpha(entity.warmup * ts * (1f - s + Mathf.absin(Timers.time(), 3f, s)));
+        Draw.rect(rimRegion, tile.drawx(), tile.drawy());
+        Draw.color();
     }
 
     @Override

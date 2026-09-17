@@ -1,6 +1,7 @@
 package io.anuke.mindustry.world.blocks.storage;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -24,7 +25,6 @@ import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.BarType;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.meta.BlockFlag;
-import io.anuke.mindustry.world.meta.BlockGroup;
 import io.anuke.ucore.core.Effects;
 import io.anuke.ucore.core.Graphics;
 import io.anuke.ucore.core.Timers;
@@ -50,6 +50,7 @@ public class CoreBlock extends StorageBlock{
 
     public CoreBlock(String name){
         super(name);
+        hasBloom = true;
 
         solid = false;
         solidifes = true;
@@ -76,6 +77,10 @@ public class CoreBlock extends StorageBlock{
 
         CoreEntity entity = tile.entity();
         Effects.effect(Fx.spawn, entity);
+        CoreBlock block = (CoreBlock) tile.block();
+        if(block != null && Vars.soundController != null && block.buildPlayerSound != null){
+            Vars.soundController.at(block.buildPlayerSound, tile.drawx(), tile.drawy(), 1f, 0.2f);
+        }
         entity.solid = false;
         entity.progress = 0;
         entity.currentUnit = player;
@@ -170,6 +175,39 @@ public class CoreBlock extends StorageBlock{
     }
 
     @Override
+    public void drawBloom(Tile tile){
+        CoreEntity entity = tile.entity();
+
+        if(entity.currentUnit != null){
+            float progress = entity.progress;
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.15f);
+            Draw.rect("circle", tile.drawx(), tile.drawy(), size * tilesize * 1.2f, size * tilesize * 1.2f);
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.5f);
+            Lines.stroke(2f);
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.color(Color.WHITE);
+            Draw.alpha(progress * 0.3f);
+            Lines.stroke(1f);
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.reset();
+        }
+    }
+
+    @Override
     public boolean isSolidFor(Tile tile){
         CoreEntity entity = tile.entity();
 
@@ -191,6 +229,7 @@ public class CoreBlock extends StorageBlock{
 
         if(entity.currentUnit != null){
             if(!entity.currentUnit.isDead()){
+                entity.ambientSoundEnabled = false;
                 entity.currentUnit = null;
                 return;
             }
@@ -199,17 +238,15 @@ public class CoreBlock extends StorageBlock{
             entity.ambientSoundEnabled = true;
             entity.progress += 1f / (entity.currentUnit instanceof Player ? state.mode.respawnTime : droneRespawnDuration) * entity.delta();
 
-            if(entity.progress >= 1f){
+            if(entity.progress >= 1f && (Net.server() || !Net.active())){
+                entity.progress = 0f;
                 Call.onUnitRespawn(tile, entity.currentUnit);
-                Sound sound = buildPlayerSound;
-                if(Vars.soundController != null && sound != null){
-                    Vars.soundController.at(sound, tile.drawx(), tile.drawy(), 1f, 0.2f);}
                 entity.ambientSoundEnabled = false;
             }
         }else if(!netServer.isWaitingForPlayers()){
             entity.warmup += Timers.delta();
 
-            if(entity.solid && entity.warmup > 60f && unitGroups[tile.getTeamID()].getByID(entity.droneID) == null && !Net.client()){
+            if(droneType != null && entity.solid && entity.warmup > 60f && unitGroups[tile.getTeamID()].getByID(entity.droneID) == null && !Net.client()){
 
                 boolean found = false;
                 for(BaseUnit unit : unitGroups[tile.getTeamID()].all()){

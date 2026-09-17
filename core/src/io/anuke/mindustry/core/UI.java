@@ -49,6 +49,7 @@ public class UI extends SceneModule{
     public final BackgroundFragment backfrag = new BackgroundFragment();
     public final LoadingFragment loadfrag = new LoadingFragment();
     public final MapFragment mapfrag = new MapFragment();
+    public final PerformanceFragment perfrag = new PerformanceFragment();
 
     public AboutDialog about;
     public RestartDialog restart;
@@ -74,6 +75,8 @@ public class UI extends SceneModule{
     public SectorsDialog sectors;
     public CampaignDialog campaigns;
     public MissionDialog missions;
+    public CustomGamemodesDialog customGamemodes;
+    public OpenWorldStartDialog openWorldStart;
 
     public UI(){
         Dialog.setShowAction(() -> sequence(
@@ -132,7 +135,12 @@ public class UI extends SceneModule{
 
     @Override
     public void update(){
-        if(disableUI) return;
+        PerfCounter.ui.begin();
+
+        if(disableUI){
+            PerfCounter.ui.end();
+            return;
+        }
 
         if(Graphics.drawing()) Graphics.end();
 
@@ -154,6 +162,8 @@ public class UI extends SceneModule{
 
         Graphics.end();
         Draw.color();
+
+        PerfCounter.ui.end();
     }
 
     @Override
@@ -182,6 +192,8 @@ public class UI extends SceneModule{
         sectors = new SectorsDialog();
         campaigns = new CampaignDialog();
         missions = new MissionDialog();
+        customGamemodes = new CustomGamemodesDialog();
+        openWorldStart = new OpenWorldStartDialog();
 
         Group group = Core.scene.getRoot();
 
@@ -193,6 +205,7 @@ public class UI extends SceneModule{
         listfrag.build(group);
         loadfrag.build(group);
         mapfrag.build(group);
+        perfrag.build(group);
     }
 
     @Override

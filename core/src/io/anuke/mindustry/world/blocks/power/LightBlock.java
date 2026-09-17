@@ -24,6 +24,7 @@ public class LightBlock extends PowerBlock {
 
     public LightBlock(String name) {
         super(name);
+        hasBloom = true;
         hasPower = true;
         update = true;
         configurable = true;
@@ -54,6 +55,20 @@ public class LightBlock extends PowerBlock {
             Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
             Draw.alpha(opacity * 0.5f);
             Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 2, radius * 2);
+        }
+    }
+
+    @Override
+    public void drawBloom(Tile tile){
+        LightEntity entity = tile.entity();
+        float brightness = entity.brightness < 0f ? this.brightness : entity.brightness;
+        float opacity = brightness * (entity.power.graph == null ? 0f : 1f);
+
+        if(opacity > 0.01f){
+            Draw.color(Tmp.c1.set(entity.color));
+            Draw.alpha(opacity * 0.3f);
+            Draw.rect("circle", tile.drawx(), tile.drawy(), radius * 1.5f, radius * 1.5f);
+            Draw.color();
         }
     }
 

@@ -55,6 +55,15 @@ public class Tile implements PosTrait, TargetTrait{
         this.y = (short) y;
     }
 
+    /** Creates a tile without calling changed(), avoiding recursion during chunk generation. */
+    public static Tile createRaw(int x, int y, Floor floorType, Block wallType, byte elevation){
+        Tile t = new Tile(x, y);
+        t.floor = floorType;
+        t.wall = wallType;
+        t.elevation = elevation;
+        return t;
+    }
+
     public Tile(int x, int y, short floor, short wall){
         this(x, y);
         this.floor = (Floor) content.block(floor);
@@ -76,8 +85,8 @@ public class Tile implements PosTrait, TargetTrait{
         return visibility > 0;
     }
 
-    public int packedPosition(){
-        return x + y * world.width();
+    public long packedPosition(){
+        return ((long)x << 32) | (y & 0xFFFFFFFFL);
     }
 
     public short getBlockID(){
@@ -448,6 +457,22 @@ public class Tile implements PosTrait, TargetTrait{
         updateOcclusion();
 
         world.notifyChanged(this);
+    }
+
+    /** Rebuilds the tile entity without calling changed(). Used when loading from disk. */
+    public void rebuildEntity(){
+        if(entity != null) return;
+        Block block = block();
+        if(block.hasEntity()){
+            entity = block.newEntity().init(this, block.update);
+            entity.cons = new ConsumeModule();
+            if(block.hasItems) entity.items = new ItemModule();
+            if(block.hasLiquids) entity.liquids = new LiquidModule();
+            if(block.hasPower){
+                entity.power = new PowerModule();
+                entity.power.graph.add(this);
+            }
+        }
     }
 
     private void floorChanged(){

@@ -1,5 +1,6 @@
 package io.anuke.mindustry.world.blocks.units;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -29,7 +30,7 @@ import java.io.IOException;
 
 import static io.anuke.mindustry.Vars.*;
 
-//TODO re-implement properly
+//here was a t0do
 public class Reconstructor extends Block{
     protected float departTime = 30f;
     protected float arriveTime = 40f;
@@ -39,6 +40,7 @@ public class Reconstructor extends Block{
 
     public Reconstructor(String name){
         super(name);
+        hasBloom = true;
         update = true;
         solidifes = true;
         hasPower = true;
@@ -54,7 +56,7 @@ public class Reconstructor extends Block{
                 entity.current == null && entity.power.amount >= ((Reconstructor) tile.block()).powerPerTeleport;
     }
 
-    protected static boolean validLink(Tile tile, int position){
+    protected static boolean validLink(Tile tile, long position){
         Tile other = world.tile(position);
         return other != tile && other != null && other.block() instanceof Reconstructor;
     }
@@ -223,6 +225,39 @@ public class Reconstructor extends Block{
     }
 
     @Override
+    public void drawBloom(Tile tile){
+        ReconstructorEntity entity = tile.entity();
+
+        if(entity.current != null){
+            float progress = entity.departing ? entity.updateTime : (1f - entity.updateTime);
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.3f);
+            Draw.rect("circle", tile.drawx(), tile.drawy(), size * tilesize * 1.5f, size * tilesize * 1.5f);
+
+            Draw.color(Palette.accent);
+            Draw.alpha(progress * 0.8f);
+            Lines.stroke(2f);
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.color(Color.WHITE);
+            Draw.alpha(progress * 0.5f);
+            Lines.stroke(1f);
+            Lines.lineAngleCenter(
+                    tile.drawx() + Mathf.sin(entity.time, 6f, Vars.tilesize / 3f * size),
+                    tile.drawy(),
+                    90,
+                    size * Vars.tilesize / 2f);
+
+            Draw.reset();
+        }
+    }
+
+    @Override
     public void update(Tile tile){
         ReconstructorEntity entity = tile.entity();
 
@@ -324,7 +359,7 @@ public class Reconstructor extends Block{
         Unit current;
         float updateTime;
         float time;
-        int link;
+        long link;
         boolean solid = true, departing;
 
         @Override
@@ -344,12 +379,12 @@ public class Reconstructor extends Block{
 
         @Override
         public void write(DataOutput stream) throws IOException{
-            stream.writeInt(link);
+            stream.writeLong(link);
         }
 
         @Override
         public void read(DataInput stream) throws IOException{
-            link = stream.readInt();
+            link = stream.readLong();
         }
     }
 }

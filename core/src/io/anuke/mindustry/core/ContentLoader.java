@@ -96,6 +96,7 @@ public class ContentLoader{
         new CraftingBlocks(),
         new UpgradeBlocks(),
         new OreBlocks(),
+        new ClassicBlocks(),
 
         //not really a content class, but this makes initialization easier
         new ColorMapper(),

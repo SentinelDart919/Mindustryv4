@@ -69,6 +69,17 @@ public enum GameMode{
             enemyCheat = true;
             disableWaveTimer = true;
         }
+    },
+    openWorld{
+        @Override
+        void config(){
+            super.config();
+            hidden = true;
+            disableWaves = false;
+            disableWaveTimer = true;
+            enemyCheat = false;
+            infiniteResources = false;
+        }
     };
 
     static{

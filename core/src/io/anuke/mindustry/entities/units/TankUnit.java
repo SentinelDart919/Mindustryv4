@@ -2,8 +2,8 @@ package io.anuke.mindustry.entities.units;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntIntMap;
+import com.badlogic.gdx.utils.LongArray;
+import com.badlogic.gdx.utils.LongMap;
 import io.anuke.mindustry.Vars;
 import io.anuke.mindustry.entities.Predict;
 import io.anuke.mindustry.entities.TileEntity;
@@ -40,10 +40,10 @@ public class TankUnit extends BaseUnit{
     protected float weaponRotation;
     protected float treadTime;
     protected Weapon weapon;
-    protected IntArray orderPath = new IntArray();
+    protected LongArray orderPath = new LongArray();
     protected int orderPathCursor = 0;
     protected int orderPathRepath = 0;
-    protected IntArray movePath = new IntArray();
+    protected LongArray movePath = new LongArray();
     protected int movePathCursor = 0;
     protected int movePathRepath = 0;
     protected float movePathTargetX, movePathTargetY;
@@ -73,6 +73,16 @@ public class TankUnit extends BaseUnit{
 
             if(core != null && dst < getWeapon().getAmmo().getRange() / 1.1f){
                 target = core;
+            }
+
+            if(target == null && core == null){
+                targetClosestEnemyFlag(BlockFlag.producer);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.turret);
+                if(target == null) targetClosestEnemyFlag(BlockFlag.target);
+                if(target != null){
+                    moveTo(target.getX(), target.getY());
+                    return;
+                }
             }
 
             if(dst > getWeapon().getAmmo().getRange() * 0.5f){
@@ -249,17 +259,18 @@ public class TankUnit extends BaseUnit{
         if(health <= health * type.retreatPercent && !isCommanded()){
             setState(retreat);
         }
+    }
 
-        if(!Units.invalidateTarget(target, this)){
-            if(distanceTo(target) < getWeapon().getAmmo().getRange()){
-                rotate(angleTo(target));
+    @Override
+    protected void updateShooting(){
+        Weapon weapon = getWeapon();
+        if(weapon == null || weapon.getAmmo() == null || target == null) return;
 
-                if(Mathf.angNear(angleTo(target), weaponRotation, 13f)){
-                    AmmoType ammo = getWeapon().getAmmo();
-                    Vector2 to = Predict.intercept(this, target, ammo.bullet.speed);
-                    getWeapon().update(this, to.x, to.y);
-                }
-            }
+        if(Units.invalidateTarget(target, team, x, y, weapon.getAmmo().getRange())) return;
+
+        Vector2 to = Predict.intercept(this, target, weapon.getAmmo().bullet.speed);
+        if(Mathf.angNear(angleTo(target), weaponRotation, type.shootCone)){
+            weapon.update(this, to.x, to.y);
         }
     }
 
@@ -289,17 +300,34 @@ public class TankUnit extends BaseUnit{
             moveAngle = curAngle + delta * 0.2f;
         }
 
+        moveAngle = avoidAngle(moveAngle);
         velocity.add(vec.trns(moveAngle, type.speed * Timers.delta()));
     }
 
     protected void moveToEnemyCore(){
         Tile tile = world.tileWorld(x, y);
         if(tile == null) return;
+
+        TileEntity core = getClosestEnemyCore();
+        if(core == null) return;
+
         Tile targetTile = world.pathfinder.getTargetTile(team, tile);
 
-        if(tile == targetTile) return;
+        if(tile == targetTile){
+            float ddx = core.getX() - x, ddy = core.getY() - y;
+            boolean nearCore = ddx * ddx + ddy * ddy < (12 * tilesize) * (12 * tilesize);
 
-        velocity.add(vec.trns(angleTo(targetTile), type.speed * Timers.delta()));
+            if(!nearCore && steerAlongChunkPath(core.getX(), core.getY())){
+                return;
+            }
+
+            float angle = avoidAngle(angleTo(core));
+            velocity.add(vec.trns(angle, type.speed * Timers.delta()));
+            return;
+        }
+
+        float gangle = avoidAngle(angleTo(targetTile));
+        velocity.add(vec.trns(gangle, type.speed * Timers.delta()));
     }
 
     protected void moveToHome(){
@@ -345,7 +373,9 @@ public class TankUnit extends BaseUnit{
             vec.rotate((circleLength - vec.len()) / circleLength * 180f);
         }
 
-        vec.setLength(type.speed * Timers.delta());
+        float moveAngle = avoidAngle(vec.angle());
+        float len = type.speed * Timers.delta();
+        vec.set(Angles.trnsx(moveAngle, len), Angles.trnsy(moveAngle, len));
 
         velocity.add(vec);
     }
@@ -490,14 +520,14 @@ public class TankUnit extends BaseUnit{
 
         if(start == goal) return;
 
-        IntArray open = new IntArray();
-        IntIntMap cameFrom = new IntIntMap();
-        IntIntMap gScore = new IntIntMap();
-        IntIntMap fScore = new IntIntMap();
-        IntIntMap closed = new IntIntMap();
+        LongArray open = new LongArray();
+        LongMap<Long> cameFrom = new LongMap<Long>();
+        LongMap<Integer> gScore = new LongMap<Integer>();
+        LongMap<Integer> fScore = new LongMap<Integer>();
+        LongMap<Integer> closed = new LongMap<Integer>();
 
-        int startPos = start.packedPosition();
-        int goalPos = goal.packedPosition();
+        long startPos = start.packedPosition();
+        long goalPos = goal.packedPosition();
 
         open.add(startPos);
         gScore.put(startPos, 0);
@@ -507,11 +537,11 @@ public class TankUnit extends BaseUnit{
 
         while(open.size > 0 && expanded < movePathMaxNodes){
             int bestIndex = 0;
-            int current = open.get(0);
+            long current = open.get(0);
             int bestScore = fScore.get(current, Integer.MAX_VALUE);
 
             for(int i = 1; i < open.size; i++){
-                int node = open.get(i);
+                long node = open.get(i);
                 int score = fScore.get(node, Integer.MAX_VALUE);
                 if(score < bestScore){
                     bestScore = score;
@@ -543,7 +573,7 @@ public class TankUnit extends BaseUnit{
                         continue;
                     }
 
-                    int nextPos = next.packedPosition();
+                    long nextPos = next.packedPosition();
                     if(closed.get(nextPos, 0) == 1) continue;
 
                     int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
@@ -571,8 +601,8 @@ public class TankUnit extends BaseUnit{
         }
     }
 
-    protected void reconstructMovePath(IntIntMap cameFrom, int current, int startPos){
-        IntArray rev = new IntArray();
+    protected void reconstructMovePath(LongMap<Long> cameFrom, long current, long startPos){
+        LongArray rev = new LongArray();
         rev.add(current);
 
         while(cameFrom.containsKey(current)){
@@ -609,6 +639,9 @@ public class TankUnit extends BaseUnit{
         }
 
         if(orderPath.size == 0 || orderPathCursor >= orderPath.size){
+            if(steerAlongChunkPath(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f)){
+                return;
+            }
             moveTo(goal.worldx() + tilesize / 2f, goal.worldy() + tilesize / 2f);
             return;
         }
@@ -665,14 +698,14 @@ public class TankUnit extends BaseUnit{
             return;
         }
 
-        IntArray open = new IntArray();
-        IntIntMap cameFrom = new IntIntMap();
-        IntIntMap gScore = new IntIntMap();
-        IntIntMap fScore = new IntIntMap();
-        IntIntMap closed = new IntIntMap();
+        LongArray open = new LongArray();
+        LongMap<Long> cameFrom = new LongMap<Long>();
+        LongMap<Integer> gScore = new LongMap<Integer>();
+        LongMap<Integer> fScore = new LongMap<Integer>();
+        LongMap<Integer> closed = new LongMap<Integer>();
 
-        int startPos = start.packedPosition();
-        int goalPos = goal.packedPosition();
+        long startPos = start.packedPosition();
+        long goalPos = goal.packedPosition();
 
         open.add(startPos);
         gScore.put(startPos, 0);
@@ -682,11 +715,11 @@ public class TankUnit extends BaseUnit{
 
         while(open.size > 0 && expanded < maxOrderPathNodes){
             int bestIndex = 0;
-            int current = open.get(0);
+            long current = open.get(0);
             int bestScore = fScore.get(current, Integer.MAX_VALUE);
 
             for(int i = 1; i < open.size; i++){
-                int node = open.get(i);
+                long node = open.get(i);
                 int score = fScore.get(node, Integer.MAX_VALUE);
                 if(score < bestScore){
                     bestScore = score;
@@ -718,7 +751,7 @@ public class TankUnit extends BaseUnit{
                         continue;
                     }
 
-                    int nextPos = next.packedPosition();
+                    long nextPos = next.packedPosition();
                     if(closed.get(nextPos, 0) == 1) continue;
 
                     int currentScore = gScore.get(current, Integer.MAX_VALUE / 8);
@@ -746,8 +779,8 @@ public class TankUnit extends BaseUnit{
         }
     }
 
-    protected void reconstructOrderPath(IntIntMap cameFrom, int current, int startPos){
-        IntArray rev = new IntArray();
+    protected void reconstructOrderPath(LongMap<Long> cameFrom, long current, long startPos){
+        LongArray rev = new LongArray();
         rev.add(current);
 
         while(cameFrom.containsKey(current)){
@@ -780,9 +813,11 @@ public class TankUnit extends BaseUnit{
         Floor floor = getFloorOn();
 
         // Soft shadow
-        Draw.color(0f, 0f, 0f, 0.35f);
-        Draw.rect(type.iconRegion, x, y - 1.5f);
-        Draw.color(Color.WHITE);
+        if(!io.anuke.mindustry.core.Renderer.captureReflections){
+            Draw.color(0f, 0f, 0f, 0.35f);
+            Draw.rect(type.iconRegion, x, y - 1.5f);
+            Draw.color(Color.WHITE);
+        }
 
         // Treads
         if(floor.isLiquid){

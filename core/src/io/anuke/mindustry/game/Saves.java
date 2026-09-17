@@ -72,6 +72,11 @@ public class Saves{
                 totalPlaytime += TimeUtils.timeSinceMillis(lastTimestamp);
             }
             lastTimestamp = TimeUtils.millis();
+        }else if(world.isOpenWorld() && !state.is(State.menu) && !(state.isPaused() && ui.hasDialog())){
+            if(lastTimestamp != 0){
+                totalPlaytime += TimeUtils.timeSinceMillis(lastTimestamp);
+            }
+            lastTimestamp = TimeUtils.millis();
         }
 
         if(!state.is(State.menu) && !state.gameOver && current != null && current.isAutosave()){

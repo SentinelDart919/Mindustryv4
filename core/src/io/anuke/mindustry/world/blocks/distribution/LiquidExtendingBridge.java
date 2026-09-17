@@ -1,6 +1,6 @@
 package io.anuke.mindustry.world.blocks.distribution;
 
-import com.badlogic.gdx.utils.IntSet.IntSetIterator;
+import com.badlogic.gdx.utils.LongSet.LongSetIterator;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.type.Liquid;
 import io.anuke.mindustry.world.Tile;
@@ -61,12 +61,12 @@ public class LiquidExtendingBridge extends ExtendingItemBridge{
         if(!linkValid(tile, other)){
             int i = tile.absoluteRelativeTo(to.x, to.y);
 
-            IntSetIterator it = entity.incoming.iterator();
+            LongSetIterator it = entity.incoming.iterator();
 
             while(it.hasNext){
-                int v = it.next();
-                int x = v % world.width();
-                int y = v / world.width();
+                long v = it.next();
+                int x = (int)(v >> 32);
+                int y = (int)(v & 0xFFFFFFFFL);
                 if(tile.absoluteRelativeTo(x, y) == i){
                     return false;
                 }

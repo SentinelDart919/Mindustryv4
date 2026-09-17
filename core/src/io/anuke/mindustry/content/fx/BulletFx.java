@@ -309,6 +309,10 @@ public class BulletFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        instTrail.emitLight = true;
+        instTrail.lightRadius = 20f;
+        instTrail.lightColor = Palette.bulletYellowBack;
+
         instBomb = new Effect(15f, 100f, e -> {
             Draw.color(Palette.bulletYellowBack);
             Lines.stroke(e.fout() * 4f);
@@ -325,6 +329,10 @@ public class BulletFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        instBomb.emitLight = true;
+        instBomb.lightRadius = 35f;
+        instBomb.lightColor = Palette.bulletYellowBack;
+
         railHit = new Effect(18f, 200f, e -> {
             Draw.color(Palette.orangeSpark);
 
@@ -333,6 +341,10 @@ public class BulletFx extends FxList implements ContentList{
             }
             Draw.reset();
         });
+
+        railHit.emitLight = true;
+        railHit.lightRadius = 30f;
+        railHit.lightColor = Palette.orangeSpark;
 
         smokeCloud = new Effect(70, e -> {
             Draw.color(Color.GRAY);

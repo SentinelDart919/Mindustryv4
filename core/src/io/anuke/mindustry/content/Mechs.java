@@ -329,6 +329,16 @@ public class Mechs implements ContentList{
                 Draw.alpha(alpha);
             }
 
+            @Override
+            public void drawBloom(Player player){
+                float scl = scld(player);
+                if(scl < 0.01f) return;
+                Draw.color(Palette.lancerLaser);
+                Draw.alpha(scl * 0.6f);
+                Draw.rect(shield, player.x + Mathf.range(scl/2f), player.y + Mathf.range(scl/2f), player.rotation - 90);
+                Draw.color();
+            }
+
             float scld(Player player){
                 return Mathf.clamp((player.getVelocity().len() - minV) / (maxV - minV));
             }

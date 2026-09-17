@@ -27,6 +27,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        shootSmall.emitLight = true;
+        shootSmall.lightRadius = 15f;
+        shootSmall.lightColor = Palette.lightOrange;
+
         shootHeal = new Effect(8, e -> {
             Draw.color(Palette.heal);
             float w = 1f + 5 * e.fout();
@@ -34,6 +38,10 @@ public class ShootFx extends FxList implements ContentList{
             Shapes.tri(e.x, e.y, w, 4f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
+
+        shootHeal.emitLight = true;
+        shootHeal.lightRadius = 15f;
+        shootHeal.lightColor = Palette.heal;
 
         shootSmallSmoke = new Effect(20f, e -> {
             Draw.color(Palette.lighterOrange, Color.LIGHT_GRAY, Color.GRAY, e.fin());
@@ -53,6 +61,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        shootBig.emitLight = true;
+        shootBig.lightRadius = 22f;
+        shootBig.lightColor = Palette.lightOrange;
+
         shootBig2 = new Effect(10, e -> {
             Draw.color(Palette.lightOrange, Color.GRAY, e.fin());
             float w = 1.2f + 8 * e.fout();
@@ -60,6 +72,10 @@ public class ShootFx extends FxList implements ContentList{
             Shapes.tri(e.x, e.y, w, 5f * e.fout(), e.rotation + 180f);
             Draw.reset();
         });
+
+        shootBig2.emitLight = true;
+        shootBig2.lightRadius = 25f;
+        shootBig2.lightColor = Palette.lightOrange;
 
         shootBigSmoke = new Effect(17f, e -> {
             Draw.color(Palette.lighterOrange, Color.LIGHT_GRAY, Color.GRAY, e.fin());
@@ -174,6 +190,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        lancerLaserShoot.emitLight = true;
+        lancerLaserShoot.lightRadius = 25f;
+        lancerLaserShoot.lightColor = Palette.lancerLaser;
+
         lancerLaserShootSmoke = new Effect(26f, e -> {
             Draw.color(Palette.lancerLaser);
 
@@ -194,6 +214,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        lancerLaserCharge.emitLight = true;
+        lancerLaserCharge.lightRadius = 30f;
+        lancerLaserCharge.lightColor = Palette.lancerLaser;
+
         lancerLaserChargeBegin = new Effect(71f, e -> {
             Draw.color(Palette.lancerLaser);
             Fill.circle(e.x, e.y, e.fin() * 3f);
@@ -201,6 +225,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.color();
             Fill.circle(e.x, e.y, e.fin() * 2f);
         });
+
+        lancerLaserChargeBegin.emitLight = true;
+        lancerLaserChargeBegin.lightRadius = 20f;
+        lancerLaserChargeBegin.lightColor = Palette.lancerLaser;
 
         lightningCharge = new Effect(38f, e -> {
             Draw.color(Palette.lancerLaser);
@@ -212,6 +240,10 @@ public class ShootFx extends FxList implements ContentList{
             Draw.reset();
         });
 
+        lightningCharge.emitLight = true;
+        lightningCharge.lightRadius = 25f;
+        lightningCharge.lightColor = Palette.lancerLaser;
+
         lightningShoot = new Effect(12f, e -> {
             Draw.color(Color.WHITE, Palette.lancerLaser, e.fin());
             Lines.stroke(e.fout() * 1.2f + 0.5f);
@@ -222,6 +254,10 @@ public class ShootFx extends FxList implements ContentList{
 
             Draw.reset();
         });
+
+        lightningShoot.emitLight = true;
+        lightningShoot.lightRadius = 20f;
+        lightningShoot.lightColor = Palette.lancerLaser;
 
         instShoot = new Effect(24f, e -> {
             e.scaled(10f, b -> {
@@ -238,6 +274,10 @@ public class ShootFx extends FxList implements ContentList{
             }
             Draw.reset();
         });
+
+        instShoot.emitLight = true;
+        instShoot.lightRadius = 40f;
+        instShoot.lightColor = Palette.bulletYellowBack;
 
         casing3Double = new Effect(40f, e -> {
             Draw.color(Palette.lightOrange, Palette.lightishGray, Palette.lightishGray, e.fin());

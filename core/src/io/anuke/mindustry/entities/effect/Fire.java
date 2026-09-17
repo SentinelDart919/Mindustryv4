@@ -1,7 +1,7 @@
 package io.anuke.mindustry.entities.effect;
 
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -32,10 +32,10 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class Fire extends TimedEntity implements SaveTrait, SyncTrait, Poolable{
-    private static final IntMap<Fire> map = new IntMap<>();
+    private static final LongMap<Fire> map = new LongMap<>();
     private static final float baseLifetime = 1000f, spreadChance = 0.05f, fireballChance = 0.07f;
 
-    private int loadedPosition = -1;
+    private long loadedPosition = -1;
     private Tile tile;
     private Block block;
     private float baseFlammability = -1, puddleFlammability;
@@ -64,10 +64,11 @@ public class Fire extends TimedEntity implements SaveTrait, SyncTrait, Poolable{
     }
 
     public static boolean has(int x, int y){
-        if(!Structs.inBounds(x, y, world.width(), world.height()) || !map.containsKey(x + y * world.width())){
+        long key = ((long)x << 32) | (y & 0xFFFFFFFFL);
+        if(!map.containsKey(key)){
             return false;
         }
-        Fire fire = map.get(x + y * world.width());
+        Fire fire = map.get(key);
         return fire.isAdded() && fire.fin() < 1f && fire.tile != null && fire.tile.x == x && fire.tile.y == y;
     }
 
@@ -157,14 +158,14 @@ public class Fire extends TimedEntity implements SaveTrait, SyncTrait, Poolable{
 
     @Override
     public void writeSave(DataOutput stream) throws IOException{
-        stream.writeInt(tile.packedPosition());
+        stream.writeLong(tile.packedPosition());
         stream.writeFloat(lifetime);
         stream.writeFloat(time);
     }
 
     @Override
     public void readSave(DataInput stream) throws IOException{
-        this.loadedPosition = stream.readInt();
+        this.loadedPosition = stream.readLong();
         this.lifetime = stream.readFloat();
         this.time = stream.readFloat();
         add();

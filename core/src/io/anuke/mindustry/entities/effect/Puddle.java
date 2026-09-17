@@ -3,7 +3,7 @@ package io.anuke.mindustry.entities.effect;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import io.anuke.annotations.Annotations.Loc;
 import io.anuke.annotations.Annotations.Remote;
@@ -39,7 +39,7 @@ import java.io.IOException;
 import static io.anuke.mindustry.Vars.*;
 
 public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrait, SyncTrait{
-    private static final IntMap<Puddle> map = new IntMap<>();
+    private static final LongMap<Puddle> map = new LongMap<>();
     private static final float maxLiquid = 70f;
     private static final int maxGeneration = 2;
     private static final Color tmp = new Color();
@@ -47,7 +47,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
     private static final Rectangle rect2 = new Rectangle();
     private static int seeds;
 
-    private int loadedPosition = -1;
+    private long loadedPosition = -1;
 
     private float updateTime;
     private float lastRipple;
@@ -152,6 +152,14 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         puddleGroup.removeByID(puddleid);
     }
 
+    public float getAmount(){
+        return amount;
+    }
+
+    public Liquid getLiquid(){
+        return liquid;
+    }
+
     public float getFlammability(){
         return liquid.flammability * amount;
     }
@@ -242,6 +250,18 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         Draw.color();
     }
 
+    public void drawBloom(){
+        if(liquid != null && liquid.emitLight){
+            float f = Mathf.clamp(amount / (maxLiquid / 1.5f));
+            if(f > 0.01f){
+                Draw.color(liquid.color);
+                Draw.alpha(f * 0.25f);
+                Draw.rect("circle", x, y, f * 24f, f * 24f);
+                Draw.color();
+            }
+        }
+    }
+
     @Override
     public float drawSize(){
         return 20;
@@ -249,7 +269,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
 
     @Override
     public void writeSave(DataOutput stream) throws IOException{
-        stream.writeInt(tile.packedPosition());
+        stream.writeLong(tile.packedPosition());
         stream.writeFloat(x);
         stream.writeFloat(y);
         stream.writeByte(liquid.id);
@@ -259,7 +279,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
 
     @Override
     public void readSave(DataInput stream) throws IOException{
-        this.loadedPosition = stream.readInt();
+        this.loadedPosition = stream.readLong();
         this.x = stream.readFloat();
         this.y = stream.readFloat();
         this.liquid = content.liquid(stream.readByte() & 0xFF);
@@ -298,7 +318,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         data.writeFloat(y);
         data.writeByte(liquid.id);
         data.writeShort((short) (amount * 4));
-        data.writeInt(tile.packedPosition());
+        data.writeLong(tile.packedPosition());
     }
 
     @Override
@@ -307,7 +327,7 @@ public class Puddle extends SolidEntity implements SaveTrait, Poolable, DrawTrai
         y = data.readFloat();
         liquid = content.liquid(data.readByte() & 0xFF);
         targetAmount = data.readShort() / 4f;
-        tile = world.tile(data.readInt());
+        tile = world.tile(data.readLong());
 
         map.put(tile.packedPosition(), this);
     }

@@ -6,6 +6,7 @@ import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.mindustry.world.modules.ItemModule;
@@ -49,6 +50,8 @@ public class LogicExporter extends LogicBlock {
     @Override
     public void update(Tile tile) {
         LogicExporterEntity entity = tile.entity();
+
+        if(Net.client()) return;
 
         if (entity.targetPos == -1) {//automatic mode buh
             if ((entity.findTimer += Timers.delta()) >= 60f) {

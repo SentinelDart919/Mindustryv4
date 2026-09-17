@@ -10,6 +10,7 @@ import io.anuke.mindustry.entities.Unit;
 import io.anuke.mindustry.entities.units.BaseUnit;
 import io.anuke.mindustry.entities.units.UnitType;
 import io.anuke.mindustry.gen.Call;
+import io.anuke.mindustry.net.Net;
 import io.anuke.mindustry.type.Item;
 import io.anuke.mindustry.world.Block;
 import io.anuke.mindustry.world.Tile;
@@ -48,7 +49,7 @@ public class MiningPost extends Block {
     public void update(Tile tile) {
         MiningPostEntity entity = tile.entity();
 
-        if (entity.selectedItem != null && entity.droneIDs.size < maxDrones && (entity.spawnTimer += Timers.delta()) >= 60f * 5) {
+        if(!Net.client() && entity.selectedItem != null && entity.droneIDs.size < maxDrones && (entity.spawnTimer += Timers.delta()) >= 60f * 5) {
             BaseUnit unit = postDrone.create(tile.getTeam());
             unit.setSpawner(tile);
             unit.set(tile.worldx(), tile.worldy());

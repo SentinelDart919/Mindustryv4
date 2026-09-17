@@ -40,6 +40,7 @@ public class Conveyor extends Block implements Autotiler{
     public Block junctionReplacement, bridgeReplacement;
 
     private TextureRegion[][] regions = new TextureRegion[7][4];
+    public int animationframe = 4;
 
     protected float speed = 0f;
     protected float carryCapacity = 8f;
@@ -54,6 +55,7 @@ public class Conveyor extends Block implements Autotiler{
         autoSleep = true;
         itemCapacity = 4;
         noSideBlend = false;
+        reflectYdisplace = 0.25f;
         setAmbientSound("loopConveyor", 0.03f, 4);
     }
 
@@ -283,8 +285,8 @@ public class Conveyor extends Block implements Autotiler{
         ConveyorEntity entity = tile.entity();
         byte rotation = tile.getRotation();
 
-        int frame = entity.clogHeat <= 0.5f ? (int) (((Timers.time() * speed * 8f * entity.timeScale)) % 4) : 0;
-        Draw.rect(regions[Mathf.clamp(entity.blendbits, 0, regions.length - 1)][Mathf.clamp(frame, 0, regions[0].length - 1)], tile.drawx(), tile.drawy(),
+        int frame = entity.clogHeat <= 0.5f ? (int) (((Timers.time() * speed * 8f * entity.timeScale)) % animationframe) : 0;
+        Draw.rect(regions[Mathf.clamp(entity.blendbits, 0, regions.length - 1)][Mathf.clamp(frame, 0, animationframe - 1)], tile.drawx(), tile.drawy(),
             tilesize * entity.blendsclx, tilesize * entity.blendscly, rotation*90);
     }
 

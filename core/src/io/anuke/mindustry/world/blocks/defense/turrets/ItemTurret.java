@@ -27,7 +27,7 @@ public class ItemTurret extends CooledTurret{
         super.update(tile);
         TurretEntity entity = tile.entity();
         if(!hasAmmo(tile) && living){
-           int randomItem = Mathf.random(0, ammoTypes.length -1);
+           int randomItem = Mathf.randomSeed(tile.id(), 0, ammoTypes.length -1);
            AmmoType type = ammoTypes[randomItem];
 
            entity.ammo.add(new AmmoEntry(type, 30));
